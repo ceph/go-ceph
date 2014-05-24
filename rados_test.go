@@ -13,19 +13,19 @@ func TestVersion(t *testing.T) {
 }
 
 func TestOpen(t *testing.T) {
-    _, err := rados.Open("admin")
+    _, err := rados.NewConn()
     assert.Equal(t, err, nil, "error")
 }
 
 func TestConnect(t *testing.T) {
-    conn, _ := rados.Open("admin")
+    conn, _ := rados.NewConn()
     conn.ReadDefaultConfigFile()
     err := conn.Connect()
     assert.Equal(t, err, nil)
 }
 
 func TestPingMonitor(t *testing.T) {
-    conn, _ := rados.Open("admin")
+    conn, _ := rados.NewConn()
     conn.ReadDefaultConfigFile()
     conn.Connect()
     reply, err := conn.PingMonitor("kyoto")
