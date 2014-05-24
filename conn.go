@@ -29,6 +29,8 @@ func (c *Conn) PingMonitor(id string) (string, error) {
     }
 }
 
+// Connect establishes a connection to a RADOS cluster. It returns an error,
+// if any.
 func (c *Conn) Connect() error {
     ret := C.rados_connect(c.cluster)
     if ret == 0 {
