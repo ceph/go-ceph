@@ -7,10 +7,13 @@ import "C"
 
 import "unsafe"
 
+// Pool represents a context for performing I/O within a pool.
 type Pool struct {
     ioctx C.rados_ioctx_t
 }
 
+// Write writes len(data) bytes to the object with key oid starting at byte
+// offset offset. It returns an error, if any.
 func (p *Pool) Write(oid string, data []byte, offset uint64) error {
     c_oid := C.CString(oid)
     defer C.free(unsafe.Pointer(c_oid))
@@ -27,7 +30,8 @@ func (p *Pool) Write(oid string, data []byte, offset uint64) error {
     }
 }
 
-// Read
+// Read reads up to len(data) bytes from the object with key oid starting at byte
+// offset offset. It returns the number of bytes read and an error, if any.
 func (p *Pool) Read(oid string, data []byte, offset uint64) (int, error) {
     if len(data) == 0 {
         return 0, nil
@@ -50,7 +54,7 @@ func (p *Pool) Read(oid string, data []byte, offset uint64) (int, error) {
     }
 }
 
-// Delete
+// Delete deletes the object with key oid. It returns an error, if any.
 func (p *Pool) Delete(oid string) error {
     c_oid := C.CString(oid)
     defer C.free(unsafe.Pointer(c_oid))
@@ -64,6 +68,10 @@ func (p *Pool) Delete(oid string) error {
     }
 }
 
+// Truncate resizes the object with key oid to size size. If the operation
+// enlarges the object, the new area is logically filled with zeroes. If the
+// operation shrinks the object, the excess data is removed. It returns an
+// error, if any.
 func (p *Pool) Truncate(oid string, size uint64) error {
     c_oid := C.CString(oid)
     defer C.free(unsafe.Pointer(c_oid))
