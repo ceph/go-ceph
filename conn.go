@@ -118,3 +118,14 @@ func (c *Conn) SetConfigOption(option, value string) error {
         return nil
     }
 }
+
+// WaitForLatestOSDMap blocks the caller until the latest OSD map has been
+// retrieved. It returns an error, if any.
+func (c *Conn) WaitForLatestOSDMap() error {
+    ret := C.rados_wait_for_latest_osdmap(c.cluster)
+    if ret < 0 {
+        return RadosError(int(ret))
+    } else {
+        return nil
+    }
+}
