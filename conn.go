@@ -6,6 +6,7 @@ package rados
 import "C"
 
 import "unsafe"
+import "bytes"
 
 type Conn struct {
     cluster C.rados_t
@@ -73,5 +74,33 @@ func (c *Conn) OpenPool(pool string) (*Pool, error) {
         return ioctx, nil
     } else {
         return nil, RadosError(int(ret))
+    }
+}
+
+// ListPools returns the current list of pool names. It returns an error, if
+// any.
+func (c *Conn) ListPools() (names []string, err error) {
+    buf := make([]byte, 4096)
+    for {
+        ret := int(C.rados_pool_list(c.cluster,
+            (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+        if ret < 0 {
+            return nil, RadosError(int(ret))
+        }
+
+        if ret > len(buf) {
+            buf = make([]byte, ret)
+            continue
+        }
+
+        tmp := bytes.SplitAfter(buf[:ret-1], []byte{0})
+        for _, s := range tmp {
+            if len(s) > 0 {
+                name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
+                names = append(names, name)
+            }
+        }
+
+        return names, nil
     }
 }
