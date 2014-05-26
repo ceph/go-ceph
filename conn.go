@@ -104,3 +104,17 @@ func (c *Conn) ListPools() (names []string, err error) {
         return names, nil
     }
 }
+
+// SetConfigOption sets the configuration option named option to have the
+// value value. It returns an error, if any.
+func (c *Conn) SetConfigOption(option, value string) error {
+    c_opt, c_val := C.CString(option), C.CString(value)
+    defer C.free(unsafe.Pointer(c_opt))
+    defer C.free(unsafe.Pointer(c_val))
+    ret := C.rados_conf_set(c.cluster, c_opt, c_val)
+    if ret < 0 {
+        return RadosError(int(ret))
+    } else {
+        return nil
+    }
+}
