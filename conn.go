@@ -8,6 +8,13 @@ import "C"
 import "unsafe"
 import "bytes"
 
+type ClusterStat struct {
+    Kb uint64
+    Kb_used uint64
+    Kb_avail uint64
+    Num_objects uint64
+}
+
 type Conn struct {
     cluster C.rados_t
 }
@@ -127,5 +134,22 @@ func (c *Conn) WaitForLatestOSDMap() error {
         return RadosError(int(ret))
     } else {
         return nil
+    }
+}
+
+// GetClusterStat returns statistics about the cluster. It returns an error,
+// if any.
+func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
+    c_stat := C.struct_rados_cluster_stat_t{}
+    ret := C.rados_cluster_stat(c.cluster, &c_stat)
+    if ret < 0 {
+        return ClusterStat{}, RadosError(int(ret))
+    } else {
+        return ClusterStat{
+            Kb: uint64(c_stat.kb),
+            Kb_used: uint64(c_stat.kb_used),
+            Kb_avail: uint64(c_stat.kb_avail),
+            Num_objects: uint64(c_stat.num_objects),
+        }, nil
     }
 }
