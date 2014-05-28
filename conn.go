@@ -153,3 +153,18 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
         }, nil
     }
 }
+
+func (c *Conn) ParseCmdLineArgs(args []string) error {
+    argc := C.int(len(args))
+    argv := make([]*C.char, argc)
+    for i, arg := range args {
+        argv[i] = C.CString(arg)
+        defer C.free(unsafe.Pointer(argv[i]))
+    }
+    ret := C.rados_conf_parse_argv(c.cluster, argc, &argv[0])
+    if ret < 0 {
+        return RadosError(int(ret))
+    } else {
+        return nil
+    }
+}
