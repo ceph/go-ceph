@@ -75,9 +75,24 @@ func TestGetClusterStats(t *testing.T) {
     assert.True(t, stat.Num_objects > 0)
 }
 
+func TestGetFSID(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
 
+    fsid, err := conn.GetFSID()
+    assert.NoError(t, err)
+    assert.NotEqual(t, fsid, "")
+}
 
+func TestGetInstanceID(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
 
+    id := conn.GetInstanceID()
+    assert.NotEqual(t, id, 0)
+}
 
 
 

@@ -198,3 +198,25 @@ func (c *Conn) ParseDefaultConfigEnv() error {
         return RadosError(int(ret))
     }
 }
+
+// GetFSID returns the fsid of the cluster as a hexadecimal string. The fsid
+// is a unique identifier of an entire Ceph cluster.
+func (c *Conn) GetFSID() (fsid string, err error) {
+    buf := make([]byte, 37)
+    ret := int(C.rados_cluster_fsid(c.cluster,
+        (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+    // FIXME: the success case isn't documented correctly in librados.h
+    if ret == 36 {
+        fsid = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+        return fsid, nil
+    } else {
+        return "", RadosError(int(ret))
+    }
+}
+
+// GetInstanceID returns a globally unique identifier for the cluster
+// connection instance.
+func (c *Conn) GetInstanceID() uint64 {
+    // FIXME: are there any error cases for this?
+    return uint64(C.rados_get_instance_id(c.cluster))
+}
