@@ -126,6 +126,23 @@ func (c *Conn) SetConfigOption(option, value string) error {
     }
 }
 
+func (c *Conn) GetConfigOption(name string) (value string, err error) {
+    buf := make([]byte, 4096)
+    c_name := C.CString(name)
+    defer C.free(unsafe.Pointer(c_name))
+    ret := int(C.rados_conf_get(c.cluster, c_name,
+        (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+    // FIXME: ret may be -ENAMETOOLONG if the buffer is not large enough. We
+    // can handle this case, but we need a reliable way to test for
+    // -ENAMETOOLONG constant. Will the syscall/Errno stuff in Go help?
+    if ret == 0 {
+        value = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+        return value, nil
+    } else {
+        return "", RadosError(ret)
+    }
+}
+
 // WaitForLatestOSDMap blocks the caller until the latest OSD map has been
 // retrieved. It returns an error, if any.
 func (c *Conn) WaitForLatestOSDMap() error {
@@ -166,5 +183,14 @@ func (c *Conn) ParseCmdLineArgs(args []string) error {
         return RadosError(int(ret))
     } else {
         return nil
+    }
+}
+
+func (c *Conn) ParseDefaultConfigEnv() error {
+    ret := C.rados_conf_parse_env(c.cluster, nil)
+    if ret == 0 {
+        return nil
+    } else {
+        return RadosError(int(ret))
     }
 }
