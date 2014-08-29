@@ -84,8 +84,7 @@ func (c *Conn) OpenPool(pool string) (*Pool, error) {
     }
 }
 
-// ListPools returns the current list of pool names. It returns an error, if
-// any.
+// ListPools returns the current list of pool names.
 func (c *Conn) ListPools() (names []string, err error) {
     buf := make([]byte, 4096)
     for {
@@ -112,8 +111,8 @@ func (c *Conn) ListPools() (names []string, err error) {
     }
 }
 
-// SetConfigOption sets the configuration option named option to have the
-// value value. It returns an error, if any.
+// SetConfigOption sets the value of the configuration option identified by
+// the given name.
 func (c *Conn) SetConfigOption(option, value string) error {
     c_opt, c_val := C.CString(option), C.CString(value)
     defer C.free(unsafe.Pointer(c_opt))
@@ -126,6 +125,8 @@ func (c *Conn) SetConfigOption(option, value string) error {
     }
 }
 
+// GetConfigOption returns the value of the Ceph configuration option
+// identified by the given name.
 func (c *Conn) GetConfigOption(name string) (value string, err error) {
     buf := make([]byte, 4096)
     c_name := C.CString(name)
@@ -144,7 +145,7 @@ func (c *Conn) GetConfigOption(name string) (value string, err error) {
 }
 
 // WaitForLatestOSDMap blocks the caller until the latest OSD map has been
-// retrieved. It returns an error, if any.
+// retrieved.
 func (c *Conn) WaitForLatestOSDMap() error {
     ret := C.rados_wait_for_latest_osdmap(c.cluster)
     if ret < 0 {
@@ -154,8 +155,8 @@ func (c *Conn) WaitForLatestOSDMap() error {
     }
 }
 
-// GetClusterStat returns statistics about the cluster. It returns an error,
-// if any.
+// GetClusterStat returns statistics about the cluster associated with the
+// connection.
 func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
     c_stat := C.struct_rados_cluster_stat_t{}
     ret := C.rados_cluster_stat(c.cluster, &c_stat)
@@ -171,6 +172,7 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
     }
 }
 
+// ParseCmdLineArgs configures the connection from command line arguments.
 func (c *Conn) ParseCmdLineArgs(args []string) error {
     argc := C.int(len(args))
     argv := make([]*C.char, argc)
@@ -186,6 +188,8 @@ func (c *Conn) ParseCmdLineArgs(args []string) error {
     }
 }
 
+// ParseDefaultConfigEnv configures the connection from the default Ceph
+// environment variable(s).
 func (c *Conn) ParseDefaultConfigEnv() error {
     ret := C.rados_conf_parse_env(c.cluster, nil)
     if ret == 0 {
