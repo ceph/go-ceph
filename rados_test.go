@@ -74,12 +74,35 @@ func TestGetClusterStats(t *testing.T) {
     conn.ReadDefaultConfigFile()
     conn.Connect()
 
-    stat, err := conn.GetClusterStats()
+    poolname := GetUUID()
+    err := conn.MakePool(poolname)
     assert.NoError(t, err)
-    assert.True(t, stat.Kb > 0)
-    assert.True(t, stat.Kb_used > 0)
-    assert.True(t, stat.Kb_avail > 0)
-    assert.True(t, stat.Num_objects > 0)
+
+    pool, err := conn.OpenPool(poolname)
+    assert.NoError(t, err)
+
+    buf := make([]byte, 1<<22)
+    pool.Write("obj", buf, 0)
+
+    for i := 0; i < 30; i++ {
+        stat, err := conn.GetClusterStats()
+        assert.NoError(t, err)
+
+        // wait a second if stats are zero
+        if stat.Kb == 0 || stat.Kb_used == 0 ||
+            stat.Kb_avail == 0 || stat.Num_objects == 0 {
+            fmt.Println("waiting for cluster stats to refresh")
+            time.Sleep(time.Second)
+        } else {
+            // success
+            conn.Shutdown()
+            return
+        }
+    }
+
+    t.Error("Cluster stats are zero")
+
+    conn.Shutdown()
 }
 
 func TestGetFSID(t *testing.T) {
