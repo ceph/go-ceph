@@ -220,3 +220,27 @@ func (c *Conn) GetInstanceID() uint64 {
     // FIXME: are there any error cases for this?
     return uint64(C.rados_get_instance_id(c.cluster))
 }
+
+// MakePool creates a new pool with default settings.
+func (c *Conn) MakePool(name string) error {
+    c_name :=C.CString(name)
+    defer C.free(unsafe.Pointer(c_name))
+    ret := int(C.rados_pool_create(c.cluster, c_name))
+    if ret == 0 {
+        return nil
+    } else {
+        return RadosError(ret)
+    }
+}
+
+// DeletePool deletes a pool and all the data inside the pool.
+func (c *Conn) DeletePool(name string) error {
+    c_name :=C.CString(name)
+    defer C.free(unsafe.Pointer(c_name))
+    ret := int(C.rados_pool_delete(c.cluster, c_name))
+    if ret == 0 {
+        return nil
+    } else {
+        return RadosError(ret)
+    }
+}

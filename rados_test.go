@@ -6,6 +6,12 @@ import "github.com/noahdesu/rados"
 import "github.com/stretchr/testify/assert"
 import "fmt"
 import "os"
+import "os/exec"
+
+func GetUUID() string {
+    out, _ := exec.Command("uuidgen").Output()
+    return string(out[:36])
+}
 
 func TestVersion(t *testing.T) {
     var major, minor, patch = rados.Version()
@@ -94,7 +100,66 @@ func TestGetInstanceID(t *testing.T) {
     assert.NotEqual(t, id, 0)
 }
 
+func TestMakeDeletePool(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
 
+    // get current list of pool
+    pools, err := conn.ListPools()
+    assert.NoError(t, err)
+
+    // check that new pool name is unique
+    new_name := GetUUID()
+    for _, poolname := range pools {
+        if new_name == poolname {
+            t.Error("Random pool name exists!")
+            return
+        }
+    }
+
+    // create pool
+    err = conn.MakePool(new_name)
+    assert.NoError(t, err)
+
+    // get updated list of pools
+    pools, err = conn.ListPools()
+    assert.NoError(t, err)
+
+    // verify that the new pool name exists
+    found := false
+    for _, poolname := range pools {
+        if new_name == poolname {
+            found = true
+        }
+    }
+
+    if !found {
+        t.Error("Cannot find newly created pool")
+    }
+
+    // delete the pool
+    err = conn.DeletePool(new_name)
+    assert.NoError(t, err)
+
+    // verify that it is gone
+
+    // get updated list of pools
+    pools, err = conn.ListPools()
+    assert.NoError(t, err)
+
+    // verify that the new pool name exists
+    found = false
+    for _, poolname := range pools {
+        if new_name == poolname {
+            found = true
+        }
+    }
+
+    if found {
+        t.Error("Deleted pool still exists")
+    }
+}
 
 
 //func TestOpen(t *testing.T) {
