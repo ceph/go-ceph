@@ -4,9 +4,13 @@ import "testing"
 //import "bytes"
 import "github.com/noahdesu/rados"
 import "github.com/stretchr/testify/assert"
-import "fmt"
 import "os"
 import "os/exec"
+import "io"
+import "io/ioutil"
+import "time"
+import "net"
+import "fmt"
 
 func GetUUID() string {
     out, _ := exec.Command("uuidgen").Output()
@@ -187,39 +191,69 @@ func TestMakeDeletePool(t *testing.T) {
     if found {
         t.Error("Deleted pool still exists")
     }
+
+    conn.Shutdown()
 }
 
-
-//func TestOpen(t *testing.T) {
-//    _, err := rados.NewConn()
-//    assert.Equal(t, err, nil, "error")
-//}
-//
-//func TestConnect(t *testing.T) {
-//    conn, _ := rados.NewConn()
-//    conn.ReadDefaultConfigFile()
-//    err := conn.Connect()
-//    assert.Equal(t, err, nil)
-//}
-//
-//func TestPingMonitor(t *testing.T) {
-//    conn, _ := rados.NewConn()
-//    conn.ReadDefaultConfigFile()
-//    conn.Connect()
-//    reply, err := conn.PingMonitor("kyoto")
-//    assert.Equal(t, err, nil)
-//    assert.True(t, len(reply) > 0)
-//}
-
-func TestListPools(t *testing.T) {
+func TestPingMonitor(t *testing.T) {
     conn, _ := rados.NewConn()
     conn.ReadDefaultConfigFile()
     conn.Connect()
-    pools, _ := conn.ListPools()
-    fmt.Println(len(pools), pools)
+
+    // mon id that should work with vstart.sh
+    reply, err := conn.PingMonitor("a")
+    if err == nil {
+        assert.NotEqual(t, reply, "")
+        return
+    }
+
+    // try to use a hostname as the monitor id
+    mon_addr, _ := conn.GetConfigOption("mon_host")
+    hosts, _ := net.LookupAddr(mon_addr)
+    for _, host := range hosts {
+        reply, err := conn.PingMonitor(host)
+        if err == nil {
+            assert.NotEqual(t, reply, "")
+            return
+        }
+    }
+
+    t.Error("Could not find a valid monitor id")
+
+    conn.Shutdown()
 }
 
-func TestSetConfigOption(t *testing.T) {
+func TestReadConfigFile(t *testing.T) {
+    conn, _ := rados.NewConn()
+
+    // check current log_file value
+    log_file_val, err := conn.GetConfigOption("log_file")
+    assert.NoError(t, err)
+    assert.NotEqual(t, log_file_val, "/dev/null")
+
+    // create a temporary ceph.conf file that changes the log_file conf
+    // option.
+    file, err := ioutil.TempFile("/tmp", "go-rados")
+    assert.NoError(t, err)
+
+    _, err = io.WriteString(file, "[global]\nlog_file = /dev/null\n")
+    assert.NoError(t, err)
+
+    // parse the config file
+    err = conn.ReadConfigFile(file.Name())
+    assert.NoError(t, err)
+
+    // check current log_file value
+    log_file_val, err = conn.GetConfigOption("log_file")
+    assert.NoError(t, err)
+    assert.Equal(t, log_file_val, "/dev/null")
+
+    // cleanup
+    file.Close()
+    os.Remove(file.Name())
+}
+
+func TestWaitForLatestOSDMap(t *testing.T) {
     conn, _ := rados.NewConn()
     conn.ReadDefaultConfigFile()
     conn.Connect()
@@ -227,36 +261,5 @@ func TestSetConfigOption(t *testing.T) {
     err := conn.WaitForLatestOSDMap()
     assert.NoError(t, err)
 
-    stat, err := conn.GetClusterStats()
-    assert.NoError(t, err)
-    assert.True(t, stat.Kb > 0)
-    assert.True(t, stat.Kb_used > 0)
-    assert.True(t, stat.Kb_avail > 0)
-    assert.True(t, stat.Num_objects > 0)
-
-    args := []string{ "--mon-host 127.0.0.1" }
-    conn2, _ := rados.NewConn()
-    err = conn2.ParseCmdLineArgs(args)
-    assert.NoError(t, err)
-
-    args = []string{ "--mmm-host 127.0.0.1" }
-    err = conn2.ParseCmdLineArgs(args)
-    assert.NoError(t, err)
+    conn.Shutdown()
 }
-
-//func TestConnect(t *testing.T) {
-//    conn, _ := rados.Open("admin")
-//    conn.ReadConfigFile("/home/nwatkins/ceph/ceph/src/ceph.conf")
-//    conn.Connect()
-//    pool, _ := conn.OpenPool("data")
-//
-//    data_in := []byte("blah");
-//    data_out := make([]byte, 10)
-//
-//    pool.Write("xyz", data_in, 0)
-//    pool.Read("xyz", data_out[:4], 0)
-//
-//    if !bytes.Equal(data_in, data_out[:4]) {
-//        t.Errorf("yuk")
-//    }
-//}
