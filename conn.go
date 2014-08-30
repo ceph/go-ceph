@@ -179,12 +179,20 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 
 // ParseCmdLineArgs configures the connection from command line arguments.
 func (c *Conn) ParseCmdLineArgs(args []string) error {
-    argc := C.int(len(args))
+    // add an empty element 0 -- Ceph treats the array as the actual contents
+    // of argv and skips the first element (the executable name)
+    argc := C.int(len(args) + 1)
     argv := make([]*C.char, argc)
+
+    // make the first element a string just in case it is ever examined
+    argv[0] = C.CString("placeholder")
+    defer C.free(unsafe.Pointer(argv[0]))
+
     for i, arg := range args {
-        argv[i] = C.CString(arg)
-        defer C.free(unsafe.Pointer(argv[i]))
+        argv[i+1] = C.CString(arg)
+        defer C.free(unsafe.Pointer(argv[i+1]))
     }
+
     ret := C.rados_conf_parse_argv(c.cluster, argc, &argv[0])
     if ret < 0 {
         return RadosError(int(ret))

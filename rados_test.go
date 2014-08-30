@@ -56,16 +56,17 @@ func TestParseDefaultConfigEnv(t *testing.T) {
 
 func TestParseCmdLineArgs(t *testing.T) {
     conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
 
-    log_file_val, _ := conn.GetConfigOption("mon_host")
-    assert.NotEqual(t, log_file_val, "127.0.0.1")
+    mon_host_val, _ := conn.GetConfigOption("mon_host")
+    assert.NotEqual(t, mon_host_val, "1.1.1.1")
 
-    args := []string{ "--mon-host 127.0.0.1" }
+    args := []string{ "--mon-host", "1.1.1.1" }
     err := conn.ParseCmdLineArgs(args)
     assert.NoError(t, err)
 
-    log_file_val, _ = conn.GetConfigOption("mon_host")
-    assert.Equal(t, log_file_val, "127.0.0.1")
+    mon_host_val, _ = conn.GetConfigOption("mon_host")
+    assert.Equal(t, mon_host_val, "1.1.1.1")
 }
 
 func TestGetClusterStats(t *testing.T) {
