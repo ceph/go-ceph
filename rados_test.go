@@ -113,6 +113,8 @@ func TestGetFSID(t *testing.T) {
     fsid, err := conn.GetFSID()
     assert.NoError(t, err)
     assert.NotEqual(t, fsid, "")
+
+    conn.Shutdown()
 }
 
 func TestGetInstanceID(t *testing.T) {
@@ -122,6 +124,8 @@ func TestGetInstanceID(t *testing.T) {
 
     id := conn.GetInstanceID()
     assert.NotEqual(t, id, 0)
+
+    conn.Shutdown()
 }
 
 func TestMakeDeletePool(t *testing.T) {
