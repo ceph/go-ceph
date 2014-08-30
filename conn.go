@@ -19,6 +19,7 @@ type Conn struct {
     cluster C.rados_t
 }
 
+// PingMonitor sends a ping to a monitor and returns the reply.
 func (c *Conn) PingMonitor(id string) (string, error) {
     c_id := C.CString(id)
     defer C.free(unsafe.Pointer(c_id))
@@ -48,10 +49,12 @@ func (c *Conn) Connect() error {
     }
 }
 
+// Shutdown disconnects from the cluster.
 func (c *Conn) Shutdown() {
     C.rados_shutdown(c.cluster)
 }
 
+// ReadConfigFile configures the connection using a Ceph configuration file.
 func (c *Conn) ReadConfigFile(path string) error {
     c_path := C.CString(path)
     defer C.free(unsafe.Pointer(c_path))
@@ -63,6 +66,8 @@ func (c *Conn) ReadConfigFile(path string) error {
     }
 }
 
+// ReadDefaultConfigFile configures the connection using a Ceph configuration
+// file located at default locations.
 func (c *Conn) ReadDefaultConfigFile() error {
     ret := C.rados_conf_read_file(c.cluster, nil)
     if ret == 0 {
@@ -84,7 +89,7 @@ func (c *Conn) OpenPool(pool string) (*Pool, error) {
     }
 }
 
-// ListPools returns the current list of pool names.
+// ListPools returns the names of all existing pools.
 func (c *Conn) ListPools() (names []string, err error) {
     buf := make([]byte, 4096)
     for {
