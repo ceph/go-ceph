@@ -8,6 +8,7 @@ import "C"
 import "unsafe"
 import "bytes"
 
+// ClusterStat represents Ceph cluster statistics.
 type ClusterStat struct {
     Kb uint64
     Kb_used uint64
@@ -15,6 +16,7 @@ type ClusterStat struct {
     Num_objects uint64
 }
 
+// Conn is a connection handle to a Ceph cluster.
 type Conn struct {
     cluster C.rados_t
 }
