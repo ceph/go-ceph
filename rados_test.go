@@ -207,6 +207,13 @@ func TestPingMonitor(t *testing.T) {
         return
     }
 
+    // mon id that should work with micro-osd.sh
+    reply, err = conn.PingMonitor("0")
+    if err == nil {
+        assert.NotEqual(t, reply, "")
+        return
+    }
+
     // try to use a hostname as the monitor id
     mon_addr, _ := conn.GetConfigOption("mon_host")
     hosts, _ := net.LookupAddr(mon_addr)
