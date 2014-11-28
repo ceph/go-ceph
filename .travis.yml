@@ -8,17 +8,12 @@ before_install:
   - ssh-keygen -f $HOME/.ssh/id_rsa -t rsa -N ''
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - chmod 600 ~/.ssh/authorized_keys
-  - sudo apt-get -y install python-virtualenv
-  - git clone https://github.com/ceph/ceph-deploy
-  - cd ceph-deploy
-  - ./bootstrap
-  - ./ceph-deploy install --release firefly `hostname`
-  - ./ceph-deploy pkg --install librados-dev `hostname`
-
-install:
-  - echo "asdf"
-
-script: "exit 0"
+  - sudo pip install ceph-deploy
+  - ceph-deploy install --release giant `hostname`
+  - ceph-deploy pkg --install librados-dev `hostname`
+  - bash ci/micro-osd.sh /tmp/micro-ceph
+  - export CEPH_CONF=/tmp/micro-ceph/ceph.conf
+  - ceph status
 
 notifications:
   recipients:

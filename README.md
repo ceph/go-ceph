@@ -1,5 +1,7 @@
 # go-rados - Go bindings for RADOS distributed object store
 
+[![Build Status](https://travis-ci.org/noahdesu/go-rados.svg)](https://travis-ci.org/noahdesu/go-rados)
+
 ## Installation
 
     go get github.com/noahdesu/go-rados

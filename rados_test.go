@@ -2,7 +2,7 @@ package rados_test
 
 import "testing"
 //import "bytes"
-import "github.com/noahdesu/rados"
+import "github.com/noahdesu/go-rados"
 import "github.com/stretchr/testify/assert"
 import "os"
 import "os/exec"
@@ -85,28 +85,37 @@ func TestGetClusterStats(t *testing.T) {
     pool, err := conn.OpenPool(poolname)
     assert.NoError(t, err)
 
-    buf := make([]byte, 1<<22)
-    pool.Write("obj", buf, 0)
+    // grab current stats
+    prev_stat, err := conn.GetClusterStats()
+    fmt.Printf("prev_stat: %+v\n", prev_stat)
+    assert.NoError(t, err)
 
+    // make some changes to the cluster
+    buf := make([]byte, 1<<20)
+    for i := 0; i < 10; i++ {
+        objname := GetUUID()
+        pool.Write(objname, buf, 0)
+    }
+
+    // wait a while for the stats to change
     for i := 0; i < 30; i++ {
         stat, err := conn.GetClusterStats()
         assert.NoError(t, err)
 
-        // wait a second if stats are zero
-        if stat.Kb == 0 || stat.Kb_used == 0 ||
-            stat.Kb_avail == 0 || stat.Num_objects == 0 {
-            fmt.Println("waiting for cluster stats to refresh")
+        // wait for something to change
+        if stat == prev_stat {
+            fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
             time.Sleep(time.Second)
         } else {
             // success
+            fmt.Printf("curr_stat: %+v (change detected)\n", stat)
             conn.Shutdown()
             return
         }
     }
 
-    t.Error("Cluster stats are zero")
-
     conn.Shutdown()
+    t.Error("Cluster stats aren't changing")
 }
 
 func TestGetFSID(t *testing.T) {
@@ -202,6 +211,13 @@ func TestPingMonitor(t *testing.T) {
 
     // mon id that should work with vstart.sh
     reply, err := conn.PingMonitor("a")
+    if err == nil {
+        assert.NotEqual(t, reply, "")
+        return
+    }
+
+    // mon id that should work with micro-osd.sh
+    reply, err = conn.PingMonitor("0")
     if err == nil {
         assert.NotEqual(t, reply, "")
         return
