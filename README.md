@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/noahdesu/go-rados.svg)](https://travis-ci.org/noahdesu/go-rados)
 
+This project uses Semantic Versioning (http://semver.org/).
+
 ## Installation
 
     go get github.com/noahdesu/go-rados
