@@ -87,6 +87,7 @@ func TestGetClusterStats(t *testing.T) {
 
     // grab current stats
     prev_stat, err := conn.GetClusterStats()
+    fmt.Printf("prev_stat: %+v\n", prev_stat)
     assert.NoError(t, err)
 
     // make some changes to the cluster
@@ -103,10 +104,11 @@ func TestGetClusterStats(t *testing.T) {
 
         // wait for something to change
         if stat == prev_stat {
-            fmt.Println("waiting for cluster stats to refresh")
+            fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
             time.Sleep(time.Second)
         } else {
             // success
+            fmt.Printf("curr_stat: %+v (change detected)\n", stat)
             conn.Shutdown()
             return
         }
