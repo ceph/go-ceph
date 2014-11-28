@@ -85,16 +85,24 @@ func TestGetClusterStats(t *testing.T) {
     pool, err := conn.OpenPool(poolname)
     assert.NoError(t, err)
 
-    buf := make([]byte, 1<<22)
-    pool.Write("obj", buf, 0)
+    // grab current stats
+    prev_stat, err := conn.GetClusterStats()
+    assert.NoError(t, err)
 
+    // make some changes to the cluster
+    buf := make([]byte, 1<<20)
+    for i := 0; i < 10; i++ {
+        objname := GetUUID()
+        pool.Write(objname, buf, 0)
+    }
+
+    // wait a while for the stats to change
     for i := 0; i < 30; i++ {
         stat, err := conn.GetClusterStats()
         assert.NoError(t, err)
 
-        // wait a second if stats are zero
-        if stat.Kb == 0 || stat.Kb_used == 0 ||
-            stat.Kb_avail == 0 || stat.Num_objects == 0 {
+        // wait for something to change
+        if stat == prev_stat {
             fmt.Println("waiting for cluster stats to refresh")
             time.Sleep(time.Second)
         } else {
@@ -104,9 +112,8 @@ func TestGetClusterStats(t *testing.T) {
         }
     }
 
-    t.Error("Cluster stats are zero")
-
     conn.Shutdown()
+    t.Error("Cluster stats aren't changing")
 }
 
 func TestGetFSID(t *testing.T) {
