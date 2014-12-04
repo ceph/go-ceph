@@ -11,7 +11,6 @@ import "io/ioutil"
 import "time"
 import "net"
 import "fmt"
-import "crypto/rand"
 
 func GetUUID() string {
     out, _ := exec.Command("uuidgen").Output()
@@ -294,17 +293,13 @@ func TestReadWrite(t *testing.T) {
     pool, err := conn.OpenPool(pool_name)
     assert.NoError(t, err)
 
-    // make random bytes
-    bytes := make([]byte, 1<<20)
-    n, err := rand.Read(bytes)
+    bytes_in := []byte("input data")
+    err = pool.Write("obj", bytes_in, 0)
     assert.NoError(t, err)
 
-    err = pool.Write("obj", bytes, 0)
-    assert.NoError(t, err)
-
-    bytes_out := make([]byte, 1<<20)
+    bytes_out := make([]byte, len(bytes_in))
     n_out, err := pool.Read("obj", bytes_out, 0)
 
-    assert.Equal(t, n, n_out)
-    assert.Equal(t, bytes, bytes_out)
+    assert.Equal(t, n_out, len(bytes_in))
+    assert.Equal(t, bytes_in, bytes_out)
 }
