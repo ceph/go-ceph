@@ -11,6 +11,7 @@ import "io/ioutil"
 import "time"
 import "net"
 import "fmt"
+import "crypto/rand"
 
 func GetUUID() string {
     out, _ := exec.Command("uuidgen").Output()
@@ -278,4 +279,32 @@ func TestWaitForLatestOSDMap(t *testing.T) {
     assert.NoError(t, err)
 
     conn.Shutdown()
+}
+
+func TestReadWrite(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
+
+    // make pool
+    pool_name := GetUUID()
+    err := conn.MakePool(pool_name)
+    assert.NoError(t, err)
+
+    pool, err := conn.OpenPool(pool_name)
+    assert.NoError(t, err)
+
+    // make random bytes
+    bytes := make([]byte, 1<<20)
+    n, err := rand.Read(bytes)
+    assert.NoError(t, err)
+
+    err = pool.Write("obj", bytes, 0)
+    assert.NoError(t, err)
+
+    bytes_out := make([]byte, 1<<20)
+    n_out, err := pool.Read("obj", bytes_out, 0)
+
+    assert.Equal(t, n, n_out)
+    assert.Equal(t, bytes, bytes_out)
 }
