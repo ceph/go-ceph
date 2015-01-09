@@ -9,7 +9,7 @@ before_install:
   - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   - chmod 600 ~/.ssh/authorized_keys
   - sudo pip install ceph-deploy
-  - ceph-deploy install --release giant `hostname`
+  - ceph-deploy install --dev next `hostname`
   - ceph-deploy pkg --install librados-dev `hostname`
   - bash ci/micro-osd.sh /tmp/micro-ceph
   - export CEPH_CONF=/tmp/micro-ceph/ceph.conf
