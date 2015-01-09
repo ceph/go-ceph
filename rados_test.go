@@ -352,3 +352,24 @@ func TestGetPoolStats(t *testing.T) {
     conn.Shutdown()
     t.Error("Pool stats aren't changing")
 }
+
+func TestGetPoolName(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
+
+    poolname := GetUUID()
+    err := conn.MakePool(poolname)
+    assert.NoError(t, err)
+
+    ioctx, err := conn.OpenIOContext(poolname)
+    assert.NoError(t, err)
+
+    poolname_ret, err := ioctx.GetPoolName()
+    assert.NoError(t, err)
+
+    assert.Equal(t, poolname, poolname_ret)
+
+    ioctx.Destroy()
+    conn.Shutdown()
+}

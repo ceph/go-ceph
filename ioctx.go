@@ -140,3 +140,20 @@ func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
         }, nil
     }
 }
+
+// GetPoolName returns the name of the pool associated with the I/O context.
+func (ioctx *IOContext) GetPoolName() (name string, err error) {
+    buf := make([]byte, 1)
+    for {
+        ret := C.rados_ioctx_get_pool_name(ioctx.ioctx,
+            (*C.char)(unsafe.Pointer(&buf[0])), C.unsigned(len(buf)))
+        if ret == -34 { // FIXME
+            buf = make([]byte, len(buf)*2)
+            continue
+        } else if ret < 0 {
+            return "", RadosError(ret)
+        }
+        name = C.GoStringN((*C.char)(unsafe.Pointer(&buf[0])), ret)
+        return name, nil
+    }
+}
