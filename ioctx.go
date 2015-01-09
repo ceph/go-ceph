@@ -157,3 +157,32 @@ func (ioctx *IOContext) GetPoolName() (name string, err error) {
         return name, nil
     }
 }
+
+// ObjectListFunc is the type of the function called for each object visited
+// by ListObjects.
+type ObjectListFunc func(oid string)
+
+// ListObjects lists all of the objects in the pool associated with the I/O
+// context, and called the provided listFn function for each object, passing
+// to the function the name of the object.
+func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
+    var ctx C.rados_list_ctx_t
+    ret := C.rados_nobjects_list_open(ioctx.ioctx, &ctx)
+    if ret < 0 {
+        return RadosError(ret)
+    }
+    defer func() { C.rados_nobjects_list_close(ctx) }()
+
+    for {
+        var c_entry *C.char
+        ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
+        if ret == -2 { // FIXME
+            return nil
+        } else if ret < 0 {
+            return RadosError(ret)
+        }
+        listFn(C.GoString(c_entry))
+    }
+
+    panic("invalid state")
+}
