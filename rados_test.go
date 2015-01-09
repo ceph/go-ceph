@@ -306,3 +306,49 @@ func TestReadWrite(t *testing.T) {
 
     pool.Destroy()
 }
+
+func TestGetPoolStats(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
+
+    poolname := GetUUID()
+    err := conn.MakePool(poolname)
+    assert.NoError(t, err)
+
+    pool, err := conn.OpenIOContext(poolname)
+    assert.NoError(t, err)
+
+    // grab current stats
+    prev_stat, err := pool.GetPoolStats()
+    fmt.Printf("prev_stat: %+v\n", prev_stat)
+    assert.NoError(t, err)
+
+    // make some changes to the cluster
+    buf := make([]byte, 1<<20)
+    for i := 0; i < 10; i++ {
+        objname := GetUUID()
+        pool.Write(objname, buf, 0)
+    }
+
+    // wait a while for the stats to change
+    for i := 0; i < 30; i++ {
+        stat, err := pool.GetPoolStats()
+        assert.NoError(t, err)
+
+        // wait for something to change
+        if stat == prev_stat {
+            fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
+            time.Sleep(time.Second)
+        } else {
+            // success
+            fmt.Printf("curr_stat: %+v (change detected)\n", stat)
+            conn.Shutdown()
+            return
+        }
+    }
+
+    pool.Destroy()
+    conn.Shutdown()
+    t.Error("Pool stats aren't changing")
+}

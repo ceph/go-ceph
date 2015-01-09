@@ -7,6 +7,30 @@ import "C"
 
 import "unsafe"
 
+// PoolStat represents Ceph pool statistics.
+type PoolStat struct {
+  // space used in bytes
+  Num_bytes uint64
+  // space used in KB
+  Num_kb uint64
+  // number of objects in the pool
+  Num_objects uint64
+  // number of clones of objects
+  Num_object_clones uint64
+  // num_objects * num_replicas
+  Num_object_copies uint64
+  Num_objects_missing_on_primary uint64
+  // number of objects found on no OSDs
+  Num_objects_unfound uint64
+  // number of objects replicated fewer times than they should be
+  // (but found on at least one OSD)
+  Num_objects_degraded uint64
+  Num_rd uint64
+  Num_rd_kb uint64
+  Num_wr uint64
+  Num_wr_kb uint64
+}
+
 // IOContext represents a context for performing I/O within a pool.
 type IOContext struct {
     ioctx C.rados_ioctx_t
@@ -90,4 +114,29 @@ func (p *IOContext) Truncate(oid string, size uint64) error {
 // context should not be used again after calling this method.
 func (ioctx *IOContext) Destroy() {
     C.rados_ioctx_destroy(ioctx.ioctx)
+}
+
+// Stat returns a set of statistics about the pool associated with this I/O
+// context.
+func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
+    c_stat := C.struct_rados_pool_stat_t{}
+    ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &c_stat)
+    if ret < 0 {
+        return PoolStat{}, RadosError(int(ret))
+    } else {
+        return PoolStat{
+            Num_bytes: uint64(c_stat.num_bytes),
+            Num_kb: uint64(c_stat.num_kb),
+            Num_objects: uint64(c_stat.num_objects),
+            Num_object_clones: uint64(c_stat.num_object_clones),
+            Num_object_copies: uint64(c_stat.num_object_copies),
+            Num_objects_missing_on_primary: uint64(c_stat.num_objects_missing_on_primary),
+            Num_objects_unfound: uint64(c_stat.num_objects_unfound),
+            Num_objects_degraded: uint64(c_stat.num_objects_degraded),
+            Num_rd: uint64(c_stat.num_rd),
+            Num_rd_kb: uint64(c_stat.num_rd_kb),
+            Num_wr: uint64(c_stat.num_wr),
+            Num_wr_kb: uint64(c_stat.num_wr_kb),
+        }, nil
+    }
 }
