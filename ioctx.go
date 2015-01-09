@@ -38,11 +38,11 @@ type IOContext struct {
 
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
-func (p *IOContext) Write(oid string, data []byte, offset uint64) error {
+func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
     c_oid := C.CString(oid)
     defer C.free(unsafe.Pointer(c_oid))
 
-    ret := C.rados_write(p.ioctx, c_oid,
+    ret := C.rados_write(ioctx.ioctx, c_oid,
         (*C.char)(unsafe.Pointer(&data[0])),
         (C.size_t)(len(data)),
         (C.uint64_t)(offset))
@@ -56,7 +56,7 @@ func (p *IOContext) Write(oid string, data []byte, offset uint64) error {
 
 // Read reads up to len(data) bytes from the object with key oid starting at byte
 // offset offset. It returns the number of bytes read and an error, if any.
-func (p *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
+func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
     if len(data) == 0 {
         return 0, nil
     }
@@ -65,7 +65,7 @@ func (p *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
     defer C.free(unsafe.Pointer(c_oid))
 
     ret := C.rados_read(
-        p.ioctx,
+        ioctx.ioctx,
         c_oid,
         (*C.char)(unsafe.Pointer(&data[0])),
         (C.size_t)(len(data)),
@@ -79,11 +79,11 @@ func (p *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
 }
 
 // Delete deletes the object with key oid. It returns an error, if any.
-func (p *IOContext) Delete(oid string) error {
+func (ioctx *IOContext) Delete(oid string) error {
     c_oid := C.CString(oid)
     defer C.free(unsafe.Pointer(c_oid))
 
-    ret := C.rados_remove(p.ioctx, c_oid)
+    ret := C.rados_remove(ioctx.ioctx, c_oid)
 
     if ret == 0 {
         return nil
@@ -96,11 +96,11 @@ func (p *IOContext) Delete(oid string) error {
 // enlarges the object, the new area is logically filled with zeroes. If the
 // operation shrinks the object, the excess data is removed. It returns an
 // error, if any.
-func (p *IOContext) Truncate(oid string, size uint64) error {
+func (ioctx *IOContext) Truncate(oid string, size uint64) error {
     c_oid := C.CString(oid)
     defer C.free(unsafe.Pointer(c_oid))
 
-    ret := C.rados_trunc(p.ioctx, c_oid, (C.uint64_t)(size))
+    ret := C.rados_trunc(ioctx.ioctx, c_oid, (C.uint64_t)(size))
 
     if ret == 0 {
         return nil
