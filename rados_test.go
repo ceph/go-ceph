@@ -114,6 +114,7 @@ func TestGetClusterStats(t *testing.T) {
         }
     }
 
+    pool.Destroy()
     conn.Shutdown()
     t.Error("Cluster stats aren't changing")
 }
@@ -302,4 +303,6 @@ func TestReadWrite(t *testing.T) {
 
     assert.Equal(t, n_out, len(bytes_in))
     assert.Equal(t, bytes_in, bytes_out)
+
+    pool.Destroy()
 }

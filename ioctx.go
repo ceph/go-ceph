@@ -84,3 +84,10 @@ func (p *IOContext) Truncate(oid string, size uint64) error {
         return RadosError(int(ret))
     }
 }
+
+// Destroy informs librados that the I/O context is no longer in use.
+// Resources associated with the context may not be freed immediately, and the
+// context should not be used again after calling this method.
+func (ioctx *IOContext) Destroy() {
+    C.rados_ioctx_destroy(ioctx.ioctx)
+}
