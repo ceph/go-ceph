@@ -82,7 +82,7 @@ func TestGetClusterStats(t *testing.T) {
     err := conn.MakePool(poolname)
     assert.NoError(t, err)
 
-    pool, err := conn.OpenPool(poolname)
+    pool, err := conn.OpenIOContext(poolname)
     assert.NoError(t, err)
 
     // grab current stats
@@ -290,7 +290,7 @@ func TestReadWrite(t *testing.T) {
     err := conn.MakePool(pool_name)
     assert.NoError(t, err)
 
-    pool, err := conn.OpenPool(pool_name)
+    pool, err := conn.OpenIOContext(pool_name)
     assert.NoError(t, err)
 
     bytes_in := []byte("input data")

@@ -51,15 +51,15 @@ similar to a standard file I/O interface:
 
 ```go
 // open a pool handle
-pool, err := conn.OpenPool("mypool")
+ioctx, err := conn.OpenIOContext("mypool")
 
 // write some data
 bytes_in := []byte("input data")
-err = pool.Write("obj", bytes_in, 0)
+err = ioctx.Write("obj", bytes_in, 0)
 
 // read the data back out
 bytes_out := make([]byte, len(bytes_in))
-n_out, err := pool.Read("obj", bytes_out, 0)
+n_out, err := ioctx.Read("obj", bytes_out, 0)
 
 if bytes_in != bytes_out {
     fmt.Println("Output is not input!")
