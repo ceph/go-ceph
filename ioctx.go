@@ -167,15 +167,15 @@ type ObjectListFunc func(oid string)
 // to the function the name of the object.
 func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
     var ctx C.rados_list_ctx_t
-    ret := C.rados_nobjects_list_open(ioctx.ioctx, &ctx)
+    ret := C.rados_objects_list_open(ioctx.ioctx, &ctx)
     if ret < 0 {
         return RadosError(ret)
     }
-    defer func() { C.rados_nobjects_list_close(ctx) }()
+    defer func() { C.rados_objects_list_close(ctx) }()
 
     for {
         var c_entry *C.char
-        ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
+        ret := C.rados_objects_list_next(ctx, &c_entry, nil)
         if ret == -2 { // FIXME
             return nil
         } else if ret < 0 {
