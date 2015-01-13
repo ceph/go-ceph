@@ -1,4 +1,8 @@
 /*
-Package noahdesu/go-rados provides access to librados and librbd.
+Set of wrappers around Ceph APIs.
 */
 package rados
+
+import (
+    _ "github.com/noahdesu/go-rados/rados"
+)
