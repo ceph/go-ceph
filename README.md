@@ -1,6 +1,6 @@
 # go-ceph - Go bindings for Ceph APIs (RBD, RADOS, CephFS)
 
-[![Build Status](https://travis-ci.org/noahdesu/go-rados.svg)](https://travis-ci.org/noahdesu/go-rados) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/noahdesu/go-rados) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/noahdesu/go-rados/master/LICENSE)
+[![Build Status](https://travis-ci.org/noahdesu/go-ceph.svg)](https://travis-ci.org/noahdesu/go-rados) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/noahdesu/go-rados) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/noahdesu/go-rados/master/LICENSE)
 
 
 This project uses Semantic Versioning (http://semver.org/).
