@@ -1,4 +1,4 @@
-# go-rados - Go bindings for RADOS distributed object store
+# go-ceph - Go bindings for Ceph APIs (RBD, RADOS, CephFS)
 
 [![Build Status](https://travis-ci.org/noahdesu/go-rados.svg)](https://travis-ci.org/noahdesu/go-rados) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/noahdesu/go-rados) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/noahdesu/go-rados/master/LICENSE)
 
@@ -7,14 +7,14 @@ This project uses Semantic Versioning (http://semver.org/).
 
 ## Installation
 
-    go get github.com/noahdesu/go-rados
+    go get github.com/noahdesu/go-ceph
 
 The native RADOS library and development headers are expected to be installed.
 
 ## Documentation
 
 Detailed documentation is available at
-<http://godoc.org/github.com/noahdesu/go-rados>.
+<http://godoc.org/github.com/noahdesu/go-ceph>.
 
 ### Connecting to a cluster
 
