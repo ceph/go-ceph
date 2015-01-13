@@ -2,7 +2,7 @@ package rados_test
 
 import "testing"
 //import "bytes"
-import "github.com/noahdesu/go-rados"
+import "github.com/noahdesu/go-rados/rados"
 import "github.com/stretchr/testify/assert"
 import "os"
 import "os/exec"
