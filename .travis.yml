@@ -11,6 +11,7 @@ before_install:
   - sudo pip install ceph-deploy
   - ceph-deploy install --release giant `hostname`
   - ceph-deploy pkg --install librados-dev `hostname`
+  - ceph-deploy pkg --install librbd-dev `hostname`
   - bash ci/micro-osd.sh /tmp/micro-ceph
   - export CEPH_CONF=/tmp/micro-ceph/ceph.conf
   - ceph status
