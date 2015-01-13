@@ -15,6 +15,9 @@ before_install:
   - export CEPH_CONF=/tmp/micro-ceph/ceph.conf
   - ceph status
 
+script:
+    - go test -v ./...
+
 notifications:
   recipients:
     - noahwatkins@gmail.com
