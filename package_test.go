@@ -1,8 +1,6 @@
 package rados
 
 import (
-    "github.com/noahdesu/go-rados/rados"
-    "github.com/noahdesu/go-rados/rbd"
     "testing"
     "github.com/stretchr/testify/assert"
 )
