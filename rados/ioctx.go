@@ -36,6 +36,11 @@ type IOContext struct {
     ioctx C.rados_ioctx_t
 }
 
+// Pointer returns a uintptr representation of the IOContext.
+func (ioctx *IOContext) Pointer() uintptr {
+    return uintptr(ioctx.ioctx)
+}
+
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
 func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
