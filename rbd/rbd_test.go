@@ -2,8 +2,8 @@ package rbd_test
 
 import (
     "testing"
-    "github.com/noahdesu/go-rados/rados"
-    "github.com/noahdesu/go-rados/rbd"
+    "github.com/noahdesu/go-ceph/rados"
+    "github.com/noahdesu/go-ceph/rbd"
     "github.com/stretchr/testify/assert"
     "os/exec"
     "sort"

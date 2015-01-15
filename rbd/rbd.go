@@ -7,7 +7,7 @@ package rbd
 import "C"
 
 import (
-    "github.com/noahdesu/go-rados/rados"
+    "github.com/noahdesu/go-ceph/rados"
     "fmt"
     "unsafe"
     "bytes"
