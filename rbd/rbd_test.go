@@ -48,6 +48,13 @@ func TestGetImageNames(t *testing.T) {
     sort.Strings(imageNames)
     assert.Equal(t, createdList, imageNames)
 
+    for _, name := range(createdList) {
+        img := rbd.GetImage(ioctx, name)
+        err := img.Remove()
+        assert.NoError(t, err)
+    }
+
     ioctx.Destroy()
+    conn.DeletePool(poolname)
     conn.Shutdown()
 }
