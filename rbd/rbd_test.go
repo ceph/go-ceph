@@ -36,7 +36,7 @@ func TestGetImageNames(t *testing.T) {
     createdList := []string{}
     for i := 0; i < 10; i++ {
         name := GetUUID()
-        err = rbd.Create(ioctx, name, 1<<22)
+        _, err := rbd.Create(ioctx, name, 1<<22)
         assert.NoError(t, err)
         createdList = append(createdList, name)
     }
