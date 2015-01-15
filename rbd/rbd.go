@@ -632,7 +632,11 @@ func (image *Image) Write(data []byte) (n int, err error) {
         image.offset += int64(ret)
     }
 
-    return ret, RBDError(ret)
+    if ret != len(data) {
+        err = RBDError(-1)
+    }
+
+    return ret, err
 }
 
 func (image *Image) Seek(offset int64, whence int) (int64, error) {
@@ -730,12 +734,12 @@ func (image *Image) AioRelease(c Completion) {
 
 // int rbd_flush(rbd_image_t image);
 func (image *Image) Flush() error {
-    return RBDError(C.rbd_flush(image.image))
+    return GetError(C.rbd_flush(image.image))
 }
 
 // int rbd_aio_flush(rbd_image_t image, rbd_completion_t c);
 func (image *Image) AioFlush(c Completion) error {
-    return RBDError(C.rbd_aio_flush(image.image, C.rbd_completion_t(c)))
+    return GetError(C.rbd_aio_flush(image.image, C.rbd_completion_t(c)))
 }
 
 // int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
