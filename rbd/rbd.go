@@ -363,8 +363,7 @@ func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
         return 0, ImageNotOpen
     }
 
-    ret := C.rbd_get_features(image.image,
-                              (*C.uint64_t)(&stripe_unit))
+    ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit))
     if ret < 0 {
         return 0, RBDError(int(ret))
     }
@@ -378,8 +377,7 @@ func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
         return 0, ImageNotOpen
     }
 
-    ret := C.rbd_get_features(image.image,
-                              (*C.uint64_t)(&stripe_count))
+    ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count))
     if ret < 0 {
         return 0, RBDError(int(ret))
     }
@@ -393,7 +391,7 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
         return 0, ImageNotOpen
     }
 
-    ret := C.rbd_get_features(image.image, (*C.uint64_t)(&overlap))
+    ret := C.rbd_get_overlap(image.image, (*C.uint64_t)(&overlap))
     if ret < 0 {
         return overlap, RBDError(int(ret))
     }
@@ -634,7 +632,11 @@ func (image *Image) Write(data []byte) (n int, err error) {
         image.offset += int64(ret)
     }
 
-    return ret, RBDError(ret)
+    if ret != len(data) {
+        err = RBDError(-1)
+    }
+
+    return ret, err
 }
 
 func (image *Image) Seek(offset int64, whence int) (int64, error) {
@@ -732,12 +734,12 @@ func (image *Image) AioRelease(c Completion) {
 
 // int rbd_flush(rbd_image_t image);
 func (image *Image) Flush() error {
-    return RBDError(C.rbd_flush(image.image))
+    return GetError(C.rbd_flush(image.image))
 }
 
 // int rbd_aio_flush(rbd_image_t image, rbd_completion_t c);
 func (image *Image) AioFlush(c Completion) error {
-    return RBDError(C.rbd_aio_flush(image.image, C.rbd_completion_t(c)))
+    return GetError(C.rbd_aio_flush(image.image, C.rbd_completion_t(c)))
 }
 
 // int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
@@ -829,7 +831,7 @@ func (snapshot *Snapshot) Unprotect() error {
     var c_snapname *C.char = C.CString(snapshot.name)
     defer C.free(unsafe.Pointer(c_snapname))
 
-    return GetError(C.rbd_snap_protect(snapshot.image.image, c_snapname))
+    return GetError(C.rbd_snap_unprotect(snapshot.image.image, c_snapname))
 }
 
 // int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,

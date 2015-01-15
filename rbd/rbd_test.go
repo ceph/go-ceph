@@ -7,6 +7,7 @@ import (
     "github.com/stretchr/testify/assert"
     "os/exec"
     "sort"
+    "encoding/json"
 )
 
 func GetUUID() string {
@@ -48,6 +49,115 @@ func TestGetImageNames(t *testing.T) {
     sort.Strings(imageNames)
     assert.Equal(t, createdList, imageNames)
 
+    for _, name := range(createdList) {
+        img := rbd.GetImage(ioctx, name)
+        err := img.Remove()
+        assert.NoError(t, err)
+    }
+
     ioctx.Destroy()
+    conn.DeletePool(poolname)
+    conn.Shutdown()
+}
+
+func TestIOReaderWriter(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
+
+    poolname := GetUUID()
+    err := conn.MakePool(poolname)
+    assert.NoError(t, err)
+
+    ioctx, err := conn.OpenIOContext(poolname)
+    assert.NoError(t, err)
+
+    name := GetUUID()
+    img, err := rbd.Create(ioctx, name, 1<<22)
+    assert.NoError(t, err)
+
+    err = img.Open()
+    assert.NoError(t, err)
+
+    stats, err := img.Stat()
+    assert.NoError(t, err)
+
+    encoder := json.NewEncoder(img)
+    encoder.Encode(stats)
+
+    err = img.Flush()
+    assert.NoError(t, err)
+
+    _, err = img.Seek(0, 0)
+    assert.NoError(t, err)
+
+    var stats2 *rbd.ImageInfo
+    decoder := json.NewDecoder(img)
+    decoder.Decode(&stats2)
+
+    assert.Equal(t, &stats, &stats2)
+
+    _, err = img.Seek(0, 0)
+    bytes_in := []byte("input data")
+    _, err = img.Write(bytes_in)
+    assert.NoError(t, err)
+
+    _, err = img.Seek(0, 0)
+    assert.NoError(t, err)
+
+    bytes_out := make([]byte, len(bytes_in))
+    n_out, err := img.Read(bytes_out)
+
+    assert.Equal(t, n_out, len(bytes_in))
+    assert.Equal(t, bytes_in, bytes_out)
+
+    err = img.Close()
+    assert.NoError(t, err)
+
+    img.Remove()
+    assert.NoError(t, err)
+
+    ioctx.Destroy()
+    conn.DeletePool(poolname)
+    conn.Shutdown()
+}
+
+func TestCreateSnapshot(t *testing.T) {
+    conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
+
+    poolname := GetUUID()
+    err := conn.MakePool(poolname)
+    assert.NoError(t, err)
+
+    ioctx, err := conn.OpenIOContext(poolname)
+    assert.NoError(t, err)
+
+    name := GetUUID()
+    img, err := rbd.Create(ioctx, name, 1<<22)
+    assert.NoError(t, err)
+
+    err = img.Open()
+    assert.NoError(t, err)
+
+    snapshot, err := img.CreateSnapshot("mysnap")
+    assert.NoError(t, err)
+
+    err = img.Close()
+    err = img.Open("mysnap")
+    assert.NoError(t, err)
+
+    snapshot.Remove()
+    assert.NoError(t, err)
+
+    err = img.Close()
+    assert.NoError(t, err)
+
+    img.Remove()
+    assert.NoError(t, err)
+
+    ioctx.Destroy()
+    conn.DeletePool(poolname)
     conn.Shutdown()
 }
