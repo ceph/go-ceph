@@ -44,8 +44,6 @@ type Locker struct {
     Addr string
 }
 
-type Completion C.rbd_completion_t
-
 //
 type Image struct {
     io.Reader
@@ -679,67 +677,9 @@ func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
     return image.Write(data)
 }
 
-// int rbd_aio_write(rbd_image_t image, uint64_t off, size_t len, const char *buf, rbd_completion_t c);
-func (image *Image) AioWrite(ofs uint64, data []byte, c Completion) error {
-    return RBDError(C.rbd_aio_write(image.image, C.uint64_t(ofs),
-                    C.size_t(len(data)), (*C.char)(unsafe.Pointer(&data[0])),
-                    C.rbd_completion_t(c)))
-}
-
-// int rbd_aio_read(rbd_image_t image, uint64_t off, size_t len, char *buf, rbd_completion_t c);
-func (image *Image) AioRead(data []byte, off uint64, c Completion) (int, error) {
-    if len(data) == 0 {
-        return 0, nil
-    }
-
-    ret := C.rbd_aio_read(
-        image.image,
-        (C.uint64_t)(off),
-        (C.size_t)(len(data)),
-        (*C.char)(unsafe.Pointer(&data[0])),
-        C.rbd_completion_t(c))
-
-    if ret >= 0 {
-        return int(ret), nil
-    } else {
-        return 0, RBDError(int(ret))
-    }
-}
-
-// int rbd_aio_discard(rbd_image_t image, uint64_t off, uint64_t len, rbd_completion_t c);
-func (image *Image) AioDiscard(ofs uint64, len uint64, c Completion) error {
-    return RBDError(C.rbd_aio_discard(image.image, C.uint64_t(ofs),
-                    C.uint64_t(len), C.rbd_completion_t(c)))
-}
-
-// int rbd_aio_is_complete(rbd_completion_t c);
-func (image *Image) AioIsComplete(c Completion) bool {
-    return C.rbd_aio_is_complete(C.rbd_completion_t(c)) != 0
-}
-
-// int rbd_aio_wait_for_complete(rbd_completion_t c);
-func (image *Image) AioWaitForComplete(c Completion) error {
-    return RBDError(C.rbd_aio_wait_for_complete(C.rbd_completion_t(c)))
-}
-
-// ssize_t rbd_aio_get_return_value(rbd_completion_t c);
-func (image *Image) AioGetReturnValue(c Completion) int {
-    return int(C.rbd_aio_get_return_value(C.rbd_completion_t(c)))
-}
-
-// void rbd_aio_release(rbd_completion_t c);
-func (image *Image) AioRelease(c Completion) {
-    C.rbd_aio_release(C.rbd_completion_t(c))
-}
-
 // int rbd_flush(rbd_image_t image);
 func (image *Image) Flush() error {
     return GetError(C.rbd_flush(image.image))
-}
-
-// int rbd_aio_flush(rbd_image_t image, rbd_completion_t c);
-func (image *Image) AioFlush(c Completion) error {
-    return GetError(C.rbd_aio_flush(image.image, C.rbd_completion_t(c)))
 }
 
 // int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
