@@ -259,3 +259,44 @@ func (c *Conn) DeletePool(name string) error {
         return RadosError(ret)
     }
 }
+
+// MonCommand sends a command to one of the monitors
+func (c *Conn) MonCommand(args []string) (buffer, info string, err error) {
+	argv := make([]*C.char, len(commands))
+	for i, arg := range args {
+		argv[i] = C.CString(arg)
+		defer C.free(unsafe.Pointer(argv[i]))
+	}
+
+	var (
+		outs, outbuf       *C.char
+		outslen, outbuflen C.size_t
+	)
+	inbuf := C.CString("")
+	defer C.free(unsafe.Pointer(inbuf))
+
+	ret := C.rados_mon_command(c.cluster,
+		&argv[0], C.size_t(len(commands)),
+		inbuf,       // inbuf
+		C.size_t(0), // length inbuf
+		&outbuf,     // actual data
+		&outbuflen,  // len data
+		&outs,       // report largenumber
+		&outslen)
+
+	if outbuflen > 0 {
+		buffer = C.GoStringN(outbuf, C.int(outbuflen))
+		// C.rados_buffer_free(outbuf)
+		C.free(unsafe.Pointer(outbuf))
+	}
+	if outslen > 0 {
+		info = C.GoStringN(outs, C.int(outslen))
+		//C.rados_buffer_free(outs)
+		C.free(unsafe.Pointer(outs))
+	}
+	if ret != 0 {
+		err = RadosError(int(ret))
+		return // info might contain hints as to why the error happened
+	}
+	return
+}
