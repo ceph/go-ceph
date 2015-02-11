@@ -391,6 +391,8 @@ func TestMonCommand(t *testing.T) {
     var message map[string]interface{}
 	err = json.Unmarshal(buf, &message)
 	assert.NoError(t, err)
+
+    conn.Shutdown()
 }
 
 func TestObjectIterator(t *testing.T) {

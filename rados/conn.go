@@ -7,7 +7,6 @@ import "C"
 
 import "unsafe"
 import "bytes"
-import "reflect"
 
 // ClusterStat represents Ceph cluster statistics.
 type ClusterStat struct {
@@ -277,32 +276,24 @@ func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
 
 	ret := C.rados_mon_command(c.cluster,
 		&argv[0], C.size_t(len(args)),
-		inbuf,       // inbuf
+		inbuf,       // bulk input (e.g. crush map)
 		C.size_t(0), // length inbuf
-		&outbuf,     // actual data
-		&outbuflen,  // len data
-		&outs,       // report largenumber
+		&outbuf,     // buffer
+		&outbuflen,  // buffer length
+		&outs,       // status string
 		&outslen)
 
 	if outslen > 0 {
 		info = C.GoStringN(outs, C.int(outslen))
-		//C.rados_buffer_free(outs)
 		C.free(unsafe.Pointer(outs))
 	}
 	if outbuflen > 0 {
-		length := int(outbuflen)
-		hdr := reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(outbuf)),
-			Len: length,
-			Cap: length,
-		}
-		// now goSlice is a Go slice backed by the C array
-		buffer = *(*[]byte)(unsafe.Pointer(&hdr))
+		buffer = C.GoBytes(unsafe.Pointer(outbuf), C.int(outbuflen))
+		C.free(unsafe.Pointer(outbuf))
 	}
 	if ret != 0 {
 		err = RadosError(int(ret))
 		return nil, info, err
-		// info might contain hints as to why the error happened
 	}
 
 	return
