@@ -7,6 +7,7 @@ import "C"
 
 import "unsafe"
 import "bytes"
+import "reflect"
 
 // ClusterStat represents Ceph cluster statistics.
 type ClusterStat struct {
@@ -261,7 +262,7 @@ func (c *Conn) DeletePool(name string) error {
 }
 
 // MonCommand sends a command to one of the monitors
-func (c *Conn) MonCommand(args []byte) (buffer, info string, err error) {
+func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
 	argv := make([]*C.char, len(args))
 	for i, _ := range args {
 		argv[i] = (*C.char)(unsafe.Pointer(&args[i]))
@@ -283,19 +284,26 @@ func (c *Conn) MonCommand(args []byte) (buffer, info string, err error) {
 		&outs,       // report largenumber
 		&outslen)
 
-	if outbuflen > 0 {
-		buffer = C.GoStringN(outbuf, C.int(outbuflen))
-		// C.rados_buffer_free(outbuf)
-		C.free(unsafe.Pointer(outbuf))
-	}
 	if outslen > 0 {
 		info = C.GoStringN(outs, C.int(outslen))
 		//C.rados_buffer_free(outs)
 		C.free(unsafe.Pointer(outs))
 	}
+	if outbuflen > 0 {
+		length := int(outbuflen)
+		hdr := reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(outbuf)),
+			Len: length,
+			Cap: length,
+		}
+		// now goSlice is a Go slice backed by the C array
+		buffer = *(*[]byte)(unsafe.Pointer(&hdr))
+	}
 	if ret != 0 {
 		err = RadosError(int(ret))
-		return // info might contain hints as to why the error happened
+		return nil, info, err
+		// info might contain hints as to why the error happened
 	}
+
 	return
 }

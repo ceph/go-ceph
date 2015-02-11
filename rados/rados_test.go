@@ -382,15 +382,15 @@ func TestMonCommand(t *testing.T) {
     conn.Connect()
 
 	command, err := json.Marshal(map[string]string{"prefix": "df", "format": "json"})
+	assert.NoError(t, err)
+
 	buf, info, err := conn.MonCommand(command)
 	assert.NoError(t, err)
+	assert.Equal(t, info, "")
 
     var message map[string]interface{}
-	err = json.Unmarshal([]byte(buf), &message)
+	err = json.Unmarshal(buf, &message)
 	assert.NoError(t, err)
-
-	fmt.Println("Use ", info)
-	os.Stdout.Write([]byte(buf))
 }
 
 func TestObjectIterator(t *testing.T) {
