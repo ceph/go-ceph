@@ -12,6 +12,7 @@ import "time"
 import "net"
 import "fmt"
 import "sort"
+import "encoding/json"
 
 func GetUUID() string {
     out, _ := exec.Command("uuidgen").Output()
@@ -372,6 +373,25 @@ func TestGetPoolName(t *testing.T) {
     assert.Equal(t, poolname, poolname_ret)
 
     ioctx.Destroy()
+    conn.Shutdown()
+}
+
+func TestMonCommand(t *testing.T) {
+	conn, _ := rados.NewConn()
+    conn.ReadDefaultConfigFile()
+    conn.Connect()
+
+	command, err := json.Marshal(map[string]string{"prefix": "df", "format": "json"})
+	assert.NoError(t, err)
+
+	buf, info, err := conn.MonCommand(command)
+	assert.NoError(t, err)
+	assert.Equal(t, info, "")
+
+    var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(t, err)
+
     conn.Shutdown()
 }
 
