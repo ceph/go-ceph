@@ -6,32 +6,32 @@ package rados
 import "C"
 
 import (
-    "fmt"
+	"fmt"
 )
 
 type RadosError int
 
 func (e RadosError) Error() string {
-    return fmt.Sprintf("rados: ret=%d", e)
+	return fmt.Sprintf("rados: ret=%d", e)
 }
 
 // Version returns the major, minor, and patch components of the version of
 // the RADOS library linked against.
 func Version() (int, int, int) {
-    var c_major, c_minor, c_patch C.int
-    C.rados_version(&c_major, &c_minor, &c_patch)
-    return int(c_major), int(c_minor), int(c_patch)
+	var c_major, c_minor, c_patch C.int
+	C.rados_version(&c_major, &c_minor, &c_patch)
+	return int(c_major), int(c_minor), int(c_patch)
 }
 
 // NewConn creates a new connection object. It returns the connection and an
 // error, if any.
 func NewConn() (*Conn, error) {
-    conn := &Conn{}
-    ret := C.rados_create(&conn.cluster, nil)
+	conn := &Conn{}
+	ret := C.rados_create(&conn.cluster, nil)
 
-    if ret == 0 {
-        return conn, nil
-    } else {
-        return nil, RadosError(int(ret))
-    }
+	if ret == 0 {
+		return conn, nil
+	} else {
+		return nil, RadosError(int(ret))
+	}
 }

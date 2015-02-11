@@ -1,163 +1,163 @@
 package rbd_test
 
 import (
-    "testing"
-    "github.com/noahdesu/go-ceph/rados"
-    "github.com/noahdesu/go-ceph/rbd"
-    "github.com/stretchr/testify/assert"
-    "os/exec"
-    "sort"
-    "encoding/json"
+	"encoding/json"
+	"github.com/noahdesu/go-ceph/rados"
+	"github.com/noahdesu/go-ceph/rbd"
+	"github.com/stretchr/testify/assert"
+	"os/exec"
+	"sort"
+	"testing"
 )
 
 func GetUUID() string {
-    out, _ := exec.Command("uuidgen").Output()
-    return string(out[:36])
+	out, _ := exec.Command("uuidgen").Output()
+	return string(out[:36])
 }
 
 func TestVersion(t *testing.T) {
-    var major, minor, patch = rbd.Version()
-    assert.False(t, major < 0 || major > 1000, "invalid major")
-    assert.False(t, minor < 0 || minor > 1000, "invalid minor")
-    assert.False(t, patch < 0 || patch > 1000, "invalid patch")
+	var major, minor, patch = rbd.Version()
+	assert.False(t, major < 0 || major > 1000, "invalid major")
+	assert.False(t, minor < 0 || minor > 1000, "invalid minor")
+	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
 }
 
 func TestGetImageNames(t *testing.T) {
-    conn, _ := rados.NewConn()
-    conn.ReadDefaultConfigFile()
-    conn.Connect()
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
 
-    poolname := GetUUID()
-    err := conn.MakePool(poolname)
-    assert.NoError(t, err)
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
 
-    ioctx, err := conn.OpenIOContext(poolname)
-    assert.NoError(t, err)
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
 
-    createdList := []string{}
-    for i := 0; i < 10; i++ {
-        name := GetUUID()
-        _, err := rbd.Create(ioctx, name, 1<<22)
-        assert.NoError(t, err)
-        createdList = append(createdList, name)
-    }
+	createdList := []string{}
+	for i := 0; i < 10; i++ {
+		name := GetUUID()
+		_, err := rbd.Create(ioctx, name, 1<<22)
+		assert.NoError(t, err)
+		createdList = append(createdList, name)
+	}
 
-    imageNames, err := rbd.GetImageNames(ioctx)
-    assert.NoError(t, err)
+	imageNames, err := rbd.GetImageNames(ioctx)
+	assert.NoError(t, err)
 
-    sort.Strings(createdList)
-    sort.Strings(imageNames)
-    assert.Equal(t, createdList, imageNames)
+	sort.Strings(createdList)
+	sort.Strings(imageNames)
+	assert.Equal(t, createdList, imageNames)
 
-    for _, name := range(createdList) {
-        img := rbd.GetImage(ioctx, name)
-        err := img.Remove()
-        assert.NoError(t, err)
-    }
+	for _, name := range createdList {
+		img := rbd.GetImage(ioctx, name)
+		err := img.Remove()
+		assert.NoError(t, err)
+	}
 
-    ioctx.Destroy()
-    conn.DeletePool(poolname)
-    conn.Shutdown()
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
 }
 
 func TestIOReaderWriter(t *testing.T) {
-    conn, _ := rados.NewConn()
-    conn.ReadDefaultConfigFile()
-    conn.Connect()
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
 
-    poolname := GetUUID()
-    err := conn.MakePool(poolname)
-    assert.NoError(t, err)
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
 
-    ioctx, err := conn.OpenIOContext(poolname)
-    assert.NoError(t, err)
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
 
-    name := GetUUID()
-    img, err := rbd.Create(ioctx, name, 1<<22)
-    assert.NoError(t, err)
+	name := GetUUID()
+	img, err := rbd.Create(ioctx, name, 1<<22)
+	assert.NoError(t, err)
 
-    err = img.Open()
-    assert.NoError(t, err)
+	err = img.Open()
+	assert.NoError(t, err)
 
-    stats, err := img.Stat()
-    assert.NoError(t, err)
+	stats, err := img.Stat()
+	assert.NoError(t, err)
 
-    encoder := json.NewEncoder(img)
-    encoder.Encode(stats)
+	encoder := json.NewEncoder(img)
+	encoder.Encode(stats)
 
-    err = img.Flush()
-    assert.NoError(t, err)
+	err = img.Flush()
+	assert.NoError(t, err)
 
-    _, err = img.Seek(0, 0)
-    assert.NoError(t, err)
+	_, err = img.Seek(0, 0)
+	assert.NoError(t, err)
 
-    var stats2 *rbd.ImageInfo
-    decoder := json.NewDecoder(img)
-    decoder.Decode(&stats2)
+	var stats2 *rbd.ImageInfo
+	decoder := json.NewDecoder(img)
+	decoder.Decode(&stats2)
 
-    assert.Equal(t, &stats, &stats2)
+	assert.Equal(t, &stats, &stats2)
 
-    _, err = img.Seek(0, 0)
-    bytes_in := []byte("input data")
-    _, err = img.Write(bytes_in)
-    assert.NoError(t, err)
+	_, err = img.Seek(0, 0)
+	bytes_in := []byte("input data")
+	_, err = img.Write(bytes_in)
+	assert.NoError(t, err)
 
-    _, err = img.Seek(0, 0)
-    assert.NoError(t, err)
+	_, err = img.Seek(0, 0)
+	assert.NoError(t, err)
 
-    bytes_out := make([]byte, len(bytes_in))
-    n_out, err := img.Read(bytes_out)
+	bytes_out := make([]byte, len(bytes_in))
+	n_out, err := img.Read(bytes_out)
 
-    assert.Equal(t, n_out, len(bytes_in))
-    assert.Equal(t, bytes_in, bytes_out)
+	assert.Equal(t, n_out, len(bytes_in))
+	assert.Equal(t, bytes_in, bytes_out)
 
-    err = img.Close()
-    assert.NoError(t, err)
+	err = img.Close()
+	assert.NoError(t, err)
 
-    img.Remove()
-    assert.NoError(t, err)
+	img.Remove()
+	assert.NoError(t, err)
 
-    ioctx.Destroy()
-    conn.DeletePool(poolname)
-    conn.Shutdown()
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
 }
 
 func TestCreateSnapshot(t *testing.T) {
-    conn, _ := rados.NewConn()
-    conn.ReadDefaultConfigFile()
-    conn.Connect()
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
 
-    poolname := GetUUID()
-    err := conn.MakePool(poolname)
-    assert.NoError(t, err)
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
 
-    ioctx, err := conn.OpenIOContext(poolname)
-    assert.NoError(t, err)
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
 
-    name := GetUUID()
-    img, err := rbd.Create(ioctx, name, 1<<22)
-    assert.NoError(t, err)
+	name := GetUUID()
+	img, err := rbd.Create(ioctx, name, 1<<22)
+	assert.NoError(t, err)
 
-    err = img.Open()
-    assert.NoError(t, err)
+	err = img.Open()
+	assert.NoError(t, err)
 
-    snapshot, err := img.CreateSnapshot("mysnap")
-    assert.NoError(t, err)
+	snapshot, err := img.CreateSnapshot("mysnap")
+	assert.NoError(t, err)
 
-    err = img.Close()
-    err = img.Open("mysnap")
-    assert.NoError(t, err)
+	err = img.Close()
+	err = img.Open("mysnap")
+	assert.NoError(t, err)
 
-    snapshot.Remove()
-    assert.NoError(t, err)
+	snapshot.Remove()
+	assert.NoError(t, err)
 
-    err = img.Close()
-    assert.NoError(t, err)
+	err = img.Close()
+	assert.NoError(t, err)
 
-    img.Remove()
-    assert.NoError(t, err)
+	img.Remove()
+	assert.NoError(t, err)
 
-    ioctx.Destroy()
-    conn.DeletePool(poolname)
-    conn.Shutdown()
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
 }
