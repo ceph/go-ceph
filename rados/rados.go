@@ -7,6 +7,7 @@ import "C"
 
 import (
 	"fmt"
+	"unsafe"
 )
 
 type RadosError int
@@ -28,6 +29,22 @@ func Version() (int, int, int) {
 func NewConn() (*Conn, error) {
 	conn := &Conn{}
 	ret := C.rados_create(&conn.cluster, nil)
+
+	if ret == 0 {
+		return conn, nil
+	} else {
+		return nil, RadosError(int(ret))
+	}
+}
+
+// NewConnWithUser creates a new connection object with a custom username.
+// It returns the connection and an error, if any.
+func NewConnWithUser(user string) (*Conn, error) {
+	c_user := C.CString(user)
+	defer C.free(unsafe.Pointer(c_user))
+
+	conn := &Conn{}
+	ret := C.rados_create(&conn.cluster, c_user)
 
 	if ret == 0 {
 		return conn, nil

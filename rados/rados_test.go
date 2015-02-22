@@ -436,3 +436,8 @@ func TestObjectIterator(t *testing.T) {
 
 	assert.Equal(t, objectList, createdList)
 }
+
+func TestNewConnWithUser(t *testing.T) {
+	_, err := rados.NewConnWithUser("admin")
+	assert.Equal(t, err, nil)
+}
