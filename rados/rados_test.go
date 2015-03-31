@@ -441,3 +441,33 @@ func TestNewConnWithUser(t *testing.T) {
 	_, err := rados.NewConnWithUser("admin")
 	assert.Equal(t, err, nil)
 }
+
+func TestReadWriteXattr(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	// make pool
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	err = pool.Write("obj", bytes_in, 0)
+	assert.NoError(t, err)
+
+	my_xattr_in := []byte("my_value")
+	err = pool.SetXattr("obj", "my_key", my_xattr_in)
+	assert.NoError(t, err)
+
+	my_xattr_out := make([]byte, len(my_xattr_in))
+	n_out, err := pool.GetXattr("obj", "my_key", my_xattr_out)
+
+	assert.Equal(t, n_out, len(my_xattr_in))
+	assert.Equal(t, my_xattr_in, my_xattr_out)
+
+	pool.Destroy()
+}
