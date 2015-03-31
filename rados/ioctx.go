@@ -191,3 +191,46 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 
 	panic("invalid state")
 }
+
+// GetXattr gets an xattr with key `name`, it returns the length of
+// the key read or an error if not successful
+func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, error) {
+	c_object := C.CString(object)
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_object))
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret := C.rados_getxattr(
+		ioctx.ioctx,
+		c_object,
+		c_name,
+		(*C.char)(unsafe.Pointer(&data[0])),
+		(C.size_t)(len(data)))
+
+	if ret >= 0 {
+		return int(ret), nil
+	} else {
+		return 0, RadosError(int(ret))
+	}
+}
+
+// Sets an xattr for an object with key `name` with value as `data`
+func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error {
+	c_object := C.CString(object)
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_object))
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret := C.rados_setxattr(
+		ioctx.ioctx,
+		c_object,
+		c_name,
+		(*C.char)(unsafe.Pointer(&data[0])),
+		(C.size_t)(len(data)))
+
+	if ret == 0 {
+		return nil
+	} else {
+		return RadosError(int(ret))
+	}
+}
