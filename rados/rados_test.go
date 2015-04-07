@@ -471,3 +471,38 @@ func TestReadWriteXattr(t *testing.T) {
 
 	pool.Destroy()
 }
+
+func TestListXattrs(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	// make pool
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	err = pool.Write("obj", bytes_in, 0)
+	assert.NoError(t, err)
+
+	input_xattrs := make(map[string][]byte)
+	for i := 0; i < 200; i++ {
+		name := fmt.Sprintf("key_%d", i)
+		data := []byte(GetUUID())
+		err = pool.SetXattr("obj", name, data)
+		assert.NoError(t, err)
+		input_xattrs[name] = data
+	}
+
+	output_xattrs := make(map[string][]byte)
+	output_xattrs, err = pool.ListXattrs("obj")
+	assert.NoError(t, err)
+	assert.Equal(t, len(input_xattrs), len(output_xattrs))
+	assert.Equal(t, input_xattrs, output_xattrs)
+
+	pool.Destroy()
+}
