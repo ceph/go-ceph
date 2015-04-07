@@ -489,16 +489,16 @@ func TestListXattrs(t *testing.T) {
 	err = pool.Write("obj", bytes_in, 0)
 	assert.NoError(t, err)
 
-	input_xattrs := make(map[string]string)
+	input_xattrs := make(map[string][]byte)
 	for i := 0; i < 200; i++ {
 		name := fmt.Sprintf("key_%d", i)
 		data := []byte(GetUUID())
 		err = pool.SetXattr("obj", name, data)
 		assert.NoError(t, err)
-		input_xattrs[name] = string(data)
+		input_xattrs[name] = data
 	}
 
-	output_xattrs := make(map[string]string)
+	output_xattrs := make(map[string][]byte)
 	output_xattrs, err = pool.ListXattrs("obj")
 	assert.NoError(t, err)
 	assert.Equal(t, len(input_xattrs), len(output_xattrs))

@@ -238,7 +238,7 @@ func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error 
 // function that lists all the xattrs for an object, since xattrs are
 // a k-v pair, this function returns a map of k-v pairs on
 // success, error code on failure
-func (ioctx *IOContext) ListXattrs(oid string) (map[string]string, error) {
+func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
 
@@ -249,7 +249,7 @@ func (ioctx *IOContext) ListXattrs(oid string) (map[string]string, error) {
 		return nil, RadosError(ret)
 	}
 	defer func() { C.rados_getxattrs_end(it) }()
-	m := make(map[string]string)
+	m := make(map[string][]byte)
 	for {
 		var c_name, c_val *C.char
 		var c_len C.size_t
@@ -265,8 +265,6 @@ func (ioctx *IOContext) ListXattrs(oid string) (map[string]string, error) {
 		if c_name == nil {
 			return m, nil // stop iteration
 		}
-		m[C.GoString(c_name)] = C.GoStringN(c_val, (C.int)(c_len))
+		m[C.GoString(c_name)] = C.GoBytes(unsafe.Pointer(c_val), (C.int)(c_len))
 	}
-
-	panic("Invalid State")
 }
