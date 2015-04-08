@@ -268,3 +268,22 @@ func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
 		m[C.GoString(c_name)] = C.GoBytes(unsafe.Pointer(c_val), (C.int)(c_len))
 	}
 }
+
+// Remove an xattr with key `name` from object `oid`
+func (ioctx *IOContext) RmXattr(oid string, name string) error {
+	c_oid := C.CString(oid)
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_oid))
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret := C.rados_rmxattr(
+		ioctx.ioctx,
+		c_oid,
+		c_name)
+
+	if ret == 0 {
+		return nil
+	} else {
+		return RadosError(int(ret))
+	}
+}
