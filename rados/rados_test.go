@@ -506,3 +506,54 @@ func TestListXattrs(t *testing.T) {
 
 	pool.Destroy()
 }
+
+func TestRmXattr(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	err = pool.Write("obj", bytes_in, 0)
+	assert.NoError(t, err)
+
+	key := "key1"
+	val := []byte("val1")
+	err = pool.SetXattr("obj", key, val)
+	assert.NoError(t, err)
+
+	key = "key2"
+	val = []byte("val2")
+	err = pool.SetXattr("obj", key, val)
+	assert.NoError(t, err)
+
+	xattr_list := make(map[string][]byte)
+	xattr_list, err = pool.ListXattrs("obj")
+	assert.NoError(t, err)
+	assert.Equal(t, len(xattr_list), 2)
+
+	pool.RmXattr("obj", "key2")
+	xattr_list, err = pool.ListXattrs("obj")
+	assert.NoError(t, err)
+	assert.Equal(t, len(xattr_list), 1)
+
+	found := false
+	for key, _ = range xattr_list {
+		if key == "key2" {
+			found = true
+		}
+
+	}
+
+	if found {
+		t.Error("Deleted pool still exists")
+	}
+
+	pool.Destroy()
+}
