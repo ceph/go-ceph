@@ -557,3 +557,100 @@ func TestRmXattr(t *testing.T) {
 
 	pool.Destroy()
 }
+
+func TestReadWriteOmap(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	// Set
+	orig := map[string][]byte{
+	    "key1": []byte("value1"),
+	    "key2": []byte("value2"),
+	    "prefixed-key3": []byte("value3"),
+	    "empty": []byte(""),
+	}
+
+	err = pool.SetOmap("obj", orig)
+	assert.NoError(t, err)
+
+	// Get
+	fetched, err := pool.GetOmapValues("obj", "",  "", 4)
+	assert.NoError(t, err)
+	assert.Equal(t, orig, fetched)
+
+	// Remove
+	err = pool.RmOmapKeys("obj", []string{"key1", "prefixed-key3"})
+	assert.NoError(t, err)
+
+	fetched, err = pool.GetOmapValues("obj", "",  "", 4)
+	assert.NoError(t, err)
+	assert.Equal(t, map[string][]byte{
+	    "key2": []byte("value2"),
+	    "empty": []byte(""),
+	}, fetched)
+
+	// Clear
+	err = pool.CleanOmap("obj")
+	assert.NoError(t, err)
+
+	fetched, err = pool.GetOmapValues("obj", "",  "", 4)
+	assert.NoError(t, err)
+	assert.Equal(t, map[string][]byte{}, fetched)
+
+	pool.Destroy()
+}
+
+func TestReadFilterOmap(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	orig := map[string][]byte{
+	    "key1": []byte("value1"),
+	    "prefixed-key3": []byte("value3"),
+	    "key2": []byte("value2"),
+	}
+
+	err = pool.SetOmap("obj", orig)
+	assert.NoError(t, err)
+
+	// filter by prefix
+	fetched, err := pool.GetOmapValues("obj", "", "prefixed", 4)
+	assert.NoError(t, err)
+	assert.Equal(t, map[string][]byte{
+	    "prefixed-key3": []byte("value3"),
+	}, fetched)
+
+	// "start_after" a key
+	fetched, err = pool.GetOmapValues("obj", "key1", "", 4)
+	assert.NoError(t, err)
+	assert.Equal(t, map[string][]byte{
+	    "prefixed-key3": []byte("value3"),
+	    "key2": []byte("value2"),
+	}, fetched)
+
+	// maxReturn
+	fetched, err = pool.GetOmapValues("obj", "", "key", 1)
+	assert.NoError(t, err)
+	assert.Equal(t, map[string][]byte{
+	    "key1": []byte("value1"),
+	}, fetched)
+
+	pool.Destroy()
+}
+
