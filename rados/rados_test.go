@@ -310,6 +310,30 @@ func TestReadWrite(t *testing.T) {
 	pool.Destroy()
 }
 
+func TestObjectStat(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	err = pool.Write("obj", bytes_in, 0)
+	assert.NoError(t, err)
+
+	stat, err := pool.Stat("obj")
+	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
+	assert.NotNil(t, stat.ModTime)
+
+	pool.Destroy()
+	conn.Shutdown()
+}
+
 func TestGetPoolStats(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()

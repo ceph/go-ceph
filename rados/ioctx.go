@@ -6,6 +6,7 @@ package rados
 import "C"
 
 import "unsafe"
+import "time"
 
 // PoolStat represents Ceph pool statistics.
 type PoolStat struct {
@@ -29,6 +30,14 @@ type PoolStat struct {
 	Num_rd_kb            uint64
 	Num_wr               uint64
 	Num_wr_kb            uint64
+}
+
+// ObjectStat represents an object stat information
+type ObjectStat struct {
+	// current length in bytes
+	Size        uint64
+	// last modification time
+	ModTime     time.Time
 }
 
 // IOContext represents a context for performing I/O within a pool.
@@ -190,6 +199,29 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	}
 
 	panic("invalid state")
+}
+
+// Stat returns the size of the object and its last modification time
+func (ioctx *IOContext) Stat(object string) (stat ObjectStat, err error) {
+	var c_psize C.uint64_t
+	var c_pmtime C.time_t
+	c_object := C.CString(object)
+	defer C.free(unsafe.Pointer(c_object))
+
+	ret := C.rados_stat(
+		ioctx.ioctx,
+		c_object,
+		&c_psize,
+		&c_pmtime)
+
+	if ret < 0 {
+		return ObjectStat{}, RadosError(int(ret))
+	} else {
+		return ObjectStat{
+			Size: uint64(c_psize),
+			ModTime: time.Unix(int64(c_pmtime), 0),
+		}, nil
+	}
 }
 
 // GetXattr gets an xattr with key `name`, it returns the length of
