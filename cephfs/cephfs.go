@@ -75,3 +75,15 @@ func (mount *MountInfo) ChangeDir(path string) error {
         return CephError(ret)
     }
 }
+
+func (mount *MountInfo) MakeDir(path string, mode uint32) error {
+    c_path := C.CString(path)
+    defer C.free(unsafe.Pointer(c_path))
+
+    ret := C.ceph_mkdir(mount.mount, c_path, C.mode_t(mode))
+    if ret == 0 {
+        return nil
+    } else {
+        return CephError(ret)
+    }
+}

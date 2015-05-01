@@ -48,21 +48,19 @@ func TestChangeDir(t *testing.T) {
     err = mount.Mount()
     assert.NoError(t, err)
 
-    err = mount.ChangeDir("/")
-    assert.NoError(t, err)
-}
+    dir1 := mount.CurrentDir()
+    assert.NotNil(t, dir1)
 
-func TestCurrentDir(t *testing.T) {
-    mount, err := cephfs.CreateMount()
-    assert.NoError(t, err)
-    assert.NotNil(t, mount)
-
-    err = mount.ReadDefaultConfigFile()
+    err = mount.MakeDir("/asdf", 0755)
     assert.NoError(t, err)
 
-    err = mount.Mount()
+    err = mount.ChangeDir("/asdf")
     assert.NoError(t, err)
 
-    dir := mount.CurrentDir()
-    assert.NotNil(t, dir)
+    dir2 := mount.CurrentDir()
+    assert.NotNil(t, dir2)
+
+    assert.NotEqual(t, dir1, dir2)
+    assert.Equal(t, dir1, "/")
+    assert.Equal(t, dir2, "/asdf")
 }
