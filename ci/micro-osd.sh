@@ -81,6 +81,25 @@ ceph osd crush add osd.${OSD_ID} 1 root=default host=localhost
 ceph-osd --id ${OSD_ID} --mkjournal --mkfs
 ceph-osd --id ${OSD_ID}
 
+# single mds
+MDS_DATA=${DIR}/mds.a
+mkdir ${MDS_DATA}
+
+cat >> $DIR/ceph.conf <<EOF
+[mds.a]
+mds data = ${MDS_DATA}
+mds log max segments = 2
+mds cache size = 10000
+host = localhost
+EOF
+
+ceph-authtool --create-keyring --gen-key --name=mds.a ${MDS_DATA}/keyring
+ceph -i ${MDS_DATA}/keyring auth add mds.a mon 'allow profile mds' osd 'allow *' mds 'allow'
+ceph osd pool create cephfs_data 8
+ceph osd pool create cephfs_metadata 8
+ceph fs new cephfs cephfs_metadata cephfs_data
+ceph-mds -i a
+
 # check that it works
 rados --pool rbd put group /etc/group
 rados --pool rbd get group ${DIR}/group
