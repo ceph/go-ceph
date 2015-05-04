@@ -605,8 +605,31 @@ func TestReadWriteOmap(t *testing.T) {
 	err = pool.SetOmap("obj", orig)
 	assert.NoError(t, err)
 
-	// Get
+	// List
+	remaining := map[string][]byte{}
+	for k, v := range orig {
+		remaining[k] = v
+	}
+
+	err = pool.ListOmapValues("obj", "", "", 4, func(key string, value []byte) {
+		assert.Equal(t, remaining[key], value)
+		delete(remaining, key)
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(remaining))
+
+	// Get (with a fixed number of keys)
 	fetched, err := pool.GetOmapValues("obj", "",  "", 4)
+	assert.NoError(t, err)
+	assert.Equal(t, orig, fetched)
+
+	// Get All (with an iterator size bigger than the map size)
+	fetched, err = pool.GetAllOmapValues("obj", "",  "", 100)
+	assert.NoError(t, err)
+	assert.Equal(t, orig, fetched)
+
+	// Get All (with an iterator size smaller than the map size)
+	fetched, err = pool.GetAllOmapValues("obj", "",  "", 1)
 	assert.NoError(t, err)
 	assert.Equal(t, orig, fetched)
 
