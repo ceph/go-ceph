@@ -18,6 +18,7 @@ before_install:
   - ceph status
 
 script:
+    - go get -t -v ./...
     - go test -v ./...
 
 notifications:
