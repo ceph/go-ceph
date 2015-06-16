@@ -52,3 +52,21 @@ func NewConnWithUser(user string) (*Conn, error) {
 		return nil, RadosError(int(ret))
 	}
 }
+
+// NewConnWithClusterAndUser creates a new connection object for a specific cluster and username. 
+// It returns the connection and an error, if any.
+func NewConnWithClusterAndUser(clusterName string, userName string) (*Conn, error) {
+	c_cluster_name := C.CString(clusterName)
+	defer C.free(unsafe.Pointer(c_cluster_name))
+
+	c_name := C.CString(userName)
+	defer C.free(unsafe.Pointer(c_name))
+
+	conn := &Conn{}
+	ret := C.rados_create2(&conn.cluster, c_cluster_name, c_name, 0)
+	if ret == 0 {
+		return conn, nil
+	} else {
+		return nil, RadosError(int(ret))
+	}
+}
