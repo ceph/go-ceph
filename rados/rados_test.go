@@ -467,7 +467,7 @@ func TestNewConnWithUser(t *testing.T) {
 }
 
 func TestNewConnWithClusterAndUser(t *testing.T) {
-	_, err := rados.NewConnWithClusterAndUser("ceph", "admin")
+	_, err := rados.NewConnWithClusterAndUser("ceph", "client.admin")
 	assert.Equal(t, err, nil)
 }
 
