@@ -466,6 +466,11 @@ func TestNewConnWithUser(t *testing.T) {
 	assert.Equal(t, err, nil)
 }
 
+func TestNewConnWithClusterAndUser(t *testing.T) {
+	_, err := rados.NewConnWithClusterAndUser("ceph", "client.admin")
+	assert.Equal(t, err, nil)
+}
+
 func TestReadWriteXattr(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
