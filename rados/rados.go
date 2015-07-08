@@ -53,7 +53,7 @@ func NewConnWithUser(user string) (*Conn, error) {
 	}
 }
 
-// NewConnWithClusterAndUser creates a new connection object for a specific cluster and username. 
+// NewConnWithClusterAndUser creates a new connection object for a specific cluster and username.
 // It returns the connection and an error, if any.
 func NewConnWithClusterAndUser(clusterName string, userName string) (*Conn, error) {
 	c_cluster_name := C.CString(clusterName)
