@@ -91,3 +91,20 @@ delete a pool with the given name. The following will delete the pool named
 ```go
 conn.DeletePool("new_pool")
 ```
+
+## Contributing
+
+Contributions are welcome & greatly appreciated, every little bit helps. Make code changes via Github pull requests:
+
+- Fork the repo and create a topic branch for every feature/fix. Avoid
+  making changes directly on master branch.
+- All incoming features should be accompanied with tests.
+- Make sure that you run `go fmt` before submitting a change
+  set. Alternatively the Makefile has a flag for this, so you can call
+  `make fmt` as well.
+- The integration tests can be run in a docker container, for this run:
+
+```
+make test-docker
+```
+
