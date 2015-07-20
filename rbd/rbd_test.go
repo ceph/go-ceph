@@ -1,6 +1,7 @@
 package rbd_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/noahdesu/go-ceph/rados"
 	"github.com/noahdesu/go-ceph/rbd"
@@ -155,6 +156,74 @@ func TestCreateSnapshot(t *testing.T) {
 	assert.NoError(t, err)
 
 	img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestParentInfo(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := "parent"
+	img, err := rbd.Create(ioctx, name, 1<<22, 1)
+	assert.NoError(t, err)
+
+	err = img.Open()
+	assert.NoError(t, err)
+
+	snapshot, err := img.CreateSnapshot("mysnap")
+	assert.NoError(t, err)
+
+	err = snapshot.Protect()
+	assert.NoError(t, err)
+
+	imgNew, err := img.Clone("mysnap", ioctx, "child", 1)
+	assert.NoError(t, err)
+
+	err = imgNew.Open()
+	assert.NoError(t, err)
+	parentPool := make([]byte, 128)
+	parentName := make([]byte, 128)
+	parentSnapname := make([]byte, 128)
+
+	err = imgNew.GetParentInfo(parentPool, parentName, parentSnapname)
+	assert.NoError(t, err)
+
+	n := bytes.Index(parentName, []byte{0})
+	pName := string(parentName[:n])
+
+	n = bytes.Index(parentSnapname, []byte{0})
+	pSnapname := string(parentSnapname[:n])
+	assert.Equal(t, pName, "parent", "they should be equal")
+	assert.Equal(t, pSnapname, "mysnap", "they should be equal")
+
+	err = imgNew.Close()
+	assert.NoError(t, err)
+
+	err = imgNew.Remove()
+	assert.NoError(t, err)
+
+	err = snapshot.Unprotect()
+	assert.NoError(t, err)
+
+	err = snapshot.Remove()
+	assert.NoError(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	err = img.Remove()
 	assert.NoError(t, err)
 
 	ioctx.Destroy()

@@ -741,6 +741,25 @@ func (image *Image) GetSnapshot(snapname string) *Snapshot {
 	}
 }
 
+// int rbd_get_parent_info(rbd_image_t image,
+//  char *parent_pool_name, size_t ppool_namelen, char *parent_name,
+//  size_t pnamelen, char *parent_snap_name, size_t psnap_namelen)
+func (image *Image) GetParentInfo(p_pool, p_name, p_snapname []byte) error {
+	ret := C.rbd_get_parent_info(
+		image.image,
+		(*C.char)(unsafe.Pointer(&p_pool[0])),
+		(C.size_t)(len(p_pool)),
+		(*C.char)(unsafe.Pointer(&p_name[0])),
+		(C.size_t)(len(p_name)),
+		(*C.char)(unsafe.Pointer(&p_snapname[0])),
+		(C.size_t)(len(p_snapname)))
+	if ret == 0 {
+		return nil
+	} else {
+		return RBDError(int(ret))
+	}
+}
+
 // int rbd_snap_remove(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Remove() error {
 	var c_snapname *C.char = C.CString(snapshot.name)
