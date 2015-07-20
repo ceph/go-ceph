@@ -6,6 +6,7 @@ package rados
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"unsafe"
 )
@@ -15,6 +16,8 @@ type RadosError int
 func (e RadosError) Error() string {
 	return fmt.Sprintf("rados: ret=%d", e)
 }
+
+var RadosErrorNotFound = errors.New("Rados error not found")
 
 // Version returns the major, minor, and patch components of the version of
 // the RADOS library linked against.

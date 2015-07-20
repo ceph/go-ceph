@@ -1,6 +1,7 @@
 package rados
 
 // #cgo LDFLAGS: -lrados
+// #include <errno.h>
 // #include <stdlib.h>
 // #include <rados/librados.h>
 import "C"
@@ -106,6 +107,9 @@ func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error
 	if ret >= 0 {
 		return int(ret), nil
 	} else {
+		if ret == -C.ENOENT {
+			return 0, RadosErrorNotFound
+		}
 		return 0, RadosError(int(ret))
 	}
 }
