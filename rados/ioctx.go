@@ -68,6 +68,24 @@ func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
 	}
 }
 
+// WriteFull writes len(data) bytes to the object with key oid.
+// The object is filled with the provided data. If the object exists,
+// it is atomically truncated and then written. It returns an error, if any.
+func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	ret := C.rados_write_full(ioctx.ioctx, c_oid,
+		(*C.char)(unsafe.Pointer(&data[0])),
+		(C.size_t)(len(data)))
+
+	if ret == 0 {
+		return nil
+	} else {
+		return RadosError(int(ret))
+	}
+}
+
 // Read reads up to len(data) bytes from the object with key oid starting at byte
 // offset offset. It returns the number of bytes read and an error, if any.
 func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
