@@ -307,6 +307,16 @@ func TestReadWrite(t *testing.T) {
 	assert.Equal(t, n_out, len(bytes_in))
 	assert.Equal(t, bytes_in, bytes_out)
 
+	bytes_in = []byte("input another data")
+	err = pool.WriteFull("obj", bytes_in)
+	assert.NoError(t, err)
+
+	bytes_out = make([]byte, len(bytes_in))
+	n_out, err = pool.Read("obj", bytes_out, 0)
+
+	assert.Equal(t, n_out, len(bytes_in))
+	assert.Equal(t, bytes_in, bytes_out)
+
 	pool.Destroy()
 }
 
