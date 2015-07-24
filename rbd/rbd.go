@@ -267,13 +267,7 @@ func (image *Image) Open(args ...interface{}) error {
 
 	image.image = c_image
 
-	if ret != 0 {
-		if ret == -C.ENOENT {
-			return RbdErrorNotFound
-		}
-		return RBDError(ret)
-	}
-	return nil
+	return GetError(ret)
 }
 
 // int rbd_close(rbd_image_t image);
