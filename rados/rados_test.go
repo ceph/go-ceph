@@ -318,6 +318,32 @@ func TestReadWrite(t *testing.T) {
 	assert.Equal(t, bytes_in, bytes_out)
 
 	pool.Destroy()
+	conn.Shutdown()
+}
+
+func TestNotFound(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	// make pool
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	size := 128
+	bytes_out := make([]byte, size)
+	_, err = pool.Read("obj", bytes_out, 0)
+	assert.Equal(t, err, rados.RadosErrorNotFound)
+
+	err = pool.Delete("obj")
+	assert.Equal(t, err, rados.RadosErrorNotFound)
+
+	pool.Destroy()
+	conn.Shutdown()
 }
 
 func TestObjectStat(t *testing.T) {

@@ -1,11 +1,13 @@
 package rados
 
 // #cgo LDFLAGS: -lrados
+// #include <errno.h>
 // #include <stdlib.h>
 // #include <rados/librados.h>
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"unsafe"
 )
@@ -14,6 +16,19 @@ type RadosError int
 
 func (e RadosError) Error() string {
 	return fmt.Sprintf("rados: ret=%d", e)
+}
+
+var RadosErrorNotFound = errors.New("Rados error not found")
+
+func GetRadosError(err C.int) error {
+	if err != 0 {
+		if err == -C.ENOENT {
+			return RadosErrorNotFound
+		}
+		return RadosError(err)
+	} else {
+		return nil
+	}
 }
 
 // Version returns the major, minor, and patch components of the version of

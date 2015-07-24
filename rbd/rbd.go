@@ -1,6 +1,7 @@
 package rbd
 
 // #cgo LDFLAGS: -lrbd
+// #include <errno.h>
 // #include <stdlib.h>
 // #include <rados/librados.h>
 // #include <rbd/librbd.h>
@@ -18,7 +19,12 @@ import (
 //
 type RBDError int
 
-var ImageNotOpen = errors.New("RBD image not open")
+var RbdErrorImageNotOpen = errors.New("RBD image not open")
+var RbdErrorNotFound = errors.New("RBD image not found")
+
+//Rdb feature
+var RbdFeatureLayering = uint64(1 << 0)
+var RbdFeatureStripingV2 = uint64(1 << 1)
 
 //
 type ImageInfo struct {
@@ -84,6 +90,9 @@ func (e RBDError) Error() string {
 //
 func GetError(err C.int) error {
 	if err != 0 {
+		if err == -C.ENOENT {
+			return RbdErrorNotFound
+		}
 		return RBDError(err)
 	} else {
 		return nil
@@ -258,16 +267,13 @@ func (image *Image) Open(args ...interface{}) error {
 
 	image.image = c_image
 
-	if ret != 0 {
-		return RBDError(ret)
-	}
-	return nil
+	return GetError(ret)
 }
 
 // int rbd_close(rbd_image_t image);
 func (image *Image) Close() error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	ret := C.rbd_close(image.image)
@@ -281,7 +287,7 @@ func (image *Image) Close() error {
 // int rbd_resize(rbd_image_t image, uint64_t size);
 func (image *Image) Resize(size uint64) error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	return GetError(C.rbd_resize(image.image, C.uint64_t(size)))
@@ -290,7 +296,7 @@ func (image *Image) Resize(size uint64) error {
 // int rbd_stat(rbd_image_t image, rbd_image_info_t *info, size_t infosize);
 func (image *Image) Stat() (info *ImageInfo, err error) {
 	if image.image == nil {
-		return nil, ImageNotOpen
+		return nil, RbdErrorImageNotOpen
 	}
 
 	var c_stat C.rbd_image_info_t
@@ -313,7 +319,7 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 // int rbd_get_old_format(rbd_image_t image, uint8_t *old);
 func (image *Image) IsOldFormat() (old_format bool, err error) {
 	if image.image == nil {
-		return false, ImageNotOpen
+		return false, RbdErrorImageNotOpen
 	}
 
 	var c_old_format C.uint8_t
@@ -329,7 +335,7 @@ func (image *Image) IsOldFormat() (old_format bool, err error) {
 // int rbd_size(rbd_image_t image, uint64_t *size);
 func (image *Image) GetSize() (size uint64, err error) {
 	if image.image == nil {
-		return 0, ImageNotOpen
+		return 0, RbdErrorImageNotOpen
 	}
 
 	ret := C.rbd_get_size(image.image,
@@ -344,7 +350,7 @@ func (image *Image) GetSize() (size uint64, err error) {
 // int rbd_get_features(rbd_image_t image, uint64_t *features);
 func (image *Image) GetFeatures() (features uint64, err error) {
 	if image.image == nil {
-		return 0, ImageNotOpen
+		return 0, RbdErrorImageNotOpen
 	}
 
 	ret := C.rbd_get_features(image.image,
@@ -359,7 +365,7 @@ func (image *Image) GetFeatures() (features uint64, err error) {
 // int rbd_get_stripe_unit(rbd_image_t image, uint64_t *stripe_unit);
 func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 	if image.image == nil {
-		return 0, ImageNotOpen
+		return 0, RbdErrorImageNotOpen
 	}
 
 	ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit))
@@ -373,7 +379,7 @@ func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 // int rbd_get_stripe_count(rbd_image_t image, uint64_t *stripe_count);
 func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 	if image.image == nil {
-		return 0, ImageNotOpen
+		return 0, RbdErrorImageNotOpen
 	}
 
 	ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count))
@@ -387,7 +393,7 @@ func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 // int rbd_get_overlap(rbd_image_t image, uint64_t *overlap);
 func (image *Image) GetOverlap() (overlap uint64, err error) {
 	if image.image == nil {
-		return 0, ImageNotOpen
+		return 0, RbdErrorImageNotOpen
 	}
 
 	ret := C.rbd_get_overlap(image.image, (*C.uint64_t)(&overlap))
@@ -406,7 +412,7 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
 //                librbd_progress_fn_t cb, void *cbdata);
 func (image *Image) Copy(args ...interface{}) error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	switch t := args[0].(type) {
@@ -447,7 +453,7 @@ func (image *Image) Flatten() error {
 //               char *images, size_t *images_len);
 func (image *Image) ListChildren() (pools []string, images []string, err error) {
 	if image.image == nil {
-		return nil, nil, ImageNotOpen
+		return nil, nil, RbdErrorImageNotOpen
 	}
 
 	var c_pools_len, c_images_len C.size_t
@@ -497,7 +503,7 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 //              char *addrs, size_t *addrs_len);
 func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 	if image.image == nil {
-		return "", nil, ImageNotOpen
+		return "", nil, RbdErrorImageNotOpen
 	}
 
 	var c_exclusive C.int
@@ -537,7 +543,7 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 // int rbd_lock_exclusive(rbd_image_t image, const char *cookie);
 func (image *Image) LockExclusive(cookie string) error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	var c_cookie *C.char = C.CString(cookie)
@@ -549,7 +555,7 @@ func (image *Image) LockExclusive(cookie string) error {
 // int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
 func (image *Image) LockShared(cookie string, tag string) error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	var c_cookie *C.char = C.CString(cookie)
@@ -563,7 +569,7 @@ func (image *Image) LockShared(cookie string, tag string) error {
 // int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
 func (image *Image) Unlock(cookie string) error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	var c_cookie *C.char = C.CString(cookie)
@@ -575,7 +581,7 @@ func (image *Image) Unlock(cookie string) error {
 // int rbd_break_lock(rbd_image_t image, const char *client, const char *cookie);
 func (image *Image) BreakLock(client string, cookie string) error {
 	if image.image == nil {
-		return ImageNotOpen
+		return RbdErrorImageNotOpen
 	}
 
 	var c_client *C.char = C.CString(client)
@@ -597,7 +603,7 @@ func (image *Image) BreakLock(client string, cookie string) error {
 //              int (*cb)(uint64_t, size_t, int, void *), void *arg);
 func (image *Image) Read(data []byte) (n int, err error) {
 	if image.image == nil {
-		return 0, ImageNotOpen
+		return 0, RbdErrorImageNotOpen
 	}
 
 	if len(data) == 0 {
@@ -687,7 +693,7 @@ func (image *Image) Flush() error {
 // void rbd_snap_list_end(rbd_snap_info_t *snaps);
 func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 	if image.image == nil {
-		return nil, ImageNotOpen
+		return nil, RbdErrorImageNotOpen
 	}
 
 	var c_max_snaps C.int = 0
@@ -716,7 +722,7 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 // int rbd_snap_create(rbd_image_t image, const char *snapname);
 func (image *Image) CreateSnapshot(snapname string) (*Snapshot, error) {
 	if image.image == nil {
-		return nil, ImageNotOpen
+		return nil, RbdErrorImageNotOpen
 	}
 
 	var c_snapname *C.char = C.CString(snapname)

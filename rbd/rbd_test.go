@@ -230,3 +230,29 @@ func TestParentInfo(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestNotFound(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+
+	img := rbd.GetImage(ioctx, name)
+	err = img.Open()
+	assert.Equal(t, err, rbd.RbdErrorNotFound)
+
+	img.Remove()
+	assert.Equal(t, err, rbd.RbdErrorNotFound)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
