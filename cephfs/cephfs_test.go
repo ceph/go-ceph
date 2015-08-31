@@ -1,7 +1,7 @@
 package cephfs_test
 
 import "testing"
-import "github.com/noahdesu/go-ceph/cephfs"
+import "github.com/ceph/go-ceph/cephfs"
 import "github.com/stretchr/testify/assert"
 
 func TestCreateMount(t *testing.T) {

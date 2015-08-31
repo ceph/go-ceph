@@ -109,6 +109,6 @@ ceph osd tree
 export CEPH_CONF="${DIR}/ceph.conf"
 
 go get github.com/stretchr/testify/assert
-cd /go/src/github.com/noahdesu/go-ceph
+cd /go/src/github.com/ceph/go-ceph
 
 exec go test -v ./...

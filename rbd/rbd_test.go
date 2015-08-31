@@ -3,8 +3,8 @@ package rbd_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/noahdesu/go-ceph/rados"
-	"github.com/noahdesu/go-ceph/rbd"
+	"github.com/ceph/go-ceph/rados"
+	"github.com/ceph/go-ceph/rbd"
 	"github.com/stretchr/testify/assert"
 	"os/exec"
 	"sort"

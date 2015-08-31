@@ -11,7 +11,7 @@ RUN wget --no-check-certificate -q -O- 'https://ceph.com/git/?p=ceph.git;a=blob_
     apt-get install -y ceph \
     librados-dev librbd-dev libcephfs-dev
 
-VOLUME /go/src/github.com/noahdesu/go-ceph
+VOLUME /go/src/github.com/ceph/go-ceph
 
 COPY ./ci/entrypoint.sh /tmp/entrypoint.sh
 

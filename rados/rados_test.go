@@ -3,7 +3,7 @@ package rados_test
 import "testing"
 
 //import "bytes"
-import "github.com/noahdesu/go-ceph/rados"
+import "github.com/ceph/go-ceph/rados"
 import "github.com/stretchr/testify/assert"
 import "os"
 import "os/exec"

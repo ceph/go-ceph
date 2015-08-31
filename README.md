@@ -1,20 +1,20 @@
 # go-ceph - Go bindings for Ceph APIs (RBD, RADOS, CephFS)
 
-[![Build Status](https://travis-ci.org/noahdesu/go-ceph.svg)](https://travis-ci.org/noahdesu/go-ceph) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/noahdesu/go-ceph) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/noahdesu/go-ceph/master/LICENSE)
+[![Build Status](https://travis-ci.org/noahdesu/go-ceph.svg)](https://travis-ci.org/noahdesu/go-ceph) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ceph/go-ceph) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ceph/go-ceph/master/LICENSE)
 
 
 This project uses Semantic Versioning (http://semver.org/).
 
 ## Installation
 
-    go get github.com/noahdesu/go-ceph
+    go get github.com/ceph/go-ceph
 
 The native RADOS library and development headers are expected to be installed.
 
 ## Documentation
 
 Detailed documentation is available at
-<http://godoc.org/github.com/noahdesu/go-ceph>.
+<http://godoc.org/github.com/ceph/go-ceph>.
 
 ### Connecting to a cluster
 
