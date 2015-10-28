@@ -78,6 +78,19 @@ func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
 	return GetRadosError(ret)
 }
 
+// Append appends len(data) bytes to the object with key oid.
+// The object is appended with the provided data. If the object exists,
+// it is atomically appended to. It returns an error, if any.
+func (ioctx *IOContext) Append(oid string, data []byte) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	ret := C.rados_append(ioctx.ioctx, c_oid,
+		(*C.char)(unsafe.Pointer(&data[0])),
+		(C.size_t)(len(data)))
+	return GetRadosError(ret)
+}
+
 // Read reads up to len(data) bytes from the object with key oid starting at byte
 // offset offset. It returns the number of bytes read and an error, if any.
 func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
