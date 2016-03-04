@@ -144,10 +144,10 @@ func GetImage(ioctx *rados.IOContext, name string) *Image {
 // int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
 //        uint64_t features, int *order,
 //        uint64_t stripe_unit, uint64_t stripe_count);
-func Create(ioctx *rados.IOContext, name string, size uint64,
+func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	args ...uint64) (image *Image, err error) {
 	var ret C.int
-	var c_order C.int
+	var c_order C.int = C.int(order)
 	var c_name *C.char = C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
 
@@ -185,8 +185,8 @@ func Create(ioctx *rados.IOContext, name string, size uint64,
 //            const char *p_snapname, rados_ioctx_t c_ioctx,
 //            const char *c_name, uint64_t features, int *c_order,
 //            uint64_t stripe_unit, int stripe_count);
-func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name string, features uint64) (*Image, error) {
-	var c_order C.int
+func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name string, features uint64, order int) (*Image, error) {
+	var c_order C.int = C.int(order)
 	var c_p_name *C.char = C.CString(image.name)
 	var c_p_snapname *C.char = C.CString(snapname)
 	var c_c_name *C.char = C.CString(c_name)

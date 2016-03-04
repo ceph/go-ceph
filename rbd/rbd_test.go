@@ -38,7 +38,7 @@ func TestGetImageNames(t *testing.T) {
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
 		name := GetUUID()
-		_, err := rbd.Create(ioctx, name, 1<<22)
+		_, err := rbd.Create(ioctx, name, 1<<22, 22)
 		assert.NoError(t, err)
 		createdList = append(createdList, name)
 	}
@@ -74,7 +74,7 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := GetUUID()
-	img, err := rbd.Create(ioctx, name, 1<<22)
+	img, err := rbd.Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -136,7 +136,7 @@ func TestCreateSnapshot(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := GetUUID()
-	img, err := rbd.Create(ioctx, name, 1<<22)
+	img, err := rbd.Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -176,7 +176,7 @@ func TestParentInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := "parent"
-	img, err := rbd.Create(ioctx, name, 1<<22, 1)
+	img, err := rbd.Create(ioctx, name, 1<<22, 22, 1)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -188,7 +188,7 @@ func TestParentInfo(t *testing.T) {
 	err = snapshot.Protect()
 	assert.NoError(t, err)
 
-	imgNew, err := img.Clone("mysnap", ioctx, "child", 1)
+	imgNew, err := img.Clone("mysnap", ioctx, "child", 1, 22)
 	assert.NoError(t, err)
 
 	err = imgNew.Open()
