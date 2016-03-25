@@ -20,7 +20,7 @@ func (e RadosError) Error() string {
 
 var RadosErrorNotFound = errors.New("Rados error not found")
 
-func GetRadosError(err C.int) error {
+func GetRadosError(err int) error {
 	if err != 0 {
 		if err == -C.ENOENT {
 			return RadosErrorNotFound
