@@ -488,7 +488,7 @@ func TestMonCommand(t *testing.T) {
 	conn.Shutdown()
 }
 
-func TestObjectIterator(t *testing.T) {
+func TestObjectListObjects(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
 	conn.Connect()
@@ -521,6 +521,53 @@ func TestObjectIterator(t *testing.T) {
 		objectList = append(objectList, oid)
 	})
 	assert.NoError(t, err)
+	assert.Equal(t, len(objectList), len(createdList))
+
+	sort.Strings(objectList)
+	sort.Strings(createdList)
+
+	assert.Equal(t, objectList, createdList)
+}
+
+func TestObjectIterator(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	objectList := []string{}
+	iter, err := ioctx.Iter()
+	assert.NoError(t, err)
+	for iter.Next() {
+		objectList = append(objectList, iter.Value())
+	}
+	iter.Close()
+	assert.NoError(t, iter.Err())
+	assert.True(t, len(objectList) == 0)
+
+	createdList := []string{}
+	for i := 0; i < 200; i++ {
+		oid := GetUUID()
+		bytes_in := []byte("input data")
+		err = ioctx.Write(oid, bytes_in, 0)
+		assert.NoError(t, err)
+		createdList = append(createdList, oid)
+	}
+	assert.True(t, len(createdList) == 200)
+
+	iter, err = ioctx.Iter()
+	assert.NoError(t, err)
+	for iter.Next() {
+		objectList = append(objectList, iter.Value())
+	}
+	iter.Close()
+	assert.NoError(t, iter.Err())
 	assert.Equal(t, len(objectList), len(createdList))
 
 	sort.Strings(objectList)
