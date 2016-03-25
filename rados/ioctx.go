@@ -578,14 +578,12 @@ func (iter *Iter) Seek(token IterToken) {
 //	return iter.Err()
 //
 func (iter *Iter) Next() bool {
-	centry := (*C.char)(C.calloc(1, 1024))
-	defer C.free(unsafe.Pointer(centry))
-
-	if cerr := C.rados_objects_list_next(iter.ctx, &centry, nil); cerr < 0 {
+	var c_entry *C.char
+	if cerr := C.rados_objects_list_next(iter.ctx, &c_entry, nil); cerr < 0 {
 		iter.err = GetRadosError(cerr)
 		return false
 	}
-	iter.entry = C.GoString(centry)
+	iter.entry = C.GoString(c_entry)
 	return true
 }
 
