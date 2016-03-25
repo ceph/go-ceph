@@ -147,7 +147,7 @@ func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
 	c_stat := C.struct_rados_pool_stat_t{}
 	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &c_stat)
 	if ret < 0 {
-		return PoolStat{}, RadosError(int(ret))
+		return PoolStat{}, GetRadosError(int(ret))
 	} else {
 		return PoolStat{
 			Num_bytes:                      uint64(c_stat.num_bytes),
@@ -176,7 +176,7 @@ func (ioctx *IOContext) GetPoolName() (name string, err error) {
 			buf = make([]byte, len(buf)*2)
 			continue
 		} else if ret < 0 {
-			return "", RadosError(ret)
+			return "", GetRadosError(int(ret))
 		}
 		name = C.GoStringN((*C.char)(unsafe.Pointer(&buf[0])), ret)
 		return name, nil
@@ -194,7 +194,7 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	var ctx C.rados_list_ctx_t
 	ret := C.rados_objects_list_open(ioctx.ioctx, &ctx)
 	if ret < 0 {
-		return RadosError(ret)
+		return GetRadosError(int(ret))
 	}
 	defer func() { C.rados_objects_list_close(ctx) }()
 
@@ -204,7 +204,7 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 		if ret == -2 { // FIXME
 			return nil
 		} else if ret < 0 {
-			return RadosError(ret)
+			return GetRadosError(int(ret))
 		}
 		listFn(C.GoString(c_entry))
 	}
@@ -226,7 +226,7 @@ func (ioctx *IOContext) Stat(object string) (stat ObjectStat, err error) {
 		&c_pmtime)
 
 	if ret < 0 {
-		return ObjectStat{}, RadosError(int(ret))
+		return ObjectStat{}, GetRadosError(int(ret))
 	} else {
 		return ObjectStat{
 			Size:    uint64(c_psize),
