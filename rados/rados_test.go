@@ -399,6 +399,9 @@ func TestObjectStat(t *testing.T) {
 	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
 	assert.NotNil(t, stat.ModTime)
 
+	_, err = pool.Stat("notfound")
+	assert.Equal(t, err, rados.RadosErrorNotFound)
+
 	pool.Destroy()
 	conn.Shutdown()
 }
