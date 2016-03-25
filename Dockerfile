@@ -1,7 +1,7 @@
 FROM golang:1.3-wheezy
 MAINTAINER Abhishek Lekshmanan "abhishek.lekshmanan@gmail.com"
 
-ENV CEPH_VERSION giant
+ENV CEPH_VERSION hammer
 
 RUN echo deb http://ceph.com/debian-$CEPH_VERSION/ wheezy main | tee /etc/apt/sources.list.d/ceph-$CEPH_VERSION.list
 
