@@ -1,19 +1,20 @@
 package rados_test
 
-import "testing"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
+	"os"
+	"os/exec"
+	"sort"
+	"testing"
+	"time"
 
-//import "bytes"
-import "github.com/ceph/go-ceph/rados"
-import "github.com/stretchr/testify/assert"
-import "os"
-import "os/exec"
-import "io"
-import "io/ioutil"
-import "time"
-import "net"
-import "fmt"
-import "sort"
-import "encoding/json"
+	"github.com/ceph/go-ceph/rados"
+	"github.com/stretchr/testify/assert"
+)
 
 func GetUUID() string {
 	out, _ := exec.Command("uuidgen").Output()
