@@ -51,6 +51,17 @@ func (ioctx *IOContext) Pointer() uintptr {
 	return uintptr(ioctx.ioctx)
 }
 
+// SetNamespace sets the namespace for objects within this IO context (pool).
+// Setting namespace to a empty or zero length string sets the pool to the default namespace.
+func (ioctx *IOContext) SetNamespace(namespace string) {
+	var c_ns *C.char
+	if len(namespace) > 0 {
+		c_ns = C.CString(namespace)
+		defer C.free(unsafe.Pointer(c_ns))
+	}
+	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
+}
+
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
 func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {

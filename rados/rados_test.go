@@ -777,3 +777,44 @@ func TestReadFilterOmap(t *testing.T) {
 
 	pool.Destroy()
 }
+
+func TestSetNamespace(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	err = pool.Write("obj", bytes_in, 0)
+	assert.NoError(t, err)
+
+	stat, err := pool.Stat("obj")
+	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
+	assert.NotNil(t, stat.ModTime)
+
+	pool.SetNamespace("space1")
+	stat, err = pool.Stat("obj")
+	assert.Equal(t, err, rados.RadosErrorNotFound)
+
+	bytes_in = []byte("input data")
+	err = pool.Write("obj2", bytes_in, 0)
+	assert.NoError(t, err)
+
+	pool.SetNamespace("")
+
+	stat, err = pool.Stat("obj2")
+	assert.Equal(t, err, rados.RadosErrorNotFound)
+
+	stat, err = pool.Stat("obj")
+	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
+	assert.NotNil(t, stat.ModTime)
+
+	pool.Destroy()
+	conn.Shutdown()
+}
