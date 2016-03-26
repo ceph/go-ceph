@@ -560,7 +560,7 @@ type IterToken uint32
 func (ioctx *IOContext) Iter() (*Iter, error) {
 	iter := Iter{}
 	if cerr := C.rados_objects_list_open(ioctx.ioctx, &iter.ctx); cerr < 0 {
-		return nil, GetRadosError(cerr)
+		return nil, GetRadosError(int(cerr))
 	}
 	return &iter, nil
 }
@@ -591,7 +591,7 @@ func (iter *Iter) Seek(token IterToken) {
 func (iter *Iter) Next() bool {
 	var c_entry *C.char
 	if cerr := C.rados_objects_list_next(iter.ctx, &c_entry, nil); cerr < 0 {
-		iter.err = GetRadosError(cerr)
+		iter.err = GetRadosError(int(cerr))
 		return false
 	}
 	iter.entry = C.GoString(c_entry)
