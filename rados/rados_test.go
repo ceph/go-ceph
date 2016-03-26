@@ -1,19 +1,20 @@
 package rados_test
 
-import "testing"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
+	"os"
+	"os/exec"
+	"sort"
+	"testing"
+	"time"
 
-//import "bytes"
-import "github.com/ceph/go-ceph/rados"
-import "github.com/stretchr/testify/assert"
-import "os"
-import "os/exec"
-import "io"
-import "io/ioutil"
-import "time"
-import "net"
-import "fmt"
-import "sort"
-import "encoding/json"
+	"github.com/ceph/go-ceph/rados"
+	"github.com/stretchr/testify/assert"
+)
 
 func GetUUID() string {
 	out, _ := exec.Command("uuidgen").Output()
@@ -397,6 +398,9 @@ func TestObjectStat(t *testing.T) {
 	stat, err := pool.Stat("obj")
 	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
 	assert.NotNil(t, stat.ModTime)
+
+	_, err = pool.Stat("notfound")
+	assert.Equal(t, err, rados.RadosErrorNotFound)
 
 	pool.Destroy()
 	conn.Shutdown()

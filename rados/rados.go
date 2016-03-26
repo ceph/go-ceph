@@ -7,7 +7,6 @@ package rados
 import "C"
 
 import (
-	"errors"
 	"fmt"
 	"unsafe"
 )
@@ -15,20 +14,17 @@ import (
 type RadosError int
 
 func (e RadosError) Error() string {
-	return fmt.Sprintf("rados: ret=%d", e)
+	return fmt.Sprintf("rados: %s", C.GoString(C.strerror(C.int(-e))))
 }
 
-var RadosErrorNotFound = errors.New("Rados error not found")
+var RadosErrorNotFound = RadosError(-C.ENOENT)
+var RadosErrorPermissionDenied = RadosError(-C.EPERM)
 
-func GetRadosError(err C.int) error {
-	if err != 0 {
-		if err == -C.ENOENT {
-			return RadosErrorNotFound
-		}
-		return RadosError(err)
-	} else {
+func GetRadosError(err int) error {
+	if err == 0 {
 		return nil
 	}
+	return RadosError(err)
 }
 
 // Version returns the major, minor, and patch components of the version of
