@@ -461,7 +461,10 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 	ret := C.rbd_list_children(image.image,
 		nil, &c_pools_len,
 		nil, &c_images_len)
-	if ret < 0 {
+	if ret == 0 {
+		return nil, nil, nil
+	}
+	if ret < 0 && ret != -C.ERANGE {
 		return nil, nil, RBDError(int(ret))
 	}
 
