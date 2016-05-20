@@ -188,6 +188,17 @@ func TestParentInfo(t *testing.T) {
 	err = snapshot.Protect()
 	assert.NoError(t, err)
 
+	// create an image context with the parent+snapshot
+	snapImg := rbd.GetImage(ioctx, "parent")
+	err = snapImg.Open("mysnap")
+	assert.NoError(t, err)
+
+	// ensure no children prior to clone
+	pools, images, err := snapImg.ListChildren()
+	assert.NoError(t, err)
+	assert.Equal(t, len(pools), 0, "pools equal")
+	assert.Equal(t, len(images), 0, "children length equal")
+
 	imgNew, err := img.Clone("mysnap", ioctx, "child", 1, 22)
 	assert.NoError(t, err)
 
@@ -208,6 +219,11 @@ func TestParentInfo(t *testing.T) {
 	assert.Equal(t, pName, "parent", "they should be equal")
 	assert.Equal(t, pSnapname, "mysnap", "they should be equal")
 
+	pools, images, err = snapImg.ListChildren()
+	assert.NoError(t, err)
+	assert.Equal(t, len(pools), 1, "pools equal")
+	assert.Equal(t, len(images), 1, "children length equal")
+
 	err = imgNew.Close()
 	assert.NoError(t, err)
 
@@ -221,6 +237,9 @@ func TestParentInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = img.Close()
+	assert.NoError(t, err)
+
+	err = snapImg.Close()
 	assert.NoError(t, err)
 
 	err = img.Remove()
