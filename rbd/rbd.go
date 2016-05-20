@@ -672,19 +672,48 @@ func (image *Image) Discard(ofs uint64, length uint64) error {
 }
 
 func (image *Image) ReadAt(data []byte, off int64) (n int, err error) {
-	_, err = image.Seek(off, 0)
-	if err != nil {
-		return 0, err
+	if image.image == nil {
+		return 0, RbdErrorImageNotOpen
 	}
-	return image.Read(data)
+
+	if len(data) == 0 {
+		return 0, nil
+	}
+
+	ret := int(C.rbd_read(
+		image.image,
+		(C.uint64_t)(off),
+		(C.size_t)(len(data)),
+		(*C.char)(unsafe.Pointer(&data[0]))))
+
+	if ret < 0 {
+		return 0, RBDError(ret)
+	}
+
+	if ret < n {
+		return ret, io.EOF
+	}
+
+	return ret, nil
 }
 
 func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
-	_, err = image.Seek(off, 0)
-	if err != nil {
-		return 0, err
+	if image.image == nil {
+		return 0, RbdErrorImageNotOpen
 	}
-	return image.Write(data)
+
+	if len(data) == 0 {
+		return 0, nil
+	}
+
+	ret := int(C.rbd_write(image.image, C.uint64_t(off),
+		C.size_t(len(data)), (*C.char)(unsafe.Pointer(&data[0]))))
+
+	if ret != len(data) {
+		err = RBDError(-1)
+	}
+
+	return ret, err
 }
 
 // int rbd_flush(rbd_image_t image);
