@@ -477,6 +477,7 @@ func TestMonCommand(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
 	conn.Connect()
+	defer conn.Shutdown()
 
 	command, err := json.Marshal(map[string]string{"prefix": "df", "format": "json"})
 	assert.NoError(t, err)
@@ -488,8 +489,43 @@ func TestMonCommand(t *testing.T) {
 	var message map[string]interface{}
 	err = json.Unmarshal(buf, &message)
 	assert.NoError(t, err)
+}
 
-	conn.Shutdown()
+func TestMonCommandWithInputBuffer(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+	defer conn.Shutdown()
+
+	// first add the new test user, specifying its key in the input buffer
+	command, err := json.Marshal(map[string]interface{}{
+		"prefix": "auth add",
+		"format": "json",
+		"entity": "client.testMonCommandUser",
+	})
+	assert.NoError(t, err)
+
+	inbuf := []byte(`[client.testMonCommandUser]
+key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
+`)
+
+	buf, info, err := conn.MonCommandWithInputBuffer(command, inbuf)
+	assert.NoError(t, err)
+	assert.Equal(t, "added key for client.testMonCommandUser", info)
+	assert.Equal(t, "", string(buf[:]))
+
+	// now get the key, and verify it is equal to the key we specified in the input buffer for "auth add"
+	command, err = json.Marshal(map[string]interface{}{
+		"prefix": "auth get-key",
+		"format": "json",
+		"entity": "client.testMonCommandUser",
+	})
+	assert.NoError(t, err)
+
+	buf, info, err = conn.MonCommand(command)
+	assert.NoError(t, err)
+	assert.Equal(t, "", info)
+	assert.Equal(t, `{"key":"AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw=="}`, string(buf[:]))
 }
 
 func TestObjectListObjects(t *testing.T) {

@@ -262,6 +262,15 @@ func (c *Conn) DeletePool(name string) error {
 
 // MonCommand sends a command to one of the monitors
 func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
+	return c.monCommand(args, nil)
+}
+
+// MonCommand sends a command to one of the monitors, with an input buffer
+func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) (buffer []byte, info string, err error) {
+	return c.monCommand(args, inputBuffer)
+}
+
+func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string, err error) {
 	argv := C.CString(string(args))
 	defer C.free(unsafe.Pointer(argv))
 
@@ -269,16 +278,17 @@ func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
 		outs, outbuf       *C.char
 		outslen, outbuflen C.size_t
 	)
-	inbuf := C.CString("")
+	inbuf := C.CString(string(inputBuffer))
+	inbufLen := len(inputBuffer)
 	defer C.free(unsafe.Pointer(inbuf))
 
 	ret := C.rados_mon_command(c.cluster,
 		&argv, 1,
-		inbuf,       // bulk input (e.g. crush map)
-		C.size_t(0), // length inbuf
-		&outbuf,     // buffer
-		&outbuflen,  // buffer length
-		&outs,       // status string
+		inbuf,              // bulk input (e.g. crush map)
+		C.size_t(inbufLen), // length inbuf
+		&outbuf,            // buffer
+		&outbuflen,         // buffer length
+		&outs,              // status string
 		&outslen)
 
 	if outslen > 0 {
