@@ -901,3 +901,81 @@ func TestSetNamespace(t *testing.T) {
 	pool.Destroy()
 	conn.Shutdown()
 }
+
+func TestLocking(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	// lock ex
+	res, err := pool.LockExclusive("obj", "myLock", "myCookie", "this is a test lock", 0, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, res)
+
+	// verify lock ex
+	info, err := pool.ListLockers("obj", "myLock")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(info.Clients))
+	assert.Equal(t, true, info.Exclusive)
+
+	// fail to lock ex again
+	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "this is a description", 0, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, -17, res)
+
+	// fail to lock sh
+	res, err = pool.LockShared("obj", "myLock", "myCookie", "", "a description", 0, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, -17, res)
+
+	// unlock
+	res, err = pool.Unlock("obj", "myLock", "myCookie")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, res)
+
+	// verify unlock
+	info, err = pool.ListLockers("obj", "myLock")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(info.Clients))
+
+	// lock sh
+	res, err = pool.LockShared("obj", "myLock", "myCookie", "", "a description", 0, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, res)
+
+	// verify lock sh
+	info, err = pool.ListLockers("obj", "myLock")
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(info.Clients))
+	assert.Equal(t, false, info.Exclusive)
+
+	// fail to lock sh again
+	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "a description", 0, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, -17, res)
+
+	// fail to lock ex
+	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "this is a test lock", 0, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, res, -17)
+
+	// break the lock
+	res, err = pool.BreakLock("obj", "myLock", info.Clients[0], "myCookie")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, res)
+
+	// verify lock broken
+	info, err = pool.ListLockers("obj", "myLock")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(info.Clients))
+
+	pool.Destroy()
+	conn.Shutdown()
+}
