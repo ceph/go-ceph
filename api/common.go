@@ -15,12 +15,8 @@ func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	endpoint = cc.BaseUrl + endpoint
 	client := http.Client{}
 
-	fmt.Printf("METHOD: %s\n", method)
-	fmt.Printf("Endpoint: %s\n", endpoint)
-
 	req, err := http.NewRequest(method, endpoint, nil)
 	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
 		return "", err
 	}
 	req.Header.Set("Accept", "application/json")
