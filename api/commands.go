@@ -20,7 +20,7 @@ func (cc *CephClient) UnsetOsdFlag(flag string) error {
 	return nil
 }
 
-func (cc *CephClient) SetOsdDown(osdIds ...string) error {
+func (cc *CephClient) SetOsdsDown(osdIds ...int) error {
 	endpoint := "osd/down?"
 	for _, id := range osdIds {
 		endpoint += fmt.Sprintf("ids=%s&", id)

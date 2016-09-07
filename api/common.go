@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"io/ioutil"
 )
@@ -13,7 +14,15 @@ func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	var body string
 	endpoint = cc.BaseUrl + endpoint
 	client := http.Client{}
-	req, _ := http.NewRequest(method, endpoint, nil)
+
+	fmt.Printf("METHOD: %s\n", method)
+	fmt.Printf("Endpoint: %s\n", endpoint)
+
+	req, err := http.NewRequest(method, endpoint, nil)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		return "", err
+	}
 	req.Header.Set("Accept", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {

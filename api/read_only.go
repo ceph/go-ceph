@@ -32,21 +32,49 @@ func (cc *CephClient) GetOsdTree() (OsdTree, error) {
 }
 
 // Filter by type
-func (cc *CephClient) GetCephNodes(filter string) ([]CephNodes, error) {
-	osdTree, err := cc.GetOsdTree();
+func (cc *CephClient) GetCephNodes(filter string) ([]CephNode, error) {
+	osdTree, err := cc.GetOsdTree()
 	if err != nil {
-		return []CephNodes{}, err
+		return []CephNode{}, err
 	}
 	if filter == "" {
 		return osdTree.Output.Nodes, nil
 	}
-	var finalNodes [] CephNodes 
+	var finalNodes [] CephNode 
 	for _, node := range osdTree.Output.Nodes {
 		if node.Type == filter {
 			finalNodes = append(finalNodes, node)
 		}
 	}
 	return finalNodes, nil
+}
+
+func (cc *CephClient) GetCephNodeByName(name string) (CephNode, error) {
+	var cephNode CephNode
+	osdTree, err := cc.GetOsdTree()
+	if err != nil {
+		return cephNode, err
+	}
+	for _, node := range osdTree.Output.Nodes {
+		if node.Name == name {
+			return node, nil
+		}
+	}
+	return cephNode, fmt.Errorf("Could not find ceph node with name %s", name)
+}
+
+func (cc *CephClient) GetCephNodeById(id int) (CephNode, error) {
+	var cephNode CephNode
+	osdTree, err := cc.GetOsdTree()
+	if err != nil {
+		return cephNode, err
+	}
+	for _, node := range osdTree.Output.Nodes {
+		if node.ID == id {
+			return node, nil
+		}
+	}
+	return cephNode, fmt.Errorf("Could not find ceph node with id %d", id)
 }
 
 func (cc *CephClient) GetBlacklist() (OsdBlacklistLs, error) {
