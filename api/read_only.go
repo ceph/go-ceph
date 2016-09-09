@@ -96,7 +96,6 @@ func (cc *CephClient) GetMdsStat() (MdsStat, error) {
 	if err != nil {
 		return mdsStatus, err
 	}
-	fmt.Printf("Body: \n %s", body)
 	err = json.Unmarshal([]byte(body), &mdsStatus)
 	if err != nil {
 		return mdsStatus, err

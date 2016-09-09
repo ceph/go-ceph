@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"io/ioutil"
+	"time"
 )
 
 type CephClient struct {
@@ -13,8 +14,9 @@ type CephClient struct {
 func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	var body string
 	endpoint = cc.BaseUrl + endpoint
-	client := http.Client{}
-
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
 	req, err := http.NewRequest(method, endpoint, nil)
 	if err != nil {
 		return "", err
@@ -23,6 +25,10 @@ func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return body, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return body, fmt.Errorf("Received unexpected status code from server: %d", resp.StatusCode)
 	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
