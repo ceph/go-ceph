@@ -13,7 +13,9 @@ type CephClient struct {
 func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	var body string
 	endpoint = cc.BaseUrl + endpoint
-	client := http.Client{}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
 
 	req, err := http.NewRequest(method, endpoint, nil)
 	if err != nil {
