@@ -5,7 +5,7 @@ import (
 )
 
 var client = CephClient {
-	BaseUrl: "<Api Endpoint>",
+	BaseUrl: "http://10.112.255.2:8080/ceph/",
 }
 
 func TestCephStatus(t *testing.T) {

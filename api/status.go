@@ -41,7 +41,7 @@ type Status struct {
 				} `json:"health_services"`
 			} `json:"health"`
 			OverallStatus string        `json:"overall_status"`
-			Summary       []interface{} `json:"summary"`
+			Summary       [] Summary `json:"summary"`
 			Timechecks    struct {
 				Epoch int `json:"epoch"`
 				Mons  []struct {
@@ -59,11 +59,7 @@ type Status struct {
 			Epoch    int    `json:"epoch"`
 			Fsid     string `json:"fsid"`
 			Modified string `json:"modified"`
-			Mons     []struct {
-				Addr string `json:"addr"`
-				Name string `json:"name"`
-				Rank int    `json:"rank"`
-			} `json:"mons"`
+			Mons     [] Monitor `json:"mons"`
 		} `json:"monmap"`
 		Osdmap struct {
 			Osdmap struct {
@@ -96,4 +92,15 @@ type Status struct {
 		QuorumNames []string `json:"quorum_names"`
 	} `json:"output"`
 	Status string `json:"status"`
+}
+
+type Monitor struct {
+	Addr string `json:"addr"`
+	Name string `json:"name"`
+	Rank int    `json:"rank"`
+}
+
+type Summary struct {
+	Summary string `json:"summary"`
+	Severity string `json:"severity"`
 }

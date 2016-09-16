@@ -1,6 +1,6 @@
 package api
 
-type CephNodes struct {
+type CephNode struct {
 	Children []int  `json:"children"`
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -16,7 +16,7 @@ type CephNodes struct {
 
 type OsdTree struct {
 	Output struct {
-		Nodes []CephNodes `json:"nodes"`
+		Nodes []CephNode `json:"nodes"`
 		Stray []interface{} `json:"stray"`
 	} `json:"output"`
 	Status string `json:"status"`
