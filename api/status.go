@@ -99,7 +99,6 @@ type Monitor struct {
 	Name string `json:"name"`
 	Rank int    `json:"rank"`
 }
-
 type Summary struct {
 	Summary string `json:"summary"`
 	Severity string `json:"severity"`
