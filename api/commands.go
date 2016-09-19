@@ -35,3 +35,7 @@ func (cc *CephClient) BlacklistOp(blacklistAddr string, op string) error {
 	return err
 }
 
+func (cc *CephClient) MdsFailover() error {
+	_, err := cc.callApi("mds/fail?who=0", "PUT")
+	return err
+}

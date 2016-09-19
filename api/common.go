@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"io/ioutil"
 	"time"
@@ -15,14 +16,16 @@ func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	var body string
 	endpoint = cc.BaseUrl + endpoint
 	client := http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 5 * time.Minute,
 	}
 	req, err := http.NewRequest(method, endpoint, nil)
 	if err != nil {
 		return "", err
 	}
 	req.Header.Set("Accept", "application/json")
+	log.Printf("Sending request to ceph-rest-api with endpoint %s", endpoint)
 	resp, err := client.Do(req)
+	log.Printf("Got request response to ceph-rest-api with endpoint %s", endpoint)
 	if err != nil {
 		return body, err
 	}
