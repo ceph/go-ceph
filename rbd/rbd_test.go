@@ -11,6 +11,10 @@ import (
 	"testing"
 )
 
+//Rdb feature
+var RbdFeatureLayering = uint64(1 << 0)
+var RbdFeatureStripingV2 = uint64(1 << 1)
+
 func GetUUID() string {
 	out, _ := exec.Command("uuidgen").Output()
 	return string(out[:36])
@@ -21,6 +25,43 @@ func TestVersion(t *testing.T) {
 	assert.False(t, major < 0 || major > 1000, "invalid major")
 	assert.False(t, minor < 0 || minor > 1000, "invalid minor")
 	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
+}
+
+func TestCreateImage(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+	image, err := rbd.Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	name = GetUUID()
+	image, err = rbd.Create(ioctx, name, 1<<22, 22,
+			RbdFeatureLayering|RbdFeatureStripingV2)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	name = GetUUID()
+	image, err = rbd.Create(ioctx, name, 1<<22, 22,
+			RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
 }
 
 func TestGetImageNames(t *testing.T) {
