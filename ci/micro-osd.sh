@@ -42,6 +42,7 @@ auth cluster required = none
 auth service required = none
 auth client required = none
 osd pool default size = 1
+mon allow pool delete = true
 EOF
 export CEPH_ARGS="--conf ${DIR}/ceph.conf"
 
@@ -100,10 +101,19 @@ ceph osd pool create cephfs_metadata 8
 ceph fs new cephfs cephfs_metadata cephfs_data
 ceph-mds -i a
 
+export CEPH_CONF="${DIR}/ceph.conf"
+
+while true; do
+  if ceph status | tee /dev/tty | grep -q HEALTH_OK; then
+    if ! ceph status | grep -q creating &> /dev/null; then
+      break
+    fi
+  fi
+  sleep 1
+done
+
 # check that it works
 rados --pool rbd put group /etc/group
 rados --pool rbd get group ${DIR}/group
 diff /etc/group ${DIR}/group
 ceph osd tree
-
-export CEPH_CONF="${DIR}/ceph.conf"
