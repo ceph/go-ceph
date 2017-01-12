@@ -42,6 +42,7 @@ auth cluster required = none
 auth service required = none
 auth client required = none
 osd pool default size = 1
+mon allow pool delete = true
 EOF
 export CEPH_ARGS="--conf ${DIR}/ceph.conf"
 
