@@ -979,3 +979,22 @@ func TestLocking(t *testing.T) {
 	pool.Destroy()
 	conn.Shutdown()
 }
+
+func TestOmapOnNonexistentObjectError(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	//This object does not exist
+	objname := GetUUID()
+
+	_, err = pool.GetAllOmapValues(objname, "", "", 100)
+	assert.Equal(t, err, rados.RadosErrorNotFound)
+}
