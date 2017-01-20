@@ -444,10 +444,10 @@ func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPref
 
 	ret := C.rados_read_op_operate(op, ioctx.ioctx, c_oid, 0)
 
-	if int(c_prval) != 0 {
-		return RadosError(int(c_prval))
-	} else if int(ret) != 0 {
+	if int(ret) != 0 {
 		return GetRadosError(int(ret))
+	} else if int(c_prval) != 0 {
+		return RadosError(int(c_prval))
 	}
 
 	for {
