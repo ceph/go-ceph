@@ -40,26 +40,26 @@ type Status struct {
 					} `json:"mons"`
 				} `json:"health_services"`
 			} `json:"health"`
-			OverallStatus string        `json:"overall_status"`
-			Summary       [] Summary `json:"summary"`
+			OverallStatus string    `json:"overall_status"`
+			Summary       []Summary `json:"summary"`
 			Timechecks    struct {
 				Epoch int `json:"epoch"`
 				Mons  []struct {
-					Health  string `json:"health"`
-					Latency float64`json:"latency"`
-					Name    string `json:"name"`
-					Skew    float64`json:"skew"`
+					Health  string  `json:"health"`
+					Latency float64 `json:"latency"`
+					Name    string  `json:"name"`
+					Skew    float64 `json:"skew"`
 				} `json:"mons"`
 				Round       int    `json:"round"`
 				RoundStatus string `json:"round_status"`
 			} `json:"timechecks"`
 		} `json:"health"`
 		Monmap struct {
-			Created  string `json:"created"`
-			Epoch    int    `json:"epoch"`
-			Fsid     string `json:"fsid"`
-			Modified string `json:"modified"`
-			Mons     [] Monitor `json:"mons"`
+			Created  string    `json:"created"`
+			Epoch    int       `json:"epoch"`
+			Fsid     string    `json:"fsid"`
+			Modified string    `json:"modified"`
+			Mons     []Monitor `json:"mons"`
 		} `json:"monmap"`
 		Osdmap struct {
 			Osdmap struct {
@@ -100,6 +100,6 @@ type Monitor struct {
 	Rank int    `json:"rank"`
 }
 type Summary struct {
-	Summary string `json:"summary"`
+	Summary  string `json:"summary"`
 	Severity string `json:"severity"`
 }

@@ -2,9 +2,9 @@ package api
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"io/ioutil"
 	"time"
 )
 

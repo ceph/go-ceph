@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var client = CephClient {
+var client = CephClient{
 	BaseUrl: "http://10.112.255.2:8080/ceph/",
 }
 
@@ -53,7 +53,7 @@ func TestAddBlacklist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(blacklists.Nodes) != numBlacklists + 1 {
+	if len(blacklists.Nodes) != numBlacklists+1 {
 		t.Fatalf("Expected %d blacklists, but got %d instead", numBlacklists+1, len(blacklists.Nodes))
 	}
 }
@@ -61,7 +61,7 @@ func TestAddBlacklist(t *testing.T) {
 func TestRemoveBlacklist(t *testing.T) {
 	if err := client.BlacklistOp("0.0.0.0", "add"); err != nil {
 		t.Fatal(err)
-	}	
+	}
 	blacklists, err := client.GetBlacklist()
 	if err != nil {
 		t.Fatal(err)

@@ -5,7 +5,7 @@ import (
 )
 
 func (cc *CephClient) SetOsdFlag(flag string) error {
-	_, err := cc.callApi(fmt.Sprintf("osd/set?key=%s", flag), "PUT");
+	_, err := cc.callApi(fmt.Sprintf("osd/set?key=%s", flag), "PUT")
 	if err != nil {
 		return err
 	}
@@ -13,7 +13,7 @@ func (cc *CephClient) SetOsdFlag(flag string) error {
 }
 
 func (cc *CephClient) UnsetOsdFlag(flag string) error {
-	_, err := cc.callApi(fmt.Sprintf("osd/unset?key=%s", flag), "PUT");
+	_, err := cc.callApi(fmt.Sprintf("osd/unset?key=%s", flag), "PUT")
 	if err != nil {
 		return err
 	}

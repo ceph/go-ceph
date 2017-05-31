@@ -55,5 +55,3 @@ func (cc *CephClient) GetMdsStat() (MdsStat, error) {
 	}
 	return mdsStatus, nil
 }
-
-

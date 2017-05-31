@@ -37,30 +37,30 @@ type MdsStat struct {
 						} `json:"incompat"`
 						RoCompat struct{} `json:"ro_compat"`
 					} `json:"compat"`
-					Created                   string        `json:"created"`
-					Damaged                   []interface{} `json:"damaged"`
-					DataPools                 []int         `json:"data_pools"`
-					Enabled                   bool          `json:"enabled"`
-					Epoch                     int           `json:"epoch"`
-					EverAllowedFeatures       int           `json:"ever_allowed_features"`
-					ExplicitlyAllowedFeatures int           `json:"explicitly_allowed_features"`
-					Failed                    []interface{} `json:"failed"`
-					Flags                     int           `json:"flags"`
-					FsName                    string        `json:"fs_name"`
-					In                        []int         `json:"in"`
-					Info                      map[string] ActiveMds `json:"info"`
-					LastFailure         int           `json:"last_failure"`
-					LastFailureOsdEpoch int           `json:"last_failure_osd_epoch"`
-					MaxFileSize         int           `json:"max_file_size"`
-					MaxMds              int           `json:"max_mds"`
-					MetadataPool        int           `json:"metadata_pool"`
-					Modified            string        `json:"modified"`
-					Root                int           `json:"root"`
-					SessionAutoclose    int           `json:"session_autoclose"`
-					SessionTimeout      int           `json:"session_timeout"`
-					Stopped             []interface{} `json:"stopped"`
-					Tableserver         int           `json:"tableserver"`
-					Up                  struct {
+					Created                   string               `json:"created"`
+					Damaged                   []interface{}        `json:"damaged"`
+					DataPools                 []int                `json:"data_pools"`
+					Enabled                   bool                 `json:"enabled"`
+					Epoch                     int                  `json:"epoch"`
+					EverAllowedFeatures       int                  `json:"ever_allowed_features"`
+					ExplicitlyAllowedFeatures int                  `json:"explicitly_allowed_features"`
+					Failed                    []interface{}        `json:"failed"`
+					Flags                     int                  `json:"flags"`
+					FsName                    string               `json:"fs_name"`
+					In                        []int                `json:"in"`
+					Info                      map[string]ActiveMds `json:"info"`
+					LastFailure               int                  `json:"last_failure"`
+					LastFailureOsdEpoch       int                  `json:"last_failure_osd_epoch"`
+					MaxFileSize               int                  `json:"max_file_size"`
+					MaxMds                    int                  `json:"max_mds"`
+					MetadataPool              int                  `json:"metadata_pool"`
+					Modified                  string               `json:"modified"`
+					Root                      int                  `json:"root"`
+					SessionAutoclose          int                  `json:"session_autoclose"`
+					SessionTimeout            int                  `json:"session_timeout"`
+					Stopped                   []interface{}        `json:"stopped"`
+					Tableserver               int                  `json:"tableserver"`
+					Up                        struct {
 						Mds0 int `json:"mds_0"`
 					} `json:"up"`
 				} `json:"mdsmap"`
