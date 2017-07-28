@@ -976,6 +976,28 @@ func TestLocking(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(info.Clients))
 
+	// lock sh with duration
+	res, err = pool.LockShared("obj", "myLock", "myCookie", "", "a description", time.Millisecond, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, res)
+
+	// verify lock sh expired
+	time.Sleep(time.Second)
+	info, err = pool.ListLockers("obj", "myLock")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(info.Clients))
+
+	// lock sh with duration
+	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "a description", time.Millisecond, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, res)
+
+	// verify lock sh expired
+	time.Sleep(time.Second)
+	info, err = pool.ListLockers("obj", "myLock")
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(info.Clients))
+
 	pool.Destroy()
 	conn.Shutdown()
 }

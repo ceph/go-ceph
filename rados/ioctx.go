@@ -649,7 +649,7 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 
 	var c_duration C.struct_timeval
 	if duration != 0 {
-		tv := syscall.NsecToTimeval(time.Now().Add(duration).UnixNano())
+		tv := syscall.NsecToTimeval(duration.Nanoseconds())
 		c_duration = C.struct_timeval{tv_sec: C.__time_t(tv.Sec), tv_usec: C.__suseconds_t(tv.Usec)}
 	}
 
@@ -698,7 +698,7 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 
 	var c_duration C.struct_timeval
 	if duration != 0 {
-		tv := syscall.NsecToTimeval(time.Now().Add(duration).UnixNano())
+		tv := syscall.NsecToTimeval(duration.Nanoseconds())
 		c_duration = C.struct_timeval{tv_sec: C.__time_t(tv.Sec), tv_usec: C.__suseconds_t(tv.Usec)}
 	}
 
