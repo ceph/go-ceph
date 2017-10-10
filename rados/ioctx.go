@@ -82,6 +82,23 @@ func (ioctx *IOContext) SetNamespace(namespace string) {
 	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
 }
 
+func (ioctx *IOContext) Create(oid string, exclusive bool) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	write_op := C.rados_create_write_op()
+	//C.LIBRADOS_CREATE_EXCLUSIVE
+	if exclusive {
+		C.rados_write_op_create(write_op, C.LIBRADOS_CREATE_EXCLUSIVE, nil)
+	} else {
+		C.rados_write_op_create(write_op, C.LIBRADOS_CREATE_IDEMPOTENT, nil)
+	}
+
+	ret := C.rados_write_op_operate(write_op, ioctx.ioctx, c_oid, nil, 0)
+	C.rados_release_write_op(write_op)
+	return GetRadosError(int(ret))
+}
+
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
 func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
