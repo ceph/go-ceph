@@ -11,6 +11,17 @@ package rados
 // 	*idx += strlen(*idx) + 1;
 // 	return copy;
 // }
+//
+// #if __APPLE__
+// #define ceph_time_t __darwin_time_t
+// #define ceph_suseconds_t __darwin_suseconds_t
+// #elif __GLIBC__
+// #define ceph_time_t __time_t
+// #define ceph_suseconds_t __suseconds_t
+// #else
+// #define ceph_time_t time_t
+// #define ceph_suseconds_t suseconds_t
+// #endif
 import "C"
 
 import (
@@ -650,7 +661,7 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 	var c_duration C.struct_timeval
 	if duration != 0 {
 		tv := syscall.NsecToTimeval(duration.Nanoseconds())
-		c_duration = C.struct_timeval{tv_sec: C.__time_t(tv.Sec), tv_usec: C.__suseconds_t(tv.Usec)}
+		c_duration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
 	}
 
 	var c_flags C.uint8_t
@@ -699,7 +710,7 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 	var c_duration C.struct_timeval
 	if duration != 0 {
 		tv := syscall.NsecToTimeval(duration.Nanoseconds())
-		c_duration = C.struct_timeval{tv_sec: C.__time_t(tv.Sec), tv_usec: C.__suseconds_t(tv.Usec)}
+		c_duration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
 	}
 
 	var c_flags C.uint8_t
