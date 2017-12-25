@@ -9,8 +9,7 @@ branches:
 
 matrix:
   include:
-    - env: CEPH_RELEASE=jewel
-    - env: CEPH_RELEASE=kraken
+    - env: CEPH_RELEASE=luminous
 
 before_install:
   - sudo apt-get update
@@ -20,6 +19,9 @@ before_install:
   - ceph status
 
 script:
+  - mkdir -p $GOPATH/src/github.com/ceph/
+  - cp -r `pwd` $GOPATH/src/github.com/ceph/go-ceph
+  - cd $GOPATH/src/github.com/ceph/go-ceph
   - go get -t -v ./...
   - go list ./...
   - go test -v $(go list ./... | grep -v cephfs)
