@@ -63,7 +63,8 @@ type LockInfo struct {
 
 // IOContext represents a context for performing I/O within a pool.
 type IOContext struct {
-	ioctx C.rados_ioctx_t
+	ioctx   C.rados_ioctx_t
+	cluster C.rados_t
 }
 
 // Pointer returns a uintptr representation of the IOContext.
