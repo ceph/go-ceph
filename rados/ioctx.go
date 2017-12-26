@@ -63,7 +63,8 @@ type LockInfo struct {
 
 // IOContext represents a context for performing I/O within a pool.
 type IOContext struct {
-	ioctx C.rados_ioctx_t
+	ioctx   C.rados_ioctx_t
+	cluster C.rados_t
 }
 
 // Pointer returns a uintptr representation of the IOContext.
@@ -240,15 +241,15 @@ type ObjectListFunc func(oid string)
 // to the function the name of the object.
 func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	var ctx C.rados_list_ctx_t
-	ret := C.rados_objects_list_open(ioctx.ioctx, &ctx)
+	ret := C.rados_nobjects_list_open(ioctx.ioctx, &ctx)
 	if ret < 0 {
 		return GetRadosError(int(ret))
 	}
-	defer func() { C.rados_objects_list_close(ctx) }()
+	defer func() { C.rados_nobjects_list_close(ctx) }()
 
 	for {
 		var c_entry *C.char
-		ret := C.rados_objects_list_next(ctx, &c_entry, nil)
+		ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
 		if ret == -2 { // FIXME
 			return nil
 		} else if ret < 0 {
@@ -450,12 +451,13 @@ func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPref
 
 	var c_iter C.rados_omap_iter_t
 	var c_prval C.int
-	C.rados_read_op_omap_get_vals(
+	C.rados_read_op_omap_get_vals2(
 		op,
 		c_start_after,
 		c_filter_prefix,
 		c_max_return,
 		&c_iter,
+		nil,
 		&c_prval,
 	)
 
@@ -596,7 +598,7 @@ type IterToken uint32
 // Return a Iterator object that can be used to list the object names in the current pool
 func (ioctx *IOContext) Iter() (*Iter, error) {
 	iter := Iter{}
-	if cerr := C.rados_objects_list_open(ioctx.ioctx, &iter.ctx); cerr < 0 {
+	if cerr := C.rados_nobjects_list_open(ioctx.ioctx, &iter.ctx); cerr < 0 {
 		return nil, GetRadosError(int(cerr))
 	}
 	return &iter, nil
@@ -604,11 +606,11 @@ func (ioctx *IOContext) Iter() (*Iter, error) {
 
 // Returns a token marking the current position of the iterator. To be used in combination with Iter.Seek()
 func (iter *Iter) Token() IterToken {
-	return IterToken(C.rados_objects_list_get_pg_hash_position(iter.ctx))
+	return IterToken(C.rados_nobjects_list_get_pg_hash_position(iter.ctx))
 }
 
 func (iter *Iter) Seek(token IterToken) {
-	C.rados_objects_list_seek(iter.ctx, C.uint32_t(token))
+	C.rados_nobjects_list_seek(iter.ctx, C.uint32_t(token))
 }
 
 // Next retrieves the next object name in the pool/namespace iterator.
@@ -627,7 +629,7 @@ func (iter *Iter) Seek(token IterToken) {
 //
 func (iter *Iter) Next() bool {
 	var c_entry *C.char
-	if cerr := C.rados_objects_list_next(iter.ctx, &c_entry, nil); cerr < 0 {
+	if cerr := C.rados_nobjects_list_next(iter.ctx, &c_entry, nil, nil); cerr < 0 {
 		iter.err = GetRadosError(int(cerr))
 		return false
 	}
@@ -654,7 +656,7 @@ func (iter *Iter) Err() error {
 // Closes the iterator cursor on the server. Be aware that iterators are not closed automatically
 // at the end of iteration.
 func (iter *Iter) Close() {
-	C.rados_objects_list_close(iter.ctx)
+	C.rados_nobjects_list_close(iter.ctx)
 }
 
 // Take an exclusive lock on an object.

@@ -29,6 +29,7 @@ DIR=$1
 # get rid of process and directories leftovers
 pkill ceph-mon || true
 pkill ceph-osd || true
+pkill ceph-mgr || true
 rm -fr $DIR
 
 # cluster wide parameters
@@ -96,10 +97,17 @@ EOF
 
 ceph-authtool --create-keyring --gen-key --name=mds.a ${MDS_DATA}/keyring
 ceph -i ${MDS_DATA}/keyring auth add mds.a mon 'allow profile mds' osd 'allow *' mds 'allow'
+ceph osd pool create rbd 8
 ceph osd pool create cephfs_data 8
 ceph osd pool create cephfs_metadata 8
 ceph fs new cephfs cephfs_metadata cephfs_data
 ceph-mds -i a
+
+MGR_DATA=${DIR}/mgr
+mkdir -p ${MGR_DATA}
+ceph-authtool --create-keyring --gen-key --name=mgr.x ${MGR_DATA}/ceph-x
+ceph -i ${MGR_DATA}/ceph-x auth get-or-create mgr.x mon 'allow profile mgr' osd 'allow *' mds 'allow *'
+ceph-mgr -i x
 
 export CEPH_CONF="${DIR}/ceph.conf"
 

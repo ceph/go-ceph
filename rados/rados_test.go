@@ -526,6 +526,18 @@ key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
 	assert.NoError(t, err)
 	assert.Equal(t, "", info)
 	assert.Equal(t, `{"key":"AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw=="}`, string(buf[:]))
+
+	// delete the test user
+	command, err = json.Marshal(map[string]interface{}{
+		"prefix": "auth del",
+		"format": "json",
+		"entity": "client.testMonCommandUser",
+	})
+	assert.NoError(t, err)
+
+	buf, info, err = conn.MonCommand(command)
+	assert.NoError(t, err)
+	assert.Equal(t, "updated", info)
 }
 
 func TestObjectListObjects(t *testing.T) {
