@@ -234,15 +234,15 @@ type ObjectListFunc func(oid string)
 // to the function the name of the object.
 func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	var ctx C.rados_list_ctx_t
-	ret := C.rados_objects_list_open(ioctx.ioctx, &ctx)
+	ret := C.rados_nobjects_list_open(ioctx.ioctx, &ctx)
 	if ret < 0 {
 		return GetRadosError(int(ret))
 	}
-	defer func() { C.rados_objects_list_close(ctx) }()
+	defer func() { C.rados_nobjects_list_close(ctx) }()
 
 	for {
 		var c_entry *C.char
-		ret := C.rados_objects_list_next(ctx, &c_entry, nil)
+		ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
 		if ret == -2 { // FIXME
 			return nil
 		} else if ret < 0 {
@@ -590,7 +590,7 @@ type IterToken uint32
 // Return a Iterator object that can be used to list the object names in the current pool
 func (ioctx *IOContext) Iter() (*Iter, error) {
 	iter := Iter{}
-	if cerr := C.rados_objects_list_open(ioctx.ioctx, &iter.ctx); cerr < 0 {
+	if cerr := C.rados_nobjects_list_open(ioctx.ioctx, &iter.ctx); cerr < 0 {
 		return nil, GetRadosError(int(cerr))
 	}
 	return &iter, nil
@@ -598,11 +598,11 @@ func (ioctx *IOContext) Iter() (*Iter, error) {
 
 // Returns a token marking the current position of the iterator. To be used in combination with Iter.Seek()
 func (iter *Iter) Token() IterToken {
-	return IterToken(C.rados_objects_list_get_pg_hash_position(iter.ctx))
+	return IterToken(C.rados_nobjects_list_get_pg_hash_position(iter.ctx))
 }
 
 func (iter *Iter) Seek(token IterToken) {
-	C.rados_objects_list_seek(iter.ctx, C.uint32_t(token))
+	C.rados_nobjects_list_seek(iter.ctx, C.uint32_t(token))
 }
 
 // Next retrieves the next object name in the pool/namespace iterator.
@@ -621,7 +621,7 @@ func (iter *Iter) Seek(token IterToken) {
 //
 func (iter *Iter) Next() bool {
 	var c_entry *C.char
-	if cerr := C.rados_objects_list_next(iter.ctx, &c_entry, nil); cerr < 0 {
+	if cerr := C.rados_nobjects_list_next(iter.ctx, &c_entry, nil, nil); cerr < 0 {
 		iter.err = GetRadosError(int(cerr))
 		return false
 	}
@@ -648,7 +648,7 @@ func (iter *Iter) Err() error {
 // Closes the iterator cursor on the server. Be aware that iterators are not closed automatically
 // at the end of iteration.
 func (iter *Iter) Close() {
-	C.rados_objects_list_close(iter.ctx)
+	C.rados_nobjects_list_close(iter.ctx)
 }
 
 // Take an exclusive lock on an object.
