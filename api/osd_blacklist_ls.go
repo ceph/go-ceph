@@ -14,7 +14,8 @@ type OsdBlacklistLs struct {
 
 func (obl *OsdBlacklistLs) IsInBlacklist(ip string) bool {
 	for _, node := range obl.Nodes {
-		if strings.Contains(node.Addr, ip) {
+		// luminous adds client specific bans, only consider whole node ban ending in "0/0"
+		if strings.Contains(node.Addr, ip) && strings.HasSuffix(node.Addr, ":0/0") {
 			return true
 		}
 	}
