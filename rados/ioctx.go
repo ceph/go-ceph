@@ -250,8 +250,6 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 		}
 		listFn(C.GoString(c_entry))
 	}
-
-	panic("invalid state")
 }
 
 // Stat returns the size of the object and its last modification time
