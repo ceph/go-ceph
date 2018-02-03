@@ -231,7 +231,9 @@ type ObjectListFunc func(oid string)
 
 // ListObjects lists all of the objects in the pool associated with the I/O
 // context, and called the provided listFn function for each object, passing
-// to the function the name of the object.
+// to the function the name of the object. Call SetNamespace with
+// RadosAllNamespaces before calling this function to return objects from all
+// namespaces
 func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	var ctx C.rados_list_ctx_t
 	ret := C.rados_nobjects_list_open(ioctx.ioctx, &ctx)
@@ -580,9 +582,10 @@ func (ioctx *IOContext) CleanOmap(oid string) error {
 }
 
 type Iter struct {
-	ctx   C.rados_list_ctx_t
-	err   error
-	entry string
+	ctx       C.rados_list_ctx_t
+	err       error
+	entry     string
+	namespace string
 }
 
 type IterToken uint32
@@ -621,11 +624,13 @@ func (iter *Iter) Seek(token IterToken) {
 //
 func (iter *Iter) Next() bool {
 	var c_entry *C.char
-	if cerr := C.rados_nobjects_list_next(iter.ctx, &c_entry, nil, nil); cerr < 0 {
+	var c_namespace *C.char
+	if cerr := C.rados_nobjects_list_next(iter.ctx, &c_entry, nil, &c_namespace); cerr < 0 {
 		iter.err = GetRadosError(int(cerr))
 		return false
 	}
 	iter.entry = C.GoString(c_entry)
+	iter.namespace = C.GoString(c_namespace)
 	return true
 }
 
@@ -635,6 +640,14 @@ func (iter *Iter) Value() string {
 		return ""
 	}
 	return iter.entry
+}
+
+// Returns the namespace associated with the current value of the iterator (object name), after a successful call to Next.
+func (iter *Iter) Namespace() string {
+	if iter.err != nil {
+		return ""
+	}
+	return iter.namespace
 }
 
 // Checks whether the iterator has encountered an error.
