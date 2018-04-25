@@ -74,7 +74,8 @@ type LockInfo struct {
 
 // IOContext represents a context for performing I/O within a pool.
 type IOContext struct {
-	ioctx C.rados_ioctx_t
+	ioctx   C.rados_ioctx_t
+	cluster C.rados_t
 }
 
 // Pointer returns a uintptr representation of the IOContext.
@@ -91,6 +92,23 @@ func (ioctx *IOContext) SetNamespace(namespace string) {
 		defer C.free(unsafe.Pointer(c_ns))
 	}
 	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
+}
+
+func (ioctx *IOContext) Create(oid string, exclusive bool) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	write_op := C.rados_create_write_op()
+	//C.LIBRADOS_CREATE_EXCLUSIVE
+	if exclusive {
+		C.rados_write_op_create(write_op, C.LIBRADOS_CREATE_EXCLUSIVE, nil)
+	} else {
+		C.rados_write_op_create(write_op, C.LIBRADOS_CREATE_IDEMPOTENT, nil)
+	}
+
+	ret := C.rados_write_op_operate(write_op, ioctx.ioctx, c_oid, nil, 0)
+	C.rados_release_write_op(write_op)
+	return GetRadosError(int(ret))
 }
 
 // Write writes len(data) bytes to the object with key oid starting at byte
@@ -249,6 +267,39 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 			return GetRadosError(int(ret))
 		}
 		listFn(C.GoString(c_entry))
+	}
+
+	panic("invalid state")
+}
+
+// ListObjects lists all of the objects in the pool associated with the I/O
+// context, and called the provided listFn function for each object, passing
+// to the function the name of the object.
+func (ioctx *IOContext) ListNObjects(ns string, listFn ObjectListFunc) error {
+	var ctx C.rados_list_ctx_t
+	var c_ns *C.char
+	if len(ns) > 0 {
+		c_ns = C.CString(ns)
+		defer C.free(unsafe.Pointer(c_ns))
+	}
+	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
+	ret := C.rados_nobjects_list_open(ioctx.ioctx, &ctx)
+	if ret < 0 {
+		return GetRadosError(int(ret))
+	}
+	defer func() { C.rados_nobjects_list_close(ctx) }()
+
+	for {
+		var c_entry *C.char
+		ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, &c_ns)
+		if ret == -2 { // FIXME
+			return nil
+		} else if ret != 0 {
+			return GetRadosError(int(ret))
+		}
+		fmt.Println("bneginlist")
+		listFn(C.GoString(c_entry))
+		fmt.Println("end")
 	}
 
 	panic("invalid state")
@@ -444,12 +495,13 @@ func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPref
 
 	var c_iter C.rados_omap_iter_t
 	var c_prval C.int
-	C.rados_read_op_omap_get_vals(
+	C.rados_read_op_omap_get_vals2(
 		op,
 		c_start_after,
 		c_filter_prefix,
 		c_max_return,
 		&c_iter,
+		nil,
 		&c_prval,
 	)
 

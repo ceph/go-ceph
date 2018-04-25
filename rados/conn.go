@@ -85,6 +85,7 @@ func (c *Conn) OpenIOContext(pool string) (*IOContext, error) {
 	ioctx := &IOContext{}
 	ret := C.rados_ioctx_create(c.cluster, c_pool, &ioctx.ioctx)
 	if ret == 0 {
+		ioctx.cluster = c.cluster
 		return ioctx, nil
 	} else {
 		return nil, RadosError(int(ret))

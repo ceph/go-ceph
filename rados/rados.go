@@ -19,6 +19,7 @@ func (e RadosError) Error() string {
 
 var RadosErrorNotFound = RadosError(-C.ENOENT)
 var RadosErrorPermissionDenied = RadosError(-C.EPERM)
+var RadosErrorExist = RadosError(-C.EEXIST)
 
 func GetRadosError(err int) error {
 	if err == 0 {
