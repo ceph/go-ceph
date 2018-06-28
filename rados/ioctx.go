@@ -502,6 +502,81 @@ func (ioctx *IOContext) GetOmapValues(oid string, startAfter string, filterPrefi
 	return omap, err
 }
 
+func (ioctx *IOContext) ListOmapValuesByKeys(oid string, keys []string, listFn OmapListFunc) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	var c *C.char
+	ptrSize := unsafe.Sizeof(c)
+
+	c_keys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
+	defer C.free(unsafe.Pointer(c_keys))
+
+	i := 0
+	for _, key := range keys {
+		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
+		*c_key_ptr = C.CString(key)
+		defer C.free(unsafe.Pointer(*c_key_ptr))
+		i++
+	}
+
+	op := C.rados_create_read_op()
+
+	var c_iter C.rados_omap_iter_t
+	var c_prval C.int
+	C.rados_read_op_omap_get_vals_by_keys(
+		op,
+		(**C.char)(c_keys),
+		C.size_t(len(keys)),
+		&c_iter,
+		&c_prval,
+	)
+
+	ret := C.rados_read_op_operate(op, ioctx.ioctx, c_oid, 0)
+
+	if int(ret) != 0 {
+		return GetRadosError(int(ret))
+	} else if int(c_prval) != 0 {
+		return RadosError(int(c_prval))
+	}
+
+	for {
+		var c_key *C.char
+		var c_val *C.char
+		var c_len C.size_t
+
+		ret = C.rados_omap_get_next(c_iter, &c_key, &c_val, &c_len)
+
+		if int(ret) != 0 {
+			return GetRadosError(int(ret))
+		}
+
+		if c_key == nil {
+			break
+		}
+
+		listFn(C.GoString(c_key), C.GoBytes(unsafe.Pointer(c_val), C.int(c_len)))
+	}
+
+	C.rados_omap_get_end(c_iter)
+	C.rados_release_read_op(op)
+
+	return nil
+}
+
+func (ioctx *IOContext) GetOmapValuesByKeys(oid string, keys []string) (map[string][]byte, error) {
+	omap := map[string][]byte{}
+
+	err := ioctx.ListOmapValuesByKeys(
+		oid, keys,
+		func(key string, value []byte) {
+			omap[key] = value
+		},
+	)
+
+	return omap, err
+}
+
 // Fetch all the keys and their values from an omap and returns then as a map
 // `startAfter`: retrieve only the keys after this specified one
 // `filterPrefix`: retrieve only the keys beginning with this prefix
