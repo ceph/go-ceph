@@ -99,8 +99,13 @@ func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
 
+	dataPointer := unsafe.Pointer(nil)
+	if len(data) > 0 {
+	  dataPointer = unsafe.Pointer(&data[0])
+	}
+
 	ret := C.rados_write(ioctx.ioctx, c_oid,
-		(*C.char)(unsafe.Pointer(&data[0])),
+		(*C.char)(dataPointer),
 		(C.size_t)(len(data)),
 		(C.uint64_t)(offset))
 
