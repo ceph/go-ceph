@@ -1,27 +1,18 @@
-dist: trusty
 sudo: required
-
-language: go
+services:
+  - docker
 
 branches:
   except:
     - gh-pages
 
-matrix:
-  include:
-    - env: CEPH_RELEASE=jewel
-    - env: CEPH_RELEASE=kraken
+#matrix:
+#  include:
+#    - env: CEPH_RELEASE=jewel
+#    - env: CEPH_RELEASE=kraken
 
 before_install:
-  - sudo apt-get update
-  - ci/before_install.sh
-  - bash ci/micro-osd.sh /tmp/micro-ceph
-  - export CEPH_CONF=/tmp/micro-ceph/ceph.conf
-  - ceph status
+  - docker build -t ceph-golang-ci .
 
 script:
-  - go get -t -v ./...
-  - go list ./...
-  - go test -v $(go list ./... | grep -v cephfs)
-  - go fmt ./...
-  - go vet ./...
+  - docker run --rm -it -v ${PWD}:/go/src/github.com/ceph/go-ceph:z ceph-golang-ci

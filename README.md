@@ -89,6 +89,16 @@ delete a pool with the given name. The following will delete the pool named
 conn.DeletePool("new_pool")
 ```
 
+# Development
+
+```
+docker run --rm -it --net=host
+  -v ${PWD}:/go/src/github.com/ceph/go-ceph:z
+  -v /home/nwatkins/src/ceph/build:/home/nwatkins/src/ceph/build:z
+  -e CEPH_CONF=/home/nwatkins/src/ceph/build/ceph.conf
+  ceph-golang
+```
+
 ## Contributing
 
 Contributions are welcome & greatly appreciated, every little bit helps. Make code changes via Github pull requests:
