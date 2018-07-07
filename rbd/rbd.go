@@ -152,7 +152,7 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	defer C.free(unsafe.Pointer(c_name))
 
 	switch len(args) {
-	case 2:
+	case 3:
 		ret = C.rbd_create3(C.rados_ioctx_t(ioctx.Pointer()),
 			c_name, C.uint64_t(size),
 			C.uint64_t(args[0]), &c_order,
