@@ -591,6 +591,15 @@ func TestObjectIterator(t *testing.T) {
 	assert.NoError(t, iter.Err())
 	assert.True(t, len(objectList) == 0)
 
+	//create an object in a different namespace to verify that
+	//iteration within a namespace does not return it
+	ioctx.SetNamespace("ns1")
+	bytes_in := []byte("input data")
+	err = ioctx.Write(GetUUID(), bytes_in, 0)
+	assert.NoError(t, err)
+
+	ioctx.SetNamespace("")
+
 	createdList := []string{}
 	for i := 0; i < 200; i++ {
 		oid := GetUUID()
@@ -610,6 +619,78 @@ func TestObjectIterator(t *testing.T) {
 	assert.NoError(t, iter.Err())
 	assert.Equal(t, len(objectList), len(createdList))
 
+	sort.Strings(objectList)
+	sort.Strings(createdList)
+
+	assert.Equal(t, objectList, createdList)
+}
+
+func TestObjectIteratorAcrossNamespaces(t *testing.T) {
+	const perNamespace = 100
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	objectListNS1 := []string{}
+	objectListNS2 := []string{}
+
+	iter, err := ioctx.Iter()
+	assert.NoError(t, err)
+	preexisting := 0
+	for iter.Next() {
+		preexisting++
+	}
+	iter.Close()
+	assert.NoError(t, iter.Err())
+	assert.EqualValues(t, 0, preexisting)
+
+	createdList := []string{}
+	ioctx.SetNamespace("ns1")
+	for i := 0; i < 90; i++ {
+		oid := GetUUID()
+		bytes_in := []byte("input data")
+		err = ioctx.Write(oid, bytes_in, 0)
+		assert.NoError(t, err)
+		createdList = append(createdList, oid)
+	}
+	ioctx.SetNamespace("ns2")
+	for i := 0; i < 100; i++ {
+		oid := GetUUID()
+		bytes_in := []byte("input data")
+		err = ioctx.Write(oid, bytes_in, 0)
+		assert.NoError(t, err)
+		createdList = append(createdList, oid)
+	}
+	assert.True(t, len(createdList) == 190)
+
+	ioctx.SetNamespace(rados.RadosAllNamespaces)
+	iter, err = ioctx.Iter()
+	assert.NoError(t, err)
+	rogue := 0
+	for iter.Next() {
+		if iter.Namespace() == "ns1" {
+			objectListNS1 = append(objectListNS1, iter.Value())
+		} else if iter.Namespace() == "ns2" {
+			objectListNS2 = append(objectListNS2, iter.Value())
+		} else {
+			rogue++
+		}
+	}
+	iter.Close()
+	assert.NoError(t, iter.Err())
+	assert.EqualValues(t, 0, rogue)
+	assert.Equal(t, len(objectListNS1), 90)
+	assert.Equal(t, len(objectListNS2), 100)
+	objectList := []string{}
+	objectList = append(objectList, objectListNS1...)
+	objectList = append(objectList, objectListNS2...)
 	sort.Strings(objectList)
 	sort.Strings(createdList)
 
@@ -897,6 +978,48 @@ func TestSetNamespace(t *testing.T) {
 	stat, err = pool.Stat("obj")
 	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
 	assert.NotNil(t, stat.ModTime)
+
+	pool.Destroy()
+	conn.Shutdown()
+}
+
+func TestListAcrossNamespaces(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	pool_name := GetUUID()
+	err := conn.MakePool(pool_name)
+	assert.NoError(t, err)
+
+	pool, err := conn.OpenIOContext(pool_name)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	err = pool.Write("obj", bytes_in, 0)
+	assert.NoError(t, err)
+
+	pool.SetNamespace("space1")
+
+	bytes_in = []byte("input data")
+	err = pool.Write("obj2", bytes_in, 0)
+	assert.NoError(t, err)
+
+	foundObjects := 0
+	err = pool.ListObjects(func(oid string) {
+		foundObjects++
+	})
+	assert.NoError(t, err)
+	assert.EqualValues(t, 1, foundObjects)
+
+	pool.SetNamespace(rados.RadosAllNamespaces)
+
+	foundObjects = 0
+	err = pool.ListObjects(func(oid string) {
+		foundObjects++
+	})
+	assert.NoError(t, err)
+	assert.EqualValues(t, 2, foundObjects)
 
 	pool.Destroy()
 	conn.Shutdown()
