@@ -41,6 +41,7 @@ type Status struct {
 				} `json:"health_services"`
 			} `json:"health"`
 			OverallStatus string    `json:"overall_status"`
+			Status        string    `json:"status"`
 			Summary       []Summary `json:"summary"`
 			Timechecks    struct {
 				Epoch int `json:"epoch"`
