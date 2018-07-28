@@ -99,6 +99,14 @@ docker run --rm -it --net=host
   ceph-golang
 ```
 
+Run against a `vstart.sh` cluster without installing Ceph:
+
+```
+export CGO_CPPFLAGS="-I/ceph/src/include"
+export CGO_LDFLAGS="-L/ceph/build/lib"
+go build
+```
+
 ## Contributing
 
 Contributions are welcome & greatly appreciated, every little bit helps. Make code changes via Github pull requests:
