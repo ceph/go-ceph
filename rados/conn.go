@@ -18,7 +18,8 @@ type ClusterStat struct {
 
 // Conn is a connection handle to a Ceph cluster.
 type Conn struct {
-	cluster C.rados_t
+	cluster   C.rados_t
+	connected bool
 }
 
 // PingMonitor sends a ping to a monitor and returns the reply.
