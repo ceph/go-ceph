@@ -1,15 +1,16 @@
 package rados_test
 
 import (
-	//	"encoding/json"
+	"encoding/json"
 	"fmt"
-	//	"io"
-	//	"io/ioutil"
+	"io"
+	"io/ioutil"
+	"strconv"
 	//"net"
+	"math/rand"
 	"os"
 	"os/exec"
-	//"sort"
-	"math/rand"
+	"sort"
 	"testing"
 	"time"
 
@@ -60,10 +61,10 @@ func (suite *RadosTestSuite) SetupTest() {
 	conn, err := rados.NewConn()
 	require.NoError(suite.T(), err)
 	suite.conn = conn
+	suite.conn.ReadDefaultConfigFile()
 }
 
 func (suite *RadosTestSuite) SetupConnection() {
-	suite.conn.ReadDefaultConfigFile()
 	if err := suite.conn.Connect(); assert.NoError(suite.T(), err) {
 		ioctx, err := suite.conn.OpenIOContext(suite.pool)
 		if assert.NoError(suite.T(), err) {
@@ -171,6 +172,41 @@ func (suite *RadosTestSuite) TestParseCmdLineArgs() {
 
 	assert.NotEqual(suite.T(), prev_val, "/dev/null")
 	assert.Equal(suite.T(), curr_val, "/dev/null")
+}
+
+func (suite *RadosTestSuite) TestReadConfigFile() {
+	// check current log_file value
+	prev_str, err := suite.conn.GetConfigOption("log_max_new")
+	assert.NoError(suite.T(), err)
+
+	prev_val, err := strconv.Atoi(prev_str)
+	assert.NoError(suite.T(), err)
+
+	// create conf file that changes log_file conf option
+	file, err := ioutil.TempFile("/tmp", "go-rados")
+	assert.NoError(suite.T(), err)
+
+	next_val := prev_val + 1
+	conf := fmt.Sprintf("[global]\nlog_max_new = %d\n", next_val)
+	_, err = io.WriteString(file, conf)
+	assert.NoError(suite.T(), err)
+
+	// parse the config file
+	err = suite.conn.ReadConfigFile(file.Name())
+	assert.NoError(suite.T(), err)
+
+	// check current log_file value
+	curr_str, err := suite.conn.GetConfigOption("log_max_new")
+	assert.NoError(suite.T(), err)
+
+	curr_val, err := strconv.Atoi(curr_str)
+	assert.NoError(suite.T(), err)
+
+	assert.NotEqual(suite.T(), prev_str, curr_str)
+	assert.Equal(suite.T(), curr_val, prev_val+1)
+
+	file.Close()
+	os.Remove(file.Name())
 }
 
 func (suite *RadosTestSuite) TestGetClusterStats() {
@@ -283,36 +319,6 @@ func (suite *RadosTestSuite) TestPingMonitor() {
 	assert.NotEqual(suite.T(), reply, "")
 }
 
-//func TestReadConfigFile(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//
-//	// check current log_file value
-//	log_file_val, err := conn.GetConfigOption("log_file")
-//	assert.NoError(t, err)
-//	assert.NotEqual(t, log_file_val, "/dev/null")
-//
-//	// create a temporary ceph.conf file that changes the log_file conf
-//	// option.
-//	file, err := ioutil.TempFile("/tmp", "go-rados")
-//	assert.NoError(t, err)
-//
-//	_, err = io.WriteString(file, "[global]\nlog_file = /dev/null\n")
-//	assert.NoError(t, err)
-//
-//	// parse the config file
-//	err = conn.ReadConfigFile(file.Name())
-//	assert.NoError(t, err)
-//
-//	// check current log_file value
-//	log_file_val, err = conn.GetConfigOption("log_file")
-//	assert.NoError(t, err)
-//	assert.Equal(t, log_file_val, "/dev/null")
-//
-//	// cleanup
-//	file.Close()
-//	os.Remove(file.Name())
-//}
-//
 func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
 	suite.SetupConnection()
 
@@ -397,251 +403,212 @@ func (suite *RadosTestSuite) TestDeleteNotFound() {
 	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
 }
 
-//func TestObjectStat(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	stat, err := pool.Stat("obj")
-//	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
-//	assert.NotNil(t, stat.ModTime)
-//
-//	_, err = pool.Stat("notfound")
-//	assert.Equal(t, err, rados.RadosErrorNotFound)
-//
-//	pool.Destroy()
-//	conn.Shutdown()
-//}
-//
-//func TestGetPoolStats(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	poolname := GetUUID()
-//	err := conn.MakePool(poolname)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(poolname)
-//	assert.NoError(t, err)
-//
-//	// grab current stats
-//	prev_stat, err := pool.GetPoolStats()
-//	fmt.Printf("prev_stat: %+v\n", prev_stat)
-//	assert.NoError(t, err)
-//
-//	// make some changes to the cluster
-//	buf := make([]byte, 1<<20)
-//	for i := 0; i < 10; i++ {
-//		objname := GetUUID()
-//		pool.Write(objname, buf, 0)
-//	}
-//
-//	// wait a while for the stats to change
-//	for i := 0; i < 30; i++ {
-//		stat, err := pool.GetPoolStats()
-//		assert.NoError(t, err)
-//
-//		// wait for something to change
-//		if stat == prev_stat {
-//			fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
-//			time.Sleep(time.Second)
-//		} else {
-//			// success
-//			fmt.Printf("curr_stat: %+v (change detected)\n", stat)
-//			conn.Shutdown()
-//			return
-//		}
-//	}
-//
-//	pool.Destroy()
-//	conn.Shutdown()
-//	t.Error("Pool stats aren't changing")
-//}
-//
-//func TestGetPoolName(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	poolname := GetUUID()
-//	err := conn.MakePool(poolname)
-//	assert.NoError(t, err)
-//
-//	ioctx, err := conn.OpenIOContext(poolname)
-//	assert.NoError(t, err)
-//
-//	poolname_ret, err := ioctx.GetPoolName()
-//	assert.NoError(t, err)
-//
-//	assert.Equal(t, poolname, poolname_ret)
-//
-//	ioctx.Destroy()
-//	conn.Shutdown()
-//}
-//
-//func TestMonCommand(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//	defer conn.Shutdown()
-//
-//	command, err := json.Marshal(map[string]string{"prefix": "df", "format": "json"})
-//	assert.NoError(t, err)
-//
-//	buf, info, err := conn.MonCommand(command)
-//	assert.NoError(t, err)
-//	assert.Equal(t, info, "")
-//
-//	var message map[string]interface{}
-//	err = json.Unmarshal(buf, &message)
-//	assert.NoError(t, err)
-//}
-//
-//func TestMonCommandWithInputBuffer(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//	defer conn.Shutdown()
-//
-//	// first add the new test user, specifying its key in the input buffer
-//	command, err := json.Marshal(map[string]interface{}{
-//		"prefix": "auth add",
-//		"format": "json",
-//		"entity": "client.testMonCommandUser",
-//	})
-//	assert.NoError(t, err)
-//
-//	inbuf := []byte(`[client.testMonCommandUser]
-//key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
-//`)
-//
-//	buf, info, err := conn.MonCommandWithInputBuffer(command, inbuf)
-//	assert.NoError(t, err)
-//	assert.Equal(t, "added key for client.testMonCommandUser", info)
-//	assert.Equal(t, "", string(buf[:]))
-//
-//	// now get the key, and verify it is equal to the key we specified in the input buffer for "auth add"
-//	command, err = json.Marshal(map[string]interface{}{
-//		"prefix": "auth get-key",
-//		"format": "json",
-//		"entity": "client.testMonCommandUser",
-//	})
-//	assert.NoError(t, err)
-//
-//	buf, info, err = conn.MonCommand(command)
-//	assert.NoError(t, err)
-//	assert.Equal(t, "", info)
-//	assert.Equal(t, `{"key":"AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw=="}`, string(buf[:]))
-//}
-//
-//func TestObjectListObjects(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	poolname := GetUUID()
-//	err := conn.MakePool(poolname)
-//	assert.NoError(t, err)
-//
-//	ioctx, err := conn.OpenIOContext(poolname)
-//	assert.NoError(t, err)
-//
-//	objectList := []string{}
-//	err = ioctx.ListObjects(func(oid string) {
-//		objectList = append(objectList, oid)
-//	})
-//	assert.NoError(t, err)
-//	assert.True(t, len(objectList) == 0)
-//
-//	createdList := []string{}
-//	for i := 0; i < 200; i++ {
-//		oid := GetUUID()
-//		bytes_in := []byte("input data")
-//		err = ioctx.Write(oid, bytes_in, 0)
-//		assert.NoError(t, err)
-//		createdList = append(createdList, oid)
-//	}
-//	assert.True(t, len(createdList) == 200)
-//
-//	err = ioctx.ListObjects(func(oid string) {
-//		objectList = append(objectList, oid)
-//	})
-//	assert.NoError(t, err)
-//	assert.Equal(t, len(objectList), len(createdList))
-//
-//	sort.Strings(objectList)
-//	sort.Strings(createdList)
-//
-//	assert.Equal(t, objectList, createdList)
-//}
-//
-//func TestObjectIterator(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	poolname := GetUUID()
-//	err := conn.MakePool(poolname)
-//	assert.NoError(t, err)
-//
-//	ioctx, err := conn.OpenIOContext(poolname)
-//	assert.NoError(t, err)
-//
-//	objectList := []string{}
-//	iter, err := ioctx.Iter()
-//	assert.NoError(t, err)
-//	for iter.Next() {
-//		objectList = append(objectList, iter.Value())
-//	}
-//	iter.Close()
-//	assert.NoError(t, iter.Err())
-//	assert.True(t, len(objectList) == 0)
-//
-//	//create an object in a different namespace to verify that
-//	//iteration within a namespace does not return it
-//	ioctx.SetNamespace("ns1")
-//	bytes_in := []byte("input data")
-//	err = ioctx.Write(GetUUID(), bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	ioctx.SetNamespace("")
-//
-//	createdList := []string{}
-//	for i := 0; i < 200; i++ {
-//		oid := GetUUID()
-//		bytes_in := []byte("input data")
-//		err = ioctx.Write(oid, bytes_in, 0)
-//		assert.NoError(t, err)
-//		createdList = append(createdList, oid)
-//	}
-//	assert.True(t, len(createdList) == 200)
-//
-//	iter, err = ioctx.Iter()
-//	assert.NoError(t, err)
-//	for iter.Next() {
-//		objectList = append(objectList, iter.Value())
-//	}
-//	iter.Close()
-//	assert.NoError(t, iter.Err())
-//	assert.Equal(t, len(objectList), len(createdList))
-//
-//	sort.Strings(objectList)
-//	sort.Strings(createdList)
-//
-//	assert.Equal(t, objectList, createdList)
-//}
+func (suite *RadosTestSuite) TestStatNotFound() {
+	suite.SetupConnection()
+
+	oid := suite.GenObjectName()
+	_, err := suite.ioctx.Stat(oid)
+	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+}
+
+func (suite *RadosTestSuite) TestObjectStat() {
+	suite.SetupConnection()
+
+	oid := suite.GenObjectName()
+	bytes := suite.RandomBytes(234)
+	err := suite.ioctx.Write(oid, bytes, 0)
+	assert.NoError(suite.T(), err)
+
+	stat, err := suite.ioctx.Stat(oid)
+	assert.Equal(suite.T(), uint64(len(bytes)), stat.Size)
+	assert.NotNil(suite.T(), stat.ModTime)
+}
+
+func (suite *RadosTestSuite) TestGetPoolStats() {
+	suite.SetupConnection()
+
+	// grab current stats
+	prev_stat, err := suite.ioctx.GetPoolStats()
+	fmt.Printf("prev_stat: %+v\n", prev_stat)
+	assert.NoError(suite.T(), err)
+
+	// make some changes to the cluster
+	buf := make([]byte, 1<<20)
+	for i := 0; i < 10; i++ {
+		oid := suite.GenObjectName()
+		suite.ioctx.Write(oid, buf, 0)
+	}
+
+	// wait a while for the stats to change
+	for i := 0; i < 30; i++ {
+		stat, err := suite.ioctx.GetPoolStats()
+		assert.NoError(suite.T(), err)
+
+		// wait for something to change
+		if stat == prev_stat {
+			fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
+			time.Sleep(time.Second)
+		} else {
+			// success
+			fmt.Printf("curr_stat: %+v (change detected)\n", stat)
+			return
+		}
+	}
+
+	suite.T().Error("Pool stats aren't changing")
+}
+
+func (suite *RadosTestSuite) TestGetPoolName() {
+	suite.SetupConnection()
+
+	name, err := suite.ioctx.GetPoolName()
+	assert.NoError(suite.T(), err)
+
+	assert.Equal(suite.T(), name, suite.pool)
+}
+
+func (suite *RadosTestSuite) TestMonCommand() {
+	suite.SetupConnection()
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "df", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.MonCommand(command)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+
+	var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
+	suite.SetupConnection()
+
+	entity := fmt.Sprintf("client.testMonCmdUser%d", time.Now().UnixNano())
+
+	// first add the new test user, specifying its key in the input buffer
+	command, err := json.Marshal(map[string]interface{}{
+		"prefix": "auth add",
+		"format": "json",
+		"entity": entity,
+	})
+	assert.NoError(suite.T(), err)
+
+	client_key := fmt.Sprintf(`
+	  [%s]
+	  key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
+	`, entity)
+
+	inbuf := []byte(client_key)
+
+	buf, info, err := suite.conn.MonCommandWithInputBuffer(command, inbuf)
+	assert.NoError(suite.T(), err)
+	expected_info := fmt.Sprintf("added key for %s", entity)
+	assert.Equal(suite.T(), expected_info, info)
+	assert.Equal(suite.T(), "", string(buf[:]))
+
+	// get the key and verify that it's what we previously set
+	command, err = json.Marshal(map[string]interface{}{
+		"prefix": "auth get-key",
+		"format": "json",
+		"entity": entity,
+	})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err = suite.conn.MonCommand(command)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "", info)
+	assert.Equal(suite.T(),
+		`{"key":"AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw=="}`,
+		string(buf[:]))
+}
+
+func (suite *RadosTestSuite) TestObjectListObjects() {
+	suite.SetupConnection()
+
+	// objects currently in pool
+	prevObjectList := []string{}
+	err := suite.ioctx.ListObjects(func(oid string) {
+		prevObjectList = append(prevObjectList, oid)
+	})
+	assert.NoError(suite.T(), err)
+
+	// create some objects
+	createdList := []string{}
+	for i := 0; i < 10; i++ {
+		oid := suite.GenObjectName()
+		bytes := []byte("input data")
+		err := suite.ioctx.Write(oid, bytes, 0)
+		assert.NoError(suite.T(), err)
+		createdList = append(createdList, oid)
+	}
+
+	// join the lists of objects
+	expectedObjectList := prevObjectList
+	expectedObjectList = append(expectedObjectList, createdList...)
+
+	// now list the current set of objects in the pool
+	currObjectList := []string{}
+	err = suite.ioctx.ListObjects(func(oid string) {
+		currObjectList = append(currObjectList, oid)
+	})
+	assert.NoError(suite.T(), err)
+
+	// lists should be equal
+	sort.Strings(currObjectList)
+	sort.Strings(expectedObjectList)
+	assert.Equal(suite.T(), currObjectList, expectedObjectList)
+}
+
+func (suite *RadosTestSuite) TestObjectIterator() {
+	suite.SetupConnection()
+
+	prevObjectList := []string{}
+	iter, err := suite.ioctx.Iter()
+	assert.NoError(suite.T(), err)
+	for iter.Next() {
+		prevObjectList = append(prevObjectList, iter.Value())
+	}
+	iter.Close()
+	assert.NoError(suite.T(), iter.Err())
+
+	// create an object in a different namespace to verify that
+	// iteration within a namespace does not return it
+	suite.ioctx.SetNamespace("ns1")
+	bytes_in := []byte("input data")
+	err = suite.ioctx.Write(suite.GenObjectName(), bytes_in, 0)
+	assert.NoError(suite.T(), err)
+
+	suite.ioctx.SetNamespace("")
+	createdList := []string{}
+	for i := 0; i < 10; i++ {
+		oid := suite.GenObjectName()
+		bytes_in := []byte("input data")
+		err = suite.ioctx.Write(oid, bytes_in, 0)
+		assert.NoError(suite.T(), err)
+		createdList = append(createdList, oid)
+	}
+
+	// prev list plus new oids
+	expectedObjectList := prevObjectList
+	expectedObjectList = append(expectedObjectList, createdList...)
+
+	currObjectList := []string{}
+	iter, err = suite.ioctx.Iter()
+	assert.NoError(suite.T(), err)
+	for iter.Next() {
+		currObjectList = append(currObjectList, iter.Value())
+	}
+	iter.Close()
+	assert.NoError(suite.T(), iter.Err())
+
+	sort.Strings(expectedObjectList)
+	sort.Strings(currObjectList)
+	assert.Equal(suite.T(), currObjectList, expectedObjectList)
+}
+
 //
 //func TestObjectIteratorAcrossNamespaces(t *testing.T) {
 //	const perNamespace = 100
@@ -725,122 +692,85 @@ func (suite *RadosTestSuite) TestDeleteNotFound() {
 //	assert.Equal(t, err, nil)
 //}
 //
-//func TestReadWriteXattr(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	// make pool
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	my_xattr_in := []byte("my_value")
-//	err = pool.SetXattr("obj", "my_key", my_xattr_in)
-//	assert.NoError(t, err)
-//
-//	my_xattr_out := make([]byte, len(my_xattr_in))
-//	n_out, err := pool.GetXattr("obj", "my_key", my_xattr_out)
-//
-//	assert.Equal(t, n_out, len(my_xattr_in))
-//	assert.Equal(t, my_xattr_in, my_xattr_out)
-//
-//	pool.Destroy()
-//}
-//
-//func TestListXattrs(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	// make pool
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	input_xattrs := make(map[string][]byte)
-//	for i := 0; i < 200; i++ {
-//		name := fmt.Sprintf("key_%d", i)
-//		data := []byte(GetUUID())
-//		err = pool.SetXattr("obj", name, data)
-//		assert.NoError(t, err)
-//		input_xattrs[name] = data
-//	}
-//
-//	output_xattrs := make(map[string][]byte)
-//	output_xattrs, err = pool.ListXattrs("obj")
-//	assert.NoError(t, err)
-//	assert.Equal(t, len(input_xattrs), len(output_xattrs))
-//	assert.Equal(t, input_xattrs, output_xattrs)
-//
-//	pool.Destroy()
-//}
-//
-//func TestRmXattr(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	key := "key1"
-//	val := []byte("val1")
-//	err = pool.SetXattr("obj", key, val)
-//	assert.NoError(t, err)
-//
-//	key = "key2"
-//	val = []byte("val2")
-//	err = pool.SetXattr("obj", key, val)
-//	assert.NoError(t, err)
-//
-//	xattr_list := make(map[string][]byte)
-//	xattr_list, err = pool.ListXattrs("obj")
-//	assert.NoError(t, err)
-//	assert.Equal(t, len(xattr_list), 2)
-//
-//	pool.RmXattr("obj", "key2")
-//	xattr_list, err = pool.ListXattrs("obj")
-//	assert.NoError(t, err)
-//	assert.Equal(t, len(xattr_list), 1)
-//
-//	found := false
-//	for key, _ = range xattr_list {
-//		if key == "key2" {
-//			found = true
-//		}
-//
-//	}
-//
-//	if found {
-//		t.Error("Deleted pool still exists")
-//	}
-//
-//	pool.Destroy()
-//}
-//
+
+func (suite *RadosTestSuite) TestReadWriteXattr() {
+	suite.SetupConnection()
+
+	oid := suite.GenObjectName()
+	val := []byte("value")
+	err := suite.ioctx.SetXattr(oid, "key", val)
+	assert.NoError(suite.T(), err)
+
+	out := make([]byte, len(val))
+	n, err := suite.ioctx.GetXattr(oid, "key", out)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), n, len(out))
+
+	assert.Equal(suite.T(), out, val)
+}
+
+func (suite *RadosTestSuite) TestListXattrs() {
+	suite.SetupConnection()
+
+	oid := suite.GenObjectName()
+	xattrs := make(map[string][]byte)
+	val := []byte("value")
+	for i := 0; i < 10; i++ {
+		name := fmt.Sprintf("key_%d", i)
+		err := suite.ioctx.SetXattr(oid, name, val)
+		assert.NoError(suite.T(), err)
+		xattrs[name] = val
+	}
+
+	out, err := suite.ioctx.ListXattrs(oid)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), xattrs, out)
+}
+
+func (suite *RadosTestSuite) TestRmXattr() {
+	suite.SetupConnection()
+
+	oid := suite.GenObjectName()
+
+	// 2 xattrs
+	xattrs := make(map[string][]byte)
+	xattrs["key1"] = []byte("val")
+	xattrs["key2"] = []byte("val")
+	assert.Equal(suite.T(), len(xattrs), 2)
+
+	// add them to the object
+	for key, value := range xattrs {
+		err := suite.ioctx.SetXattr(oid, key, value)
+		assert.NoError(suite.T(), err)
+	}
+	out, err := suite.ioctx.ListXattrs(oid)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), len(out), 2)
+	assert.Equal(suite.T(), out, xattrs)
+
+	// remove key1
+	err = suite.ioctx.RmXattr(oid, "key1")
+	assert.NoError(suite.T(), err)
+	delete(xattrs, "key1")
+
+	// verify key1 is gone
+	out, err = suite.ioctx.ListXattrs(oid)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), len(out), 1)
+	assert.Equal(suite.T(), out, xattrs)
+
+	// remove key2
+	err = suite.ioctx.RmXattr(oid, "key2")
+	assert.NoError(suite.T(), err)
+	delete(xattrs, "key2")
+
+	// verify key2 is gone
+	out, err = suite.ioctx.ListXattrs(oid)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), len(out), 0)
+	assert.Equal(suite.T(), out, xattrs)
+}
+
 //func TestReadWriteOmap(t *testing.T) {
 //	conn, _ := rados.NewConn()
 //	conn.ReadDefaultConfigFile()
