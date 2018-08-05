@@ -39,7 +39,7 @@ auth service required = none
 auth client required = none
 osd pool default size = 1
 
-[mon.0]
+[mon.a]
 log file = ${LOG_DIR}/mon.log
 chdir = ""
 mon cluster log file = ${LOG_DIR}/mon-cluster.log
@@ -61,9 +61,9 @@ EOF
 export CEPH_CONF=${DIR}/ceph.conf
 
 # start an osd
-ceph-mon --id 0 --mkfs --keyring /dev/null
+ceph-mon --id a --mkfs --keyring /dev/null
 touch ${MON_DATA}/keyring
-ceph-mon --id 0
+ceph-mon --id a
 
 # start an osd
 OSD_ID=$(ceph osd create)
