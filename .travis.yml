@@ -6,13 +6,20 @@ branches:
   except:
     - gh-pages
 
-#matrix:
-#  include:
-#    - env: CEPH_RELEASE=jewel
-#    - env: CEPH_RELEASE=kraken
+matrix:
+  include:
+    - env: CEPH_VERSION=luminous
+    - env: CEPH_VERSION=mimic
 
-before_install:
-  - docker build -t ceph-golang-ci .
+before_install: |
+  if [[ "${CEPH_VERSION}" == "luminous" ]]; then
+    docker build --build-arg CEPH_REPO_URL=https://download.ceph.com/debian-luminous/ -t ceph-golang-ci .
+  elif [[ "${CEPH_VERSION}" == "mimic" ]]; then
+    docker build --build-arg CEPH_REPO_URL=https://download.ceph.com/debian-mimic/ -t ceph-golang-ci .
+  else
+    echo "unsupported ceph version"
+    exit 1
+  fi
 
 script:
   - docker run --rm -it -v ${PWD}:/go/src/github.com/ceph/go-ceph:z ceph-golang-ci
