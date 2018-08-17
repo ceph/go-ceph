@@ -771,125 +771,106 @@ func (suite *RadosTestSuite) TestRmXattr() {
 	assert.Equal(suite.T(), out, xattrs)
 }
 
-//func TestReadWriteOmap(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	// Set
-//	orig := map[string][]byte{
-//		"key1":          []byte("value1"),
-//		"key2":          []byte("value2"),
-//		"prefixed-key3": []byte("value3"),
-//		"empty":         []byte(""),
-//	}
-//
-//	err = pool.SetOmap("obj", orig)
-//	assert.NoError(t, err)
-//
-//	// List
-//	remaining := map[string][]byte{}
-//	for k, v := range orig {
-//		remaining[k] = v
-//	}
-//
-//	err = pool.ListOmapValues("obj", "", "", 4, func(key string, value []byte) {
-//		assert.Equal(t, remaining[key], value)
-//		delete(remaining, key)
-//	})
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, len(remaining))
-//
-//	// Get (with a fixed number of keys)
-//	fetched, err := pool.GetOmapValues("obj", "", "", 4)
-//	assert.NoError(t, err)
-//	assert.Equal(t, orig, fetched)
-//
-//	// Get All (with an iterator size bigger than the map size)
-//	fetched, err = pool.GetAllOmapValues("obj", "", "", 100)
-//	assert.NoError(t, err)
-//	assert.Equal(t, orig, fetched)
-//
-//	// Get All (with an iterator size smaller than the map size)
-//	fetched, err = pool.GetAllOmapValues("obj", "", "", 1)
-//	assert.NoError(t, err)
-//	assert.Equal(t, orig, fetched)
-//
-//	// Remove
-//	err = pool.RmOmapKeys("obj", []string{"key1", "prefixed-key3"})
-//	assert.NoError(t, err)
-//
-//	fetched, err = pool.GetOmapValues("obj", "", "", 4)
-//	assert.NoError(t, err)
-//	assert.Equal(t, map[string][]byte{
-//		"key2":  []byte("value2"),
-//		"empty": []byte(""),
-//	}, fetched)
-//
-//	// Clear
-//	err = pool.CleanOmap("obj")
-//	assert.NoError(t, err)
-//
-//	fetched, err = pool.GetOmapValues("obj", "", "", 4)
-//	assert.NoError(t, err)
-//	assert.Equal(t, map[string][]byte{}, fetched)
-//
-//	pool.Destroy()
-//}
-//
-//func TestReadFilterOmap(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	orig := map[string][]byte{
-//		"key1":          []byte("value1"),
-//		"prefixed-key3": []byte("value3"),
-//		"key2":          []byte("value2"),
-//	}
-//
-//	err = pool.SetOmap("obj", orig)
-//	assert.NoError(t, err)
-//
-//	// filter by prefix
-//	fetched, err := pool.GetOmapValues("obj", "", "prefixed", 4)
-//	assert.NoError(t, err)
-//	assert.Equal(t, map[string][]byte{
-//		"prefixed-key3": []byte("value3"),
-//	}, fetched)
-//
-//	// "start_after" a key
-//	fetched, err = pool.GetOmapValues("obj", "key1", "", 4)
-//	assert.NoError(t, err)
-//	assert.Equal(t, map[string][]byte{
-//		"prefixed-key3": []byte("value3"),
-//		"key2":          []byte("value2"),
-//	}, fetched)
-//
-//	// maxReturn
-//	fetched, err = pool.GetOmapValues("obj", "", "key", 1)
-//	assert.NoError(t, err)
-//	assert.Equal(t, map[string][]byte{
-//		"key1": []byte("value1"),
-//	}, fetched)
-//
-//	pool.Destroy()
-//}
-//
+func (suite *RadosTestSuite) TestReadWriteOmap() {
+	suite.SetupConnection()
+
+	// set some key/value pairs on an object
+	orig := map[string][]byte{
+		"key1":          []byte("value1"),
+		"key2":          []byte("value2"),
+		"prefixed-key3": []byte("value3"),
+		"empty":         []byte(""),
+	}
+
+	oid := suite.GenObjectName()
+	err := suite.ioctx.SetOmap(oid, orig)
+	assert.NoError(suite.T(), err)
+
+	// verify that they can all be read back
+	remaining := map[string][]byte{}
+	for k, v := range orig {
+		remaining[k] = v
+	}
+
+	err = suite.ioctx.ListOmapValues(oid, "", "", 4, func(key string, value []byte) {
+		assert.Equal(suite.T(), remaining[key], value)
+		delete(remaining, key)
+	})
+
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), len(remaining), 0)
+
+	// Get (with a fixed number of keys)
+	fetched, err := suite.ioctx.GetOmapValues(oid, "", "", 4)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), orig, fetched)
+
+	// Get All (with an iterator size bigger than the map size)
+	fetched, err = suite.ioctx.GetAllOmapValues(oid, "", "", 100)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), orig, fetched)
+
+	// Get All (with an iterator size smaller than the map size)
+	fetched, err = suite.ioctx.GetAllOmapValues(oid, "", "", 1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), orig, fetched)
+
+	// Remove
+	err = suite.ioctx.RmOmapKeys(oid, []string{"key1", "prefixed-key3"})
+	assert.NoError(suite.T(), err)
+
+	fetched, err = suite.ioctx.GetOmapValues(oid, "", "", 4)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), map[string][]byte{
+		"key2":  []byte("value2"),
+		"empty": []byte(""),
+	}, fetched)
+
+	// Clear
+	err = suite.ioctx.CleanOmap(oid)
+	assert.NoError(suite.T(), err)
+
+	fetched, err = suite.ioctx.GetOmapValues(oid, "", "", 4)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), map[string][]byte{}, fetched)
+}
+
+func (suite *RadosTestSuite) TestReadFilterOmap() {
+	suite.SetupConnection()
+
+	orig := map[string][]byte{
+		"key1":          []byte("value1"),
+		"prefixed-key3": []byte("value3"),
+		"key2":          []byte("value2"),
+	}
+
+	oid := suite.GenObjectName()
+	err := suite.ioctx.SetOmap(oid, orig)
+	assert.NoError(suite.T(), err)
+
+	// filter by prefix
+	fetched, err := suite.ioctx.GetOmapValues(oid, "", "prefixed", 4)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), map[string][]byte{
+		"prefixed-key3": []byte("value3"),
+	}, fetched)
+
+	// "start_after" a key
+	fetched, err = suite.ioctx.GetOmapValues(oid, "key1", "", 4)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), map[string][]byte{
+		"prefixed-key3": []byte("value3"),
+		"key2":          []byte("value2"),
+	}, fetched)
+
+	// maxReturn
+	fetched, err = suite.ioctx.GetOmapValues(oid, "", "key", 1)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), map[string][]byte{
+		"key1": []byte("value1"),
+	}, fetched)
+}
+
 //func TestSetNamespace(t *testing.T) {
 //	conn, _ := rados.NewConn()
 //	conn.ReadDefaultConfigFile()
