@@ -871,207 +871,175 @@ func (suite *RadosTestSuite) TestReadFilterOmap() {
 	}, fetched)
 }
 
-//func TestSetNamespace(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	stat, err := pool.Stat("obj")
-//	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
-//	assert.NotNil(t, stat.ModTime)
-//
-//	pool.SetNamespace("space1")
-//	stat, err = pool.Stat("obj")
-//	assert.Equal(t, err, rados.RadosErrorNotFound)
-//
-//	bytes_in = []byte("input data")
-//	err = pool.Write("obj2", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	pool.SetNamespace("")
-//
-//	stat, err = pool.Stat("obj2")
-//	assert.Equal(t, err, rados.RadosErrorNotFound)
-//
-//	stat, err = pool.Stat("obj")
-//	assert.Equal(t, uint64(len(bytes_in)), stat.Size)
-//	assert.NotNil(t, stat.ModTime)
-//
-//	pool.Destroy()
-//	conn.Shutdown()
-//}
-//
-//func TestListAcrossNamespaces(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	pool.SetNamespace("space1")
-//
-//	bytes_in = []byte("input data")
-//	err = pool.Write("obj2", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	foundObjects := 0
-//	err = pool.ListObjects(func(oid string) {
-//		foundObjects++
-//	})
-//	assert.NoError(t, err)
-//	assert.EqualValues(t, 1, foundObjects)
-//
-//	pool.SetNamespace(rados.RadosAllNamespaces)
-//
-//	foundObjects = 0
-//	err = pool.ListObjects(func(oid string) {
-//		foundObjects++
-//	})
-//	assert.NoError(t, err)
-//	assert.EqualValues(t, 2, foundObjects)
-//
-//	pool.Destroy()
-//	conn.Shutdown()
-//}
-//
-//func TestLocking(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	// lock ex
-//	res, err := pool.LockExclusive("obj", "myLock", "myCookie", "this is a test lock", 0, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, res)
-//
-//	// verify lock ex
-//	info, err := pool.ListLockers("obj", "myLock")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 1, len(info.Clients))
-//	assert.Equal(t, true, info.Exclusive)
-//
-//	// fail to lock ex again
-//	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "this is a description", 0, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, -17, res)
-//
-//	// fail to lock sh
-//	res, err = pool.LockShared("obj", "myLock", "myCookie", "", "a description", 0, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, -17, res)
-//
-//	// unlock
-//	res, err = pool.Unlock("obj", "myLock", "myCookie")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, res)
-//
-//	// verify unlock
-//	info, err = pool.ListLockers("obj", "myLock")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, len(info.Clients))
-//
-//	// lock sh
-//	res, err = pool.LockShared("obj", "myLock", "myCookie", "", "a description", 0, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, res)
-//
-//	// verify lock sh
-//	info, err = pool.ListLockers("obj", "myLock")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 1, len(info.Clients))
-//	assert.Equal(t, false, info.Exclusive)
-//
-//	// fail to lock sh again
-//	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "a description", 0, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, -17, res)
-//
-//	// fail to lock ex
-//	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "this is a test lock", 0, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, res, -17)
-//
-//	// break the lock
-//	res, err = pool.BreakLock("obj", "myLock", info.Clients[0], "myCookie")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, res)
-//
-//	// verify lock broken
-//	info, err = pool.ListLockers("obj", "myLock")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, len(info.Clients))
-//
-//	// lock sh with duration
-//	res, err = pool.LockShared("obj", "myLock", "myCookie", "", "a description", time.Millisecond, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, res)
-//
-//	// verify lock sh expired
-//	time.Sleep(time.Second)
-//	info, err = pool.ListLockers("obj", "myLock")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, len(info.Clients))
-//
-//	// lock sh with duration
-//	res, err = pool.LockExclusive("obj", "myLock", "myCookie", "a description", time.Millisecond, nil)
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, res)
-//
-//	// verify lock sh expired
-//	time.Sleep(time.Second)
-//	info, err = pool.ListLockers("obj", "myLock")
-//	assert.NoError(t, err)
-//	assert.Equal(t, 0, len(info.Clients))
-//
-//	pool.Destroy()
-//	conn.Shutdown()
-//}
-//
-//func TestOmapOnNonexistentObjectError(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	//This object does not exist
-//	objname := GetUUID()
-//
-//	_, err = pool.GetAllOmapValues(objname, "", "", 100)
-//	assert.Equal(t, err, rados.RadosErrorNotFound)
-//}
+func (suite *RadosTestSuite) TestSetNamespace() {
+	suite.SetupConnection()
+
+	// create oid
+	oid := suite.GenObjectName()
+	bytes_in := []byte("input data")
+	err := suite.ioctx.Write(oid, bytes_in, 0)
+	assert.NoError(suite.T(), err)
+
+	stat, err := suite.ioctx.Stat(oid)
+	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
+	assert.NotNil(suite.T(), stat.ModTime)
+
+	// oid isn't seen in space1 ns
+	suite.ioctx.SetNamespace("space1")
+	stat, err = suite.ioctx.Stat(oid)
+	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+
+	// create oid2 in space1 ns
+	oid2 := suite.GenObjectName()
+	bytes_in = []byte("input data")
+	err = suite.ioctx.Write(oid2, bytes_in, 0)
+	assert.NoError(suite.T(), err)
+
+	suite.ioctx.SetNamespace("")
+	stat, err = suite.ioctx.Stat(oid2)
+	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+
+	stat, err = suite.ioctx.Stat(oid)
+	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
+	assert.NotNil(suite.T(), stat.ModTime)
+}
+
+func (suite *RadosTestSuite) TestListAcrossNamespaces() {
+	suite.SetupConnection()
+
+	// count objects in pool
+	origObjects := 0
+	err := suite.ioctx.ListObjects(func(oid string) {
+		origObjects++
+	})
+
+	// create oid
+	oid := suite.GenObjectName()
+	bytes_in := []byte("input data")
+	err = suite.ioctx.Write(oid, bytes_in, 0)
+	assert.NoError(suite.T(), err)
+
+	// create oid2 in space1 ns
+	suite.ioctx.SetNamespace("space1")
+	oid2 := suite.GenObjectName()
+	bytes_in = []byte("input data")
+	err = suite.ioctx.Write(oid2, bytes_in, 0)
+	assert.NoError(suite.T(), err)
+
+	// count objects in space1 ns
+	nsFoundObjects := 0
+	err = suite.ioctx.ListObjects(func(oid string) {
+		nsFoundObjects++
+	})
+	assert.NoError(suite.T(), err)
+	assert.EqualValues(suite.T(), 1, nsFoundObjects)
+
+	// count objects in pool
+	suite.ioctx.SetNamespace(rados.RadosAllNamespaces)
+	allFoundObjects := 0
+	err = suite.ioctx.ListObjects(func(oid string) {
+		allFoundObjects++
+	})
+	assert.NoError(suite.T(), err)
+	assert.EqualValues(suite.T(), (origObjects + 2), allFoundObjects)
+}
+
+func (suite *RadosTestSuite) TestLocking() {
+	suite.SetupConnection()
+
+	oid := suite.GenObjectName()
+
+	// lock ex
+	res, err := suite.ioctx.LockExclusive(oid, "myLock", "myCookie", "this is a test lock", 0, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, res)
+
+	// verify lock ex
+	info, err := suite.ioctx.ListLockers(oid, "myLock")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(info.Clients))
+	assert.Equal(suite.T(), true, info.Exclusive)
+
+	// fail to lock ex again
+	res, err = suite.ioctx.LockExclusive(oid, "myLock", "myCookie", "this is a description", 0, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), -17, res)
+
+	// fail to lock sh
+	res, err = suite.ioctx.LockShared(oid, "myLock", "myCookie", "", "a description", 0, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), -17, res)
+
+	// unlock
+	res, err = suite.ioctx.Unlock(oid, "myLock", "myCookie")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, res)
+
+	// verify unlock
+	info, err = suite.ioctx.ListLockers(oid, "myLock")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(info.Clients))
+
+	// lock sh
+	res, err = suite.ioctx.LockShared(oid, "myLock", "myCookie", "", "a description", 0, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, res)
+
+	// verify lock sh
+	info, err = suite.ioctx.ListLockers(oid, "myLock")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(info.Clients))
+	assert.Equal(suite.T(), false, info.Exclusive)
+
+	// fail to lock sh again
+	res, err = suite.ioctx.LockExclusive(oid, "myLock", "myCookie", "a description", 0, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), -17, res)
+
+	// fail to lock ex
+	res, err = suite.ioctx.LockExclusive(oid, "myLock", "myCookie", "this is a test lock", 0, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, -17)
+
+	// break the lock
+	res, err = suite.ioctx.BreakLock(oid, "myLock", info.Clients[0], "myCookie")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, res)
+
+	// verify lock broken
+	info, err = suite.ioctx.ListLockers(oid, "myLock")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(info.Clients))
+
+	// lock sh with duration
+	res, err = suite.ioctx.LockShared(oid, "myLock", "myCookie", "", "a description", time.Millisecond, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, res)
+
+	// verify lock sh expired
+	time.Sleep(time.Second)
+	info, err = suite.ioctx.ListLockers(oid, "myLock")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(info.Clients))
+
+	// lock sh with duration
+	res, err = suite.ioctx.LockExclusive(oid, "myLock", "myCookie", "a description", time.Millisecond, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, res)
+
+	// verify lock sh expired
+	time.Sleep(time.Second)
+	info, err = suite.ioctx.ListLockers(oid, "myLock")
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 0, len(info.Clients))
+}
+
+func (suite *RadosTestSuite) TestOmapOnNonexistentObjectError() {
+	suite.SetupConnection()
+	oid := suite.GenObjectName()
+	_, err := suite.ioctx.GetAllOmapValues(oid, "", "", 100)
+	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+}
 
 func TestRadosTestSuite(t *testing.T) {
 	suite.Run(t, new(RadosTestSuite))
