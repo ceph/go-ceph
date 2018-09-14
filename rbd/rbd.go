@@ -16,15 +16,27 @@ import (
 	"unsafe"
 )
 
+const (
+	// RBD features
+	RbdFeatureLayering uint64 = 1 << iota
+	RbdFeatureStripingV2
+	RbdFeatureExclusiveLock
+	RbdFeatureObjectMap
+	RbdFeatureFastDiff
+	RbdFeatureDeepFlatten
+	RbdFeatureJournaling
+	RbdFeatureDataPool
+	RbdFeatureOperations
+	RbdFeatureMigrating
+)
+
 //
 type RBDError int
 
-var RbdErrorImageNotOpen = errors.New("RBD image not open")
-var RbdErrorNotFound = errors.New("RBD image not found")
-
-//Rdb feature
-var RbdFeatureLayering = uint64(1 << 0)
-var RbdFeatureStripingV2 = uint64(1 << 1)
+var (
+	RbdErrorImageNotOpen = errors.New("RBD image not open")
+	RbdErrorNotFound     = errors.New("RBD image not found")
+)
 
 //
 type ImageInfo struct {
