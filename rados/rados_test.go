@@ -9,12 +9,12 @@ import (
 	//"net"
 	"math/rand"
 	"os"
-	"os/exec"
 	"sort"
 	"testing"
 	"time"
 
 	"github.com/ceph/go-ceph/rados"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -28,13 +28,6 @@ type RadosTestSuite struct {
 	count int
 }
 
-// TODO: add error checking or use pure go impl
-// TODO: use time and random int
-func GetUUID() string {
-	out, _ := exec.Command("uuidgen").Output()
-	return string(out[:36])
-}
-
 func (suite *RadosTestSuite) SetupSuite() {
 	conn, err := rados.NewConn()
 	require.NoError(suite.T(), err)
@@ -43,7 +36,7 @@ func (suite *RadosTestSuite) SetupSuite() {
 	conn.ReadDefaultConfigFile()
 
 	if err = conn.Connect(); assert.NoError(suite.T(), err) {
-		pool := GetUUID()
+		pool := uuid.Must(uuid.NewV4()).String()
 		if err = conn.MakePool(pool); assert.NoError(suite.T(), err) {
 			suite.pool = pool
 			return
@@ -250,65 +243,60 @@ func (suite *RadosTestSuite) TestGetInstanceID() {
 	assert.NotEqual(suite.T(), id, 0)
 }
 
-// TODO: do we need this test?
-//func (suite *RadosTestSuite) TestMakeDeletePool() {
-//	suite.SetupConnection()
-//
-//	// get current list of pool
-//	pools, err := conn.ListPools()
-//	assert.NoError(t, err)
-//
-//	// check that new pool name is unique
-//	new_name := GetUUID()
-//	for _, poolname := range pools {
-//		if new_name == poolname {
-//			t.Error("Random pool name exists!")
-//			return
-//		}
-//	}
-//
-//	// create pool
-//	err = conn.MakePool(new_name)
-//	assert.NoError(t, err)
-//
-//	// get updated list of pools
-//	pools, err = conn.ListPools()
-//	assert.NoError(t, err)
-//
-//	// verify that the new pool name exists
-//	found := false
-//	for _, poolname := range pools {
-//		if new_name == poolname {
-//			found = true
-//		}
-//	}
-//
-//	if !found {
-//		t.Error("Cannot find newly created pool")
-//	}
-//
-//	// delete the pool
-//	err = conn.DeletePool(new_name)
-//	assert.NoError(t, err)
-//
-//	// verify that it is gone
-//
-//	// get updated list of pools
-//	pools, err = conn.ListPools()
-//	assert.NoError(t, err)
-//
-//	// verify that the new pool name exists
-//	found = false
-//	for _, poolname := range pools {
-//		if new_name == poolname {
-//			found = true
-//		}
-//	}
-//
-//	if found {
-//		t.Error("Deleted pool still exists")
-//	}
-//}
+func (suite *RadosTestSuite) TestMakeDeletePool() {
+	suite.SetupConnection()
+
+	// get current list of pool
+	pools, err := suite.conn.ListPools()
+	assert.NoError(suite.T(), err)
+
+	// check that new pool name is unique
+	new_name := uuid.Must(uuid.NewV4()).String()
+	for _, poolname := range pools {
+		if new_name == poolname {
+			suite.T().Error("Random pool name exists!")
+			return
+		}
+	}
+
+	// create pool
+	err = suite.conn.MakePool(new_name)
+	assert.NoError(suite.T(), err)
+
+	// verify that the new pool name exists
+	pools, err = suite.conn.ListPools()
+	assert.NoError(suite.T(), err)
+
+	found := false
+	for _, poolname := range pools {
+		if new_name == poolname {
+			found = true
+		}
+	}
+
+	if !found {
+		suite.T().Error("Cannot find newly created pool")
+	}
+
+	// delete the pool
+	err = suite.conn.DeletePool(new_name)
+	assert.NoError(suite.T(), err)
+
+	// verify that it is gone
+	pools, err = suite.conn.ListPools()
+	assert.NoError(suite.T(), err)
+
+	found = false
+	for _, poolname := range pools {
+		if new_name == poolname {
+			found = true
+		}
+	}
+
+	if found {
+		suite.T().Error("Deleted pool still exists")
+	}
+}
 
 func (suite *RadosTestSuite) TestPingMonitor() {
 	suite.SetupConnection()
@@ -326,43 +314,30 @@ func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
 	assert.NoError(suite.T(), err)
 }
 
-//func TestReadWrite(t *testing.T) {
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	// make pool
-//	pool_name := GetUUID()
-//	err := conn.MakePool(pool_name)
-//	assert.NoError(t, err)
-//
-//	pool, err := conn.OpenIOContext(pool_name)
-//	assert.NoError(t, err)
-//
-//	bytes_in := []byte("input data")
-//	err = pool.Write("obj", bytes_in, 0)
-//	assert.NoError(t, err)
-//
-//	bytes_out := make([]byte, len(bytes_in))
-//	n_out, err := pool.Read("obj", bytes_out, 0)
-//
-//	assert.Equal(t, n_out, len(bytes_in))
-//	assert.Equal(t, bytes_in, bytes_out)
-//
-//	bytes_in = []byte("input another data")
-//	err = pool.WriteFull("obj", bytes_in)
-//	assert.NoError(t, err)
-//
-//	bytes_out = make([]byte, len(bytes_in))
-//	n_out, err = pool.Read("obj", bytes_out, 0)
-//
-//	assert.Equal(t, n_out, len(bytes_in))
-//	assert.Equal(t, bytes_in, bytes_out)
-//
-//	pool.Destroy()
-//	conn.Shutdown()
-//}
-//
+func (suite *RadosTestSuite) TestReadWrite() {
+	suite.SetupConnection()
+
+	bytes_in := []byte("input data")
+	err := suite.ioctx.Write("obj", bytes_in, 0)
+	assert.NoError(suite.T(), err)
+
+	bytes_out := make([]byte, len(bytes_in))
+	n_out, err := suite.ioctx.Read("obj", bytes_out, 0)
+
+	assert.Equal(suite.T(), n_out, len(bytes_in))
+	assert.Equal(suite.T(), bytes_in, bytes_out)
+
+	bytes_in = []byte("input another data")
+	err = suite.ioctx.WriteFull("obj", bytes_in)
+	assert.NoError(suite.T(), err)
+
+	bytes_out = make([]byte, len(bytes_in))
+	n_out, err = suite.ioctx.Read("obj", bytes_out, 0)
+
+	assert.Equal(suite.T(), n_out, len(bytes_in))
+	assert.Equal(suite.T(), bytes_in, bytes_out)
+}
+
 func (suite *RadosTestSuite) TestAppend() {
 	suite.SetupConnection()
 
@@ -565,6 +540,7 @@ func (suite *RadosTestSuite) TestObjectListObjects() {
 func (suite *RadosTestSuite) TestObjectIterator() {
 	suite.SetupConnection()
 
+	// current objs in default namespace
 	prevObjectList := []string{}
 	iter, err := suite.ioctx.Iter()
 	assert.NoError(suite.T(), err)
@@ -581,6 +557,7 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 	err = suite.ioctx.Write(suite.GenObjectName(), bytes_in, 0)
 	assert.NoError(suite.T(), err)
 
+	// create some objects in default namespace
 	suite.ioctx.SetNamespace("")
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
@@ -604,94 +581,98 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 	iter.Close()
 	assert.NoError(suite.T(), iter.Err())
 
+	// curr list doesn't include the obj in ns1
 	sort.Strings(expectedObjectList)
 	sort.Strings(currObjectList)
 	assert.Equal(suite.T(), currObjectList, expectedObjectList)
 }
 
-//
-//func TestObjectIteratorAcrossNamespaces(t *testing.T) {
-//	const perNamespace = 100
-//	conn, _ := rados.NewConn()
-//	conn.ReadDefaultConfigFile()
-//	conn.Connect()
-//
-//	poolname := GetUUID()
-//	err := conn.MakePool(poolname)
-//	assert.NoError(t, err)
-//
-//	ioctx, err := conn.OpenIOContext(poolname)
-//	assert.NoError(t, err)
-//
-//	objectListNS1 := []string{}
-//	objectListNS2 := []string{}
-//
-//	iter, err := ioctx.Iter()
-//	assert.NoError(t, err)
-//	preexisting := 0
-//	for iter.Next() {
-//		preexisting++
-//	}
-//	iter.Close()
-//	assert.NoError(t, iter.Err())
-//	assert.EqualValues(t, 0, preexisting)
-//
-//	createdList := []string{}
-//	ioctx.SetNamespace("ns1")
-//	for i := 0; i < 90; i++ {
-//		oid := GetUUID()
-//		bytes_in := []byte("input data")
-//		err = ioctx.Write(oid, bytes_in, 0)
-//		assert.NoError(t, err)
-//		createdList = append(createdList, oid)
-//	}
-//	ioctx.SetNamespace("ns2")
-//	for i := 0; i < 100; i++ {
-//		oid := GetUUID()
-//		bytes_in := []byte("input data")
-//		err = ioctx.Write(oid, bytes_in, 0)
-//		assert.NoError(t, err)
-//		createdList = append(createdList, oid)
-//	}
-//	assert.True(t, len(createdList) == 190)
-//
-//	ioctx.SetNamespace(rados.RadosAllNamespaces)
-//	iter, err = ioctx.Iter()
-//	assert.NoError(t, err)
-//	rogue := 0
-//	for iter.Next() {
-//		if iter.Namespace() == "ns1" {
-//			objectListNS1 = append(objectListNS1, iter.Value())
-//		} else if iter.Namespace() == "ns2" {
-//			objectListNS2 = append(objectListNS2, iter.Value())
-//		} else {
-//			rogue++
-//		}
-//	}
-//	iter.Close()
-//	assert.NoError(t, iter.Err())
-//	assert.EqualValues(t, 0, rogue)
-//	assert.Equal(t, len(objectListNS1), 90)
-//	assert.Equal(t, len(objectListNS2), 100)
-//	objectList := []string{}
-//	objectList = append(objectList, objectListNS1...)
-//	objectList = append(objectList, objectListNS2...)
-//	sort.Strings(objectList)
-//	sort.Strings(createdList)
-//
-//	assert.Equal(t, objectList, createdList)
-//}
-//
-//func TestNewConnWithUser(t *testing.T) {
-//	_, err := rados.NewConnWithUser("admin")
-//	assert.Equal(t, err, nil)
-//}
-//
-//func TestNewConnWithClusterAndUser(t *testing.T) {
-//	_, err := rados.NewConnWithClusterAndUser("ceph", "client.admin")
-//	assert.Equal(t, err, nil)
-//}
-//
+func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
+	suite.SetupConnection()
+
+	const perNamespace = 100
+
+	// tests use a shared pool so namespaces need to be unique across tests.
+	// below ns1=nsX and ns2=nsY. ns1 is used elsewhere.
+	objectListNS1 := []string{}
+	objectListNS2 := []string{}
+
+	// populate list of current objects
+	suite.ioctx.SetNamespace(rados.RadosAllNamespaces)
+	existingList := []string{}
+	iter, err := suite.ioctx.Iter()
+	assert.NoError(suite.T(), err)
+	for iter.Next() {
+		existingList = append(existingList, iter.Value())
+	}
+	iter.Close()
+	assert.NoError(suite.T(), iter.Err())
+
+	// create some new objects in namespace: nsX
+	createdList := []string{}
+	suite.ioctx.SetNamespace("nsX")
+	for i := 0; i < 10; i++ {
+		oid := suite.GenObjectName()
+		bytes_in := []byte("input data")
+		err = suite.ioctx.Write(oid, bytes_in, 0)
+		assert.NoError(suite.T(), err)
+		createdList = append(createdList, oid)
+	}
+	assert.True(suite.T(), len(createdList) == 10)
+
+	// create some new objects in namespace: nsY
+	suite.ioctx.SetNamespace("nsY")
+	for i := 0; i < 10; i++ {
+		oid := suite.GenObjectName()
+		bytes_in := []byte("input data")
+		err = suite.ioctx.Write(oid, bytes_in, 0)
+		assert.NoError(suite.T(), err)
+		createdList = append(createdList, oid)
+	}
+	assert.True(suite.T(), len(createdList) == 20)
+
+	suite.ioctx.SetNamespace(rados.RadosAllNamespaces)
+	iter, err = suite.ioctx.Iter()
+	assert.NoError(suite.T(), err)
+	rogueList := []string{}
+	for iter.Next() {
+		if iter.Namespace() == "nsX" {
+			objectListNS1 = append(objectListNS1, iter.Value())
+		} else if iter.Namespace() == "nsY" {
+			objectListNS2 = append(objectListNS2, iter.Value())
+		} else {
+			rogueList = append(rogueList, iter.Value())
+		}
+	}
+	iter.Close()
+	assert.NoError(suite.T(), iter.Err())
+
+	assert.Equal(suite.T(), len(existingList), len(rogueList))
+	assert.Equal(suite.T(), len(objectListNS1), 10)
+	assert.Equal(suite.T(), len(objectListNS2), 10)
+
+	objectList := []string{}
+	objectList = append(objectList, objectListNS1...)
+	objectList = append(objectList, objectListNS2...)
+	sort.Strings(objectList)
+	sort.Strings(createdList)
+
+	assert.Equal(suite.T(), objectList, createdList)
+
+	sort.Strings(rogueList)
+	sort.Strings(existingList)
+	assert.Equal(suite.T(), rogueList, existingList)
+}
+
+func (suite *RadosTestSuite) TestNewConnWithUser() {
+	_, err := rados.NewConnWithUser("admin")
+	assert.Equal(suite.T(), err, nil)
+}
+
+func (suite *RadosTestSuite) TestNewConnWithClusterAndUser() {
+	_, err := rados.NewConnWithClusterAndUser("ceph", "client.admin")
+	assert.Equal(suite.T(), err, nil)
+}
 
 func (suite *RadosTestSuite) TestReadWriteXattr() {
 	suite.SetupConnection()
