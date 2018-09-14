@@ -5,6 +5,7 @@ package rbd
 // #include <stdlib.h>
 // #include <rados/librados.h>
 // #include <rbd/librbd.h>
+// #include <rbd/features.h>
 import "C"
 
 import (
@@ -16,15 +17,40 @@ import (
 	"unsafe"
 )
 
+const (
+	// RBD features.
+	RbdFeatureLayering      = C.RBD_FEATURE_LAYERING
+	RbdFeatureStripingV2    = C.RBD_FEATURE_STRIPINGV2
+	RbdFeatureExclusiveLock = C.RBD_FEATURE_EXCLUSIVE_LOCK
+	RbdFeatureObjectMap     = C.RBD_FEATURE_OBJECT_MAP
+	RbdFeatureFastDiff      = C.RBD_FEATURE_FAST_DIFF
+	RbdFeatureDeepFlatten   = C.RBD_FEATURE_DEEP_FLATTEN
+	RbdFeatureJournaling    = C.RBD_FEATURE_JOURNALING
+	RbdFeatureDataPool      = C.RBD_FEATURE_DATA_POOL
+
+	RbdFeaturesDefault = C.RBD_FEATURES_DEFAULT
+
+	// Features that make an image inaccessible for read or write by clients that don't understand
+	// them.
+	RbdFeaturesIncompatible = C.RBD_FEATURES_INCOMPATIBLE
+
+	// Features that make an image unwritable by clients that don't understand them.
+	RbdFeaturesRwIncompatible = C.RBD_FEATURES_RW_INCOMPATIBLE
+
+	// Features that may be dynamically enabled or disabled.
+	RbdFeaturesMutable = C.RBD_FEATURES_MUTABLE
+
+	// Features that only work when used with a single client using the image for writes.
+	RbdFeaturesSingleClient = C.RBD_FEATURES_SINGLE_CLIENT
+)
+
 //
 type RBDError int
 
-var RbdErrorImageNotOpen = errors.New("RBD image not open")
-var RbdErrorNotFound = errors.New("RBD image not found")
-
-//Rdb feature
-var RbdFeatureLayering = uint64(1 << 0)
-var RbdFeatureStripingV2 = uint64(1 << 1)
+var (
+	RbdErrorImageNotOpen = errors.New("RBD image not open")
+	RbdErrorNotFound     = errors.New("RBD image not found")
+)
 
 //
 type ImageInfo struct {
