@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	// RBD features
+	// RBD features.
 	RbdFeatureLayering uint64 = 1 << iota
 	RbdFeatureStripingV2
 	RbdFeatureExclusiveLock
@@ -28,6 +28,34 @@ const (
 	RbdFeatureDataPool
 	RbdFeatureOperations
 	RbdFeatureMigrating
+
+	// Features that make an image inaccessible for read or write by clients that don't understand
+	// them.
+	RbdFeaturesIncompatible = RbdFeatureLayering |
+		RbdFeatureStripingV2 |
+		RbdFeatureDataPool
+
+	// Features that make an image unwritable by clients that don't understand them.
+	RbdFeaturesRwIncompatible = RbdFeaturesIncompatible |
+		RbdFeatureExclusiveLock |
+		RbdFeatureObjectMap |
+		RbdFeatureFastDiff |
+		RbdFeatureDeepFlatten |
+		RbdFeatureJournaling |
+		RbdFeatureOperations |
+		RbdFeatureMigrating
+
+	// Features that may be dynamically enabled or disabled.
+	RbdFeaturesMutable = RbdFeatureExclusiveLock |
+		RbdFeatureObjectMap |
+		RbdFeatureFastDiff |
+		RbdFeatureJournaling
+
+	// Features that only work when used with a single client using the image for writes.
+	RbdFeaturesSingleClient = RbdFeatureExclusiveLock |
+		RbdFeatureObjectMap |
+		RbdFeatureFastDiff |
+		RbdFeatureJournaling
 )
 
 //
