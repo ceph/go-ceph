@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"sort"
 	"testing"
+	"time"
 )
 
 //Rdb feature
@@ -311,6 +312,48 @@ func TestNotFound(t *testing.T) {
 
 	img.Remove()
 	assert.Equal(t, err, rbd.RbdErrorNotFound)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestTrashImage(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+	image, err := rbd.Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = image.Trash(time.Hour)
+	assert.NoError(t, err)
+
+	trashList, err := rbd.GetTrashList(ioctx)
+	assert.NoError(t, err)
+	assert.Equal(t, len(trashList), 1, "trashList length equal")
+
+	err = rbd.TrashRestore(ioctx, trashList[0].Id, name+"_restored")
+	assert.NoError(t, err)
+
+	image2 := rbd.GetImage(ioctx, name+"_restored")
+	err = image2.Trash(time.Hour)
+	assert.NoError(t, err)
+
+	trashList, err = rbd.GetTrashList(ioctx)
+	assert.NoError(t, err)
+	assert.Equal(t, len(trashList), 1, "trashList length equal")
+
+	err = rbd.TrashRemove(ioctx, trashList[0].Id, false)
+	assert.NoError(t, err)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
