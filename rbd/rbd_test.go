@@ -48,14 +48,14 @@ func TestCreateImage(t *testing.T) {
 
 	name = GetUUID()
 	image, err = rbd.Create(ioctx, name, 1<<22, 22,
-			RbdFeatureLayering|RbdFeatureStripingV2)
+		RbdFeatureLayering|RbdFeatureStripingV2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	name = GetUUID()
 	image, err = rbd.Create(ioctx, name, 1<<22, 22,
-			RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
+		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
