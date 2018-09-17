@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"github.com/ceph/go-ceph/rados"
 	"io"
+	"time"
 	"unsafe"
 )
 
@@ -94,6 +95,14 @@ type Image struct {
 type Snapshot struct {
 	image *Image
 	name  string
+}
+
+// TrashInfo contains information about trashed RBDs.
+type TrashInfo struct {
+	Id               string    // Id string, required to remove / restore trashed RBDs.
+	Name             string    // Original name of trashed RBD.
+	DeletionTime     time.Time // Date / time at which the RBD was moved to the trash.
+	DefermentEndTime time.Time // Date / time after which the trashed RBD may be permanently deleted.
 }
 
 //
@@ -241,6 +250,16 @@ func (image *Image) Remove() error {
 	var c_name *C.char = C.CString(image.name)
 	defer C.free(unsafe.Pointer(c_name))
 	return GetError(C.rbd_remove(C.rados_ioctx_t(image.ioctx.Pointer()), c_name))
+}
+
+// Trash will move an image into the RBD trash, where it will be protected (i.e., salvageable) for
+// at least the specified delay.
+func (image *Image) Trash(delay time.Duration) error {
+	c_name := C.CString(image.name)
+	defer C.free(unsafe.Pointer(c_name))
+
+	return GetError(C.rbd_trash_move(C.rados_ioctx_t(image.ioctx.Pointer()), c_name,
+		C.uint64_t(delay.Seconds())))
 }
 
 // int rbd_rename(rados_ioctx_t src_io_ctx, const char *srcname, const char *destname);
@@ -921,4 +940,55 @@ func (snapshot *Snapshot) Set() error {
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	return GetError(C.rbd_snap_set(snapshot.image.image, c_snapname))
+}
+
+// GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
+// currently residing in the trash.
+func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
+	var num_entries C.size_t
+
+	// Call rbd_trash_list with nil pointer to get number of trash entries.
+	if C.rbd_trash_list(C.rados_ioctx_t(ioctx.Pointer()), nil, &num_entries); num_entries == 0 {
+		return nil, nil
+	}
+
+	c_entries := make([]C.rbd_trash_image_info_t, num_entries)
+	trashList := make([]TrashInfo, num_entries)
+
+	if ret := C.rbd_trash_list(C.rados_ioctx_t(ioctx.Pointer()), &c_entries[0], &num_entries); ret < 0 {
+		return nil, RBDError(ret)
+	}
+
+	for i, ti := range c_entries {
+		trashList[i] = TrashInfo{
+			Id:               C.GoString(ti.id),
+			Name:             C.GoString(ti.name),
+			DeletionTime:     time.Unix(int64(ti.deletion_time), 0),
+			DefermentEndTime: time.Unix(int64(ti.deferment_end_time), 0),
+		}
+	}
+
+	// Free rbd_trash_image_info_t pointers
+	C.rbd_trash_list_cleanup(&c_entries[0], num_entries)
+
+	return trashList, nil
+}
+
+// TrashRemove permanently deletes the trashed RBD with the specified id.
+func TrashRemove(ioctx *rados.IOContext, id string, force bool) error {
+	c_id := C.CString(id)
+	defer C.free(unsafe.Pointer(c_id))
+
+	return GetError(C.rbd_trash_remove(C.rados_ioctx_t(ioctx.Pointer()), c_id, C.bool(force)))
+}
+
+// TrashRestore restores the trashed RBD with the specified id back to the pool from whence it
+// came, with the specified new name.
+func TrashRestore(ioctx *rados.IOContext, id, name string) error {
+	c_id := C.CString(id)
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_id))
+	defer C.free(unsafe.Pointer(c_name))
+
+	return GetError(C.rbd_trash_restore(C.rados_ioctx_t(ioctx.Pointer()), c_id, c_name))
 }
