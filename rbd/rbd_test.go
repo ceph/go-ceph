@@ -352,7 +352,7 @@ func TestTrashImage(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(trashList), 1, "trashList length equal")
 
-	err = rbd.TrashRemove(ioctx, trashList[0].Id, false)
+	err = rbd.TrashRemove(ioctx, trashList[0].Id, true)
 	assert.NoError(t, err)
 
 	ioctx.Destroy()
