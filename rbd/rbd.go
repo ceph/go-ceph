@@ -148,7 +148,7 @@ func GetImageNames(ioctx *rados.IOContext) (names []string, err error) {
 		size := C.size_t(len(buf))
 		ret := C.rbd_list(C.rados_ioctx_t(ioctx.Pointer()),
 			(*C.char)(unsafe.Pointer(&buf[0])), &size)
-		if ret == -34 { // FIXME
+		if ret == -C.ERANGE {
 			buf = make([]byte, size)
 			continue
 		} else if ret < 0 {
@@ -182,8 +182,10 @@ func GetImage(ioctx *rados.IOContext, name string) *Image {
 func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	args ...uint64) (image *Image, err error) {
 	var ret C.int
-	var c_order C.int = C.int(order)
-	var c_name *C.char = C.CString(name)
+
+	c_order := C.int(order)
+	c_name := C.CString(name)
+
 	defer C.free(unsafe.Pointer(c_name))
 
 	switch len(args) {
@@ -221,10 +223,11 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 //            const char *c_name, uint64_t features, int *c_order,
 //            uint64_t stripe_unit, int stripe_count);
 func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name string, features uint64, order int) (*Image, error) {
-	var c_order C.int = C.int(order)
-	var c_p_name *C.char = C.CString(image.name)
-	var c_p_snapname *C.char = C.CString(snapname)
-	var c_c_name *C.char = C.CString(c_name)
+	c_order := C.int(order)
+	c_p_name := C.CString(image.name)
+	c_p_snapname := C.CString(snapname)
+	c_c_name := C.CString(c_name)
+
 	defer C.free(unsafe.Pointer(c_p_name))
 	defer C.free(unsafe.Pointer(c_p_snapname))
 	defer C.free(unsafe.Pointer(c_c_name))
@@ -247,7 +250,7 @@ func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name stri
 // int rbd_remove_with_progress(rados_ioctx_t io, const char *name,
 //                  librbd_progress_fn_t cb, void *cbdata);
 func (image *Image) Remove() error {
-	var c_name *C.char = C.CString(image.name)
+	c_name := C.CString(image.name)
 	defer C.free(unsafe.Pointer(c_name))
 	return GetError(C.rbd_remove(C.rados_ioctx_t(image.ioctx.Pointer()), c_name))
 }
@@ -264,10 +267,12 @@ func (image *Image) Trash(delay time.Duration) error {
 
 // int rbd_rename(rados_ioctx_t src_io_ctx, const char *srcname, const char *destname);
 func (image *Image) Rename(destname string) error {
-	var c_srcname *C.char = C.CString(image.name)
-	var c_destname *C.char = C.CString(destname)
+	c_srcname := C.CString(image.name)
+	c_destname := C.CString(destname)
+
 	defer C.free(unsafe.Pointer(c_srcname))
 	defer C.free(unsafe.Pointer(c_destname))
+
 	err := RBDError(C.rbd_rename(C.rados_ioctx_t(image.ioctx.Pointer()),
 		c_srcname, c_destname))
 	if err == 0 {
@@ -282,10 +287,11 @@ func (image *Image) Rename(destname string) error {
 //                const char *snap_name);
 func (image *Image) Open(args ...interface{}) error {
 	var c_image C.rbd_image_t
-	var c_name *C.char = C.CString(image.name)
 	var c_snap_name *C.char
 	var ret C.int
-	var read_only bool = false
+	var read_only bool
+
+	c_name := C.CString(image.name)
 
 	defer C.free(unsafe.Pointer(c_name))
 	for _, arg := range args {
@@ -321,10 +327,10 @@ func (image *Image) Close() error {
 		return RbdErrorImageNotOpen
 	}
 
-	ret := C.rbd_close(image.image)
-	if ret != 0 {
+	if ret := C.rbd_close(image.image); ret != 0 {
 		return RBDError(ret)
 	}
+
 	image.image = nil
 	return nil
 }
@@ -345,9 +351,8 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 	}
 
 	var c_stat C.rbd_image_info_t
-	ret := C.rbd_stat(image.image,
-		&c_stat, C.size_t(unsafe.Sizeof(info)))
-	if ret < 0 {
+
+	if ret := C.rbd_stat(image.image, &c_stat, C.size_t(unsafe.Sizeof(info))); ret < 0 {
 		return info, RBDError(int(ret))
 	}
 
@@ -383,9 +388,7 @@ func (image *Image) GetSize() (size uint64, err error) {
 		return 0, RbdErrorImageNotOpen
 	}
 
-	ret := C.rbd_get_size(image.image,
-		(*C.uint64_t)(&size))
-	if ret < 0 {
+	if ret := C.rbd_get_size(image.image, (*C.uint64_t)(&size)); ret < 0 {
 		return 0, RBDError(int(ret))
 	}
 
@@ -398,9 +401,7 @@ func (image *Image) GetFeatures() (features uint64, err error) {
 		return 0, RbdErrorImageNotOpen
 	}
 
-	ret := C.rbd_get_features(image.image,
-		(*C.uint64_t)(&features))
-	if ret < 0 {
+	if ret := C.rbd_get_features(image.image, (*C.uint64_t)(&features)); ret < 0 {
 		return 0, RBDError(int(ret))
 	}
 
@@ -413,8 +414,7 @@ func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 		return 0, RbdErrorImageNotOpen
 	}
 
-	ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit))
-	if ret < 0 {
+	if ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit)); ret < 0 {
 		return 0, RBDError(int(ret))
 	}
 
@@ -427,8 +427,7 @@ func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 		return 0, RbdErrorImageNotOpen
 	}
 
-	ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count))
-	if ret < 0 {
+	if ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count)); ret < 0 {
 		return 0, RBDError(int(ret))
 	}
 
@@ -441,8 +440,7 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
 		return 0, RbdErrorImageNotOpen
 	}
 
-	ret := C.rbd_get_overlap(image.image, (*C.uint64_t)(&overlap))
-	if ret < 0 {
+	if ret := C.rbd_get_overlap(image.image, (*C.uint64_t)(&overlap)); ret < 0 {
 		return overlap, RBDError(int(ret))
 	}
 
@@ -464,7 +462,7 @@ func (image *Image) Copy(args ...interface{}) error {
 	case rados.IOContext:
 		switch t2 := args[1].(type) {
 		case string:
-			var c_destname *C.char = C.CString(t2)
+			c_destname := C.CString(t2)
 			defer C.free(unsafe.Pointer(c_destname))
 			return RBDError(C.rbd_copy(image.image,
 				C.rados_ioctx_t(t.Pointer()),
@@ -477,11 +475,9 @@ func (image *Image) Copy(args ...interface{}) error {
 		if dest.image == nil {
 			return errors.New(fmt.Sprintf("RBD image %s is not open", dest.name))
 		}
-		return GetError(C.rbd_copy2(image.image,
-			dest.image))
+		return GetError(C.rbd_copy2(image.image, dest.image))
 	default:
-		return errors.New("Must specify either destination pool " +
-			"or destination image")
+		return errors.New("Must specify either destination pool or destination image")
 	}
 }
 
@@ -611,7 +607,7 @@ func (image *Image) LockExclusive(cookie string) error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_cookie *C.char = C.CString(cookie)
+	c_cookie := C.CString(cookie)
 	defer C.free(unsafe.Pointer(c_cookie))
 
 	return GetError(C.rbd_lock_exclusive(image.image, c_cookie))
@@ -623,8 +619,8 @@ func (image *Image) LockShared(cookie string, tag string) error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_cookie *C.char = C.CString(cookie)
-	var c_tag *C.char = C.CString(tag)
+	c_cookie := C.CString(cookie)
+	c_tag := C.CString(tag)
 	defer C.free(unsafe.Pointer(c_cookie))
 	defer C.free(unsafe.Pointer(c_tag))
 
@@ -637,7 +633,7 @@ func (image *Image) Unlock(cookie string) error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_cookie *C.char = C.CString(cookie)
+	c_cookie := C.CString(cookie)
 	defer C.free(unsafe.Pointer(c_cookie))
 
 	return GetError(C.rbd_unlock(image.image, c_cookie))
@@ -649,8 +645,8 @@ func (image *Image) BreakLock(client string, cookie string) error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_client *C.char = C.CString(client)
-	var c_cookie *C.char = C.CString(cookie)
+	c_client := C.CString(client)
+	c_cookie := C.CString(cookie)
 	defer C.free(unsafe.Pointer(c_client))
 	defer C.free(unsafe.Pointer(c_cookie))
 
@@ -703,7 +699,7 @@ func (image *Image) Write(data []byte) (n int, err error) {
 	}
 
 	if ret != len(data) {
-		err = RBDError(-1)
+		err = RBDError(-C.EPERM)
 	}
 
 	return ret, err
@@ -772,7 +768,7 @@ func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
 		C.size_t(len(data)), (*C.char)(unsafe.Pointer(&data[0]))))
 
 	if ret != len(data) {
-		err = RBDError(-1)
+		err = RBDError(-C.EPERM)
 	}
 
 	return ret, err
@@ -790,7 +786,7 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 		return nil, RbdErrorImageNotOpen
 	}
 
-	var c_max_snaps C.int = 0
+	var c_max_snaps C.int
 
 	ret := C.rbd_snap_list(image.image, nil, &c_max_snaps)
 
@@ -819,7 +815,7 @@ func (image *Image) CreateSnapshot(snapname string) (*Snapshot, error) {
 		return nil, RbdErrorImageNotOpen
 	}
 
-	var c_snapname *C.char = C.CString(snapname)
+	c_snapname := C.CString(snapname)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	ret := C.rbd_snap_create(image.image, c_snapname)
@@ -866,7 +862,7 @@ func (snapshot *Snapshot) Remove() error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_snapname *C.char = C.CString(snapshot.name)
+	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	return GetError(C.rbd_snap_remove(snapshot.image.image, c_snapname))
@@ -880,7 +876,7 @@ func (snapshot *Snapshot) Rollback() error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_snapname *C.char = C.CString(snapshot.name)
+	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	return GetError(C.rbd_snap_rollback(snapshot.image.image, c_snapname))
@@ -892,7 +888,7 @@ func (snapshot *Snapshot) Protect() error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_snapname *C.char = C.CString(snapshot.name)
+	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	return GetError(C.rbd_snap_protect(snapshot.image.image, c_snapname))
@@ -904,7 +900,7 @@ func (snapshot *Snapshot) Unprotect() error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_snapname *C.char = C.CString(snapshot.name)
+	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	return GetError(C.rbd_snap_unprotect(snapshot.image.image, c_snapname))
@@ -918,7 +914,8 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 	}
 
 	var c_is_protected C.int
-	var c_snapname *C.char = C.CString(snapshot.name)
+
+	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	ret := C.rbd_snap_is_protected(snapshot.image.image, c_snapname,
@@ -936,7 +933,7 @@ func (snapshot *Snapshot) Set() error {
 		return RbdErrorImageNotOpen
 	}
 
-	var c_snapname *C.char = C.CString(snapshot.name)
+	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
 	return GetError(C.rbd_snap_set(snapshot.image.image, c_snapname))
