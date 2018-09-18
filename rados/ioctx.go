@@ -220,7 +220,7 @@ func (ioctx *IOContext) GetPoolName() (name string, err error) {
 	for {
 		ret := C.rados_ioctx_get_pool_name(ioctx.ioctx,
 			(*C.char)(unsafe.Pointer(&buf[0])), C.unsigned(len(buf)))
-		if ret == -34 { // FIXME
+		if ret == -C.ERANGE {
 			buf = make([]byte, len(buf)*2)
 			continue
 		} else if ret < 0 {
@@ -251,7 +251,7 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	for {
 		var c_entry *C.char
 		ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
-		if ret == -2 { // FIXME
+		if ret == -C.ENOENT {
 			return nil
 		} else if ret < 0 {
 			return GetRadosError(int(ret))
@@ -707,9 +707,9 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 	switch ret {
 	case 0:
 		return int(ret), nil
-	case -16: // EBUSY
+	case -C.EBUSY:
 		return int(ret), nil
-	case -17: // EEXIST
+	case -C.EEXIST:
 		return int(ret), nil
 	default:
 		return int(ret), RadosError(int(ret))
@@ -758,9 +758,9 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 	switch ret {
 	case 0:
 		return int(ret), nil
-	case -16: // EBUSY
+	case -C.EBUSY:
 		return int(ret), nil
-	case -17: // EEXIST
+	case -C.EEXIST:
 		return int(ret), nil
 	default:
 		return int(ret), RadosError(int(ret))
@@ -789,7 +789,7 @@ func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
 	switch ret {
 	case 0:
 		return int(ret), nil
-	case -2: // -ENOENT
+	case -C.ENOENT:
 		return int(ret), nil
 	default:
 		return int(ret), RadosError(int(ret))
@@ -879,9 +879,9 @@ func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error)
 	switch ret {
 	case 0:
 		return int(ret), nil
-	case -2: // -ENOENT
+	case -C.ENOENT:
 		return int(ret), nil
-	case -22: // -EINVAL
+	case -C.EINVAL: // -EINVAL
 		return int(ret), nil
 	default:
 		return int(ret), RadosError(int(ret))
