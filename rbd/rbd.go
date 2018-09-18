@@ -206,7 +206,7 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	}
 
 	if ret < 0 {
-		return nil, RBDError(int(ret))
+		return nil, RBDError(ret)
 	}
 
 	return &Image{
@@ -237,7 +237,7 @@ func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name stri
 		C.rados_ioctx_t(c_ioctx.Pointer()),
 		c_c_name, C.uint64_t(features), &c_order)
 	if ret < 0 {
-		return nil, RBDError(int(ret))
+		return nil, RBDError(ret)
 	}
 
 	return &Image{
@@ -353,7 +353,7 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 	var c_stat C.rbd_image_info_t
 
 	if ret := C.rbd_stat(image.image, &c_stat, C.size_t(unsafe.Sizeof(info))); ret < 0 {
-		return info, RBDError(int(ret))
+		return info, RBDError(ret)
 	}
 
 	return &ImageInfo{
@@ -376,7 +376,7 @@ func (image *Image) IsOldFormat() (old_format bool, err error) {
 	ret := C.rbd_get_old_format(image.image,
 		&c_old_format)
 	if ret < 0 {
-		return false, RBDError(int(ret))
+		return false, RBDError(ret)
 	}
 
 	return c_old_format != 0, nil
@@ -389,7 +389,7 @@ func (image *Image) GetSize() (size uint64, err error) {
 	}
 
 	if ret := C.rbd_get_size(image.image, (*C.uint64_t)(&size)); ret < 0 {
-		return 0, RBDError(int(ret))
+		return 0, RBDError(ret)
 	}
 
 	return size, nil
@@ -402,7 +402,7 @@ func (image *Image) GetFeatures() (features uint64, err error) {
 	}
 
 	if ret := C.rbd_get_features(image.image, (*C.uint64_t)(&features)); ret < 0 {
-		return 0, RBDError(int(ret))
+		return 0, RBDError(ret)
 	}
 
 	return features, nil
@@ -415,7 +415,7 @@ func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 	}
 
 	if ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit)); ret < 0 {
-		return 0, RBDError(int(ret))
+		return 0, RBDError(ret)
 	}
 
 	return stripe_unit, nil
@@ -428,7 +428,7 @@ func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 	}
 
 	if ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count)); ret < 0 {
-		return 0, RBDError(int(ret))
+		return 0, RBDError(ret)
 	}
 
 	return stripe_count, nil
@@ -441,7 +441,7 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
 	}
 
 	if ret := C.rbd_get_overlap(image.image, (*C.uint64_t)(&overlap)); ret < 0 {
-		return overlap, RBDError(int(ret))
+		return overlap, RBDError(ret)
 	}
 
 	return overlap, nil
@@ -506,7 +506,7 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 		return nil, nil, nil
 	}
 	if ret < 0 && ret != -C.ERANGE {
-		return nil, nil, RBDError(int(ret))
+		return nil, nil, RBDError(ret)
 	}
 
 	pools_buf := make([]byte, c_pools_len)
@@ -518,7 +518,7 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 		(*C.char)(unsafe.Pointer(&images_buf[0])),
 		&c_images_len)
 	if ret < 0 {
-		return nil, nil, RBDError(int(ret))
+		return nil, nil, RBDError(ret)
 	}
 
 	tmp := bytes.Split(pools_buf[:c_pools_len-1], []byte{0})
@@ -584,7 +584,7 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 	// but *0* is unexpected here because first rbd_list_lockers already
 	// dealt with no locker case
 	if int(c_locker_cnt) <= 0 {
-		return "", nil, RBDError(int(c_locker_cnt))
+		return "", nil, RBDError(c_locker_cnt)
 	}
 
 	clients := split(clients_buf)
@@ -796,7 +796,7 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 	ret = C.rbd_snap_list(image.image,
 		&c_snaps[0], &c_max_snaps)
 	if ret < 0 {
-		return nil, RBDError(int(ret))
+		return nil, RBDError(ret)
 	}
 
 	for i, s := range c_snaps {
@@ -820,7 +820,7 @@ func (image *Image) CreateSnapshot(snapname string) (*Snapshot, error) {
 
 	ret := C.rbd_snap_create(image.image, c_snapname)
 	if ret < 0 {
-		return nil, RBDError(int(ret))
+		return nil, RBDError(ret)
 	}
 
 	return &Snapshot{
@@ -852,7 +852,7 @@ func (image *Image) GetParentInfo(p_pool, p_name, p_snapname []byte) error {
 	if ret == 0 {
 		return nil
 	} else {
-		return RBDError(int(ret))
+		return RBDError(ret)
 	}
 }
 
@@ -921,7 +921,7 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 	ret := C.rbd_snap_is_protected(snapshot.image.image, c_snapname,
 		&c_is_protected)
 	if ret < 0 {
-		return false, RBDError(int(ret))
+		return false, RBDError(ret)
 	}
 
 	return c_is_protected != 0, nil
