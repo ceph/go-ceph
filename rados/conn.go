@@ -46,12 +46,11 @@ func (c *Conn) PingMonitor(id string) (string, error) {
 // if any.
 func (c *Conn) Connect() error {
 	ret := C.rados_connect(c.cluster)
-	if ret == 0 {
-		c.connected = true
-		return nil
-	} else {
+	if ret != 0 {
 		return RadosError(int(ret))
 	}
+	c.connected = true
+	return nil
 }
 
 // Shutdown disconnects from the cluster.
