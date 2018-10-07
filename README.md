@@ -51,14 +51,14 @@ similar to a standard file I/O interface:
 ioctx, err := conn.OpenIOContext("mypool")
 
 // write some data
-bytes_in := []byte("input data")
-err = ioctx.Write("obj", bytes_in, 0)
+bytesIn := []byte("input data")
+err = ioctx.Write("obj", bytesIn, 0)
 
 // read the data back out
-bytes_out := make([]byte, len(bytes_in))
-n_out, err := ioctx.Read("obj", bytes_out, 0)
+bytesOut := make([]byte, len(bytesIn))
+_, err := ioctx.Read("obj", bytesOut, 0)
 
-if bytes_in != bytes_out {
+if !bytes.Equal(bytesIn, bytesOut) {
     fmt.Println("Output is not input!")
 }
 ```
