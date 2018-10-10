@@ -25,8 +25,10 @@ pkill ceph || true
 rm -rf ${DIR}/*
 LOG_DIR=${DIR}/log
 MON_DATA=${DIR}/mon
+MDS_DATA=${DIR}/mds
 OSD_DATA=${DIR}/osd
-mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA}
+mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA} ${MDS_DATA}
+MDS_NAME="Z"
 
 # cluster wide parameters
 cat >> ${DIR}/ceph.conf <<EOF
@@ -38,6 +40,9 @@ auth cluster required = none
 auth service required = none
 auth client required = none
 osd pool default size = 1
+
+[mds.${MDS_NAME}]
+host = localhost
 
 [mon.a]
 log file = ${LOG_DIR}/mon.log
@@ -70,6 +75,14 @@ OSD_ID=$(ceph osd create)
 ceph osd crush add osd.${OSD_ID} 1 root=default host=localhost
 ceph-osd --id ${OSD_ID} --mkjournal --mkfs
 ceph-osd --id ${OSD_ID}
+
+# start an mds for cephfs
+ceph auth get-or-create mds.${MDS_NAME} mon 'profile mds' mgr 'profile mds' mds 'allow *' osd 'allow *' > ${MDS_DATA}/keyring
+ceph osd pool create cephfs_data 8
+ceph osd pool create cephfs_metadata 8
+ceph fs new cephfs cephfs_metadata cephfs_data
+ceph fs ls
+ceph-mds -i ${MDS_NAME}
 
 # start a manager
 ceph-mgr --id x

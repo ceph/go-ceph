@@ -2,6 +2,7 @@
 
 set -e
 
+rm -rf /tmp/ceph
 mkdir /tmp/ceph
 /micro-osd.sh /tmp/ceph
 export CEPH_CONF=/tmp/ceph/ceph.conf
@@ -12,4 +13,4 @@ go get -t -v ./...
 diff -u <(echo -n) <(gofmt -d -s .)
 #go vet ./...
 #go list ./...
-go test -v $(go list ./... | grep -v cephfs)
+GOCACHE=off go test -v ./...
