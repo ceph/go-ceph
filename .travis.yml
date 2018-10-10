@@ -21,5 +21,6 @@ before_install: |
     exit 1
   fi
 
+# cephfs (fuse) requires: --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 script:
-  - docker run --rm -it -v ${PWD}:/go/src/github.com/ceph/go-ceph:z ceph-golang-ci
+  - docker run --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined --rm -it -v ${PWD}:/go/src/github.com/ceph/go-ceph:z ceph-golang-ci

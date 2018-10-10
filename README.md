@@ -8,6 +8,16 @@
 
 The native RADOS library and development headers are expected to be installed.
 
+On debian systems (apt):
+```sh
+libcephfs-dev librbd-dev librados-dev
+```
+
+On rpm based systems (dnf, yum, etc):
+```sh
+libcephfs-devel librbd-devel librados-devel
+```
+
 ## Documentation
 
 Detailed documentation is available at
@@ -92,10 +102,11 @@ conn.DeletePool("new_pool")
 # Development
 
 ```
-docker run --rm -it --net=host
-  -v ${PWD}:/go/src/github.com/ceph/go-ceph:z
-  -v /home/nwatkins/src/ceph/build:/home/nwatkins/src/ceph/build:z
-  -e CEPH_CONF=/home/nwatkins/src/ceph/build/ceph.conf
+docker run --rm -it --net=host \
+  --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined \
+  -v ${PWD}:/go/src/github.com/ceph/go-ceph:z \
+  -v /home/nwatkins/src/ceph/build:/home/nwatkins/src/ceph/build:z \
+  -e CEPH_CONF=/home/nwatkins/src/ceph/build/ceph.conf \
   ceph-golang
 ```
 
@@ -122,4 +133,3 @@ Contributions are welcome & greatly appreciated, every little bit helps. Make co
 ```
 make test-docker
 ```
-
