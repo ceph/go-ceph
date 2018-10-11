@@ -26,9 +26,12 @@ rm -rf ${DIR}/*
 LOG_DIR=${DIR}/log
 MON_DATA=${DIR}/mon
 MDS_DATA=${DIR}/mds
+MOUNTPT=${MDS_DATA}/mnt
 OSD_DATA=${DIR}/osd
-mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA} ${MDS_DATA}
+mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA} ${MDS_DATA} ${MOUNTPT}
 MDS_NAME="Z"
+MON_NAME="a"
+MGR_NAME="x"
 
 # cluster wide parameters
 cat >> ${DIR}/ceph.conf <<EOF
@@ -44,7 +47,7 @@ osd pool default size = 1
 [mds.${MDS_NAME}]
 host = localhost
 
-[mon.a]
+[mon.${MON_NAME}]
 log file = ${LOG_DIR}/mon.log
 chdir = ""
 mon cluster log file = ${LOG_DIR}/mon-cluster.log
@@ -66,9 +69,9 @@ EOF
 export CEPH_CONF=${DIR}/ceph.conf
 
 # start an osd
-ceph-mon --id a --mkfs --keyring /dev/null
+ceph-mon --id ${MON_NAME} --mkfs --keyring /dev/null
 touch ${MON_DATA}/keyring
-ceph-mon --id a
+ceph-mon --id ${MON_NAME}
 
 # start an osd
 OSD_ID=$(ceph osd create)
@@ -83,9 +86,15 @@ ceph osd pool create cephfs_metadata 8
 ceph fs new cephfs cephfs_metadata cephfs_data
 ceph fs ls
 ceph-mds -i ${MDS_NAME}
+ceph status
+while [[ ! $(ceph mds stat | grep "up:active") ]]; do sleep 1; done
+# fuse: device not found, try 'modprobe fuse' first
+# Make sure to run with --privileged or --cap-add SYS_ADMIN --device /dev/fuse --security apparmor:unconfined for docker
+ceph-fuse ${MOUNTPT}
+
 
 # start a manager
-ceph-mgr --id x
+ceph-mgr --id ${MGR_NAME}
 
 # test the setup
 ceph --version
