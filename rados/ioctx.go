@@ -231,6 +231,23 @@ func (ioctx *IOContext) GetPoolName() (name string, err error) {
 	}
 }
 
+// SetLocator sets the key for mapping objects to pgs within an io context.
+// Until a different locator key is set, all objects in this io context will be placed in the same pg.
+// To reset the locator, an empty string must be set.
+//
+// Implements:
+//  void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);
+func (ioctx *IOContext) SetLocator(locator string) {
+	var c_loc *C.char
+	if len(locator) > 0 || locator != "" {
+		c_loc = C.CString(locator)
+		defer C.free(unsafe.Pointer(c_loc))
+		C.rados_ioctx_locator_set_key(ioctx.ioctx, c_loc)
+	} else {
+		C.rados_ioctx_locator_set_key(ioctx.ioctx, nil)
+	}
+}
+
 // ObjectListFunc is the type of the function called for each object visited
 // by ListObjects.
 type ObjectListFunc func(oid string)
