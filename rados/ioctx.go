@@ -450,12 +450,13 @@ func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPref
 
 	var c_iter C.rados_omap_iter_t
 	var c_prval C.int
-	C.rados_read_op_omap_get_vals(
+	C.rados_read_op_omap_get_vals2(
 		op,
 		c_start_after,
 		c_filter_prefix,
 		c_max_return,
 		&c_iter,
+		nil,
 		&c_prval,
 	)
 
