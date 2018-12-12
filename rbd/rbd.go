@@ -464,7 +464,7 @@ func (image *Image) Copy(args ...interface{}) error {
 		case string:
 			c_destname := C.CString(t2)
 			defer C.free(unsafe.Pointer(c_destname))
-			return RBDError(C.rbd_copy(image.image,
+			return GetError(C.rbd_copy(image.image,
 				C.rados_ioctx_t(t.Pointer()),
 				c_destname))
 		default:
