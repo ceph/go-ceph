@@ -1,4 +1,7 @@
 sudo: required
+language: go
+dist:     trusty
+
 services:
   - docker
 
@@ -21,6 +24,12 @@ before_install: |
     exit 1
   fi
 
+before_script:
+  - go get golang.org/x/lint/golint
+
 # cephfs (fuse) requires: --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 script:
   - docker run --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined --rm -it -v ${PWD}:/go/src/github.com/ceph/go-ceph:z ceph-golang-ci
+# run golint and other style checks
+  - go get golang.org/x/lint/golint
+  - make check
