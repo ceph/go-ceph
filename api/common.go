@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type CephClient struct {
@@ -15,15 +16,19 @@ type CephClient struct {
 func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 	var body string
 	endpoint = cc.BaseUrl + endpoint
-	client := http.Client{
-		Timeout: 5 * time.Minute,
-	}
-	req, err := http.NewRequest(method, endpoint, nil)
+
+	client := retryablehttp.NewClient()
+	client.RetryWaitMin = 30 * time.Second
+	client.RetryWaitMax = 5 * time.Minute
+
+	req, err := retryablehttp.NewRequest(method, endpoint, nil)
 	if err != nil {
 		return "", err
 	}
+
 	req.Header.Set("Accept", "application/json")
 	log.Printf("Sending request to ceph-rest-api with endpoint %s", endpoint)
+
 	resp, err := client.Do(req)
 	log.Printf("Got request response to ceph-rest-api with endpoint %s", endpoint)
 	if err != nil {
