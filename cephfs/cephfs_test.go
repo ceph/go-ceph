@@ -172,8 +172,8 @@ func TestChmod(t *testing.T) {
 	fd, err := mount.Open("/text.txt", os.O_CREATE, stats_before)
 	assert.NoError(t, err)
 
-    err = mount.Fchmod(fd, stats_after)
-    assert.NoError(t, err)
+	err = mount.Fchmod(fd, stats_after)
+	assert.NoError(t, err)
 
 	stats, err = os.Stat(CephMountTest + "text.txt")
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_after)
@@ -394,17 +394,17 @@ func TestTruncate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, size, len(data))
 
-    stat, err := mount.Stat("/text.txt")
+	stat, err := mount.Stat("/text.txt")
 	assert.Equal(t, int(stat.Size), len(data))
 
-    err = mount.FTruncate(fd, 20)
-    assert.NoError(t, err)
-    stat, err = mount.Stat("/text.txt")
+	err = mount.FTruncate(fd, 20)
+	assert.NoError(t, err)
+	stat, err = mount.Stat("/text.txt")
 	assert.Equal(t, int(stat.Size), 20)
 
-    err = mount.Truncate("/text.txt", 10)
-    assert.NoError(t, err)
-    stat, err = mount.Stat("/text.txt")
+	err = mount.Truncate("/text.txt", 10)
+	assert.NoError(t, err)
+	stat, err = mount.Stat("/text.txt")
 	assert.Equal(t, int(stat.Size), 10)
 
 	err = mount.Close(fd)
@@ -434,8 +434,8 @@ func TestLseek(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, size, len(data))
 
-    err = mount.Lseek(fd, 5, os.SEEK_SET)
-    assert.NoError(t, err)
+	err = mount.Lseek(fd, 5, os.SEEK_SET)
+	assert.NoError(t, err)
 
 	err = mount.Close(fd)
 	assert.NoError(t, err)
