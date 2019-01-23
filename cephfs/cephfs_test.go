@@ -72,6 +72,9 @@ func TestChangeDir(t *testing.T) {
 	assert.NotEqual(t, dir1, dir2)
 	assert.Equal(t, dir1, "/")
 	assert.Equal(t, dir2, "/asdf")
+
+	err = mount.RemoveDir("/asdf")
+	assert.NoError(t, err)
 }
 
 func TestRemoveDir(t *testing.T) {
@@ -162,6 +165,9 @@ func TestChmodDir(t *testing.T) {
 
 	stats, err = os.Stat(CephMountTest + dirname)
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_after)
+
+	err = mount.RemoveDir(dirname)
+	assert.NoError(t, err)
 }
 
 // Not cross-platform, go's os does not specifiy Sys return type
@@ -200,6 +206,155 @@ func TestChown(t *testing.T) {
 	stats, err = os.Stat(CephMountTest + dirname)
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
 
+	err = mount.RemoveDir(dirname)
+	assert.NoError(t, err)
+}
+
+func TestSetGetConf(t *testing.T) {
+	value := "cephx"
+	option := "auth supported"
+
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.SetConf(option, value)
+	assert.NoError(t, err)
+
+	newValue, err := mount.GetConf(option)
+	assert.NoError(t, err)
+
+	assert.Equal(t, value, newValue)
+}
+
+func TestOpenClose(t *testing.T) {
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+
+	fd, err := mount.Open("/text.txt", os.O_CREATE, 0755)
+	assert.NoError(t, err)
+
+	err = mount.Close(fd)
+	assert.NoError(t, err)
+
+	err = mount.Unlink("/text.txt")
+	assert.NoError(t, err)
+}
+
+func TestWriteRead(t *testing.T) {
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+
+	fd, err := mount.Open("/text.txt", os.O_CREATE|os.O_RDWR, 0755)
+	assert.NoError(t, err)
+
+	data := []byte("Ceph uniquely delivers object, block, and file storage in one unified system.")
+
+	size, err := mount.Write(fd, data, uint64(len(data)), 0)
+	assert.NoError(t, err)
+	assert.Equal(t, size, len(data))
+
+	readData, err := mount.Read(fd, uint64(len(data)), 0)
+	assert.NoError(t, err)
+	assert.Equal(t, data, readData)
+
+	err = mount.Close(fd)
+	assert.NoError(t, err)
+
+	err = mount.Unlink("/text.txt")
+	assert.NoError(t, err)
+}
+
+func TestListDir(t *testing.T) {
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+
+	err = mount.MakeDir("/testdir", 0755)
+	assert.NoError(t, err)
+
+	assert.NoError(t, err)
+	l, err := mount.ListDir("/")
+	assert.NoError(t, err)
+	assert.NotNil(t, l)
+
+	err = mount.RemoveDir("/testdir")
+	assert.NoError(t, err)
+}
+
+func TestStatLink(t *testing.T) {
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+
+	fd, err := mount.Open("/text.txt", os.O_CREATE, 0755)
+	assert.NoError(t, err)
+	err = mount.Close(fd)
+	assert.NoError(t, err)
+
+	stat, err := mount.LStat("/text.txt")
+	assert.Equal(t, stat.IsFile, true)
+
+	err = mount.MakeDir("/testdir", 0755)
+	assert.NoError(t, err)
+	stat, err = mount.Stat("/testdir")
+	assert.Equal(t, stat.IsDir, true)
+
+	err = mount.Link("/text.txt", "/hardLink")
+	assert.NoError(t, err)
+	stat, err = mount.LStat("/hardLink")
+	assert.Equal(t, stat.IsSymlink, false)
+
+	err = mount.Symlink("/text.txt", "/link")
+	assert.NoError(t, err)
+	stat, err = mount.Stat("/link")
+	assert.Equal(t, stat.IsSymlink, false)
+	stat, err = mount.LStat("/link")
+	assert.Equal(t, stat.IsSymlink, true)
+
+	/*
+	   name, err := mount.ReadLink("/link")
+	   assert.NoError(t, err)
+	   assert.Equal(t, "/text.txt", name)
+	*/
+
+	err = mount.Unlink("/link")
+	assert.NoError(t, err)
+	err = mount.Unlink("/hardLink")
+	assert.NoError(t, err)
+	err = mount.Unlink("/text.txt")
+	assert.NoError(t, err)
+
+	err = mount.RemoveDir("/testdir")
+	assert.NoError(t, err)
 }
