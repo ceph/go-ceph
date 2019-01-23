@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -35,7 +36,7 @@ func (cc *CephClient) callApi(endpoint string, method string) (string, error) {
 		return body, err
 	}
 
-	if resp.StatusCode != retryablehttp.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 		return body, fmt.Errorf("Received unexpected status code from server: %d", resp.StatusCode)
 	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
