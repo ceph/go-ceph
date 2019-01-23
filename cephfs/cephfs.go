@@ -373,7 +373,6 @@ func (mount *MountInfo) ListDir(path string) ([]string, error) {
 		for bufpos < int(ret) {
 			ptr := unsafe.Pointer((uintptr(buf) + uintptr(bufpos)))
 			ent = C.GoString((*C.char)(ptr))
-			log.Info(ent)
 			if strings.Compare(ent, ".") != 0 && strings.Compare(ent, "..") != 0 {
 				dirs = append(dirs, ent)
 			}
@@ -426,6 +425,7 @@ func (mount *MountInfo) fillCephStat(stx Statx) CephStat {
 	} else {
 		stat.IsSymlink = false
 	}
+
 	return stat
 }
 
