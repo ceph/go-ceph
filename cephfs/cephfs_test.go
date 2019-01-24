@@ -14,32 +14,36 @@ var (
 )
 
 func TestCreateMount(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
+
+	mountAdmin, err := cephfs.CreateMountWithClient("admin")
+	assert.NoError(t, err)
+	assert.NotNil(t, mountAdmin)
 }
 
 func TestMountRoot(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
-	err = mount.ReadDefaultConfigFile()
+	err = mount.ReadConfigFile("/etc/ceph/ceph.conf")
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.MountRoot("/")
 	assert.NoError(t, err)
 }
 
 func TestSyncFs(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	err = mount.SyncFs()
@@ -47,14 +51,14 @@ func TestSyncFs(t *testing.T) {
 }
 
 func TestChangeDir(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	dir1 := mount.CurrentDir()
@@ -79,14 +83,14 @@ func TestChangeDir(t *testing.T) {
 
 func TestRemoveDir(t *testing.T) {
 	dirname := "one"
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	err = mount.MakeDir(dirname, 0755)
@@ -108,7 +112,7 @@ func TestRemoveDir(t *testing.T) {
 }
 
 func TestUnmountMount(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 	fmt.Printf("%#v\n", mount.IsMounted())
@@ -116,7 +120,7 @@ func TestUnmountMount(t *testing.T) {
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 	assert.True(t, mount.IsMounted())
 
@@ -126,7 +130,7 @@ func TestUnmountMount(t *testing.T) {
 }
 
 func TestReleaseMount(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
@@ -138,14 +142,14 @@ func TestChmod(t *testing.T) {
 	dirname := "two"
 	var stats_before uint32 = 0755
 	var stats_after uint32 = 0700
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	err = mount.MakeDir(dirname, stats_before)
@@ -192,14 +196,14 @@ func TestChown(t *testing.T) {
 	var bob uint32 = 1010
 	var root uint32 = 0
 
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	err = mount.MakeDir(dirname, 0755)
@@ -221,6 +225,7 @@ func TestChown(t *testing.T) {
 	stats, err = os.Stat(CephMountTest + dirname)
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
+	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
 
 	err = mount.RemoveDir(dirname)
 	assert.NoError(t, err)
@@ -230,7 +235,7 @@ func TestSetGetConf(t *testing.T) {
 	value := "cephx"
 	option := "auth supported"
 
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
@@ -247,14 +252,14 @@ func TestSetGetConf(t *testing.T) {
 }
 
 func TestOpenClose(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	fd, err := mount.Open("/text.txt", os.O_CREATE, 0755)
@@ -268,14 +273,14 @@ func TestOpenClose(t *testing.T) {
 }
 
 func TestWriteRead(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	fd, err := mount.Open("/text.txt", os.O_CREATE|os.O_RDWR, 0755)
@@ -299,14 +304,14 @@ func TestWriteRead(t *testing.T) {
 }
 
 func TestListDir(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	err = mount.MakeDir("/testdir", 0755)
@@ -321,23 +326,27 @@ func TestListDir(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestStatLink(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+func TestStat(t *testing.T) {
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	fd, err := mount.Open("/text.txt", os.O_CREATE, 0755)
 	assert.NoError(t, err)
-	err = mount.Close(fd)
-	assert.NoError(t, err)
 
 	stat, err := mount.LStat("/text.txt")
+	assert.NoError(t, err)
+	assert.Equal(t, stat.IsFile, true)
+
+	stat, err = mount.FStat(fd)
+	fmt.Println(stat)
+	assert.NoError(t, err)
 	assert.Equal(t, stat.IsFile, true)
 
 	err = mount.MakeDir("/testdir", 0755)
@@ -345,9 +354,33 @@ func TestStatLink(t *testing.T) {
 	stat, err = mount.Stat("/testdir")
 	assert.Equal(t, stat.IsDir, true)
 
+	err = mount.Close(fd)
+	assert.NoError(t, err)
+
+	err = mount.Unlink("/text.txt")
+	assert.NoError(t, err)
+
+	err = mount.RemoveDir("/testdir")
+	assert.NoError(t, err)
+}
+
+func TestLink(t *testing.T) {
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+
+	fd, err := mount.Open("/text.txt", os.O_CREATE, 0755)
+	assert.NoError(t, err)
+
 	err = mount.Link("/text.txt", "/hardLink")
 	assert.NoError(t, err)
-	stat, err = mount.LStat("/hardLink")
+	stat, err := mount.LStat("/hardLink")
 	assert.Equal(t, stat.IsSymlink, false)
 
 	err = mount.Symlink("/text.txt", "/link")
@@ -357,11 +390,15 @@ func TestStatLink(t *testing.T) {
 	stat, err = mount.LStat("/link")
 	assert.Equal(t, stat.IsSymlink, true)
 
-	/*
-	   name, err := mount.ReadLink("/link")
-	   assert.NoError(t, err)
-	   assert.Equal(t, "/text.txt", name)
-	*/
+	cwd := mount.CurrentDir()
+	fmt.Println(cwd)
+
+	name, err = mount.ReadLink("/link")
+	assert.NoError(t, err)
+	assert.Equal(t, "/text.txt", name)
+
+	err = mount.Close(fd)
+	assert.NoError(t, err)
 
 	err = mount.Unlink("/link")
 	assert.NoError(t, err)
@@ -369,20 +406,17 @@ func TestStatLink(t *testing.T) {
 	assert.NoError(t, err)
 	err = mount.Unlink("/text.txt")
 	assert.NoError(t, err)
-
-	err = mount.RemoveDir("/testdir")
-	assert.NoError(t, err)
 }
 
 func TestTruncate(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	fd, err := mount.Open("/text.txt", os.O_CREATE|os.O_RDWR, 0755)
@@ -415,14 +449,14 @@ func TestTruncate(t *testing.T) {
 }
 
 func TestLseek(t *testing.T) {
-	mount, err := cephfs.CreateMount("")
+	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
-	err = mount.Mount("/")
+	err = mount.Mount()
 	assert.NoError(t, err)
 
 	fd, err := mount.Open("/text.txt", os.O_CREATE|os.O_RDWR, 0755)

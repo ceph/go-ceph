@@ -15,7 +15,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"math"
-	//"os"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -32,7 +31,23 @@ func (e cephError) Error() string {
 }
 
 const (
-	CephStatMask = (C.CEPH_STATX_UID | C.CEPH_STATX_GID | C.CEPH_STATX_SIZE | C.CEPH_STATX_BLOCKS | C.CEPH_STATX_MTIME | C.CEPH_STATX_ATIME)
+	CephStatxMode       = C.CEPH_STATX_MODE
+	CephStatxNlink      = C.CEPH_STATX_NLINK
+	CephStatxUid        = C.CEPH_STATX_UID
+	CephStatxGid        = C.CEPH_STATX_GID
+	CephStatxRdev       = C.CEPH_STATX_RDEV
+	CephStatxAtime      = C.CEPH_STATX_ATIME
+	CephStatxMtime      = C.CEPH_STATX_MTIME
+	CephStatxCtime      = C.CEPH_STATX_CTIME
+	CephStatxIno        = C.CEPH_STATX_INO
+	CephStatxSize       = C.CEPH_STATX_SIZE
+	CephStatxBlocks     = C.CEPH_STATX_BLOCKS
+	CephStatxBasicStats = C.CEPH_STATX_BASIC_STATS
+	CephStatxBtime      = C.CEPH_STATX_BTIME
+	CephStatxVersion    = C.CEPH_STATX_VERSION
+	CephStatxAllStats   = C.CEPH_STATX_ALL_STATS
+
+	CephStatxMask = (CephStatxUid | CephStatxGid | CephStatxSize | CephStatxBlocks | CephStatxAtime | CephStatxMtime)
 )
 
 type CephStat struct {
@@ -64,7 +79,21 @@ type Statx struct {
 }
 
 // CreateMount creates a mount handle for interacting with Ceph.
-func CreateMount(id string) (*MountInfo, error) {
+func CreateMount() (*MountInfo, error) {
+	mount := &MountInfo{}
+
+	ret := C.ceph_create(&mount.mount, nil)
+	if ret != 0 {
+		log.Errorf("CreateMount: Failed to create mount")
+		return nil, cephError(ret)
+	}
+	return mount, nil
+}
+
+// CreateMountWithClient creates a mount handle for interacting with Ceph.
+// id is the id of client, this can be an unique id that identifies the client
+// and will get appended onto "client."
+func CreateMountWithClient(id string) (*MountInfo, error) {
 	mount := &MountInfo{}
 
 	var cId *C.char
@@ -147,7 +176,17 @@ func (mount *MountInfo) GetConf(option string) (string, error) {
 }
 
 // Mount mounts the mount handle.
-func (mount *MountInfo) Mount(rootPath string) error {
+func (mount *MountInfo) Mount() error {
+	ret := C.ceph_mount(mount.mount, nil)
+	if ret != 0 {
+		log.Errorf("Mount: Failed to mount")
+		return cephError(ret)
+	}
+	return nil
+}
+
+// MountRoot mounts the mount handle using the path for the root of the mount.
+func (mount *MountInfo) MountRoot(rootPath string) error {
 	cPath := C.CString(rootPath)
 	defer C.free(unsafe.Pointer(cPath))
 
@@ -435,7 +474,7 @@ func (mount *MountInfo) Stat(path string) (CephStat, error) {
 	defer C.free(unsafe.Pointer(cPath))
 
 	stx := Statx{}
-	ret := C.ceph_statx(mount.mount, cPath, &stx.stx, CephStatMask, 0)
+	ret := C.ceph_statx(mount.mount, cPath, &stx.stx, CephStatxMask, 0)
 	// ret := C.ceph_statx(mount.mount, cPath, &stx.stx, C.CEPH_STATX_UID, 0)
 	if ret != 0 {
 		log.Errorf("Stat: Failed to get file status: %s", path)
@@ -449,7 +488,7 @@ func (mount *MountInfo) Stat(path string) (CephStat, error) {
 // FStat get file status from a file descriptor
 func (mount *MountInfo) FStat(fd int) (CephStat, error) {
 	stx := Statx{}
-	ret := C.ceph_fstatx(mount.mount, C.int(fd), &stx.stx, CephStatMask, 0)
+	ret := C.ceph_fstatx(mount.mount, C.int(fd), &stx.stx, CephStatxMask, 0)
 	if ret != 0 {
 		log.Errorf("Stat: Failed to get file status")
 		return CephStat{}, cephError(ret)
@@ -465,7 +504,7 @@ func (mount *MountInfo) LStat(path string) (CephStat, error) {
 	defer C.free(unsafe.Pointer(cPath))
 
 	stx := Statx{}
-	ret := C.ceph_statx(mount.mount, cPath, &stx.stx, CephStatMask, C.AT_SYMLINK_NOFOLLOW)
+	ret := C.ceph_statx(mount.mount, cPath, &stx.stx, CephStatxMask, C.AT_SYMLINK_NOFOLLOW)
 	if ret != 0 {
 		log.Errorf("Stat: Failed to get file status: %s", path)
 		return CephStat{}, cephError(ret)
@@ -475,12 +514,31 @@ func (mount *MountInfo) LStat(path string) (CephStat, error) {
 	return stat, nil
 }
 
-/*
 // SetAttr set file attributes
-func (mount *MountInfo) SetAttr(path string, stat CephStat, mask int) {
+func (mount *MountInfo) SetAttr(path string, stat CephStat, mask int) error {
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
 
+	stx := Statx{}
+	stx.stx.stx_mode = C.uint16_t(stat.Mode)
+	stx.stx.stx_uid = C.uint32_t(stat.Uid)
+	stx.stx.stx_gid = C.uint32_t(stat.Gid)
+	stx.stx.stx_blksize = C.uint32_t(stat.BlkSize)
+	stx.stx.stx_size = C.uint64_t(stat.Size)
+	stx.stx.stx_blocks = C.uint64_t(stat.Blocks)
+	stx.stx.stx_atime.tv_sec = C.int64_t(stat.AppendTime / 1000)
+	stx.stx.stx_atime.tv_nsec = C.int64_t((stat.AppendTime % 1000) * 1000000)
+	stx.stx.stx_mtime.tv_sec = C.int64_t(stat.ModifyTime / 1000)
+	stx.stx.stx_mtime.tv_nsec = C.int64_t((stat.ModifyTime % 1000) * 1000000)
+
+	ret := C.ceph_setattrx(mount.mount, cPath, &stx.stx, C.int(mask), 0)
+	if ret != 0 {
+		log.Errorf("SetAttr: Failed to set file attributes: %s", path)
+		return cephError(ret)
+	}
+	return nil
 }
-*/
+
 // Truncate truncate a file to a specified length
 func (mount *MountInfo) Truncate(path string, size int64) error {
 	cPath := C.CString(path)
@@ -538,7 +596,7 @@ func (mount *MountInfo) ReadLink(path string) (string, error) {
 	defer C.free(unsafe.Pointer(cPath))
 
 	stx := Statx{}
-	ret := C.ceph_statx(mount.mount, cPath, &stx.stx, CephStatMask, C.AT_SYMLINK_NOFOLLOW)
+	ret := C.ceph_statx(mount.mount, cPath, &stx.stx, CephStatxMask, C.AT_SYMLINK_NOFOLLOW)
 	if ret != 0 {
 		log.Errorf("Stat: Failed to get file status: %s", path)
 		return "", cephError(ret)
