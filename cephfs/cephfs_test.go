@@ -11,6 +11,7 @@ import (
 
 var (
 	CephMountTest string = "/tmp/ceph/mds/mnt/"
+    CephConfTest string = "/tmp/ceph/ceph.conf"
 )
 
 func TestCreateMount(t *testing.T) {
@@ -28,7 +29,7 @@ func TestMountRoot(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
-	err = mount.ReadConfigFile("/etc/ceph/ceph.conf")
+	err = mount.ReadConfigFile(CephConfTest)
 	assert.NoError(t, err)
 
 	err = mount.MountRoot("/")
@@ -345,7 +346,6 @@ func TestStat(t *testing.T) {
 	assert.Equal(t, stat.IsFile, true)
 
 	stat, err = mount.FStat(fd)
-	fmt.Println(stat)
 	assert.NoError(t, err)
 	assert.Equal(t, stat.IsFile, true)
 
