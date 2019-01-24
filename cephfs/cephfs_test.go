@@ -11,7 +11,7 @@ import (
 
 var (
 	CephMountTest string = "/tmp/ceph/mds/mnt/"
-    CephConfTest string = "/tmp/ceph/ceph.conf"
+	CephConfTest  string = "/tmp/ceph/ceph.conf"
 )
 
 func TestCreateMount(t *testing.T) {
