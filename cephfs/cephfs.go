@@ -48,6 +48,15 @@ const (
 	CephStatxAllStats   = C.CEPH_STATX_ALL_STATS
 
 	CephStatxMask = (CephStatxUid | CephStatxGid | CephStatxSize | CephStatxBlocks | CephStatxAtime | CephStatxMtime)
+
+	CephSetAttrMode  = C.CEPH_SETATTR_MODE
+	CephSetAttrUid   = C.CEPH_SETATTR_UID
+	CephSetAttrGid   = C.CEPH_SETATTR_GID
+	CephSetAttrMtime = C.CEPH_SETATTR_MTIME
+	CephSetAttrAtime = C.CEPH_SETATTR_ATIME
+	CephSetAttrSize  = C.CEPH_SETATTR_SIZE
+	CephSetAttrCtime = C.CEPH_SETATTR_CTIME
+	CephSetAttrBtime = C.CEPH_SETATTR_BTIME
 )
 
 type CephStat struct {
