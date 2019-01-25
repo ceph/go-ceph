@@ -345,6 +345,9 @@ func TestStat(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, stat.IsFile, true)
 
+	mode := stat.StrMode()
+	assert.Equal(t, mode, "-rwxr-xr-x")
+
 	stat, err = mount.FStat(fd)
 	assert.NoError(t, err)
 	assert.Equal(t, stat.IsFile, true)
