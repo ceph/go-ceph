@@ -74,6 +74,94 @@ type CephStat struct {
 	IsSymlink bool // S_ISLNK
 }
 
+func (stat *CephStat) StrMode() string {
+	mode := make([]byte, 10)
+	// type
+	switch stat.Mode & C.S_IFMT {
+	case C.S_IFDIR:
+		mode[0] = 'd'
+	case C.S_IFCHR:
+		mode[0] = 'c'
+	case C.S_IFBLK:
+		mode[0] = 'b'
+	case C.S_IFREG:
+		mode[0] = '-'
+	case C.S_IFLNK:
+		mode[0] = 'l'
+	case C.S_IFSOCK:
+		mode[0] = 's'
+	default:
+		mode[0] = '?'
+	}
+
+	// user
+	if (stat.Mode & C.S_IRUSR) != 0 {
+		mode[1] = 'r'
+	} else {
+		mode[1] = '-'
+	}
+	if (stat.Mode & C.S_IWUSR) != 0 {
+		mode[2] = 'w'
+	} else {
+		mode[2] = '-'
+	}
+	switch stat.Mode & (C.S_IXUSR | C.S_ISUID) {
+	case 0:
+		mode[3] = '-'
+	case C.S_IXUSR:
+		mode[3] = 'x'
+	case C.S_ISUID:
+		mode[3] = 'S'
+	case C.S_IXUSR | C.S_ISUID:
+		mode[3] = 's'
+	}
+
+	// group
+	if (stat.Mode & C.S_IRGRP) != 0 {
+		mode[4] = 'r'
+	} else {
+		mode[4] = '-'
+	}
+	if (stat.Mode & C.S_IWGRP) != 0 {
+		mode[5] = 'w'
+	} else {
+		mode[5] = '-'
+	}
+	switch stat.Mode & (C.S_IXGRP | C.S_ISUID) {
+	case 0:
+		mode[6] = '-'
+	case C.S_IXGRP:
+		mode[6] = 'x'
+	case C.S_ISUID:
+		mode[6] = 'S'
+	case C.S_IXGRP | C.S_ISUID:
+		mode[6] = 's'
+	}
+
+	// other
+	if (stat.Mode & C.S_IROTH) != 0 {
+		mode[7] = 'r'
+	} else {
+		mode[7] = '-'
+	}
+	if (stat.Mode & C.S_IWOTH) != 0 {
+		mode[8] = 'w'
+	} else {
+		mode[8] = '-'
+	}
+	switch stat.Mode & (C.S_IXOTH | C.S_ISVTX) {
+	case 0:
+		mode[9] = '-'
+	case C.S_IXOTH:
+		mode[9] = 'x'
+	case C.S_ISVTX:
+		mode[9] = 'T'
+	case C.S_IXOTH | C.S_ISVTX:
+		mode[9] = 't'
+	}
+	return string(mode)
+}
+
 // MountInfo exports ceph's ceph_mount_info from libcephfs.cc
 type MountInfo struct {
 	mount *C.struct_ceph_mount_info
