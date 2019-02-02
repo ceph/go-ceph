@@ -11,6 +11,31 @@ package rados
 // 	*idx += strlen(*idx) + 1;
 // 	return copy;
 // }
+// typedef struct callback_args_t {
+//     void* lock;
+//     int*  ret;
+// } callback_args_t;
+//
+// void commit_callback(rados_completion_t comp, void *arg) {
+// 	int ret = rados_aio_get_return_value(comp);
+// 	AioComplete(arg, ret);
+//      rados_aio_release(comp);
+//      free(arg);
+// }
+//
+// int create_aio_read_completion(void* p, int* ret, rados_completion_t* comp) {
+//      callback_args_t* args = malloc(sizeof(callback_args_t));
+//      args->lock=p;
+//      args->ret=ret;
+//      return rados_aio_create_completion(args, NULL, commit_callback, comp);
+// }
+//
+// int create_aio_write_completion(void* p, int* ret, rados_completion_t* comp) {
+//      callback_args_t* args = malloc(sizeof(callback_args_t));
+//      args->lock=p;
+//      args->ret=ret;
+//      return rados_aio_create_completion(args, commit_callback, NULL, comp);
+// }
 //
 // #if __APPLE__
 // #define ceph_time_t __darwin_time_t
@@ -93,6 +118,16 @@ func (ioctx *IOContext) SetNamespace(namespace string) {
 	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
 }
 
+func (ioctx *IOContext) AioWrite(oid string, data []byte, offset uint64) future {
+	return &aioFuture{
+		buf:    data,
+		offset: offset,
+		oid:    oid,
+		ioctx:  ioctx,
+		tp:     IOWrite,
+	}
+}
+
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
 func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
@@ -125,6 +160,15 @@ func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
 	return GetRadosError(int(ret))
 }
 
+func (ioctx *IOContext) AioAppend(oid string, data []byte) future {
+	return &aioFuture{
+		buf:   data,
+		oid:   oid,
+		ioctx: ioctx,
+		tp:    IOAppend,
+	}
+}
+
 // Append appends len(data) bytes to the object with key oid.
 // The object is appended with the provided data. If the object exists,
 // it is atomically appended to. It returns an error, if any.
@@ -136,6 +180,16 @@ func (ioctx *IOContext) Append(oid string, data []byte) error {
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 	return GetRadosError(int(ret))
+}
+
+func (ioctx *IOContext) AioRead(oid string, data []byte, offset uint64) future {
+	return &aioFuture{
+		buf:    data,
+		offset: offset,
+		oid:    oid,
+		ioctx:  ioctx,
+		tp:     IORead,
+	}
 }
 
 // Read reads up to len(data) bytes from the object with key oid starting at byte

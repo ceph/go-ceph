@@ -338,6 +338,35 @@ func (suite *RadosTestSuite) TestReadWrite() {
 	assert.Equal(suite.T(), bytes_in, bytes_out)
 }
 
+func (suite *RadosTestSuite) TestAIOReadWrite() {
+	suite.SetupConnection()
+
+	bytes_in := []byte("input data")
+	f := suite.ioctx.AIOWrite("obj", bytes_in, 0)
+	_, err := f.Get()
+	assert.NoError(suite.T(), err)
+
+	bytes_out := make([]byte, len(bytes_in))
+	f := suite.ioctx.AioRead("obj", bytes_out, 0)
+	in_out, err := f.Get()
+	n_out := in_out.(int)
+
+	assert.Equal(suite.T(), n_out, len(bytes_in))
+	assert.Equal(suite.T(), bytes_in, bytes_out)
+
+	bytes_in = []byte("input another data")
+	err = suite.ioctx.WriteFull("obj", bytes_in)
+	assert.NoError(suite.T(), err)
+
+	bytes_out = make([]byte, len(bytes_in))
+	f = suite.ioctx.AioRead("obj", bytes_out, 0)
+	in_out, err = f.Get()
+	n_out = in_out.(int)
+
+	assert.Equal(suite.T(), n_out, len(bytes_in))
+	assert.Equal(suite.T(), bytes_in, bytes_out)
+}
+
 func (suite *RadosTestSuite) TestAppend() {
 	suite.SetupConnection()
 
