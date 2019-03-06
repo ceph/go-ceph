@@ -175,7 +175,7 @@ func (c *Conn) ensure_connected() error {
 	}
 }
 
-// GetClusterStat returns statistics about the cluster associated with the
+// GetClusterStats returns statistics about the cluster associated with the
 // connection.
 func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 	if err := c.ensure_connected(); err != nil {
@@ -285,7 +285,7 @@ func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
 	return c.monCommand(args, nil)
 }
 
-// MonCommand sends a command to one of the monitors, with an input buffer
+// MonCommandWithInputBuffer sends a command to one of the monitors, with an input buffer
 func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) (buffer []byte, info string, err error) {
 	return c.monCommand(args, inputBuffer)
 }
