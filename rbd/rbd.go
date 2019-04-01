@@ -6,6 +6,8 @@ package rbd
 // #include <rados/librados.h>
 // #include <rbd/librbd.h>
 // #include <rbd/features.h>
+// #include <time.h>
+// #include <linux/types.h>
 import "C"
 
 import (
@@ -51,6 +53,7 @@ type RBDError int
 var (
 	RbdErrorImageNotOpen = errors.New("RBD image not open")
 	RbdErrorNotFound     = errors.New("RBD image not found")
+	RbdErrorSnapNotFound = errors.New("RBD snapshot not found")
 )
 
 //
@@ -342,6 +345,21 @@ func (image *Image) Resize(size uint64) error {
 	}
 
 	return GetError(C.rbd_resize(image.image, C.uint64_t(size)))
+}
+
+// int rbd_get_create_timestamp(rbd_image_t image, timespec *timespec);
+func (image *Image) GetCreationTime() (timestamp time.Time, err error) {
+	if image.image == nil {
+		return time.Unix(0, 0), RbdErrorImageNotOpen
+	}
+
+	var c_timespec C.struct_timespec
+
+	if ret := C.rbd_get_create_timestamp(image.image, &c_timespec); ret < 0 {
+		return time.Unix(0, 0), RBDError(ret)
+	}
+
+	return time.Unix(int64(c_timespec.tv_sec), int64(c_timespec.tv_nsec)), nil
 }
 
 // int rbd_stat(rbd_image_t image, rbd_image_info_t *info, size_t infosize);
@@ -807,6 +825,45 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 
 	C.rbd_snap_list_end(&c_snaps[0])
 	return snaps[:len(snaps)-1], nil
+}
+
+func (image *Image) GetSnapId(snap_name string) (snapId uint64, err error) {
+	if image.image == nil {
+		return 0, RbdErrorImageNotOpen
+	}
+
+	snaps, err := image.GetSnapshotNames()
+
+	if err != nil {
+		return 0, err
+	}
+
+	for _, snap := range snaps {
+		if snap.Name == snap_name {
+			return snap.Id, nil
+		}
+	}
+	return 0, RbdErrorSnapNotFound
+}
+
+// int rbd_snap_get_timestamp(rbd_image_t image, uint64_t snap_id, struct timespec *timestamp);
+func (image *Image) GetSnapCreationTime(snap_name string) (timestamp time.Time, err error) {
+	if image.image == nil {
+		return time.Unix(0, 0), RbdErrorImageNotOpen
+	}
+
+	var c_timespec C.struct_timespec
+
+	snapId, err := image.GetSnapId(snap_name)
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	if ret := C.rbd_snap_get_timestamp(image.image, C.uint64_t(snapId), &c_timespec); ret < 0 {
+		return time.Unix(0, 0), RBDError(ret)
+	}
+
+	return time.Unix(int64(c_timespec.tv_sec), int64(c_timespec.tv_nsec)), nil
 }
 
 // int rbd_snap_create(rbd_image_t image, const char *snapname);

@@ -359,3 +359,79 @@ func TestTrashImage(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestGetCreationTime(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+	image, err := rbd.Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+	err = image.Open()
+	assert.NoError(t, err)
+	timestamp, err := image.GetCreationTime()
+	assert.NoError(t, err)
+	assert.False(t, time.Since(timestamp).Seconds() > 10, "Wrong timestamp ?")
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestGetSnapCreationTime(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+	image, err := rbd.Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = image.Open()
+	assert.NoError(t, err)
+
+	snapshot, err := image.CreateSnapshot("mysnap")
+	assert.NoError(t, err)
+
+	timestamp, err := image.GetSnapCreationTime("mysnap")
+	assert.NoError(t, err)
+	assert.False(t, time.Since(timestamp).Seconds() > 10, "Wrong timestamp ?")
+	err = image.Close()
+	err = image.Open("mysnap")
+
+	assert.NoError(t, err)
+
+	snapshot.Remove()
+	assert.NoError(t, err)
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
