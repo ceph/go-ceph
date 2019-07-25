@@ -26,7 +26,12 @@ func (e cephError) Error() string {
 	return fmt.Sprintf("cephfs: ret=(%d) %v", e, err)
 }
 
-// MountInfo exports ceph's ceph_mount_info from libcephfs.cc
+// Directory exports ceph's ceph_dir_result from libcephfs
+type Directory struct {
+	dir *C.struct_ceph_dir_result
+}
+
+// MountInfo exports ceph's ceph_mount_info from libcephfs
 type MountInfo struct {
 	mount *C.struct_ceph_mount_info
 }
@@ -144,7 +149,7 @@ func (mount *MountInfo) Chmod(path string, mode uint32) error {
 
 	ret := C.ceph_chmod(mount.mount, cPath, C.mode_t(mode))
 	if ret != 0 {
-		log.Errorf("Chmod: Failed to chmod :%s", path)
+		log.Errorf("Chmod: Failed to chmod: %s", path)
 		return cephError(ret)
 	}
 	return nil
@@ -157,7 +162,33 @@ func (mount *MountInfo) Chown(path string, user uint32, group uint32) error {
 
 	ret := C.ceph_chown(mount.mount, cPath, C.int(user), C.int(group))
 	if ret != 0 {
-		log.Errorf("Chown: Failed to chown :%s", path)
+		log.Errorf("Chown: Failed to chown: %s", path)
+		return cephError(ret)
+	}
+	return nil
+}
+
+// OpenDir opens the directory
+func (mount *MountInfo) OpenDir(path string) (*Directory, error) {
+	result := &Directory{}
+
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	ret := C.ceph_opendir(mount.mount, cPath, &result.dir)
+	if ret != 0 {
+		log.Errorf("OpenDir: Failed to open: %s", path)
+		return nil, cephError(ret)
+	}
+	return result, nil
+}
+
+// CloseDir closes the directory
+func (mount *MountInfo) CloseDir(directory *Directory) error {
+
+	ret := C.ceph_closedir(mount.mount, directory.dir)
+	if ret != 0 {
+		log.Errorf("CloseDir: Failed to close: %#v", directory)
 		return cephError(ret)
 	}
 	return nil

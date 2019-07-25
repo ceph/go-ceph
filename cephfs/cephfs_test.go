@@ -203,3 +203,32 @@ func TestChown(t *testing.T) {
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
 
 }
+
+func TestOpenClose(t *testing.T) {
+
+	path := "/testOpen"
+	notPath := "/testFail"
+
+	mount, err := cephfs.CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+
+	err = mount.MakeDir(path, 0755)
+	assert.NoError(t, err)
+
+	result, err := mount.OpenDir(path)
+	assert.NotNil(t, result)
+
+	err = mount.CloseDir(result)
+	assert.NoError(t, err)
+
+	result2, err := mount.OpenDir(notPath)
+	assert.Error(t, err)
+	assert.Nil(t, result2)
+}
