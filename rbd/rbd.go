@@ -12,10 +12,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/ceph/go-ceph/rados"
 	"io"
 	"time"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/rados"
 )
 
 const (
@@ -76,6 +77,12 @@ type Locker struct {
 	Client string
 	Cookie string
 	Addr   string
+}
+
+type Watcher struct {
+	Addr   string
+	ID     int64
+	Cookie uint64
 }
 
 //
@@ -988,4 +995,29 @@ func TrashRestore(ioctx *rados.IOContext, id, name string) error {
 	defer C.free(unsafe.Pointer(c_name))
 
 	return GetError(C.rbd_trash_restore(C.rados_ioctx_t(ioctx.Pointer()), c_id, c_name))
+}
+
+// int rbd_watchers_list(rbd_image_t image, rbd_image_watcher_t *watchers, size_t *max_watchers);
+func (image *Image) ListWatchers() (watchers []Watcher, err error) {
+	if image.image == nil {
+		return nil, RbdErrorImageNotOpen
+	}
+
+	var c_max_watchers C.size_t
+	ret := C.rbd_watchers_list(image.image, nil, &c_max_watchers)
+
+	c_watchers := make([]C.rbd_image_watcher_t, c_max_watchers)
+	watchers = make([]Watcher, c_max_watchers)
+
+	ret = C.rbd_watchers_list(image.image, &c_watchers[0], &c_max_watchers)
+	if ret < 0 {
+		return nil, RBDError(int(ret))
+	}
+
+	for i, w := range c_watchers {
+		watchers[i] = Watcher{Addr: C.GoString(w.addr),
+			ID:     int64(w.id),
+			Cookie: uint64(w.cookie)}
+	}
+	return watchers, nil
 }
