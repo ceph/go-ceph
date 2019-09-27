@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"plugin"
 	"time"
 	"unsafe"
 
@@ -1001,6 +1002,16 @@ func TrashRestore(ioctx *rados.IOContext, id, name string) error {
 func (image *Image) ListWatchers() (watchers []Watcher, err error) {
 	if image.image == nil {
 		return nil, RbdErrorImageNotOpen
+	}
+
+	p, err := plugin.Open("/lib64/librbd.so.1")
+	if err != nil {
+		return nil, err
+	}
+	//find symbol named if not exist return not error
+	_, err = p.Lookup("rbd_watchers_list")
+	if err != nil {
+		return nil, nil
 	}
 
 	var c_max_watchers C.size_t
