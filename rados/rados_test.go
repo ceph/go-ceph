@@ -351,6 +351,48 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	}
 }
 
+func (suite *RadosTestSuite) TestGetPoolByID() {
+	suite.SetupConnection()
+
+	// check that new pool name is unique
+	new_name := uuid.Must(uuid.NewV4()).String()
+	pool, err := suite.conn.GetPoolByName(new_name)
+	if pool != 0 || err == nil {
+		suite.T().Error("Random pool name exists!")
+		return
+	}
+
+	// create pool
+	err = suite.conn.MakePool(new_name)
+	assert.NoError(suite.T(), err)
+
+	// verify that the new pool name exists
+	id, err := suite.conn.GetPoolByName(new_name)
+	assert.NoError(suite.T(), err)
+
+	if id == 0 {
+		suite.T().Error("Cannot find newly created pool")
+	}
+
+	// get the name of the pool
+	name, err := suite.conn.GetPoolByID(id)
+	assert.NoError(suite.T(), err)
+
+	if name == "" {
+		suite.T().Error("Cannot find name of newly created pool")
+	}
+
+	// delete the pool
+	err = suite.conn.DeletePool(new_name)
+	assert.NoError(suite.T(), err)
+
+	// verify that it is gone
+	name, err = suite.conn.GetPoolByID(id)
+	if name != "" || err == nil {
+		suite.T().Error("Deleted pool still exists")
+	}
+}
+
 func (suite *RadosTestSuite) TestPingMonitor() {
 	suite.SetupConnection()
 
