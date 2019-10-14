@@ -280,6 +280,22 @@ func (c *Conn) DeletePool(name string) error {
 	}
 }
 
+// GetPoolByName returns the ID of the pool with a given name.
+func (c *Conn) GetPoolByName(name string) (int64, error) {
+	if err := c.ensure_connected(); err != nil {
+		fmt.Println("NOT CONNECTED WHOOPS")
+		return 0, err
+	}
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
+	ret := int64(C.rados_pool_lookup(c.cluster, c_name))
+	if ret < 0 {
+		return 0, RadosError(ret)
+	} else {
+		return ret, nil
+	}
+}
+
 // MonCommand sends a command to one of the monitors
 func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
 	return c.monCommand(args, nil)
