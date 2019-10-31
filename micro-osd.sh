@@ -101,9 +101,9 @@ ceph --version
 ceph status
 test_pool=$(uuidgen)
 temp_file=$(mktemp)
-rados mkpool ${test_pool}
+ceph osd pool create ${test_pool} 0
 rados --pool ${test_pool} put group /etc/group
 rados --pool ${test_pool} get group ${temp_file}
 diff /etc/group ${temp_file}
-rados rmpool ${test_pool} ${test_pool} --yes-i-really-really-mean-it
+ceph osd pool delete ${test_pool} ${test_pool} --yes-i-really-really-mean-it
 rm ${temp_file}
