@@ -3,13 +3,13 @@ package rbd_test
 import (
 	"bytes"
 	"encoding/json"
-	"os/exec"
 	"sort"
 	"testing"
 	"time"
 
 	"github.com/ceph/go-ceph/rados"
 	"github.com/ceph/go-ceph/rbd"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,8 +19,7 @@ var RbdFeatureLayering = uint64(1 << 0)
 var RbdFeatureStripingV2 = uint64(1 << 1)
 
 func GetUUID() string {
-	out, _ := exec.Command("uuidgen").Output()
-	return string(out[:36])
+	return uuid.Must(uuid.NewV4()).String()
 }
 
 func TestVersion(t *testing.T) {
