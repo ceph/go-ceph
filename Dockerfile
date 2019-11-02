@@ -11,7 +11,7 @@ ARG CEPH_REPO_URL=https://download.ceph.com/debian-luminous/
 RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
 RUN apt-add-repository "deb ${CEPH_REPO_URL} xenial main"
 
-RUN add-apt-repository ppa:gophers/archive
+RUN add-apt-repository -y ppa:gophers/archive
 
 RUN apt-get update && apt-get install -y \
   ceph \
