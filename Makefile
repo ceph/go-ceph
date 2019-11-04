@@ -1,6 +1,12 @@
 DOCKER_CI_IMAGE = go-ceph-ci
 CONTAINER_CMD := docker
 CONTAINER_OPTS := --security-opt apparmor:unconfined
+VOLUME_FLAGS := 
+
+SELINUX := $(shell getenforce 2>/dev/null)
+ifeq ($(SELINUX),Enforcing)
+	VOLUME_FLAGS = :z
+endif
 
 build:
 	go build -v
@@ -10,7 +16,7 @@ test:
 	go test -v ./...
 
 test-docker: .build-docker
-	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -it -v $(CURDIR):/go/src/github.com/ceph/go-ceph $(DOCKER_CI_IMAGE)
+	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -it -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(DOCKER_CI_IMAGE)
 
 .build-docker:
 	$(CONTAINER_CMD) build -t $(DOCKER_CI_IMAGE) .
