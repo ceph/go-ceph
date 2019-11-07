@@ -30,4 +30,4 @@ VOLUME /go/src/github.com/ceph/go-ceph
 
 COPY micro-osd.sh /
 COPY entrypoint.sh /
-ENTRYPOINT /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
