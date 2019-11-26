@@ -58,7 +58,7 @@ func (c *Conn) Shutdown() {
 	if err := c.ensure_connected(); err != nil {
 		return
 	}
-	C.rados_shutdown(c.cluster)
+	freeConn(c)
 }
 
 // ReadConfigFile configures the connection using a Ceph configuration file.
