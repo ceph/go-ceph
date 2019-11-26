@@ -8,6 +8,7 @@ import "C"
 
 import (
 	"fmt"
+	"runtime"
 	"unsafe"
 )
 
@@ -45,11 +46,12 @@ func newConn(user *C.char) (*Conn, error) {
 	conn := makeConn()
 	ret := C.rados_create(&conn.cluster, user)
 
-	if ret == 0 {
-		return conn, nil
-	} else {
+	if ret != 0 {
 		return nil, RadosError(int(ret))
 	}
+
+	runtime.SetFinalizer(conn, freeConn)
+	return conn, nil
 }
 
 // NewConn creates a new connection object. It returns the connection and an
@@ -77,9 +79,27 @@ func NewConnWithClusterAndUser(clusterName string, userName string) (*Conn, erro
 
 	conn := makeConn()
 	ret := C.rados_create2(&conn.cluster, c_cluster_name, c_name, 0)
-	if ret == 0 {
-		return conn, nil
-	} else {
+	if ret != 0 {
 		return nil, RadosError(int(ret))
+	}
+
+	runtime.SetFinalizer(conn, freeConn)
+	return conn, nil
+}
+
+// freeConn releases resources that are allocated while configuring the
+// connection to the cluster. rados_shutdown() should only be needed after a
+// successful call to rados_connect(), however if the connection has been
+// configured with non-default parameters, some of the parameters may be
+// allocated before connecting. rados_shutdown() will free the allocated
+// resources, even if there has not been a connection yet.
+//
+// This function is setup as a destructor/finalizer when rados_create() is
+// called.
+func freeConn(conn *Conn) {
+	if conn.cluster != nil {
+		C.rados_shutdown(conn.cluster)
+		// prevent calling rados_shutdown() more than once
+		conn.cluster = nil
 	}
 }
