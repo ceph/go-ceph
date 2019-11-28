@@ -114,6 +114,62 @@ func TestImageCreate3(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestCreateImageWithOptions(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	// nil options, causes a panic if not handled correctly
+	name := GetUUID()
+	image, err := rbd.Create4(ioctx, name, 1<<22, nil)
+	assert.Error(t, err)
+
+	options := rbd.NewRbdImageOptions()
+
+	// empty/default options
+	name = GetUUID()
+	image, err = rbd.Create4(ioctx, name, 1<<22, options)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	// create image with RbdImageOptionOrder
+	err = options.SetUint64(rbd.RbdImageOptionOrder, 22)
+	assert.NoError(t, err)
+	name = GetUUID()
+	image, err = rbd.Create4(ioctx, name, 1<<22, options)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+	options.Clear()
+
+	// create image with a different data pool
+	datapool := GetUUID()
+	err = conn.MakePool(datapool)
+	assert.NoError(t, err)
+	err = options.SetString(rbd.RbdImageOptionDataPool, datapool)
+	assert.NoError(t, err)
+	name = GetUUID()
+	image, err = rbd.Create4(ioctx, name, 1<<22, options)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+	conn.DeletePool(datapool)
+
+	// cleanup
+	options.Destroy()
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestGetImageNames(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()

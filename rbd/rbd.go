@@ -261,6 +261,29 @@ func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
 	}, nil
 }
 
+// int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
+//                 rbd_image_options_t opts);
+func Create4(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOptions) (image *Image, err error) {
+	if rio == nil {
+		return nil, RBDError(C.EINVAL)
+	}
+
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+		C.uint64_t(size), C.rbd_image_options_t(rio.options))
+
+	if ret < 0 {
+		return nil, RBDError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		name:  name,
+	}, nil
+}
+
 // int rbd_clone(rados_ioctx_t p_ioctx, const char *p_name,
 //           const char *p_snapname, rados_ioctx_t c_ioctx,
 //           const char *c_name, uint64_t features, int *c_order);
