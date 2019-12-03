@@ -63,11 +63,13 @@ else
         "-covermode=count" \
         "-coverprofile=cover.out" \
         "-coverpkg=$P/cephfs,$P/rados,$P/rbd")
+    # disable caching of tests results
+    testargs+=("-count=1")
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
     fi
 
-    GOCACHE=off go test -v "${testargs[@]}" ./...
+    go test -v "${testargs[@]}" ./...
     mkdir -p /results/coverage
     go tool cover -html=cover.out -o /results/coverage/go-ceph.html
 fi
