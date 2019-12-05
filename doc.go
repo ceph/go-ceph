@@ -1,7 +1,7 @@
 /*
 Set of wrappers around Ceph APIs.
 */
-package rados
+package ceph
 
 import (
 	_ "github.com/ceph/go-ceph/rados"
