@@ -13,8 +13,3 @@ The "cephfs" sub-package wraps APIs that handle CephFS specific functions.
 Consult the documentation for each package for additional details.
 */
 package ceph
-
-import (
-	_ "github.com/ceph/go-ceph/rados"
-	_ "github.com/ceph/go-ceph/rbd"
-)
