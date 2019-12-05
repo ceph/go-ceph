@@ -10,7 +10,6 @@ import "C"
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"math"
 	"syscall"
 	"unsafe"
