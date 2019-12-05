@@ -1,6 +1,6 @@
 DOCKER_CI_IMAGE = go-ceph-ci
 CONTAINER_CMD := docker
-CONTAINER_OPTS := --security-opt apparmor:unconfined
+CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disabled" || echo "apparmor:unconfined")
 VOLUME_FLAGS := 
 
 SELINUX := $(shell getenforce 2>/dev/null)
