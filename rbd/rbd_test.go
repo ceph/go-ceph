@@ -3,13 +3,15 @@ package rbd_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ceph/go-ceph/rados"
-	"github.com/ceph/go-ceph/rbd"
-	"github.com/stretchr/testify/assert"
-	"os/exec"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/ceph/go-ceph/rados"
+	"github.com/ceph/go-ceph/rbd"
+	"github.com/gofrs/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 //Rdb feature
@@ -17,8 +19,7 @@ var RbdFeatureLayering = uint64(1 << 0)
 var RbdFeatureStripingV2 = uint64(1 << 1)
 
 func GetUUID() string {
-	out, _ := exec.Command("uuidgen").Output()
-	return string(out[:36])
+	return uuid.Must(uuid.NewV4()).String()
 }
 
 func TestVersion(t *testing.T) {
@@ -38,7 +39,7 @@ func TestImageCreate(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	name := GetUUID()
 	image, err := rbd.Create(ioctx, name, 1<<22, 22)
@@ -123,7 +124,7 @@ func TestGetImageNames(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
@@ -161,7 +162,7 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	name := GetUUID()
 	img, err := rbd.Create(ioctx, name, 1<<22, 22)
@@ -223,7 +224,7 @@ func TestCreateSnapshot(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	name := GetUUID()
 	img, err := rbd.Create(ioctx, name, 1<<22, 22)
@@ -263,7 +264,7 @@ func TestParentInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	name := "parent"
 	img, err := rbd.Create(ioctx, name, 1<<22, 22, 1)
@@ -350,7 +351,7 @@ func TestNotFound(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	name := GetUUID()
 
@@ -376,7 +377,7 @@ func TestTrashImage(t *testing.T) {
 	assert.NoError(t, err)
 
 	ioctx, err := conn.OpenIOContext(poolname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	name := GetUUID()
 	image, err := rbd.Create(ioctx, name, 1<<22, 22)
