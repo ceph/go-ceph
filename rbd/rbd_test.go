@@ -28,7 +28,7 @@ func TestVersion(t *testing.T) {
 	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
 }
 
-func TestCreateImage(t *testing.T) {
+func TestImageCreate(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
 	conn.Connect()
@@ -56,6 +56,54 @@ func TestCreateImage(t *testing.T) {
 	name = GetUUID()
 	image, err = rbd.Create(ioctx, name, 1<<22, 22,
 		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestImageCreate2(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+	image, err := rbd.Create2(ioctx, name, 1<<22,
+		RbdFeatureLayering|RbdFeatureStripingV2, 22)
+	assert.NoError(t, err)
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestImageCreate3(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	assert.NoError(t, err)
+
+	name := GetUUID()
+	image, err := rbd.Create3(ioctx, name, 1<<22,
+		RbdFeatureLayering|RbdFeatureStripingV2, 22, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
