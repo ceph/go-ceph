@@ -82,14 +82,14 @@ func TestImageCreate(t *testing.T) {
 
 	name = GetUUID()
 	image, err = Create(ioctx, name, testImageSize, testImageOrder,
-		RbdFeatureLayering|RbdFeatureStripingV2)
+		FeatureLayering|FeatureStripingV2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	name = GetUUID()
 	image, err = Create(ioctx, name, testImageSize, testImageOrder,
-		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
+		FeatureLayering|FeatureStripingV2, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -101,7 +101,7 @@ func TestImageCreate(t *testing.T) {
 
 	// too many arguments
 	_, err = Create(ioctx, name, testImageSize, testImageOrder,
-		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2, 123)
+		FeatureLayering|FeatureStripingV2, 4096, 2, 123)
 	assert.Error(t, err)
 
 	ioctx.Destroy()
@@ -121,7 +121,7 @@ func TestImageCreate2(t *testing.T) {
 
 	name := GetUUID()
 	image, err := Create2(ioctx, name, testImageSize,
-		RbdFeatureLayering|RbdFeatureStripingV2, testImageOrder)
+		FeatureLayering|FeatureStripingV2, testImageOrder)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -143,7 +143,7 @@ func TestImageCreate3(t *testing.T) {
 
 	name := GetUUID()
 	image, err := Create3(ioctx, name, testImageSize,
-		RbdFeatureLayering|RbdFeatureStripingV2, testImageOrder, 4096, 2)
+		FeatureLayering|FeatureStripingV2, testImageOrder, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -343,7 +343,7 @@ func TestImageProperties(t *testing.T) {
 	name := GetUUID()
 	reqSize := uint64(1024 * 1024 * 4) // 4MB
 	_, err = Create3(ioctx, name, reqSize,
-		RbdFeatureLayering|RbdFeatureStripingV2, testImageOrder, 4096, 2)
+		FeatureLayering|FeatureStripingV2, testImageOrder, 4096, 2)
 	require.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -360,8 +360,8 @@ func TestImageProperties(t *testing.T) {
 	features, err := img.GetFeatures()
 	assert.NoError(t, err)
 	// compare features with the two requested ones
-	assert.Equal(t, features&(RbdFeatureLayering|RbdFeatureStripingV2),
-		RbdFeatureLayering|RbdFeatureStripingV2)
+	assert.Equal(t, features&(FeatureLayering|FeatureStripingV2),
+		FeatureLayering|FeatureStripingV2)
 
 	stripeUnit, err := img.GetStripeUnit()
 	assert.NoError(t, err)

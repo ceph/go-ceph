@@ -8,7 +8,6 @@ package rbd
 // #include <stdlib.h>
 // #include <rados/librados.h>
 // #include <rbd/librbd.h>
-// #include <rbd/features.h>
 import "C"
 
 import (
@@ -24,31 +23,6 @@ import (
 )
 
 const (
-	// RBD features.
-	RbdFeatureLayering      = uint64(C.RBD_FEATURE_LAYERING)
-	RbdFeatureStripingV2    = uint64(C.RBD_FEATURE_STRIPINGV2)
-	RbdFeatureExclusiveLock = uint64(C.RBD_FEATURE_EXCLUSIVE_LOCK)
-	RbdFeatureObjectMap     = uint64(C.RBD_FEATURE_OBJECT_MAP)
-	RbdFeatureFastDiff      = uint64(C.RBD_FEATURE_FAST_DIFF)
-	RbdFeatureDeepFlatten   = uint64(C.RBD_FEATURE_DEEP_FLATTEN)
-	RbdFeatureJournaling    = uint64(C.RBD_FEATURE_JOURNALING)
-	RbdFeatureDataPool      = uint64(C.RBD_FEATURE_DATA_POOL)
-
-	RbdFeaturesDefault = uint64(C.RBD_FEATURES_DEFAULT)
-
-	// Features that make an image inaccessible for read or write by clients that don't understand
-	// them.
-	RbdFeaturesIncompatible = uint64(C.RBD_FEATURES_INCOMPATIBLE)
-
-	// Features that make an image unwritable by clients that don't understand them.
-	RbdFeaturesRwIncompatible = uint64(C.RBD_FEATURES_RW_INCOMPATIBLE)
-
-	// Features that may be dynamically enabled or disabled.
-	RbdFeaturesMutable = uint64(C.RBD_FEATURES_MUTABLE)
-
-	// Features that only work when used with a single client using the image for writes.
-	RbdFeaturesSingleClient = uint64(C.RBD_FEATURES_SINGLE_CLIENT)
-
 	// Image.Seek() constants
 	SeekSet = int(C.SEEK_SET)
 	SeekCur = int(C.SEEK_CUR)
@@ -521,22 +495,6 @@ func (image *Image) GetSize() (size uint64, err error) {
 	}
 
 	return size, nil
-}
-
-// GetFeatures returns the features bitmask for the rbd image.
-//
-// Implements:
-//  int rbd_get_features(rbd_image_t image, uint64_t *features);
-func (image *Image) GetFeatures() (features uint64, err error) {
-	if err := image.validate(imageIsOpen); err != nil {
-		return 0, err
-	}
-
-	if ret := C.rbd_get_features(image.image, (*C.uint64_t)(&features)); ret < 0 {
-		return 0, RBDError(ret)
-	}
-
-	return features, nil
 }
 
 // GetStripeUnit returns the stripe-unit value for the rbd image.
