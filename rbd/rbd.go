@@ -1,6 +1,9 @@
 package rbd
 
 // #cgo LDFLAGS: -lrbd
+// /* force XSI-complaint strerror_r() */
+// #define _POSIX_C_SOURCE 200112L
+// #undef _GNU_SOURCE
 // #include <errno.h>
 // #include <stdlib.h>
 // #include <rados/librados.h>
@@ -162,7 +165,19 @@ func (snapshot *Snapshot) validate(req uint32) error {
 
 //
 func (e RBDError) Error() string {
-	return fmt.Sprintf("rbd: ret=%d", e)
+	buf := make([]byte, 1024)
+	// strerror expects errno >= 0
+	errno := e
+	if errno < 0 {
+		errno = -errno
+	}
+
+	ret := C.strerror_r(C.int(errno), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+	if ret != 0 {
+		return fmt.Sprintf("rbd: ret=%d", e)
+	}
+
+	return fmt.Sprintf("rbd: ret=%d, %s", e, C.GoString((*C.char)(unsafe.Pointer(&buf[0]))))
 }
 
 //

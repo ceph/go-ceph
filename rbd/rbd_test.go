@@ -22,6 +22,19 @@ func GetUUID() string {
 	return uuid.Must(uuid.NewV4()).String()
 }
 
+func TestRBDError(t *testing.T) {
+	err := rbd.GetError(0)
+	assert.NoError(t, err)
+
+	err = rbd.GetError(-39) // NOTEMPTY (image still has a snapshot)
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "rbd: ret=-39, Directory not empty")
+
+	err = rbd.GetError(345) // no such errno
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "rbd: ret=345")
+}
+
 func TestVersion(t *testing.T) {
 	var major, minor, patch = rbd.Version()
 	assert.False(t, major < 0 || major > 1000, "invalid major")
