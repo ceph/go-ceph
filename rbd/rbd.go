@@ -45,12 +45,23 @@ const (
 	RbdFeaturesSingleClient = C.RBD_FEATURES_SINGLE_CLIENT
 )
 
+// bits for Image.validate() and Snapshot.validate()
+const (
+	imageNeedsName uint32 = 1 << iota
+	imageNeedsIOContext
+	imageIsOpen
+	snapshotNeedsName
+)
+
 //
 type RBDError int
 
 var (
-	RbdErrorImageNotOpen = errors.New("RBD image not open")
-	RbdErrorNotFound     = errors.New("RBD image not found")
+	RbdErrorNoIOContext    = errors.New("RBD image does not have an IOContext")
+	RbdErrorNoName         = errors.New("RBD image does not have a name")
+	RbdErrorSnapshotNoName = errors.New("RBD snapshot does not have a name")
+	RbdErrorImageNotOpen   = errors.New("RBD image not open")
+	RbdErrorNotFound       = errors.New("RBD image not found")
 )
 
 //
@@ -115,6 +126,38 @@ func split(buf []byte) (values []string) {
 		}
 	}
 	return values
+}
+
+// test if a bit is set in the given value
+func hasBit(value, bit uint32) bool {
+	return (value & bit) == bit
+}
+
+// validate the attributes listed in the req bitmask, and return an error in
+// case the attribute is not set
+func (image *Image) validate(req uint32) error {
+	if hasBit(req, imageNeedsName) && image.name == "" {
+		return RbdErrorNoName
+	} else if hasBit(req, imageNeedsIOContext) && image.ioctx == nil {
+		return RbdErrorNoIOContext
+	} else if hasBit(req, imageIsOpen) && image.image == nil {
+		return RbdErrorImageNotOpen
+	}
+
+	return nil
+}
+
+// validate the attributes listed in the req bitmask, and return an error in
+// case the attribute is not set
+// Calls snapshot.image.validate(req) to validate the image attributes.
+func (snapshot *Snapshot) validate(req uint32) error {
+	if hasBit(req, snapshotNeedsName) && snapshot.name == "" {
+		return RbdErrorSnapshotNoName
+	} else if snapshot.image != nil {
+		return snapshot.image.validate(req)
+	}
+
+	return nil
 }
 
 //
@@ -292,6 +335,10 @@ func Create4(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOpti
 //            const char *c_name, uint64_t features, int *c_order,
 //            uint64_t stripe_unit, int stripe_count);
 func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name string, features uint64, order int) (*Image, error) {
+	if err := image.validate(imageNeedsIOContext); err != nil {
+		return nil, err
+	}
+
 	c_order := C.int(order)
 	c_p_name := C.CString(image.name)
 	c_p_snapname := C.CString(snapname)
@@ -319,6 +366,10 @@ func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name stri
 // int rbd_remove_with_progress(rados_ioctx_t io, const char *name,
 //                  librbd_progress_fn_t cb, void *cbdata);
 func (image *Image) Remove() error {
+	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
+		return err
+	}
+
 	c_name := C.CString(image.name)
 	defer C.free(unsafe.Pointer(c_name))
 	return GetError(C.rbd_remove(C.rados_ioctx_t(image.ioctx.Pointer()), c_name))
@@ -327,6 +378,10 @@ func (image *Image) Remove() error {
 // Trash will move an image into the RBD trash, where it will be protected (i.e., salvageable) for
 // at least the specified delay.
 func (image *Image) Trash(delay time.Duration) error {
+	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
+		return err
+	}
+
 	c_name := C.CString(image.name)
 	defer C.free(unsafe.Pointer(c_name))
 
@@ -336,6 +391,10 @@ func (image *Image) Trash(delay time.Duration) error {
 
 // int rbd_rename(rados_ioctx_t src_io_ctx, const char *srcname, const char *destname);
 func (image *Image) Rename(destname string) error {
+	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
+		return err
+	}
+
 	c_srcname := C.CString(image.name)
 	c_destname := C.CString(destname)
 
@@ -355,6 +414,10 @@ func (image *Image) Rename(destname string) error {
 // int rbd_open_read_only(rados_ioctx_t io, const char *name, rbd_image_t *image,
 //                const char *snap_name);
 func (image *Image) Open(args ...interface{}) error {
+	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
+		return err
+	}
+
 	var c_image C.rbd_image_t
 	var c_snap_name *C.char
 	var ret C.int
@@ -392,8 +455,8 @@ func (image *Image) Open(args ...interface{}) error {
 
 // int rbd_close(rbd_image_t image);
 func (image *Image) Close() error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	if ret := C.rbd_close(image.image); ret != 0 {
@@ -406,8 +469,8 @@ func (image *Image) Close() error {
 
 // int rbd_resize(rbd_image_t image, uint64_t size);
 func (image *Image) Resize(size uint64) error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	return GetError(C.rbd_resize(image.image, C.uint64_t(size)))
@@ -415,8 +478,8 @@ func (image *Image) Resize(size uint64) error {
 
 // int rbd_stat(rbd_image_t image, rbd_image_info_t *info, size_t infosize);
 func (image *Image) Stat() (info *ImageInfo, err error) {
-	if image.image == nil {
-		return nil, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return nil, err
 	}
 
 	var c_stat C.rbd_image_info_t
@@ -437,8 +500,8 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 
 // int rbd_get_old_format(rbd_image_t image, uint8_t *old);
 func (image *Image) IsOldFormat() (old_format bool, err error) {
-	if image.image == nil {
-		return false, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return false, err
 	}
 
 	var c_old_format C.uint8_t
@@ -453,8 +516,8 @@ func (image *Image) IsOldFormat() (old_format bool, err error) {
 
 // int rbd_size(rbd_image_t image, uint64_t *size);
 func (image *Image) GetSize() (size uint64, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if ret := C.rbd_get_size(image.image, (*C.uint64_t)(&size)); ret < 0 {
@@ -466,8 +529,8 @@ func (image *Image) GetSize() (size uint64, err error) {
 
 // int rbd_get_features(rbd_image_t image, uint64_t *features);
 func (image *Image) GetFeatures() (features uint64, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if ret := C.rbd_get_features(image.image, (*C.uint64_t)(&features)); ret < 0 {
@@ -479,8 +542,8 @@ func (image *Image) GetFeatures() (features uint64, err error) {
 
 // int rbd_get_stripe_unit(rbd_image_t image, uint64_t *stripe_unit);
 func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit)); ret < 0 {
@@ -492,8 +555,8 @@ func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 
 // int rbd_get_stripe_count(rbd_image_t image, uint64_t *stripe_count);
 func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count)); ret < 0 {
@@ -505,8 +568,8 @@ func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 
 // int rbd_get_overlap(rbd_image_t image, uint64_t *overlap);
 func (image *Image) GetOverlap() (overlap uint64, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if ret := C.rbd_get_overlap(image.image, (*C.uint64_t)(&overlap)); ret < 0 {
@@ -523,8 +586,8 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
 // int rbd_copy_with_progress2(rbd_image_t src, rbd_image_t dest,
 //                librbd_progress_fn_t cb, void *cbdata);
 func (image *Image) Copy(args ...interface{}) error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	switch t := args[0].(type) {
@@ -552,8 +615,8 @@ func (image *Image) Copy(args ...interface{}) error {
 
 // int rbd_flatten(rbd_image_t image);
 func (image *Image) Flatten() error {
-	if image.image == nil {
-		return errors.New(fmt.Sprintf("RBD image %s is not open", image.name))
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	return GetError(C.rbd_flatten(image.image))
@@ -562,8 +625,8 @@ func (image *Image) Flatten() error {
 // ssize_t rbd_list_children(rbd_image_t image, char *pools, size_t *pools_len,
 //               char *images, size_t *images_len);
 func (image *Image) ListChildren() (pools []string, images []string, err error) {
-	if image.image == nil {
-		return nil, nil, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return nil, nil, err
 	}
 
 	var c_pools_len, c_images_len C.size_t
@@ -615,8 +678,8 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 //              char *cookies, size_t *cookies_len,
 //              char *addrs, size_t *addrs_len);
 func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
-	if image.image == nil {
-		return "", nil, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return "", nil, err
 	}
 
 	var c_exclusive C.int
@@ -672,8 +735,8 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 
 // int rbd_lock_exclusive(rbd_image_t image, const char *cookie);
 func (image *Image) LockExclusive(cookie string) error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	c_cookie := C.CString(cookie)
@@ -684,8 +747,8 @@ func (image *Image) LockExclusive(cookie string) error {
 
 // int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
 func (image *Image) LockShared(cookie string, tag string) error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	c_cookie := C.CString(cookie)
@@ -698,8 +761,8 @@ func (image *Image) LockShared(cookie string, tag string) error {
 
 // int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
 func (image *Image) Unlock(cookie string) error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	c_cookie := C.CString(cookie)
@@ -710,8 +773,8 @@ func (image *Image) Unlock(cookie string) error {
 
 // int rbd_break_lock(rbd_image_t image, const char *client, const char *cookie);
 func (image *Image) BreakLock(client string, cookie string) error {
-	if image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
 	}
 
 	c_client := C.CString(client)
@@ -732,8 +795,8 @@ func (image *Image) BreakLock(client string, cookie string) error {
 //              uint64_t ofs, uint64_t len,
 //              int (*cb)(uint64_t, size_t, int, void *), void *arg);
 func (image *Image) Read(data []byte) (n int, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if len(data) == 0 {
@@ -760,6 +823,10 @@ func (image *Image) Read(data []byte) (n int, err error) {
 
 // ssize_t rbd_write(rbd_image_t image, uint64_t ofs, size_t len, const char *buf);
 func (image *Image) Write(data []byte) (n int, err error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
+	}
+
 	ret := int(C.rbd_write(image.image, C.uint64_t(image.offset),
 		C.size_t(len(data)), (*C.char)(unsafe.Pointer(&data[0]))))
 
@@ -794,13 +861,17 @@ func (image *Image) Seek(offset int64, whence int) (int64, error) {
 
 // int rbd_discard(rbd_image_t image, uint64_t ofs, uint64_t len);
 func (image *Image) Discard(ofs uint64, length uint64) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
 	return RBDError(C.rbd_discard(image.image, C.uint64_t(ofs),
 		C.uint64_t(length)))
 }
 
 func (image *Image) ReadAt(data []byte, off int64) (n int, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if len(data) == 0 {
@@ -825,8 +896,8 @@ func (image *Image) ReadAt(data []byte, off int64) (n int, err error) {
 }
 
 func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
-	if image.image == nil {
-		return 0, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return 0, err
 	}
 
 	if len(data) == 0 {
@@ -845,14 +916,18 @@ func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
 
 // int rbd_flush(rbd_image_t image);
 func (image *Image) Flush() error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
 	return GetError(C.rbd_flush(image.image))
 }
 
 // int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
 // void rbd_snap_list_end(rbd_snap_info_t *snaps);
 func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
-	if image.image == nil {
-		return nil, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return nil, err
 	}
 
 	var c_max_snaps C.int
@@ -880,8 +955,8 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 
 // int rbd_snap_create(rbd_image_t image, const char *snapname);
 func (image *Image) CreateSnapshot(snapname string) (*Snapshot, error) {
-	if image.image == nil {
-		return nil, RbdErrorImageNotOpen
+	if err := image.validate(imageIsOpen); err != nil {
+		return nil, err
 	}
 
 	c_snapname := C.CString(snapname)
@@ -910,6 +985,10 @@ func (image *Image) GetSnapshot(snapname string) *Snapshot {
 //  char *parent_pool_name, size_t ppool_namelen, char *parent_name,
 //  size_t pnamelen, char *parent_snap_name, size_t psnap_namelen)
 func (image *Image) GetParentInfo(p_pool, p_name, p_snapname []byte) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
 	ret := C.rbd_get_parent_info(
 		image.image,
 		(*C.char)(unsafe.Pointer(&p_pool[0])),
@@ -927,8 +1006,8 @@ func (image *Image) GetParentInfo(p_pool, p_name, p_snapname []byte) error {
 
 // int rbd_snap_remove(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Remove() error {
-	if snapshot.image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
+		return err
 	}
 
 	c_snapname := C.CString(snapshot.name)
@@ -941,8 +1020,8 @@ func (snapshot *Snapshot) Remove() error {
 // int rbd_snap_rollback_with_progress(rbd_image_t image, const char *snapname,
 //                  librbd_progress_fn_t cb, void *cbdata);
 func (snapshot *Snapshot) Rollback() error {
-	if snapshot.image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
+		return err
 	}
 
 	c_snapname := C.CString(snapshot.name)
@@ -953,8 +1032,8 @@ func (snapshot *Snapshot) Rollback() error {
 
 // int rbd_snap_protect(rbd_image_t image, const char *snap_name);
 func (snapshot *Snapshot) Protect() error {
-	if snapshot.image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
+		return err
 	}
 
 	c_snapname := C.CString(snapshot.name)
@@ -965,8 +1044,8 @@ func (snapshot *Snapshot) Protect() error {
 
 // int rbd_snap_unprotect(rbd_image_t image, const char *snap_name);
 func (snapshot *Snapshot) Unprotect() error {
-	if snapshot.image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
+		return err
 	}
 
 	c_snapname := C.CString(snapshot.name)
@@ -978,8 +1057,8 @@ func (snapshot *Snapshot) Unprotect() error {
 // int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,
 //               int *is_protected);
 func (snapshot *Snapshot) IsProtected() (bool, error) {
-	if snapshot.image.image == nil {
-		return false, RbdErrorImageNotOpen
+	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
+		return false, err
 	}
 
 	var c_is_protected C.int
@@ -998,8 +1077,8 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 
 // int rbd_snap_set(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Set() error {
-	if snapshot.image.image == nil {
-		return RbdErrorImageNotOpen
+	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
+		return err
 	}
 
 	c_snapname := C.CString(snapshot.name)
