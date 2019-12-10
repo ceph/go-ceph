@@ -226,6 +226,41 @@ func TestGetImageNames(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageReadOnly(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	image, err := Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = image.Open(true)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	_, err = image.Write(bytes_in)
+	// writing should fail in read-only mode
+	assert.Error(t, err)
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestImageResize(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
