@@ -462,6 +462,53 @@ func TestImageSeek(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageDiscard(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	img, err := Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = img.Open()
+	assert.NoError(t, err)
+
+	n, err := img.Discard(0, 1<<16)
+	assert.NoError(t, err)
+	assert.Equal(t, n, 1<<16)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	err = img.Open(true)
+	assert.NoError(t, err)
+
+	// when read-only, discard should fail
+	_, err = img.Discard(0, 1<<16)
+	assert.Error(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	_, err = img.Discard(0, 1<<16)
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	err = img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestIOReaderWriter(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
