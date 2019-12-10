@@ -392,6 +392,76 @@ func TestImageRename(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageSeek(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	img, err := Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = img.Open()
+	assert.NoError(t, err)
+
+	_, err = img.Seek(0, SeekSet)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	n_in, err := img.Write(bytes_in)
+	assert.NoError(t, err)
+	assert.Equal(t, n_in, len(bytes_in))
+
+	pos, err := img.Seek(0, SeekCur)
+	assert.NoError(t, err)
+	assert.Equal(t, pos, int64(n_in))
+
+	pos, err = img.Seek(0, SeekSet)
+	assert.NoError(t, err)
+	assert.Equal(t, pos, int64(0))
+
+	bytes_out := make([]byte, len(bytes_in))
+	n_out, err := img.Read(bytes_out)
+	assert.NoError(t, err)
+	assert.Equal(t, n_out, len(bytes_out))
+	assert.Equal(t, bytes_in, bytes_out)
+
+	pos, err = img.Seek(0, SeekCur)
+	assert.NoError(t, err)
+	assert.Equal(t, pos, int64(n_out))
+
+	pos, err = img.Seek(0, SeekSet)
+	assert.NoError(t, err)
+	assert.Equal(t, pos, int64(0))
+
+	pos, err = img.Seek(0, SeekEnd)
+	assert.NoError(t, err)
+	assert.Equal(t, pos, int64(1<<22))
+
+	_, err = img.Seek(0, -1)
+	assert.Error(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	_, err = img.Seek(0, SeekEnd)
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	err = img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestIOReaderWriter(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
@@ -420,7 +490,7 @@ func TestIOReaderWriter(t *testing.T) {
 	err = img.Flush()
 	assert.NoError(t, err)
 
-	_, err = img.Seek(0, 0)
+	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
 	var stats2 *ImageInfo
@@ -429,12 +499,12 @@ func TestIOReaderWriter(t *testing.T) {
 
 	assert.Equal(t, &stats, &stats2)
 
-	_, err = img.Seek(0, 0)
+	_, err = img.Seek(0, SeekSet)
 	bytes_in := []byte("input data")
 	_, err = img.Write(bytes_in)
 	assert.NoError(t, err)
 
-	_, err = img.Seek(0, 0)
+	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
 	bytes_out := make([]byte, len(bytes_in))

@@ -47,6 +47,11 @@ const (
 
 	// Features that only work when used with a single client using the image for writes.
 	RbdFeaturesSingleClient = uint64(C.RBD_FEATURES_SINGLE_CLIENT)
+
+	// Image.Seek() constants
+	SeekSet = int(C.SEEK_SET)
+	SeekCur = int(C.SEEK_CUR)
+	SeekEnd = int(C.SEEK_END)
 )
 
 // bits for Image.validate() and Snapshot.validate()
@@ -863,11 +868,11 @@ func (image *Image) Write(data []byte) (n int, err error) {
 
 func (image *Image) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
-	case 0:
+	case SeekSet:
 		image.offset = offset
-	case 1:
+	case SeekCur:
 		image.offset += offset
-	case 2:
+	case SeekEnd:
 		stats, err := image.Stat()
 		if err != nil {
 			return 0, err
