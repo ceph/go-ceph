@@ -226,6 +226,51 @@ func TestGetImageNames(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageResize(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	reqSize := uint64(1024 * 1024 * 4) // 4MB
+	image, err := Create(ioctx, name, reqSize, 22)
+	assert.NoError(t, err)
+
+	err = image.Resize(reqSize * 2)
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	err = image.Open()
+	assert.NoError(t, err)
+
+	size, err := image.GetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, size, reqSize)
+
+	err = image.Resize(reqSize * 2)
+	assert.NoError(t, err)
+
+	size, err = image.GetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, size, reqSize*2)
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestImageProperties(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
