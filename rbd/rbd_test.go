@@ -226,7 +226,7 @@ func TestGetImageNames(t *testing.T) {
 	conn.Shutdown()
 }
 
-func TestImageReadOnly(t *testing.T) {
+func TestImageOpen(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
 	conn.Connect()
@@ -242,6 +242,11 @@ func TestImageReadOnly(t *testing.T) {
 	image, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
+	// an integer is not a valid argument
+	err = image.Open(123)
+	assert.Error(t, err)
+
+	// open read-only
 	err = image.Open(true)
 	assert.NoError(t, err)
 
