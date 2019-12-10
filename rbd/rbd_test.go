@@ -226,6 +226,63 @@ func TestGetImageNames(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageProperties(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	reqSize := uint64(1024 * 1024 * 4) // 4MB
+	img, err := Create3(ioctx, name, reqSize,
+		RbdFeatureLayering|RbdFeatureStripingV2, 22, 4096, 2)
+	require.NoError(t, err)
+
+	err = img.Open()
+	require.NoError(t, err)
+
+	format, err := img.IsOldFormat()
+	assert.NoError(t, err)
+	assert.Equal(t, format, false)
+
+	size, err := img.GetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, size, reqSize)
+
+	features, err := img.GetFeatures()
+	assert.NoError(t, err)
+	// compare features with the two requested ones
+	assert.Equal(t, features&(RbdFeatureLayering|RbdFeatureStripingV2),
+		RbdFeatureLayering|RbdFeatureStripingV2)
+
+	stripeUnit, err := img.GetStripeUnit()
+	assert.NoError(t, err)
+	assert.Equal(t, stripeUnit, uint64(4096))
+
+	stripeCount, err := img.GetStripeCount()
+	assert.NoError(t, err)
+	assert.Equal(t, stripeCount, uint64(2))
+
+	_, err = img.GetOverlap()
+	assert.NoError(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	err = img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestImageRename(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
