@@ -652,6 +652,10 @@ func TestParentInfo(t *testing.T) {
 	assert.Equal(t, len(pools), 0, "pools equal")
 	assert.Equal(t, len(images), 0, "children length equal")
 
+	// invalid order, should fail
+	_, err = img.Clone("mysnap", ioctx, "child", 1, -1)
+	assert.Error(t, err)
+
 	imgNew, err := img.Clone("mysnap", ioctx, "child", 1, 22)
 	assert.NoError(t, err)
 
