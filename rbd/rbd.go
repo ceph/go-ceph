@@ -885,13 +885,17 @@ func (image *Image) Seek(offset int64, whence int) (int64, error) {
 }
 
 // int rbd_discard(rbd_image_t image, uint64_t ofs, uint64_t len);
-func (image *Image) Discard(ofs uint64, length uint64) error {
+func (image *Image) Discard(ofs uint64, length uint64) (int, error) {
 	if err := image.validate(imageIsOpen); err != nil {
-		return err
+		return 0, err
 	}
 
-	return RBDError(C.rbd_discard(image.image, C.uint64_t(ofs),
-		C.uint64_t(length)))
+	ret := C.rbd_discard(image.image, C.uint64_t(ofs), C.uint64_t(length))
+	if ret < 0 {
+		return 0, RBDError(ret)
+	}
+
+	return int(ret), nil
 }
 
 func (image *Image) ReadAt(data []byte, off int64) (n int, err error) {
