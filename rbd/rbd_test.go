@@ -226,6 +226,35 @@ func TestGetImageNames(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageRename(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	img, err := Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = img.Rename(name)
+	assert.Error(t, err)
+
+	err = img.Rename(GetUUID())
+	assert.NoError(t, err)
+
+	img.Remove()
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestIOReaderWriter(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
