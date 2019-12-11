@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
   uuid-runtime \
   wget
 
-ARG CEPH_REPO_URL=https://download.ceph.com/debian-luminous/
+ARG CEPH_REPO_URL=https://download.ceph.com/debian-nautilus/
 RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
 RUN apt-add-repository "deb ${CEPH_REPO_URL} xenial main"
 
