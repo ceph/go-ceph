@@ -597,37 +597,31 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
 }
 
 // int rbd_copy(rbd_image_t image, rados_ioctx_t dest_io_ctx, const char *destname);
-// int rbd_copy2(rbd_image_t src, rbd_image_t dest);
-// int rbd_copy_with_progress(rbd_image_t image, rados_ioctx_t dest_p, const char *destname,
-//                librbd_progress_fn_t cb, void *cbdata);
-// int rbd_copy_with_progress2(rbd_image_t src, rbd_image_t dest,
-//                librbd_progress_fn_t cb, void *cbdata);
-func (image *Image) Copy(args ...interface{}) error {
+func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	} else if ioctx == nil {
+		return ErrNoIOContext
+	} else if len(destname) == 0 {
+		return ErrNoName
+	}
+
+	c_destname := C.CString(destname)
+	defer C.free(unsafe.Pointer(c_destname))
+
+	return GetError(C.rbd_copy(image.image,
+		C.rados_ioctx_t(ioctx.Pointer()), c_destname))
+}
+
+// int rbd_copy2(rbd_image_t src, rbd_image_t dest);
+func (image *Image) Copy2(dest *Image) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	} else if err := dest.validate(imageIsOpen); err != nil {
 		return err
 	}
 
-	switch t := args[0].(type) {
-	case rados.IOContext:
-		switch t2 := args[1].(type) {
-		case string:
-			c_destname := C.CString(t2)
-			defer C.free(unsafe.Pointer(c_destname))
-			return GetError(C.rbd_copy(image.image,
-				C.rados_ioctx_t(t.Pointer()),
-				c_destname))
-		default:
-			return errors.New("Must specify destname")
-		}
-	case Image:
-		var dest Image = t
-		if dest.image == nil {
-			return errors.New(fmt.Sprintf("RBD image %s is not open", dest.name))
-		}
-		return GetError(C.rbd_copy2(image.image, dest.image))
-	default:
-		return errors.New("Must specify either destination pool or destination image")
-	}
+	return GetError(C.rbd_copy2(image.image, dest.image))
 }
 
 // int rbd_flatten(rbd_image_t image);
