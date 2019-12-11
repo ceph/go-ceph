@@ -174,6 +174,8 @@ func GetImage(ioctx *rados.IOContext, name string) *Image {
 }
 
 // int rbd_create(rados_ioctx_t io, const char *name, uint64_t size, int *order);
+//
+// But also (for backward compability):
 // int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
 //          uint64_t features, int *order);
 // int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
@@ -183,27 +185,94 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	args ...uint64) (image *Image, err error) {
 	var ret C.int
 
-	c_order := C.int(order)
-	c_name := C.CString(name)
-
-	defer C.free(unsafe.Pointer(c_name))
-
 	switch len(args) {
 	case 3:
-		ret = C.rbd_create3(C.rados_ioctx_t(ioctx.Pointer()),
-			c_name, C.uint64_t(size),
-			C.uint64_t(args[0]), &c_order,
-			C.uint64_t(args[1]), C.uint64_t(args[2]))
+		return Create3(ioctx, name, size, args[0], order, args[1],
+			args[2])
 	case 1:
-		ret = C.rbd_create2(C.rados_ioctx_t(ioctx.Pointer()),
-			c_name, C.uint64_t(size),
-			C.uint64_t(args[0]), &c_order)
+		return Create2(ioctx, name, size, args[0], order)
 	case 0:
+		c_order := C.int(order)
+		c_name := C.CString(name)
+
+		defer C.free(unsafe.Pointer(c_name))
+
 		ret = C.rbd_create(C.rados_ioctx_t(ioctx.Pointer()),
 			c_name, C.uint64_t(size), &c_order)
 	default:
 		return nil, errors.New("Wrong number of argument")
 	}
+
+	if ret < 0 {
+		return nil, RBDError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		name:  name,
+	}, nil
+}
+
+// int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
+//          uint64_t features, int *order);
+func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
+	order int) (image *Image, err error) {
+	var ret C.int
+
+	c_order := C.int(order)
+	c_name := C.CString(name)
+
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret = C.rbd_create2(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+		C.uint64_t(size), C.uint64_t(features), &c_order)
+	if ret < 0 {
+		return nil, RBDError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		name:  name,
+	}, nil
+}
+
+// int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
+//        uint64_t features, int *order,
+//        uint64_t stripe_unit, uint64_t stripe_count);
+func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
+	order int, stripe_unit uint64, stripe_count uint64) (image *Image, err error) {
+	var ret C.int
+
+	c_order := C.int(order)
+	c_name := C.CString(name)
+
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret = C.rbd_create3(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+		C.uint64_t(size), C.uint64_t(features), &c_order,
+		C.uint64_t(stripe_unit), C.uint64_t(stripe_count))
+	if ret < 0 {
+		return nil, RBDError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		name:  name,
+	}, nil
+}
+
+// int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
+//                 rbd_image_options_t opts);
+func Create4(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOptions) (image *Image, err error) {
+	if rio == nil {
+		return nil, RBDError(C.EINVAL)
+	}
+
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+		C.uint64_t(size), C.rbd_image_options_t(rio.options))
 
 	if ret < 0 {
 		return nil, RBDError(ret)
@@ -464,7 +533,7 @@ func (image *Image) Copy(args ...interface{}) error {
 		case string:
 			c_destname := C.CString(t2)
 			defer C.free(unsafe.Pointer(c_destname))
-			return RBDError(C.rbd_copy(image.image,
+			return GetError(C.rbd_copy(image.image,
 				C.rados_ioctx_t(t.Pointer()),
 				c_destname))
 		default:

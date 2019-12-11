@@ -2,11 +2,13 @@ package cephfs_test
 
 import (
 	"fmt"
-	"github.com/ceph/go-ceph/cephfs"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"syscall"
 	"testing"
+
+	"github.com/ceph/go-ceph/cephfs"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -22,7 +24,7 @@ func TestCreateMount(t *testing.T) {
 func TestMountRoot(t *testing.T) {
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
@@ -34,7 +36,7 @@ func TestMountRoot(t *testing.T) {
 func TestSyncFs(t *testing.T) {
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
@@ -49,13 +51,13 @@ func TestSyncFs(t *testing.T) {
 func TestChangeDir(t *testing.T) {
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
 	err = mount.Mount()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	dir1 := mount.CurrentDir()
 	assert.NotNil(t, dir1)
@@ -78,7 +80,7 @@ func TestRemoveDir(t *testing.T) {
 	dirname := "one"
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
@@ -107,7 +109,7 @@ func TestRemoveDir(t *testing.T) {
 func TestUnmountMount(t *testing.T) {
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 	fmt.Printf("%#v\n", mount.IsMounted())
 
 	err = mount.ReadDefaultConfigFile()
@@ -125,7 +127,7 @@ func TestUnmountMount(t *testing.T) {
 func TestReleaseMount(t *testing.T) {
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.Release()
 	assert.NoError(t, err)
@@ -137,7 +139,7 @@ func TestChmodDir(t *testing.T) {
 	var stats_after uint32 = 0700
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
@@ -153,7 +155,7 @@ func TestChmodDir(t *testing.T) {
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
 	stats, err := os.Stat(CephMountTest + dirname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_before)
 
@@ -173,7 +175,7 @@ func TestChown(t *testing.T) {
 
 	mount, err := cephfs.CreateMount()
 	assert.NoError(t, err)
-	assert.NotNil(t, mount)
+	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
@@ -189,7 +191,7 @@ func TestChown(t *testing.T) {
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
 	stats, err := os.Stat(CephMountTest + dirname)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), root)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), root)

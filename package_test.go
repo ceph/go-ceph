@@ -1,4 +1,4 @@
-package rados
+package ceph
 
 import (
 	"github.com/stretchr/testify/assert"
