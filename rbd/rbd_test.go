@@ -576,6 +576,94 @@ func TestIOReaderWriter(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestImageCopy(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	img, err := Create(ioctx, name, 1<<22, 22)
+	require.NoError(t, err)
+
+	// img not open, should fail
+	err = img.Copy(nil, "")
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	err = img.Open()
+	require.NoError(t, err)
+
+	// pass invalid parameters
+	err = img.Copy(nil, "")
+	assert.Error(t, err) // order of errors not enforced
+
+	err = img.Copy(ioctx, "")
+	assert.Equal(t, err, ErrNoName)
+
+	err = img.Copy(nil, "duplicate")
+	assert.Equal(t, err, ErrNoIOContext)
+
+	// try successful copying
+	name = GetUUID()
+	err = img.Copy(ioctx, name)
+	require.NoError(t, err)
+
+	img2 := GetImage(ioctx, name)
+	err = img2.Open()
+	require.NoError(t, err)
+
+	err = img2.Close()
+	assert.NoError(t, err)
+
+	err = img2.Remove()
+	assert.NoError(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	// test with Image as parameter
+	name = GetUUID()
+	img2, err = Create(ioctx, name, 1<<22, 22)
+	require.NoError(t, err)
+
+	err = img.Copy2(img2)
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	err = img.Open()
+	assert.NoError(t, err)
+
+	err = img.Copy2(img2)
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	err = img2.Open()
+	require.NoError(t, err)
+
+	err = img.Copy2(img2)
+	require.NoError(t, err)
+
+	err = img2.Close()
+	assert.NoError(t, err)
+
+	err = img2.Remove()
+	assert.NoError(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	err = img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestCreateSnapshot(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
