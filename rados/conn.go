@@ -361,3 +361,60 @@ func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string,
 
 	return
 }
+
+// PGCommand sends a command to one of the PGs
+func (c *Conn) PGCommand(pgid []byte, args [][]byte) (buffer []byte, info string, err error) {
+	return c.pgCommand(pgid, args, nil)
+}
+
+// PGCommand sends a command to one of the PGs, with an input buffer
+func (c *Conn) PGCommandWithInputBuffer(pgid []byte, args [][]byte, inputBuffer []byte) (buffer []byte, info string, err error) {
+	return c.pgCommand(pgid, args, inputBuffer)
+}
+
+func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) (buffer []byte, info string, err error) {
+	name := C.CString(string(pgid))
+	defer C.free(unsafe.Pointer(name))
+
+	argc := len(args)
+	argv := make([]*C.char, argc)
+
+	for i, arg := range args {
+		argv[i] = C.CString(string(arg))
+		defer C.free(unsafe.Pointer(argv[i]))
+	}
+
+	var (
+		outs, outbuf       *C.char
+		outslen, outbuflen C.size_t
+	)
+	inbuf := C.CString(string(inputBuffer))
+	inbufLen := len(inputBuffer)
+	defer C.free(unsafe.Pointer(inbuf))
+
+	ret := C.rados_pg_command(c.cluster,
+		name,
+		&argv[0],
+		C.size_t(argc),
+		inbuf,              // bulk input
+		C.size_t(inbufLen), // length inbuf
+		&outbuf,            // buffer
+		&outbuflen,         // buffer length
+		&outs,              // status string
+		&outslen)
+
+	if outslen > 0 {
+		info = C.GoStringN(outs, C.int(outslen))
+		C.free(unsafe.Pointer(outs))
+	}
+	if outbuflen > 0 {
+		buffer = C.GoBytes(unsafe.Pointer(outbuf), C.int(outbuflen))
+		C.free(unsafe.Pointer(outbuf))
+	}
+	if ret != 0 {
+		err = RadosError(int(ret))
+		return nil, info, err
+	}
+
+	return
+}

@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"strconv"
-	//"net"
 	"math/rand"
 	"os"
 	"sort"
+	"strconv"
 	"testing"
 	"time"
 
@@ -593,6 +592,24 @@ func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
 	assert.Equal(suite.T(),
 		`{"key":"AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw=="}`,
 		string(buf[:]))
+}
+
+func (suite *RadosTestSuite) TestPGCommand() {
+	suite.SetupConnection()
+
+	pgid := "1.2"
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "query", "pgid": pgid, "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.PGCommand([]byte(pgid), [][]byte{[]byte(command)})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+
+	var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(suite.T(), err)
 }
 
 func (suite *RadosTestSuite) TestObjectListObjects() {
