@@ -10,19 +10,19 @@ import "C"
 
 import (
 	"fmt"
-	"math"
-	"syscall"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/errutil"
 )
 
 type cephError int
 
 func (e cephError) Error() string {
-	if e == 0 {
-		return fmt.Sprintf("cephfs: no error given")
+	errno, s := errutil.FormatErrno(int(e))
+	if s == "" {
+		return fmt.Sprintf("cephfs: ret=%d", errno)
 	}
-	err := syscall.Errno(uint(math.Abs(float64(e))))
-	return fmt.Sprintf("cephfs: ret=(%d) %v", e, err)
+	return fmt.Sprintf("cephfs: ret=%d, %s", errno, s)
 }
 
 // MountInfo exports ceph's ceph_mount_info from libcephfs.cc
