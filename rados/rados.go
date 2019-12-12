@@ -10,12 +10,18 @@ import (
 	"fmt"
 	"runtime"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/errutil"
 )
 
 type RadosError int
 
 func (e RadosError) Error() string {
-	return fmt.Sprintf("rados: %s", C.GoString(C.strerror(C.int(-e))))
+	errno, s := errutil.FormatErrno(int(e))
+	if s == "" {
+		return fmt.Sprintf("rados: ret=%d", errno)
+	}
+	return fmt.Sprintf("rados: ret=%d, %s", errno, s)
 }
 
 var RadosAllNamespaces = C.LIBRADOS_ALL_NSPACES
