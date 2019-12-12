@@ -204,3 +204,16 @@ func TestChown(t *testing.T) {
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
 
 }
+
+func TestCephFSError(t *testing.T) {
+	err := getError(0)
+	assert.NoError(t, err)
+
+	err = getError(-5) // IO error
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "cephfs: ret=5, Input/output error")
+
+	err = getError(345) // no such errno
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "cephfs: ret=345")
+}
