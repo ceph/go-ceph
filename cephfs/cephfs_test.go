@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	CephMountTest string = "/tmp/ceph/mds/mnt/"
+	CephMountTest = "/tmp/ceph/mds/mnt/"
 )
 
 func TestCreateMount(t *testing.T) {
@@ -170,7 +170,7 @@ func TestChown(t *testing.T) {
 	dirname := "three"
 	// dockerfile creates bob user account
 	var bob uint32 = 1010
-	var root uint32 = 0
+	var root uint32
 
 	mount, err := CreateMount()
 	assert.NoError(t, err)
