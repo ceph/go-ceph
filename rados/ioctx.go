@@ -410,7 +410,7 @@ func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
 	}
 }
 
-// Remove an xattr with key `name` from object `oid`
+// RmXattr removes an xattr with key `name` from object `oid`
 func (ioctx *IOContext) RmXattr(oid string, name string) error {
 	c_oid := C.CString(oid)
 	c_name := C.CString(name)
@@ -595,7 +595,7 @@ func (ioctx *IOContext) GetAllOmapValues(oid string, startAfter string, filterPr
 	return omap, nil
 }
 
-// Remove the specified `keys` from the omap `oid`
+// RmOmapKeys removes the specified `keys` from the omap `oid`
 func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
@@ -626,7 +626,7 @@ func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
 	return GetRadosError(int(ret))
 }
 
-// Clear the omap `oid`
+// CleanOmap clears the omap `oid`
 func (ioctx *IOContext) CleanOmap(oid string) error {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
@@ -649,7 +649,7 @@ type Iter struct {
 
 type IterToken uint32
 
-// Return a Iterator object that can be used to list the object names in the current pool
+// Iter returns a Iterator object that can be used to list the object names in the current pool
 func (ioctx *IOContext) Iter() (*Iter, error) {
 	iter := Iter{}
 	if cerr := C.rados_nobjects_list_open(ioctx.ioctx, &iter.ctx); cerr < 0 {
@@ -658,7 +658,7 @@ func (ioctx *IOContext) Iter() (*Iter, error) {
 	return &iter, nil
 }
 
-// Returns a token marking the current position of the iterator. To be used in combination with Iter.Seek()
+// Token returns a token marking the current position of the iterator. To be used in combination with Iter.Seek()
 func (iter *Iter) Token() IterToken {
 	return IterToken(C.rados_nobjects_list_get_pg_hash_position(iter.ctx))
 }
@@ -693,7 +693,7 @@ func (iter *Iter) Next() bool {
 	return true
 }
 
-// Returns the current value of the iterator (object name), after a successful call to Next.
+// Value returns the current value of the iterator (object name), after a successful call to Next.
 func (iter *Iter) Value() string {
 	if iter.err != nil {
 		return ""
@@ -701,7 +701,7 @@ func (iter *Iter) Value() string {
 	return iter.entry
 }
 
-// Returns the namespace associated with the current value of the iterator (object name), after a successful call to Next.
+// Namespace returns the namespace associated with the current value of the iterator (object name), after a successful call to Next.
 func (iter *Iter) Namespace() string {
 	if iter.err != nil {
 		return ""
@@ -709,7 +709,7 @@ func (iter *Iter) Namespace() string {
 	return iter.namespace
 }
 
-// Checks whether the iterator has encountered an error.
+// Err checks whether the iterator has encountered an error.
 func (iter *Iter) Err() error {
 	if iter.err == RadosErrorNotFound {
 		return nil
@@ -723,7 +723,7 @@ func (iter *Iter) Close() {
 	C.rados_nobjects_list_close(iter.ctx)
 }
 
-// Take an exclusive lock on an object.
+// LockExclusive takes an exclusive lock on an object.
 func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration time.Duration, flags *byte) (int, error) {
 	c_oid := C.CString(oid)
 	c_name := C.CString(name)
@@ -771,7 +771,7 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 	}
 }
 
-// Take a shared lock on an object.
+// LockShared takes a shared lock on an object.
 func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration time.Duration, flags *byte) (int, error) {
 	c_oid := C.CString(oid)
 	c_name := C.CString(name)

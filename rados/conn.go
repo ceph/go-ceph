@@ -58,7 +58,7 @@ func (c *Conn) Shutdown() {
 	if err := c.ensure_connected(); err != nil {
 		return
 	}
-	C.rados_shutdown(c.cluster)
+	freeConn(c)
 }
 
 // ReadConfigFile configures the connection using a Ceph configuration file.
@@ -175,7 +175,7 @@ func (c *Conn) ensure_connected() error {
 	}
 }
 
-// GetClusterStat returns statistics about the cluster associated with the
+// GetClusterStats returns statistics about the cluster associated with the
 // connection.
 func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 	if err := c.ensure_connected(); err != nil {
@@ -280,12 +280,44 @@ func (c *Conn) DeletePool(name string) error {
 	}
 }
 
+// GetPoolByName returns the ID of the pool with a given name.
+func (c *Conn) GetPoolByName(name string) (int64, error) {
+	if err := c.ensure_connected(); err != nil {
+		fmt.Println("NOT CONNECTED WHOOPS")
+		return 0, err
+	}
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
+	ret := int64(C.rados_pool_lookup(c.cluster, c_name))
+	if ret < 0 {
+		return 0, RadosError(ret)
+	} else {
+		return ret, nil
+	}
+}
+
+// GetPoolByID returns the name of a pool by a given ID.
+func (c *Conn) GetPoolByID(id int64) (string, error) {
+	buf := make([]byte, 4096)
+	if err := c.ensure_connected(); err != nil {
+		fmt.Println("NOT CONNECTED WHOOPS")
+		return "", err
+	}
+	c_id := C.int64_t(id)
+	ret := int(C.rados_pool_reverse_lookup(c.cluster, c_id, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+	if ret < 0 {
+		return "", RadosError(ret)
+	} else {
+		return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
+	}
+}
+
 // MonCommand sends a command to one of the monitors
 func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
 	return c.monCommand(args, nil)
 }
 
-// MonCommand sends a command to one of the monitors, with an input buffer
+// MonCommandWithInputBuffer sends a command to one of the monitors, with an input buffer
 func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) (buffer []byte, info string, err error) {
 	return c.monCommand(args, inputBuffer)
 }
