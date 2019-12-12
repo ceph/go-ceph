@@ -15,14 +15,21 @@ import (
 	"github.com/ceph/go-ceph/errutil"
 )
 
-type cephError int
+type CephFSError int
 
-func (e cephError) Error() string {
+func (e CephFSError) Error() string {
 	errno, s := errutil.FormatErrno(int(e))
 	if s == "" {
 		return fmt.Sprintf("cephfs: ret=%d", errno)
 	}
 	return fmt.Sprintf("cephfs: ret=%d, %s", errno, s)
+}
+
+func getError(e C.int) error {
+	if e == 0 {
+		return nil
+	}
+	return CephFSError(e)
 }
 
 // MountInfo exports ceph's ceph_mount_info from libcephfs.cc
@@ -35,7 +42,7 @@ func CreateMount() (*MountInfo, error) {
 	mount := &MountInfo{}
 	ret := C.ceph_create(&mount.mount, nil)
 	if ret != 0 {
-		return nil, cephError(ret)
+		return nil, getError(ret)
 	}
 	return mount, nil
 }
@@ -43,46 +50,31 @@ func CreateMount() (*MountInfo, error) {
 // ReadDefaultConfigFile loads the ceph configuration from the specified config file.
 func (mount *MountInfo) ReadDefaultConfigFile() error {
 	ret := C.ceph_conf_read_file(mount.mount, nil)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // Mount mounts the mount handle.
 func (mount *MountInfo) Mount() error {
 	ret := C.ceph_mount(mount.mount, nil)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // Unmount unmounts the mount handle.
 func (mount *MountInfo) Unmount() error {
 	ret := C.ceph_unmount(mount.mount)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // Release destroys the mount handle.
 func (mount *MountInfo) Release() error {
 	ret := C.ceph_release(mount.mount)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // SyncFs synchronizes all filesystem data to persistent media.
 func (mount *MountInfo) SyncFs() error {
 	ret := C.ceph_sync_fs(mount.mount)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // CurrentDir gets the current working directory.
@@ -97,10 +89,7 @@ func (mount *MountInfo) ChangeDir(path string) error {
 	defer C.free(unsafe.Pointer(cPath))
 
 	ret := C.ceph_chdir(mount.mount, cPath)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // MakeDir creates a directory.
@@ -109,10 +98,7 @@ func (mount *MountInfo) MakeDir(path string, mode uint32) error {
 	defer C.free(unsafe.Pointer(cPath))
 
 	ret := C.ceph_mkdir(mount.mount, cPath, C.mode_t(mode))
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // RemoveDir removes a directory.
@@ -121,10 +107,7 @@ func (mount *MountInfo) RemoveDir(path string) error {
 	defer C.free(unsafe.Pointer(cPath))
 
 	ret := C.ceph_rmdir(mount.mount, cPath)
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // Chmod changes the mode bits (permissions) of a file/directory.
@@ -133,10 +116,7 @@ func (mount *MountInfo) Chmod(path string, mode uint32) error {
 	defer C.free(unsafe.Pointer(cPath))
 
 	ret := C.ceph_chmod(mount.mount, cPath, C.mode_t(mode))
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // Chown changes the ownership of a file/directory.
@@ -145,10 +125,7 @@ func (mount *MountInfo) Chown(path string, user uint32, group uint32) error {
 	defer C.free(unsafe.Pointer(cPath))
 
 	ret := C.ceph_chown(mount.mount, cPath, C.int(user), C.int(group))
-	if ret != 0 {
-		return cephError(ret)
-	}
-	return nil
+	return getError(ret)
 }
 
 // IsMounted checks mount status.
