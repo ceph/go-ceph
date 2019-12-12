@@ -20,11 +20,10 @@ before_install: |
   docker build --build-arg CEPH_REPO_URL="${CEPH_REPO_URL}" -t ceph-golang-ci .
 
 before_script:
-  - go get golang.org/x/lint/golint
+  - go get github.com/mgechev/revive
 
 # cephfs (fuse) requires: --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 script:
   - docker run --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined --rm -it -v ${PWD}:/go/src/github.com/ceph/go-ceph:z ceph-golang-ci
-# run golint and other style checks
-  - go get golang.org/x/lint/golint
+# run style checks
   - make check
