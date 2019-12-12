@@ -50,6 +50,7 @@ package rados
 import "C"
 
 import (
+	"sync"
 	"syscall"
 	"time"
 	"unsafe"
@@ -118,14 +119,20 @@ func (ioctx *IOContext) SetNamespace(namespace string) {
 	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
 }
 
-func (ioctx *IOContext) AioWrite(oid string, data []byte, offset uint64) future {
-	return &aioFuture{
+// AIOWrite writes data to object with key oid.
+// A future interface will be returned to get the write result.
+func (ioctx *IOContext) AIOWrite(oid string, data []byte, offset uint64) future {
+	f := &aioFuture{
 		buf:    data,
 		offset: offset,
 		oid:    oid,
 		ioctx:  ioctx,
 		tp:     IOWrite,
+		n:      new(int32),
+		mu:     &sync.Mutex{},
 	}
+	f.write()
+	return f
 }
 
 // Write writes len(data) bytes to the object with key oid starting at byte
@@ -160,13 +167,19 @@ func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
 	return GetRadosError(int(ret))
 }
 
-func (ioctx *IOContext) AioAppend(oid string, data []byte) future {
-	return &aioFuture{
+// AIOAppend appends data to object with key oid.
+// A future interface will be returned to get the append result.
+func (ioctx *IOContext) AIOAppend(oid string, data []byte) future {
+	f := &aioFuture{
 		buf:   data,
 		oid:   oid,
 		ioctx: ioctx,
 		tp:    IOAppend,
+		n:     new(int32),
+		mu:    &sync.Mutex{},
 	}
+	f.append()
+	return f
 }
 
 // Append appends len(data) bytes to the object with key oid.
@@ -182,14 +195,20 @@ func (ioctx *IOContext) Append(oid string, data []byte) error {
 	return GetRadosError(int(ret))
 }
 
-func (ioctx *IOContext) AioRead(oid string, data []byte, offset uint64) future {
-	return &aioFuture{
+// AIORead reads data from object with key oid.
+// A future interface will be returned to get the read result.
+func (ioctx *IOContext) AIORead(oid string, data []byte, offset uint64) future {
+	f := &aioFuture{
 		buf:    data,
 		offset: offset,
 		oid:    oid,
 		ioctx:  ioctx,
 		tp:     IORead,
+		n:      new(int32),
+		mu:     &sync.Mutex{},
 	}
+	f.read()
+	return f
 }
 
 // Read reads up to len(data) bytes from the object with key oid starting at byte

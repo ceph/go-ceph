@@ -442,7 +442,7 @@ func (suite *RadosTestSuite) TestAIOReadWrite() {
 	assert.NoError(suite.T(), err)
 
 	bytes_out := make([]byte, len(bytes_in))
-	f := suite.ioctx.AioRead("obj", bytes_out, 0)
+	f = suite.ioctx.AIORead("obj", bytes_out, 0)
 	in_out, err := f.Get()
 	n_out := in_out.(int)
 
@@ -454,7 +454,7 @@ func (suite *RadosTestSuite) TestAIOReadWrite() {
 	assert.NoError(suite.T(), err)
 
 	bytes_out = make([]byte, len(bytes_in))
-	f = suite.ioctx.AioRead("obj", bytes_out, 0)
+	f = suite.ioctx.AIORead("obj", bytes_out, 0)
 	in_out, err = f.Get()
 	n_out = in_out.(int)
 
@@ -471,6 +471,30 @@ func (suite *RadosTestSuite) TestAppend() {
 		// append random bytes
 		bytes := suite.RandomBytes(33)
 		err := suite.ioctx.Append(oid, bytes)
+		assert.NoError(suite.T(), err)
+
+		// what the object should contain
+		mirror = append(mirror, bytes...)
+
+		// check object contains what we expect
+		buf := make([]byte, len(mirror))
+		n, err := suite.ioctx.Read(oid, buf, 0)
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), n, len(buf))
+		assert.Equal(suite.T(), buf, mirror)
+	}
+}
+
+func (suite *RadosTestSuite) TestAIOAppend() {
+	suite.SetupConnection()
+
+	mirror := []byte{}
+	oid := suite.GenObjectName()
+	for i := 0; i < 3; i++ {
+		// append random bytes
+		bytes := suite.RandomBytes(33)
+		f := suite.ioctx.AIOAppend(oid, bytes)
+		_, err := f.Get()
 		assert.NoError(suite.T(), err)
 
 		// what the object should contain
