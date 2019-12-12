@@ -414,35 +414,35 @@ func TestNoIOContext(t *testing.T) {
 	image := rbd.GetImage(nil, "nonexistent")
 
 	_, err := image.Clone("new snapshot", nil, "clone", 0, 0)
-	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+	assert.Equal(t, err, rbd.ErrNoIOContext)
 
 	err = image.Remove()
-	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+	assert.Equal(t, err, rbd.ErrNoIOContext)
 
 	err = image.Trash(15 * time.Second)
-	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+	assert.Equal(t, err, rbd.ErrNoIOContext)
 
 	err = image.Rename("unknown")
-	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+	assert.Equal(t, err, rbd.ErrNoIOContext)
 
 	err = image.Open()
-	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+	assert.Equal(t, err, rbd.ErrNoIOContext)
 }
 
 func TestErrorNoName(t *testing.T) {
 	image := rbd.GetImage(nil, "")
 
 	err := image.Remove()
-	assert.Equal(t, err, rbd.RbdErrorNoName)
+	assert.Equal(t, err, rbd.ErrNoName)
 
 	err = image.Trash(15 * time.Second)
-	assert.Equal(t, err, rbd.RbdErrorNoName)
+	assert.Equal(t, err, rbd.ErrNoName)
 
 	err = image.Rename("unknown")
-	assert.Equal(t, err, rbd.RbdErrorNoName)
+	assert.Equal(t, err, rbd.ErrNoName)
 
 	err = image.Open()
-	assert.Equal(t, err, rbd.RbdErrorNoName)
+	assert.Equal(t, err, rbd.ErrNoName)
 }
 
 func TestErrorImageNotOpen(t *testing.T) {
@@ -562,22 +562,22 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = snapshot.Remove()
-	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+	assert.Equal(t, err, rbd.ErrSnapshotNoName)
 
 	err = snapshot.Rollback()
-	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+	assert.Equal(t, err, rbd.ErrSnapshotNoName)
 
 	err = snapshot.Protect()
-	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+	assert.Equal(t, err, rbd.ErrSnapshotNoName)
 
 	err = snapshot.Unprotect()
-	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+	assert.Equal(t, err, rbd.ErrSnapshotNoName)
 
 	_, err = snapshot.IsProtected()
-	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+	assert.Equal(t, err, rbd.ErrSnapshotNoName)
 
 	err = snapshot.Set()
-	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+	assert.Equal(t, err, rbd.ErrSnapshotNoName)
 
 	// image can not be removed as the snapshot still exists
 	// err = img.Remove()
