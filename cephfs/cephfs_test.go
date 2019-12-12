@@ -1,4 +1,4 @@
-package cephfs_test
+package cephfs
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/ceph/go-ceph/cephfs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,13 +15,13 @@ var (
 )
 
 func TestCreateMount(t *testing.T) {
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 }
 
 func TestMountRoot(t *testing.T) {
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
@@ -34,7 +33,7 @@ func TestMountRoot(t *testing.T) {
 }
 
 func TestSyncFs(t *testing.T) {
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
@@ -49,7 +48,7 @@ func TestSyncFs(t *testing.T) {
 }
 
 func TestChangeDir(t *testing.T) {
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
@@ -78,7 +77,7 @@ func TestChangeDir(t *testing.T) {
 
 func TestRemoveDir(t *testing.T) {
 	dirname := "one"
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
@@ -107,7 +106,7 @@ func TestRemoveDir(t *testing.T) {
 }
 
 func TestUnmountMount(t *testing.T) {
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 	fmt.Printf("%#v\n", mount.IsMounted())
@@ -125,7 +124,7 @@ func TestUnmountMount(t *testing.T) {
 }
 
 func TestReleaseMount(t *testing.T) {
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
@@ -137,7 +136,7 @@ func TestChmodDir(t *testing.T) {
 	dirname := "two"
 	var stats_before uint32 = 0755
 	var stats_after uint32 = 0700
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
@@ -173,7 +172,7 @@ func TestChown(t *testing.T) {
 	var bob uint32 = 1010
 	var root uint32 = 0
 
-	mount, err := cephfs.CreateMount()
+	mount, err := CreateMount()
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
