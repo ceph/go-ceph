@@ -62,7 +62,7 @@ else
     testargs=(\
         "-covermode=count" \
         "-coverprofile=cover.out" \
-        "-coverpkg=$P/cephfs,$P/rados,$P/rbd")
+        "-coverpkg=$P/cephfs,$P/rados,$P/rbd,$P/errutil")
     # disable caching of tests results
     testargs+=("-count=1")
     if [[ ${TEST_RUN} != ALL ]]; then
