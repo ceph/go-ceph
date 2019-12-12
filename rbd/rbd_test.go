@@ -397,6 +397,105 @@ func TestParentInfo(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestNoIOContext(t *testing.T) {
+	image := rbd.GetImage(nil, "nonexistent")
+
+	_, err := image.Clone("new snapshot", nil, "clone", 0, 0)
+	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+
+	err = image.Remove()
+	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+
+	err = image.Trash(15 * time.Second)
+	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+
+	err = image.Rename("unknown")
+	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+
+	err = image.Open()
+	assert.Equal(t, err, rbd.RbdErrorNoIOContext)
+}
+
+func TestErrorNoName(t *testing.T) {
+	image := rbd.GetImage(nil, "")
+
+	err := image.Remove()
+	assert.Equal(t, err, rbd.RbdErrorNoName)
+
+	err = image.Trash(15 * time.Second)
+	assert.Equal(t, err, rbd.RbdErrorNoName)
+
+	err = image.Rename("unknown")
+	assert.Equal(t, err, rbd.RbdErrorNoName)
+
+	err = image.Open()
+	assert.Equal(t, err, rbd.RbdErrorNoName)
+}
+
+func TestErrorImageNotOpen(t *testing.T) {
+	image := rbd.GetImage(nil, "nonexistent")
+
+	err := image.Close()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	err = image.Resize(2 << 22)
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.Stat()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.IsOldFormat()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.GetSize()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.GetFeatures()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.GetStripeUnit()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.GetStripeCount()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.GetOverlap()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	err = image.Flatten()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, _, err = image.ListChildren()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, _, err = image.ListLockers()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	err = image.LockExclusive("a magic cookie")
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	err = image.LockShared("a magic cookie", "tasty")
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	err = image.BreakLock("a magic cookie", "tasty")
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.Read(nil)
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.Write(nil)
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.ReadAt(nil, 0)
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	_, err = image.WriteAt(nil, 0)
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+
+	err = image.Flush()
+	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+}
+
 func TestNotFound(t *testing.T) {
 	conn, _ := rados.NewConn()
 	conn.ReadDefaultConfigFile()
@@ -415,8 +514,61 @@ func TestNotFound(t *testing.T) {
 	err = img.Open()
 	assert.Equal(t, err, rbd.RbdErrorNotFound)
 
-	img.Remove()
+	err = img.Remove()
 	assert.Equal(t, err, rbd.RbdErrorNotFound)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestErrorSnapshotNoName(t *testing.T) {
+	conn, _ := rados.NewConn()
+	conn.ReadDefaultConfigFile()
+	conn.Connect()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	img, err := rbd.Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = img.Open()
+	assert.NoError(t, err)
+
+	// this actually works for some reason?!
+	snapshot, err := img.CreateSnapshot("")
+	assert.NoError(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	err = snapshot.Remove()
+	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+
+	err = snapshot.Rollback()
+	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+
+	err = snapshot.Protect()
+	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+
+	err = snapshot.Unprotect()
+	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+
+	_, err = snapshot.IsProtected()
+	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+
+	err = snapshot.Set()
+	assert.Equal(t, err, rbd.RbdErrorSnapshotNoName)
+
+	// image can not be removed as the snapshot still exists
+	// err = img.Remove()
+	// assert.NoError(t, err)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
