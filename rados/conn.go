@@ -5,9 +5,15 @@ package rados
 // #include <rados/librados.h>
 import "C"
 
-import "unsafe"
-import "bytes"
-import "fmt"
+import (
+	"bytes"
+	"errors"
+	"unsafe"
+)
+
+var (
+	ErrNotConnected = errors.New("RADOS not connected")
+)
 
 // ClusterStat represents Ceph cluster statistics.
 type ClusterStat struct {
@@ -171,7 +177,7 @@ func (c *Conn) ensure_connected() error {
 	if c.connected {
 		return nil
 	} else {
-		return RadosError(1)
+		return ErrNotConnected
 	}
 }
 
@@ -267,7 +273,6 @@ func (c *Conn) MakePool(name string) error {
 // DeletePool deletes a pool and all the data inside the pool.
 func (c *Conn) DeletePool(name string) error {
 	if err := c.ensure_connected(); err != nil {
-		fmt.Println("NOT CONNECTED WHOOPS")
 		return err
 	}
 	c_name := C.CString(name)
@@ -283,7 +288,6 @@ func (c *Conn) DeletePool(name string) error {
 // GetPoolByName returns the ID of the pool with a given name.
 func (c *Conn) GetPoolByName(name string) (int64, error) {
 	if err := c.ensure_connected(); err != nil {
-		fmt.Println("NOT CONNECTED WHOOPS")
 		return 0, err
 	}
 	c_name := C.CString(name)
@@ -300,7 +304,6 @@ func (c *Conn) GetPoolByName(name string) (int64, error) {
 func (c *Conn) GetPoolByID(id int64) (string, error) {
 	buf := make([]byte, 4096)
 	if err := c.ensure_connected(); err != nil {
-		fmt.Println("NOT CONNECTED WHOOPS")
 		return "", err
 	}
 	c_id := C.int64_t(id)
