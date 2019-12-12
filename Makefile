@@ -23,5 +23,6 @@ test-docker: .build-docker
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(DOCKER_CI_IMAGE) > .build-docker
 
 check:
-	# TODO: add this when golint is fixed	@for d in $$(go list ./... | grep -v /vendor/); do golint -set_exit_status $${d}; done
-	@for d in $$(go list ./... | grep -v /vendor/); do golint $${d}; done
+	# Configure project's revive checks using .revive.toml
+	# See: https://github.com/mgechev/revive
+	@for d in $$(go list ./... | grep -v /vendor/); do revive -config .revive.toml $${d}; done
