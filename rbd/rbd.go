@@ -60,11 +60,15 @@ const (
 type RBDError int
 
 var (
-	RbdErrorNoIOContext    = errors.New("RBD image does not have an IOContext")
-	RbdErrorNoName         = errors.New("RBD image does not have a name")
-	RbdErrorSnapshotNoName = errors.New("RBD snapshot does not have a name")
-	RbdErrorImageNotOpen   = errors.New("RBD image not open")
-	RbdErrorNotFound       = errors.New("RBD image not found")
+	ErrNoIOContext    = errors.New("RBD image does not have an IOContext")
+	ErrNoName         = errors.New("RBD image does not have a name")
+	ErrSnapshotNoName = errors.New("RBD snapshot does not have a name")
+	ErrImageNotOpen   = errors.New("RBD image not open")
+	ErrNotFound       = errors.New("RBD image not found")
+
+	// retained for compatibility with old versions
+	RbdErrorImageNotOpen = ErrImageNotOpen
+	RbdErrorNotFound     = ErrNotFound
 )
 
 //
@@ -140,11 +144,11 @@ func hasBit(value, bit uint32) bool {
 // case the attribute is not set
 func (image *Image) validate(req uint32) error {
 	if hasBit(req, imageNeedsName) && image.name == "" {
-		return RbdErrorNoName
+		return ErrNoName
 	} else if hasBit(req, imageNeedsIOContext) && image.ioctx == nil {
-		return RbdErrorNoIOContext
+		return ErrNoIOContext
 	} else if hasBit(req, imageIsOpen) && image.image == nil {
-		return RbdErrorImageNotOpen
+		return ErrImageNotOpen
 	}
 
 	return nil
@@ -155,7 +159,7 @@ func (image *Image) validate(req uint32) error {
 // Calls snapshot.image.validate(req) to validate the image attributes.
 func (snapshot *Snapshot) validate(req uint32) error {
 	if hasBit(req, snapshotNeedsName) && snapshot.name == "" {
-		return RbdErrorSnapshotNoName
+		return ErrSnapshotNoName
 	} else if snapshot.image != nil {
 		return snapshot.image.validate(req)
 	}
@@ -184,7 +188,7 @@ func (e RBDError) Error() string {
 func GetError(err C.int) error {
 	if err != 0 {
 		if err == -C.ENOENT {
-			return RbdErrorNotFound
+			return ErrNotFound
 		}
 		return RBDError(err)
 	} else {
