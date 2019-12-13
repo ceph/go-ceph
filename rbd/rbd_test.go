@@ -1,4 +1,4 @@
-package rbd_test
+package rbd
 
 import (
 	"bytes"
@@ -8,35 +8,30 @@ import (
 	"time"
 
 	"github.com/ceph/go-ceph/rados"
-	"github.com/ceph/go-ceph/rbd"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-//Rdb feature
-var RbdFeatureLayering = uint64(1 << 0)
-var RbdFeatureStripingV2 = uint64(1 << 1)
 
 func GetUUID() string {
 	return uuid.Must(uuid.NewV4()).String()
 }
 
 func TestRBDError(t *testing.T) {
-	err := rbd.GetError(0)
+	err := GetError(0)
 	assert.NoError(t, err)
 
-	err = rbd.GetError(-39) // NOTEMPTY (image still has a snapshot)
+	err = GetError(-39) // NOTEMPTY (image still has a snapshot)
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "rbd: ret=-39, Directory not empty")
 
-	err = rbd.GetError(345) // no such errno
+	err = GetError(345) // no such errno
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "rbd: ret=345")
 }
 
 func TestVersion(t *testing.T) {
-	var major, minor, patch = rbd.Version()
+	var major, minor, patch = Version()
 	assert.False(t, major < 0 || major > 1000, "invalid major")
 	assert.False(t, minor < 0 || minor > 1000, "invalid minor")
 	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
@@ -55,24 +50,34 @@ func TestImageCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := rbd.Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	name = GetUUID()
-	image, err = rbd.Create(ioctx, name, 1<<22, 22,
+	image, err = Create(ioctx, name, 1<<22, 22,
 		RbdFeatureLayering|RbdFeatureStripingV2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	name = GetUUID()
-	image, err = rbd.Create(ioctx, name, 1<<22, 22,
+	image, err = Create(ioctx, name, 1<<22, 22,
 		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
+
+	// invalid order
+	name = GetUUID()
+	_, err = Create(ioctx, name, 1<<22, -1)
+	assert.Error(t, err)
+
+	// too many arguments
+	_, err = Create(ioctx, name, 1<<22, 22,
+		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2, 123)
+	assert.Error(t, err)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
@@ -92,7 +97,7 @@ func TestImageCreate2(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := GetUUID()
-	image, err := rbd.Create2(ioctx, name, 1<<22,
+	image, err := Create2(ioctx, name, 1<<22,
 		RbdFeatureLayering|RbdFeatureStripingV2, 22)
 	assert.NoError(t, err)
 	err = image.Remove()
@@ -116,7 +121,7 @@ func TestImageCreate3(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := GetUUID()
-	image, err := rbd.Create3(ioctx, name, 1<<22,
+	image, err := Create3(ioctx, name, 1<<22,
 		RbdFeatureLayering|RbdFeatureStripingV2, 22, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
@@ -141,23 +146,23 @@ func TestCreateImageWithOptions(t *testing.T) {
 
 	// nil options, causes a panic if not handled correctly
 	name := GetUUID()
-	image, err := rbd.Create4(ioctx, name, 1<<22, nil)
+	image, err := Create4(ioctx, name, 1<<22, nil)
 	assert.Error(t, err)
 
-	options := rbd.NewRbdImageOptions()
+	options := NewRbdImageOptions()
 
 	// empty/default options
 	name = GetUUID()
-	image, err = rbd.Create4(ioctx, name, 1<<22, options)
+	image, err = Create4(ioctx, name, 1<<22, options)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	// create image with RbdImageOptionOrder
-	err = options.SetUint64(rbd.RbdImageOptionOrder, 22)
+	err = options.SetUint64(RbdImageOptionOrder, 22)
 	assert.NoError(t, err)
 	name = GetUUID()
-	image, err = rbd.Create4(ioctx, name, 1<<22, options)
+	image, err = Create4(ioctx, name, 1<<22, options)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -167,10 +172,10 @@ func TestCreateImageWithOptions(t *testing.T) {
 	datapool := GetUUID()
 	err = conn.MakePool(datapool)
 	assert.NoError(t, err)
-	err = options.SetString(rbd.RbdImageOptionDataPool, datapool)
+	err = options.SetString(RbdImageOptionDataPool, datapool)
 	assert.NoError(t, err)
 	name = GetUUID()
-	image, err = rbd.Create4(ioctx, name, 1<<22, options)
+	image, err = Create4(ioctx, name, 1<<22, options)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -198,12 +203,12 @@ func TestGetImageNames(t *testing.T) {
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
 		name := GetUUID()
-		_, err := rbd.Create(ioctx, name, 1<<22, 22)
+		_, err := Create(ioctx, name, 1<<22, 22)
 		assert.NoError(t, err)
 		createdList = append(createdList, name)
 	}
 
-	imageNames, err := rbd.GetImageNames(ioctx)
+	imageNames, err := GetImageNames(ioctx)
 	assert.NoError(t, err)
 
 	sort.Strings(createdList)
@@ -211,7 +216,7 @@ func TestGetImageNames(t *testing.T) {
 	assert.Equal(t, createdList, imageNames)
 
 	for _, name := range createdList {
-		img := rbd.GetImage(ioctx, name)
+		img := GetImage(ioctx, name)
 		err := img.Remove()
 		assert.NoError(t, err)
 	}
@@ -234,7 +239,7 @@ func TestIOReaderWriter(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := rbd.Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -252,7 +257,7 @@ func TestIOReaderWriter(t *testing.T) {
 	_, err = img.Seek(0, 0)
 	assert.NoError(t, err)
 
-	var stats2 *rbd.ImageInfo
+	var stats2 *ImageInfo
 	decoder := json.NewDecoder(img)
 	decoder.Decode(&stats2)
 
@@ -296,7 +301,7 @@ func TestCreateSnapshot(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := rbd.Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -336,7 +341,7 @@ func TestParentInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	name := "parent"
-	img, err := rbd.Create(ioctx, name, 1<<22, 22, 1)
+	img, err := Create(ioctx, name, 1<<22, 22, 1)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -349,7 +354,7 @@ func TestParentInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// create an image context with the parent+snapshot
-	snapImg := rbd.GetImage(ioctx, "parent")
+	snapImg := GetImage(ioctx, "parent")
 	err = snapImg.Open("mysnap")
 	assert.NoError(t, err)
 
@@ -411,102 +416,102 @@ func TestParentInfo(t *testing.T) {
 }
 
 func TestNoIOContext(t *testing.T) {
-	image := rbd.GetImage(nil, "nonexistent")
+	image := GetImage(nil, "nonexistent")
 
 	_, err := image.Clone("new snapshot", nil, "clone", 0, 0)
-	assert.Equal(t, err, rbd.ErrNoIOContext)
+	assert.Equal(t, err, ErrNoIOContext)
 
 	err = image.Remove()
-	assert.Equal(t, err, rbd.ErrNoIOContext)
+	assert.Equal(t, err, ErrNoIOContext)
 
 	err = image.Trash(15 * time.Second)
-	assert.Equal(t, err, rbd.ErrNoIOContext)
+	assert.Equal(t, err, ErrNoIOContext)
 
 	err = image.Rename("unknown")
-	assert.Equal(t, err, rbd.ErrNoIOContext)
+	assert.Equal(t, err, ErrNoIOContext)
 
 	err = image.Open()
-	assert.Equal(t, err, rbd.ErrNoIOContext)
+	assert.Equal(t, err, ErrNoIOContext)
 }
 
 func TestErrorNoName(t *testing.T) {
-	image := rbd.GetImage(nil, "")
+	image := GetImage(nil, "")
 
 	err := image.Remove()
-	assert.Equal(t, err, rbd.ErrNoName)
+	assert.Equal(t, err, ErrNoName)
 
 	err = image.Trash(15 * time.Second)
-	assert.Equal(t, err, rbd.ErrNoName)
+	assert.Equal(t, err, ErrNoName)
 
 	err = image.Rename("unknown")
-	assert.Equal(t, err, rbd.ErrNoName)
+	assert.Equal(t, err, ErrNoName)
 
 	err = image.Open()
-	assert.Equal(t, err, rbd.ErrNoName)
+	assert.Equal(t, err, ErrNoName)
 }
 
 func TestErrorImageNotOpen(t *testing.T) {
-	image := rbd.GetImage(nil, "nonexistent")
+	image := GetImage(nil, "nonexistent")
 
 	err := image.Close()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.Resize(2 << 22)
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.Stat()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.IsOldFormat()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.GetSize()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.GetFeatures()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.GetStripeUnit()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.GetStripeCount()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.GetOverlap()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.Flatten()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, _, err = image.ListChildren()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, _, err = image.ListLockers()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.LockExclusive("a magic cookie")
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.LockShared("a magic cookie", "tasty")
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.BreakLock("a magic cookie", "tasty")
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.Read(nil)
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.Write(nil)
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.ReadAt(nil, 0)
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.WriteAt(nil, 0)
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.Flush()
-	assert.Equal(t, err, rbd.ErrImageNotOpen)
+	assert.Equal(t, err, ErrImageNotOpen)
 }
 
 func TestNotFound(t *testing.T) {
@@ -523,12 +528,12 @@ func TestNotFound(t *testing.T) {
 
 	name := GetUUID()
 
-	img := rbd.GetImage(ioctx, name)
+	img := GetImage(ioctx, name)
 	err = img.Open()
-	assert.Equal(t, err, rbd.ErrNotFound)
+	assert.Equal(t, err, ErrNotFound)
 
 	err = img.Remove()
-	assert.Equal(t, err, rbd.ErrNotFound)
+	assert.Equal(t, err, ErrNotFound)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
@@ -548,7 +553,7 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := rbd.Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
 	err = img.Open()
@@ -562,22 +567,22 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = snapshot.Remove()
-	assert.Equal(t, err, rbd.ErrSnapshotNoName)
+	assert.Equal(t, err, ErrSnapshotNoName)
 
 	err = snapshot.Rollback()
-	assert.Equal(t, err, rbd.ErrSnapshotNoName)
+	assert.Equal(t, err, ErrSnapshotNoName)
 
 	err = snapshot.Protect()
-	assert.Equal(t, err, rbd.ErrSnapshotNoName)
+	assert.Equal(t, err, ErrSnapshotNoName)
 
 	err = snapshot.Unprotect()
-	assert.Equal(t, err, rbd.ErrSnapshotNoName)
+	assert.Equal(t, err, ErrSnapshotNoName)
 
 	_, err = snapshot.IsProtected()
-	assert.Equal(t, err, rbd.ErrSnapshotNoName)
+	assert.Equal(t, err, ErrSnapshotNoName)
 
 	err = snapshot.Set()
-	assert.Equal(t, err, rbd.ErrSnapshotNoName)
+	assert.Equal(t, err, ErrSnapshotNoName)
 
 	// image can not be removed as the snapshot still exists
 	// err = img.Remove()
@@ -601,28 +606,28 @@ func TestTrashImage(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := rbd.Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
 	err = image.Trash(time.Hour)
 	assert.NoError(t, err)
 
-	trashList, err := rbd.GetTrashList(ioctx)
+	trashList, err := GetTrashList(ioctx)
 	assert.NoError(t, err)
 	assert.Equal(t, len(trashList), 1, "trashList length equal")
 
-	err = rbd.TrashRestore(ioctx, trashList[0].Id, name+"_restored")
+	err = TrashRestore(ioctx, trashList[0].Id, name+"_restored")
 	assert.NoError(t, err)
 
-	image2 := rbd.GetImage(ioctx, name+"_restored")
+	image2 := GetImage(ioctx, name+"_restored")
 	err = image2.Trash(time.Hour)
 	assert.NoError(t, err)
 
-	trashList, err = rbd.GetTrashList(ioctx)
+	trashList, err = GetTrashList(ioctx)
 	assert.NoError(t, err)
 	assert.Equal(t, len(trashList), 1, "trashList length equal")
 
-	err = rbd.TrashRemove(ioctx, trashList[0].Id, true)
+	err = TrashRemove(ioctx, trashList[0].Id, true)
 	assert.NoError(t, err)
 
 	ioctx.Destroy()
