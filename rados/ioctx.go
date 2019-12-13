@@ -128,7 +128,7 @@ func (ioctx *IOContext) AIOWrite(oid string, data []byte, offset uint64) future 
 		oid:    oid,
 		ioctx:  ioctx,
 		tp:     IOWrite,
-		n:      new(int),
+		n:      new(int32),
 		mu:     &sync.Mutex{},
 	}
 	f.write()
@@ -175,7 +175,7 @@ func (ioctx *IOContext) AIOAppend(oid string, data []byte) future {
 		oid:   oid,
 		ioctx: ioctx,
 		tp:    IOAppend,
-		n:     new(int),
+		n:     new(int32),
 		mu:    &sync.Mutex{},
 	}
 	f.append()
@@ -204,7 +204,7 @@ func (ioctx *IOContext) AIORead(oid string, data []byte, offset uint64) future {
 		oid:    oid,
 		ioctx:  ioctx,
 		tp:     IORead,
-		n:      new(int),
+		n:      new(int32),
 		mu:     &sync.Mutex{},
 	}
 	f.read()

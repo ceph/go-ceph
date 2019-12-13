@@ -27,7 +27,7 @@ const (
 
 //AioComplete is a wrapper of the callback
 //export AioComplete
-func AioComplete(p unsafe.Pointer, ret int) {
+func AioComplete(p unsafe.Pointer, ret int32) {
 	arg := (*C.callback_args_t)(p)
 	*arg.ret = C.int(ret)
 	(*sync.Mutex)(arg.lock).Unlock()
@@ -40,7 +40,7 @@ type future interface {
 
 type aioFuture struct {
 	err    error
-	n      *int
+	n      *int32
 	o      sync.Once
 	buf    []byte
 	offset uint64
@@ -74,7 +74,7 @@ func (a *aioFuture) Get() (interface{}, error) {
 			return
 		}
 		a.mu.Lock()
-		if int(*a.n) < 0 {
+		if (*a.n) < 0 {
 			a.err = GetRadosError(int(*a.n))
 		}
 	})
