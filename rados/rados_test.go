@@ -1,4 +1,4 @@
-package rados_test
+package rados
 
 import (
 	"encoding/json"
@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ceph/go-ceph/rados"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,14 +20,14 @@ import (
 
 type RadosTestSuite struct {
 	suite.Suite
-	conn  *rados.Conn
-	ioctx *rados.IOContext
+	conn  *Conn
+	ioctx *IOContext
 	pool  string
 	count int
 }
 
 func (suite *RadosTestSuite) SetupSuite() {
-	conn, err := rados.NewConn()
+	conn, err := NewConn()
 	require.NoError(suite.T(), err)
 	defer conn.Shutdown()
 
@@ -50,7 +49,7 @@ func (suite *RadosTestSuite) SetupTest() {
 	suite.ioctx = nil
 	suite.count = 0
 
-	conn, err := rados.NewConn()
+	conn, err := NewConn()
 	require.NoError(suite.T(), err)
 	suite.conn = conn
 	suite.conn.ReadDefaultConfigFile()
@@ -90,7 +89,7 @@ func (suite *RadosTestSuite) TearDownTest() {
 }
 
 func (suite *RadosTestSuite) TearDownSuite() {
-	conn, err := rados.NewConn()
+	conn, err := NewConn()
 	require.NoError(suite.T(), err)
 	defer conn.Shutdown()
 
@@ -103,7 +102,7 @@ func (suite *RadosTestSuite) TearDownSuite() {
 }
 
 func TestVersion(t *testing.T) {
-	var major, minor, patch = rados.Version()
+	var major, minor, patch = Version()
 	assert.False(t, major < 0 || major > 1000, "invalid major")
 	assert.False(t, minor < 0 || minor > 1000, "invalid minor")
 	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
@@ -461,7 +460,7 @@ func (suite *RadosTestSuite) TestReadNotFound() {
 	var bytes []byte
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.Read(oid, bytes, 0)
-	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+	assert.Equal(suite.T(), err, RadosErrorNotFound)
 }
 
 func (suite *RadosTestSuite) TestDeleteNotFound() {
@@ -469,7 +468,7 @@ func (suite *RadosTestSuite) TestDeleteNotFound() {
 
 	oid := suite.GenObjectName()
 	err := suite.ioctx.Delete(oid)
-	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+	assert.Equal(suite.T(), err, RadosErrorNotFound)
 }
 
 func (suite *RadosTestSuite) TestStatNotFound() {
@@ -477,7 +476,7 @@ func (suite *RadosTestSuite) TestStatNotFound() {
 
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+	assert.Equal(suite.T(), err, RadosErrorNotFound)
 }
 
 func (suite *RadosTestSuite) TestObjectStat() {
@@ -710,7 +709,7 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	objectListNS2 := []string{}
 
 	// populate list of current objects
-	suite.ioctx.SetNamespace(rados.RadosAllNamespaces)
+	suite.ioctx.SetNamespace(RadosAllNamespaces)
 	existingList := []string{}
 	iter, err := suite.ioctx.Iter()
 	assert.NoError(suite.T(), err)
@@ -743,7 +742,7 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	}
 	assert.True(suite.T(), len(createdList) == 20)
 
-	suite.ioctx.SetNamespace(rados.RadosAllNamespaces)
+	suite.ioctx.SetNamespace(RadosAllNamespaces)
 	iter, err = suite.ioctx.Iter()
 	assert.NoError(suite.T(), err)
 	rogueList := []string{}
@@ -777,12 +776,12 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 }
 
 func (suite *RadosTestSuite) TestNewConnWithUser() {
-	_, err := rados.NewConnWithUser("admin")
+	_, err := NewConnWithUser("admin")
 	assert.Equal(suite.T(), err, nil)
 }
 
 func (suite *RadosTestSuite) TestNewConnWithClusterAndUser() {
-	_, err := rados.NewConnWithClusterAndUser("ceph", "client.admin")
+	_, err := NewConnWithClusterAndUser("ceph", "client.admin")
 	assert.Equal(suite.T(), err, nil)
 }
 
@@ -980,7 +979,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 	// oid isn't seen in space1 ns
 	suite.ioctx.SetNamespace("space1")
 	stat, err = suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+	assert.Equal(suite.T(), err, RadosErrorNotFound)
 
 	// create oid2 in space1 ns
 	oid2 := suite.GenObjectName()
@@ -990,7 +989,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 
 	suite.ioctx.SetNamespace("")
 	stat, err = suite.ioctx.Stat(oid2)
-	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+	assert.Equal(suite.T(), err, RadosErrorNotFound)
 
 	stat, err = suite.ioctx.Stat(oid)
 	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
@@ -1028,7 +1027,7 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 	assert.EqualValues(suite.T(), 1, nsFoundObjects)
 
 	// count objects in pool
-	suite.ioctx.SetNamespace(rados.RadosAllNamespaces)
+	suite.ioctx.SetNamespace(RadosAllNamespaces)
 	allFoundObjects := 0
 	err = suite.ioctx.ListObjects(func(oid string) {
 		allFoundObjects++
@@ -1131,7 +1130,7 @@ func (suite *RadosTestSuite) TestOmapOnNonexistentObjectError() {
 	suite.SetupConnection()
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.GetAllOmapValues(oid, "", "", 100)
-	assert.Equal(suite.T(), err, rados.RadosErrorNotFound)
+	assert.Equal(suite.T(), err, RadosErrorNotFound)
 }
 
 func TestRadosTestSuite(t *testing.T) {
