@@ -449,64 +449,64 @@ func TestErrorImageNotOpen(t *testing.T) {
 	image := rbd.GetImage(nil, "nonexistent")
 
 	err := image.Close()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	err = image.Resize(2 << 22)
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.Stat()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.IsOldFormat()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.GetSize()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.GetFeatures()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.GetStripeUnit()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.GetStripeCount()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.GetOverlap()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	err = image.Flatten()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, _, err = image.ListChildren()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, _, err = image.ListLockers()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	err = image.LockExclusive("a magic cookie")
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	err = image.LockShared("a magic cookie", "tasty")
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	err = image.BreakLock("a magic cookie", "tasty")
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.Read(nil)
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.Write(nil)
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.ReadAt(nil, 0)
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	_, err = image.WriteAt(nil, 0)
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 
 	err = image.Flush()
-	assert.Equal(t, err, rbd.RbdErrorImageNotOpen)
+	assert.Equal(t, err, rbd.ErrImageNotOpen)
 }
 
 func TestNotFound(t *testing.T) {
@@ -525,10 +525,10 @@ func TestNotFound(t *testing.T) {
 
 	img := rbd.GetImage(ioctx, name)
 	err = img.Open()
-	assert.Equal(t, err, rbd.RbdErrorNotFound)
+	assert.Equal(t, err, rbd.ErrNotFound)
 
 	err = img.Remove()
-	assert.Equal(t, err, rbd.RbdErrorNotFound)
+	assert.Equal(t, err, rbd.ErrNotFound)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
