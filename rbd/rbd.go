@@ -1019,6 +1019,69 @@ func (image *Image) GetParentInfo(p_pool, p_name, p_snapname []byte) error {
 	}
 }
 
+// int rbd_metadata_get(rbd_image_t image, const char *key, char *value, size_t *vallen)
+func (image *Image) GetMetadata(key string) (string, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return "", err
+	}
+
+	c_key := C.CString(key)
+	defer C.free(unsafe.Pointer(c_key))
+
+	var c_vallen C.size_t
+	ret := C.rbd_metadata_get(image.image, c_key, nil, (*C.size_t)(&c_vallen))
+	// get size of value
+	// ret -34 because we pass nil as value pointer
+	if ret != 0 && ret != -C.ERANGE {
+		return "", RBDError(ret)
+	}
+
+	// make a bytes array with a good size
+	value := make([]byte, c_vallen-1)
+	ret = C.rbd_metadata_get(image.image, c_key, (*C.char)(unsafe.Pointer(&value[0])), (*C.size_t)(&c_vallen))
+	if ret < 0 {
+		return "", RBDError(ret)
+	}
+
+	return string(value), nil
+}
+
+// int rbd_metadata_set(rbd_image_t image, const char *key, const char *value)
+func (image *Image) SetMetadata(key string, value string) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
+	c_key := C.CString(key)
+	c_value := C.CString(value)
+	defer C.free(unsafe.Pointer(c_key))
+	defer C.free(unsafe.Pointer(c_value))
+
+	ret := C.rbd_metadata_set(image.image, c_key, c_value)
+	if ret < 0 {
+		return RBDError(ret)
+	}
+
+	return nil
+}
+
+// int rbd_metadata_remove(rbd_image_t image, const char *key)
+func (image *Image) RemoveMetadata(key string) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
+	c_key := C.CString(key)
+	defer C.free(unsafe.Pointer(c_key))
+
+	ret := C.rbd_metadata_remove(image.image, c_key)
+	if ret < 0 {
+		return RBDError(ret)
+	}
+
+	return nil
+}
+
 // int rbd_snap_remove(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Remove() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
