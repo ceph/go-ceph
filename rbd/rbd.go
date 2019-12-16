@@ -739,7 +739,10 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 	return pools, images, nil
 }
 
-// ssize_t rbd_list_lockers(rbd_image_t image, int *exclusive,
+// ListLockers returns a list of clients that have locks on the image.
+//
+// Impelemnts:
+//  ssize_t rbd_list_lockers(rbd_image_t image, int *exclusive,
 //              char *tag, size_t *tag_len,
 //              char *clients, size_t *clients_len,
 //              char *cookies, size_t *cookies_len,
@@ -800,7 +803,10 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 	return string(tag_buf), lockers, nil
 }
 
-// int rbd_lock_exclusive(rbd_image_t image, const char *cookie);
+// LockExclusive acquires an exclusive lock on the rbd image.
+//
+// Implements:
+//  int rbd_lock_exclusive(rbd_image_t image, const char *cookie);
 func (image *Image) LockExclusive(cookie string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
@@ -812,7 +818,10 @@ func (image *Image) LockExclusive(cookie string) error {
 	return GetError(C.rbd_lock_exclusive(image.image, c_cookie))
 }
 
-// int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
+// LockShared acquires a shared lock on the rbd image.
+//
+// Implements:
+//  int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
 func (image *Image) LockShared(cookie string, tag string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
@@ -826,7 +835,10 @@ func (image *Image) LockShared(cookie string, tag string) error {
 	return GetError(C.rbd_lock_shared(image.image, c_cookie, c_tag))
 }
 
-// int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
+// Unlock releases a lock on the image.
+//
+// Implements:
+//  int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);
 func (image *Image) Unlock(cookie string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
@@ -838,7 +850,10 @@ func (image *Image) Unlock(cookie string) error {
 	return GetError(C.rbd_unlock(image.image, c_cookie))
 }
 
-// int rbd_break_lock(rbd_image_t image, const char *client, const char *cookie);
+// BreakLock forces the release of a lock held by another client.
+//
+// Implements:
+//  int rbd_break_lock(rbd_image_t image, const char *client, const char *cookie);
 func (image *Image) BreakLock(client string, cookie string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
