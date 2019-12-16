@@ -515,7 +515,10 @@ func (image *Image) Resize(size uint64) error {
 	return GetError(C.rbd_resize(image.image, C.uint64_t(size)))
 }
 
-// int rbd_stat(rbd_image_t image, rbd_image_info_t *info, size_t infosize);
+// Stat an rbd image.
+//
+// Implements:
+//  int rbd_stat(rbd_image_t image, rbd_image_info_t *info, size_t infosize);
 func (image *Image) Stat() (info *ImageInfo, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return nil, err
@@ -537,7 +540,10 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 		Parent_name:       C.GoString((*C.char)(&c_stat.parent_name[0]))}, nil
 }
 
-// int rbd_get_old_format(rbd_image_t image, uint8_t *old);
+// IsOldFormat returns true if the rbd image uses the old format.
+//
+// Implements:
+//  int rbd_get_old_format(rbd_image_t image, uint8_t *old);
 func (image *Image) IsOldFormat() (old_format bool, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return false, err
@@ -553,7 +559,10 @@ func (image *Image) IsOldFormat() (old_format bool, err error) {
 	return c_old_format != 0, nil
 }
 
-// int rbd_size(rbd_image_t image, uint64_t *size);
+// GetSize returns the size of the rbd image.
+//
+// Implements:
+//  int rbd_size(rbd_image_t image, uint64_t *size);
 func (image *Image) GetSize() (size uint64, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
@@ -566,7 +575,10 @@ func (image *Image) GetSize() (size uint64, err error) {
 	return size, nil
 }
 
-// int rbd_get_features(rbd_image_t image, uint64_t *features);
+// GetFeatures returns the features bitmask for the rbd image.
+//
+// Implements:
+//  int rbd_get_features(rbd_image_t image, uint64_t *features);
 func (image *Image) GetFeatures() (features uint64, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
@@ -579,7 +591,10 @@ func (image *Image) GetFeatures() (features uint64, err error) {
 	return features, nil
 }
 
-// int rbd_get_stripe_unit(rbd_image_t image, uint64_t *stripe_unit);
+// GetStripeUnit returns the stripe-unit value for the rbd image.
+//
+// Implements:
+//  int rbd_get_stripe_unit(rbd_image_t image, uint64_t *stripe_unit);
 func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
@@ -592,7 +607,10 @@ func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
 	return stripe_unit, nil
 }
 
-// int rbd_get_stripe_count(rbd_image_t image, uint64_t *stripe_count);
+// GetStripeCount returns the stripe-count value for the rbd image.
+//
+// Implements:
+//  int rbd_get_stripe_count(rbd_image_t image, uint64_t *stripe_count);
 func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
@@ -605,7 +623,11 @@ func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
 	return stripe_count, nil
 }
 
-// int rbd_get_overlap(rbd_image_t image, uint64_t *overlap);
+// GetOverlap returns the overlapping bytes between the rbd image and its
+// parent.
+//
+// Implements:
+//  int rbd_get_overlap(rbd_image_t image, uint64_t *overlap);
 func (image *Image) GetOverlap() (overlap uint64, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
