@@ -503,7 +503,10 @@ func (image *Image) Close() error {
 	return nil
 }
 
-// int rbd_resize(rbd_image_t image, uint64_t size);
+// Resize an rbd image.
+//
+// Implements:
+//  int rbd_resize(rbd_image_t image, uint64_t size);
 func (image *Image) Resize(size uint64) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
