@@ -225,7 +225,7 @@ func GetImageNames(ioctx *rados.IOContext) (names []string, err error) {
 	}
 }
 
-//
+// GetImage gets a reference to a previously created rbd image.
 func GetImage(ioctx *rados.IOContext, name string) *Image {
 	return &Image{
 		ioctx: ioctx,
