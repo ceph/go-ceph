@@ -391,9 +391,10 @@ func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name stri
 	}, nil
 }
 
-// int rbd_remove(rados_ioctx_t io, const char *name);
-// int rbd_remove_with_progress(rados_ioctx_t io, const char *name,
-//                  librbd_progress_fn_t cb, void *cbdata);
+// Remove the specified rbd image.
+//
+// Implements:
+//  int rbd_remove(rados_ioctx_t io, const char *name);
 func (image *Image) Remove() error {
 	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
 		return err
@@ -418,7 +419,10 @@ func (image *Image) Trash(delay time.Duration) error {
 		C.uint64_t(delay.Seconds())))
 }
 
-// int rbd_rename(rados_ioctx_t src_io_ctx, const char *srcname, const char *destname);
+// Rename an rbd image.
+//
+// Implements:
+//  int rbd_rename(rados_ioctx_t src_io_ctx, const char *srcname, const char *destname);
 func (image *Image) Rename(destname string) error {
 	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
 		return err
