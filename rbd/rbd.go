@@ -640,7 +640,10 @@ func (image *Image) GetOverlap() (overlap uint64, err error) {
 	return overlap, nil
 }
 
-// int rbd_copy(rbd_image_t image, rados_ioctx_t dest_io_ctx, const char *destname);
+// Copy one rbd image to another.
+//
+// Implements:
+//  int rbd_copy(rbd_image_t image, rados_ioctx_t dest_io_ctx, const char *destname);
 func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
@@ -657,7 +660,10 @@ func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 		C.rados_ioctx_t(ioctx.Pointer()), c_destname))
 }
 
-// int rbd_copy2(rbd_image_t src, rbd_image_t dest);
+// Copy one rbd image to another, using an image handle.
+//
+// Implements:
+//  int rbd_copy2(rbd_image_t src, rbd_image_t dest);
 func (image *Image) Copy2(dest *Image) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
