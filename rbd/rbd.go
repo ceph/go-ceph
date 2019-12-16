@@ -15,10 +15,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/ceph/go-ceph/rados"
 	"io"
 	"time"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/rados"
 )
 
 const (
