@@ -686,7 +686,10 @@ func (image *Image) Flatten() error {
 	return GetError(C.rbd_flatten(image.image))
 }
 
-// ssize_t rbd_list_children(rbd_image_t image, char *pools, size_t *pools_len,
+// ListChildren returns a list of images that reference the current snapshot.
+//
+// Implements:
+//  ssize_t rbd_list_children(rbd_image_t image, char *pools, size_t *pools_len,
 //               char *images, size_t *images_len);
 func (image *Image) ListChildren() (pools []string, images []string, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
