@@ -194,7 +194,7 @@ func GetError(err C.int) error {
 	}
 }
 
-//
+// Version returns the major, minor, and patch level of the librbd library.
 func Version() (int, int, int) {
 	var c_major, c_minor, c_patch C.int
 	C.rbd_version(&c_major, &c_minor, &c_patch)
@@ -233,12 +233,15 @@ func GetImage(ioctx *rados.IOContext, name string) *Image {
 	}
 }
 
-// int rbd_create(rados_ioctx_t io, const char *name, uint64_t size, int *order);
+// Create a new rbd image.
 //
-// But also (for backward compability):
-// int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
+// Implements:
+//  int rbd_create(rados_ioctx_t io, const char *name, uint64_t size, int *order);
+//
+// Also implements (for backward compatibility):
+//  int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
 //          uint64_t features, int *order);
-// int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
+//  int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
 //        uint64_t features, int *order,
 //        uint64_t stripe_unit, uint64_t stripe_count);
 func Create(ioctx *rados.IOContext, name string, size uint64, order int,
@@ -273,7 +276,10 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	}, nil
 }
 
-// int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
+// Create2 creates a new rbd image using provided features.
+//
+// Implements:
+//  int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
 //          uint64_t features, int *order);
 func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
 	order int) (image *Image, err error) {
@@ -296,7 +302,11 @@ func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
 	}, nil
 }
 
-// int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
+// Create3 creates a new rbd image using provided features and stripe
+// parameters.
+//
+// Implements:
+//  int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,
 //        uint64_t features, int *order,
 //        uint64_t stripe_unit, uint64_t stripe_count);
 func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
@@ -321,7 +331,10 @@ func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
 	}, nil
 }
 
-// int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
+// Create4 creates a new rbd image using provided image options.
+//
+// Implements:
+//  int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
 //                 rbd_image_options_t opts);
 func Create4(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOptions) (image *Image, err error) {
 	if rio == nil {
