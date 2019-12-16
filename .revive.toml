@@ -14,7 +14,8 @@ warningCode = 0
 [rule.error-return]
 [rule.error-strings]
 [rule.error-naming]
-#[rule.exported]
+[rule.exported]
+severity = "warning"
 [rule.if-return]
 [rule.increment-decrement]
 #[rule.var-naming]
