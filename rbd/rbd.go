@@ -357,7 +357,10 @@ func Create4(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOpti
 	}, nil
 }
 
-// int rbd_clone(rados_ioctx_t p_ioctx, const char *p_name,
+// Clone a new rbd image from a snapshot.
+//
+// Implements:
+//  int rbd_clone(rados_ioctx_t p_ioctx, const char *p_name,
 //           const char *p_snapname, rados_ioctx_t c_ioctx,
 //           const char *c_name, uint64_t features, int *c_order);
 func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name string, features uint64, order int) (*Image, error) {
