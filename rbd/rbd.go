@@ -674,7 +674,10 @@ func (image *Image) Copy2(dest *Image) error {
 	return GetError(C.rbd_copy2(image.image, dest.image))
 }
 
-// int rbd_flatten(rbd_image_t image);
+// Flatten removes snapshot references from the image.
+//
+// Implements:
+//  int rbd_flatten(rbd_image_t image);
 func (image *Image) Flatten() error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
