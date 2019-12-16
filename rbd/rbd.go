@@ -486,7 +486,10 @@ func (image *Image) Open(args ...interface{}) error {
 	return GetError(ret)
 }
 
-// int rbd_close(rbd_image_t image);
+// Close an open rbd image.
+//
+// Implements:
+//  int rbd_close(rbd_image_t image);
 func (image *Image) Close() error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
