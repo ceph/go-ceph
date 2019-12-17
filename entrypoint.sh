@@ -8,6 +8,7 @@ COVERAGE=yes
 CPUPROFILE=no
 MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
+BUILD_TAGS=""
 
 CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
@@ -69,6 +70,10 @@ while true ; do
     esac
 done
 
+if [ -n "${CEPH_VERSION}" ]; then
+    BUILD_TAGS="-tags ${CEPH_VERSION}"
+fi
+
 show() {
     echo "*** running:" "$@"
     "$@"
@@ -87,7 +92,8 @@ test_pkg() {
         return 0
     fi
     # disable caching of tests results
-    testargs=("-count=1")
+    testargs=("-count=1"\
+            ${BUILD_TAGS})
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
     fi
@@ -112,7 +118,7 @@ test_pkg() {
 
 pre_all_tests() {
     # Prepare Go code
-    go get -t -v ./...
+    go get -t -v ${BUILD_TAGS} ./...
     diff -u <(echo -n) <(gofmt -d -s .)
 
     # TODO: Consider enabling go vet but it currently fails

@@ -2,6 +2,7 @@ DOCKER_CI_IMAGE = go-ceph-ci
 CONTAINER_CMD := docker
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disabled" || echo "apparmor:unconfined")
 VOLUME_FLAGS := 
+CEPH_VERSION := nautilus
 
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
@@ -9,18 +10,25 @@ ifeq ($(SELINUX),Enforcing)
 endif
 
 build:
-	go build -v $(shell go list ./... | grep -v /contrib)
+	go build -v -tags $(CEPH_VERSION) $(shell go list ./... | grep -v /contrib)
 fmt:
 	go fmt ./...
 test:
 	go test -v ./...
 
-test-docker: .build-docker
+test-docker: check-ceph-version .build-docker
 	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -it -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(DOCKER_CI_IMAGE)
 
 .build-docker: Dockerfile entrypoint.sh
-	$(CONTAINER_CMD) build -t $(DOCKER_CI_IMAGE) .
+	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(DOCKER_CI_IMAGE) .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(DOCKER_CI_IMAGE) > .build-docker
+	echo $(CEPH_VERSION) >> .build-docker
+
+# check-ceph-version checks for the last used Ceph version in the container
+# image and forces a rebuild of the image in case the Ceph version changed
+.PHONY: check-ceph-version
+check-ceph-version:
+	@grep -wq '$(CEPH_VERSION)' .build-docker 2>/dev/null || $(RM) .build-docker
 
 check:
 	# Configure project's revive checks using .revive.toml
