@@ -634,59 +634,6 @@ func (image *Image) Flatten() error {
 	return getError(C.rbd_flatten(image.image))
 }
 
-// ListChildren returns a list of images that reference the current snapshot.
-//
-// Implements:
-//  ssize_t rbd_list_children(rbd_image_t image, char *pools, size_t *pools_len,
-//               char *images, size_t *images_len);
-func (image *Image) ListChildren() (pools []string, images []string, err error) {
-	if err := image.validate(imageIsOpen); err != nil {
-		return nil, nil, err
-	}
-
-	var c_pools_len, c_images_len C.size_t
-
-	ret := C.rbd_list_children(image.image,
-		nil, &c_pools_len,
-		nil, &c_images_len)
-	if ret == 0 {
-		return nil, nil, nil
-	}
-	if ret < 0 && ret != -C.ERANGE {
-		return nil, nil, RBDError(ret)
-	}
-
-	pools_buf := make([]byte, c_pools_len)
-	images_buf := make([]byte, c_images_len)
-
-	ret = C.rbd_list_children(image.image,
-		(*C.char)(unsafe.Pointer(&pools_buf[0])),
-		&c_pools_len,
-		(*C.char)(unsafe.Pointer(&images_buf[0])),
-		&c_images_len)
-	if ret < 0 {
-		return nil, nil, RBDError(ret)
-	}
-
-	tmp := bytes.Split(pools_buf[:c_pools_len-1], []byte{0})
-	for _, s := range tmp {
-		if len(s) > 0 {
-			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-			pools = append(pools, name)
-		}
-	}
-
-	tmp = bytes.Split(images_buf[:c_images_len-1], []byte{0})
-	for _, s := range tmp {
-		if len(s) > 0 {
-			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-			images = append(images, name)
-		}
-	}
-
-	return pools, images, nil
-}
-
 // ListLockers returns a list of clients that have locks on the image.
 //
 // Impelemnts:

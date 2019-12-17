@@ -63,3 +63,42 @@ func (image *Image) GetParentInfo(pool, name, snapname []byte) error {
 
 	return nil
 }
+
+// ListChildren returns arrays with the pools and names of the images that are
+// children of the given image. The index of the pools and images arrays can be
+// used to link the two items together.
+//
+// Implements:
+//   int rbd_list_children3(rbd_image_t image, rbd_linked_image_spec_t *images,
+//                          size_t *max_images);
+func (image *Image) ListChildren() (pools []string, images []string, err error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return nil, nil, err
+	}
+
+	size := C.size_t(0)
+	ret := C.rbd_list_children3(image.image, nil, &size)
+	if ret < 0 && ret != -C.ERANGE {
+		return nil, nil, RBDError(ret)
+	} else if ret > 0 {
+		return nil, nil, fmt.Errorf("rbd_list_children3() returned %d, expected 0", ret)
+	} else if ret == 0 && size == 0 {
+		return nil, nil, nil
+	}
+
+	// expected: ret == -ERANGE, size contains number of image names
+	children := make([]C.rbd_linked_image_spec_t, size)
+	ret = C.rbd_list_children3(image.image, (*C.rbd_linked_image_spec_t)(unsafe.Pointer(&children[0])), &size)
+	if ret < 0 {
+		return nil, nil, RBDError(ret)
+	}
+	defer C.rbd_linked_image_spec_list_cleanup((*C.rbd_linked_image_spec_t)(unsafe.Pointer(&children[0])), size)
+
+	pools = make([]string, size)
+	images = make([]string, size)
+	for i, child := range children {
+		pools[i] = C.GoString(child.pool_name)
+		images[i] = C.GoString(child.image_name)
+	}
+	return pools, images, nil
+}
