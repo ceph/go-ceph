@@ -7,7 +7,9 @@ RUN apt-get update && apt-get install -y \
   uuid-runtime \
   wget
 
-ARG CEPH_REPO_URL=https://download.ceph.com/debian-nautilus/
+ARG CEPH_VERSION
+ENV CEPH_VERSION=${CEPH_VERSION:-nautilus}
+ARG CEPH_REPO_URL=https://download.ceph.com/debian-${CEPH_VERSION}/
 RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
 RUN true && \
   apt-add-repository "deb ${CEPH_REPO_URL} xenial main" && \
