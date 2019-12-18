@@ -30,6 +30,14 @@ type Conn struct {
 	connected bool
 }
 
+// ClusterRef represents a fundamental RADOS cluster connection.
+type ClusterRef C.rados_t
+
+// Cluster returns the underlying RADOS cluster reference for this Conn.
+func (c *Conn) Cluster() ClusterRef {
+	return ClusterRef(c.cluster)
+}
+
 // PingMonitor sends a ping to a monitor and returns the reply.
 func (c *Conn) PingMonitor(id string) (string, error) {
 	c_id := C.CString(id)
