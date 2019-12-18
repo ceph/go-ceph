@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ceph/go-ceph/rados"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -191,4 +193,31 @@ func TestCephFSError(t *testing.T) {
 	err = getError(345) // no such errno
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "cephfs: ret=345")
+}
+
+func radosConnect(t *testing.T) *rados.Conn {
+	conn, err := rados.NewConn()
+	require.NoError(t, err)
+	err = conn.ReadDefaultConfigFile()
+	require.NoError(t, err)
+
+	timeout := time.After(time.Second * 5)
+	ch := make(chan error)
+	go func(conn *rados.Conn) {
+		ch <- conn.Connect()
+	}(conn)
+	select {
+	case err = <-ch:
+	case <-timeout:
+		err = fmt.Errorf("timed out waiting for connect")
+	}
+	require.NoError(t, err)
+	return conn
+}
+
+func TestCreateFromRados(t *testing.T) {
+	conn := radosConnect(t)
+	mount, err := CreateFromRados(conn)
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
 }
