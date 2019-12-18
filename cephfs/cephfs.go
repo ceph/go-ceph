@@ -13,6 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/errutil"
+	"github.com/ceph/go-ceph/rados"
 )
 
 type CephFSError int
@@ -41,6 +42,20 @@ type MountInfo struct {
 func CreateMount() (*MountInfo, error) {
 	mount := &MountInfo{}
 	ret := C.ceph_create(&mount.mount, nil)
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+	return mount, nil
+}
+
+// CreateFromRados creates a mount handle using an existing rados cluster
+// connection.
+//
+// Implements:
+//  int ceph_create_from_rados(struct ceph_mount_info **cmount, rados_t cluster);
+func CreateFromRados(conn *rados.Conn) (*MountInfo, error) {
+	mount := &MountInfo{}
+	ret := C.ceph_create_from_rados(&mount.mount, C.rados_t(conn.Cluster()))
 	if ret != 0 {
 		return nil, getError(ret)
 	}
