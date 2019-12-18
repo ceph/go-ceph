@@ -31,9 +31,21 @@ func (suite *RadosTestSuite) SetupSuite() {
 	require.NoError(suite.T(), err)
 	defer conn.Shutdown()
 
-	conn.ReadDefaultConfigFile()
+	err = conn.ReadDefaultConfigFile()
+	require.NoError(suite.T(), err)
 
-	if err = conn.Connect(); assert.NoError(suite.T(), err) {
+	timeout := time.After(time.Second * 5)
+	ch := make(chan error)
+	go func(conn *Conn) {
+		ch <- conn.Connect()
+	}(conn)
+	select {
+	case err = <-ch:
+	case <-timeout:
+		err = fmt.Errorf("timed out waiting for connect")
+	}
+
+	if assert.NoError(suite.T(), err) {
 		pool := uuid.Must(uuid.NewV4()).String()
 		if err = conn.MakePool(pool); assert.NoError(suite.T(), err) {
 			suite.pool = pool
