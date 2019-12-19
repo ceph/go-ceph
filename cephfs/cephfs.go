@@ -38,14 +38,26 @@ type MountInfo struct {
 	mount *C.struct_ceph_mount_info
 }
 
-// CreateMount creates a mount handle for interacting with Ceph.
-func CreateMount() (*MountInfo, error) {
+func createMount(id *C.char) (*MountInfo, error) {
 	mount := &MountInfo{}
-	ret := C.ceph_create(&mount.mount, nil)
+	ret := C.ceph_create(&mount.mount, id)
 	if ret != 0 {
 		return nil, getError(ret)
 	}
 	return mount, nil
+}
+
+// CreateMount creates a mount handle for interacting with Ceph.
+func CreateMount() (*MountInfo, error) {
+	return createMount(nil)
+}
+
+// CreateMountWithId creates a mount handle for interacting with Ceph.
+// The caller can specify a unique id that will identify this client.
+func CreateMountWithId(id string) (*MountInfo, error) {
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
+	return createMount(cid)
 }
 
 // CreateFromRados creates a mount handle using an existing rados cluster
