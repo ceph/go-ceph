@@ -221,3 +221,18 @@ func TestCreateFromRados(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 }
+
+func TestCreateMountWithId(t *testing.T) {
+	// TODO: the entity_id is visible w/in the 'session ls' output
+	// of mds. Consider running the equivalent api call and checking
+	// that the string is set.
+	mount, err := CreateMountWithId("bob")
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+
+	err = mount.ReadDefaultConfigFile()
+	assert.NoError(t, err)
+
+	err = mount.Mount()
+	assert.NoError(t, err)
+}
