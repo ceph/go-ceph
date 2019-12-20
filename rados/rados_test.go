@@ -1150,14 +1150,14 @@ func TestRadosTestSuite(t *testing.T) {
 }
 
 func TestRadosError(t *testing.T) {
-	err := GetRadosError(0)
+	err := getRadosError(0)
 	assert.NoError(t, err)
 
-	err = GetRadosError(-5) // IO error
+	err = getRadosError(-5) // IO error
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "rados: ret=5, Input/output error")
 
-	err = GetRadosError(345) // no such errno
+	err = getRadosError(345) // no such errno
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "rados: ret=345")
 }
