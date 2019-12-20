@@ -5,6 +5,7 @@ import (
 	"os"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,53 +16,52 @@ var (
 )
 
 func TestCreateMount(t *testing.T) {
+	mount := fsConnect(t)
 	mount, err := CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 }
 
-func TestMountRoot(t *testing.T) {
+func fsConnect(t *testing.T) *MountInfo {
 	mount, err := CreateMount()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	require.NotNil(t, mount)
 
 	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	err = mount.Mount()
-	assert.NoError(t, err)
+	timeout := time.After(time.Second * 5)
+	ch := make(chan error)
+	go func(mount *MountInfo) {
+		ch <- mount.Mount()
+	}(mount)
+	select {
+	case err = <-ch:
+	case <-timeout:
+		err = fmt.Errorf("timed out waiting for connect")
+	}
+	require.NoError(t, err)
+	return mount
+}
+
+func TestMountRoot(t *testing.T) {
+	fsConnect(t)
 }
 
 func TestSyncFs(t *testing.T) {
-	mount, err := CreateMount()
-	assert.NoError(t, err)
-	require.NotNil(t, mount)
+	mount := fsConnect(t)
 
-	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
-
-	err = mount.Mount()
-	assert.NoError(t, err)
-
-	err = mount.SyncFs()
+	err := mount.SyncFs()
 	assert.NoError(t, err)
 }
 
 func TestChangeDir(t *testing.T) {
-	mount, err := CreateMount()
-	assert.NoError(t, err)
-	require.NotNil(t, mount)
-
-	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
-
-	err = mount.Mount()
-	require.NoError(t, err)
+	mount := fsConnect(t)
 
 	dir1 := mount.CurrentDir()
 	assert.NotNil(t, dir1)
 
-	err = mount.MakeDir("/asdf", 0755)
+	err := mount.MakeDir("/asdf", 0755)
 	assert.NoError(t, err)
 
 	err = mount.ChangeDir("/asdf")
@@ -77,17 +77,9 @@ func TestChangeDir(t *testing.T) {
 
 func TestRemoveDir(t *testing.T) {
 	dirname := "one"
-	mount, err := CreateMount()
-	assert.NoError(t, err)
-	require.NotNil(t, mount)
+	mount := fsConnect(t)
 
-	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
-
-	err = mount.Mount()
-	assert.NoError(t, err)
-
-	err = mount.MakeDir(dirname, 0755)
+	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
 
 	err = mount.SyncFs()
@@ -106,21 +98,20 @@ func TestRemoveDir(t *testing.T) {
 }
 
 func TestUnmountMount(t *testing.T) {
-	mount, err := CreateMount()
-	assert.NoError(t, err)
-	require.NotNil(t, mount)
-	fmt.Printf("%#v\n", mount.IsMounted())
+	t.Run("neverMounted", func(t *testing.T) {
+		mount, err := CreateMount()
+		require.NoError(t, err)
+		require.NotNil(t, mount)
+		assert.False(t, mount.IsMounted())
+	})
+	t.Run("mountUnmount", func(t *testing.T) {
+		mount := fsConnect(t)
+		assert.True(t, mount.IsMounted())
 
-	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
-
-	err = mount.Mount()
-	assert.NoError(t, err)
-	assert.True(t, mount.IsMounted())
-
-	err = mount.Unmount()
-	assert.NoError(t, err)
-	assert.False(t, mount.IsMounted())
+		err := mount.Unmount()
+		assert.NoError(t, err)
+		assert.False(t, mount.IsMounted())
+	})
 }
 
 func TestReleaseMount(t *testing.T) {
@@ -136,17 +127,9 @@ func TestChmodDir(t *testing.T) {
 	dirname := "two"
 	var stats_before uint32 = 0755
 	var stats_after uint32 = 0700
-	mount, err := CreateMount()
-	assert.NoError(t, err)
-	require.NotNil(t, mount)
+	mount := fsConnect(t)
 
-	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
-
-	err = mount.Mount()
-	assert.NoError(t, err)
-
-	err = mount.MakeDir(dirname, stats_before)
+	err := mount.MakeDir(dirname, stats_before)
 	assert.NoError(t, err)
 
 	err = mount.SyncFs()
@@ -172,17 +155,9 @@ func TestChown(t *testing.T) {
 	var bob uint32 = 1010
 	var root uint32
 
-	mount, err := CreateMount()
-	assert.NoError(t, err)
-	require.NotNil(t, mount)
+	mount := fsConnect(t)
 
-	err = mount.ReadDefaultConfigFile()
-	assert.NoError(t, err)
-
-	err = mount.Mount()
-	assert.NoError(t, err)
-
-	err = mount.MakeDir(dirname, 0755)
+	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
 
 	err = mount.SyncFs()
