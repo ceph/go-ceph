@@ -128,11 +128,7 @@ func (c *Conn) SetConfigOption(option, value string) error {
 	defer C.free(unsafe.Pointer(c_opt))
 	defer C.free(unsafe.Pointer(c_val))
 	ret := C.rados_conf_set(c.cluster, c_opt, c_val)
-	if ret < 0 {
-		return RadosError(int(ret))
-	} else {
-		return nil
-	}
+	return getRadosError(int(ret))
 }
 
 // GetConfigOption returns the value of the Ceph configuration option
@@ -158,11 +154,7 @@ func (c *Conn) GetConfigOption(name string) (value string, err error) {
 // retrieved.
 func (c *Conn) WaitForLatestOSDMap() error {
 	ret := C.rados_wait_for_latest_osdmap(c.cluster)
-	if ret < 0 {
-		return RadosError(int(ret))
-	} else {
-		return nil
-	}
+	return getRadosError(int(ret))
 }
 
 func (c *Conn) ensure_connected() error {
@@ -210,11 +202,7 @@ func (c *Conn) ParseCmdLineArgs(args []string) error {
 	}
 
 	ret := C.rados_conf_parse_argv(c.cluster, argc, &argv[0])
-	if ret < 0 {
-		return RadosError(int(ret))
-	} else {
-		return nil
-	}
+	return getRadosError(int(ret))
 }
 
 // ParseDefaultConfigEnv configures the connection from the default Ceph
