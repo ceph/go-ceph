@@ -158,9 +158,8 @@ func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error
 
 	if ret >= 0 {
 		return int(ret), nil
-	} else {
-		return 0, getRadosError(int(ret))
 	}
+	return 0, getRadosError(int(ret))
 }
 
 // Delete deletes the object with key oid. It returns an error, if any.
@@ -196,22 +195,21 @@ func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
 	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &c_stat)
 	if ret < 0 {
 		return PoolStat{}, getRadosError(int(ret))
-	} else {
-		return PoolStat{
-			Num_bytes:                      uint64(c_stat.num_bytes),
-			Num_kb:                         uint64(c_stat.num_kb),
-			Num_objects:                    uint64(c_stat.num_objects),
-			Num_object_clones:              uint64(c_stat.num_object_clones),
-			Num_object_copies:              uint64(c_stat.num_object_copies),
-			Num_objects_missing_on_primary: uint64(c_stat.num_objects_missing_on_primary),
-			Num_objects_unfound:            uint64(c_stat.num_objects_unfound),
-			Num_objects_degraded:           uint64(c_stat.num_objects_degraded),
-			Num_rd:                         uint64(c_stat.num_rd),
-			Num_rd_kb:                      uint64(c_stat.num_rd_kb),
-			Num_wr:                         uint64(c_stat.num_wr),
-			Num_wr_kb:                      uint64(c_stat.num_wr_kb),
-		}, nil
 	}
+	return PoolStat{
+		Num_bytes:                      uint64(c_stat.num_bytes),
+		Num_kb:                         uint64(c_stat.num_kb),
+		Num_objects:                    uint64(c_stat.num_objects),
+		Num_object_clones:              uint64(c_stat.num_object_clones),
+		Num_object_copies:              uint64(c_stat.num_object_copies),
+		Num_objects_missing_on_primary: uint64(c_stat.num_objects_missing_on_primary),
+		Num_objects_unfound:            uint64(c_stat.num_objects_unfound),
+		Num_objects_degraded:           uint64(c_stat.num_objects_degraded),
+		Num_rd:                         uint64(c_stat.num_rd),
+		Num_rd_kb:                      uint64(c_stat.num_rd_kb),
+		Num_wr:                         uint64(c_stat.num_wr),
+		Num_wr_kb:                      uint64(c_stat.num_wr_kb),
+	}, nil
 }
 
 // GetPoolName returns the name of the pool associated with the I/O context.
@@ -275,12 +273,11 @@ func (ioctx *IOContext) Stat(object string) (stat ObjectStat, err error) {
 
 	if ret < 0 {
 		return ObjectStat{}, getRadosError(int(ret))
-	} else {
-		return ObjectStat{
-			Size:    uint64(c_psize),
-			ModTime: time.Unix(int64(c_pmtime), 0),
-		}, nil
 	}
+	return ObjectStat{
+		Size:    uint64(c_psize),
+		ModTime: time.Unix(int64(c_pmtime), 0),
+	}, nil
 }
 
 // GetXattr gets an xattr with key `name`, it returns the length of
@@ -300,9 +297,8 @@ func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, 
 
 	if ret >= 0 {
 		return int(ret), nil
-	} else {
-		return 0, getRadosError(int(ret))
 	}
+	return 0, getRadosError(int(ret))
 }
 
 // Sets an xattr for an object with key `name` with value as `data`
@@ -849,9 +845,8 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 
 	if ret < 0 {
 		return nil, RadosError(int(ret))
-	} else {
-		return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
 	}
+	return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
 }
 
 // Releases a shared or exclusive lock on an object, which was taken by the specified client.
