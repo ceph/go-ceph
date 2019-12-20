@@ -72,22 +72,14 @@ func (c *Conn) ReadConfigFile(path string) error {
 	c_path := C.CString(path)
 	defer C.free(unsafe.Pointer(c_path))
 	ret := C.rados_conf_read_file(c.cluster, c_path)
-	if ret == 0 {
-		return nil
-	} else {
-		return RadosError(int(ret))
-	}
+	return getRadosError(int(ret))
 }
 
 // ReadDefaultConfigFile configures the connection using a Ceph configuration
 // file located at default locations.
 func (c *Conn) ReadDefaultConfigFile() error {
 	ret := C.rados_conf_read_file(c.cluster, nil)
-	if ret == 0 {
-		return nil
-	} else {
-		return RadosError(int(ret))
-	}
+	return getRadosError(int(ret))
 }
 
 func (c *Conn) OpenIOContext(pool string) (*IOContext, error) {
@@ -229,11 +221,7 @@ func (c *Conn) ParseCmdLineArgs(args []string) error {
 // environment variable(s).
 func (c *Conn) ParseDefaultConfigEnv() error {
 	ret := C.rados_conf_parse_env(c.cluster, nil)
-	if ret == 0 {
-		return nil
-	} else {
-		return RadosError(int(ret))
-	}
+	return getRadosError(int(ret))
 }
 
 // GetFSID returns the fsid of the cluster as a hexadecimal string. The fsid
@@ -263,11 +251,7 @@ func (c *Conn) MakePool(name string) error {
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
 	ret := int(C.rados_pool_create(c.cluster, c_name))
-	if ret == 0 {
-		return nil
-	} else {
-		return RadosError(ret)
-	}
+	return getRadosError(int(ret))
 }
 
 // DeletePool deletes a pool and all the data inside the pool.
@@ -278,11 +262,7 @@ func (c *Conn) DeletePool(name string) error {
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
 	ret := int(C.rados_pool_delete(c.cluster, c_name))
-	if ret == 0 {
-		return nil
-	} else {
-		return RadosError(ret)
-	}
+	return getRadosError(int(ret))
 }
 
 // GetPoolByName returns the ID of the pool with a given name.
