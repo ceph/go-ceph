@@ -29,7 +29,7 @@ var RadosAllNamespaces = C.LIBRADOS_ALL_NSPACES
 var RadosErrorNotFound = RadosError(-C.ENOENT)
 var RadosErrorPermissionDenied = RadosError(-C.EPERM)
 
-func GetRadosError(err int) error {
+func getRadosError(err int) error {
 	if err == 0 {
 		return nil
 	}
