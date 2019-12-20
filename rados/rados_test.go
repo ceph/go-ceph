@@ -378,6 +378,54 @@ func (suite *RadosTestSuite) TestGetPoolByID() {
 	}
 }
 
+func (suite *RadosTestSuite) TestGetLargePoolList() {
+	suite.SetupConnection()
+
+	// get current list of pool
+	pools, err := suite.conn.ListPools()
+	assert.NoError(suite.T(), err)
+
+	fill := func(r rune) string {
+		b := make([]rune, 512)
+		for i := range b {
+			b[i] = r
+		}
+		return string(b)
+	}
+	// try to ensure we exceed the default 4096 byte initial buffer
+	// size and make use of the increased buffer size code path
+	names := []string{
+		fill('a'),
+		fill('b'),
+		fill('c'),
+		fill('d'),
+		fill('e'),
+		fill('f'),
+		fill('g'),
+		fill('h'),
+		fill('i'),
+		fill('j'),
+	}
+
+	defer func(origPools []string) {
+		for _, name := range names {
+			suite.conn.DeletePool(name)
+		}
+		cleanPools, err := suite.conn.ListPools()
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), origPools, cleanPools)
+	}(pools)
+
+	for _, name := range names {
+		err = suite.conn.MakePool(name)
+		require.NoError(suite.T(), err)
+	}
+	pools, err = suite.conn.ListPools()
+	for _, name := range names {
+		assert.Contains(suite.T(), pools, name)
+	}
+}
+
 func (suite *RadosTestSuite) TestPingMonitor() {
 	suite.SetupConnection()
 
