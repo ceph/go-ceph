@@ -131,6 +131,10 @@ func (suite *RadosTestSuite) TestGetSetConfigOption() {
 	err := suite.conn.SetConfigOption("___dne___", "value")
 	assert.Error(suite.T(), err, "Invalid option")
 
+	// check error for  get invalid option
+	_, err = suite.conn.GetConfigOption("__dne__")
+	assert.Error(suite.T(), err)
+
 	// verify SetConfigOption changes a values
 	prev_val, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
