@@ -1150,6 +1150,12 @@ func (suite *RadosTestSuite) TestOmapOnNonexistentObjectError() {
 	assert.Equal(suite.T(), err, RadosErrorNotFound)
 }
 
+func (suite *RadosTestSuite) TestOpenIOContextInvalidPool() {
+	ioctx, err := suite.conn.OpenIOContext("cmartel")
+	require.Error(suite.T(), err)
+	require.Nil(suite.T(), ioctx)
+}
+
 func TestRadosTestSuite(t *testing.T) {
 	suite.Run(t, new(RadosTestSuite))
 }
