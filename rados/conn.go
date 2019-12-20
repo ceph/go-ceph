@@ -43,9 +43,8 @@ func (c *Conn) PingMonitor(id string) (string, error) {
 	if ret == 0 {
 		reply := C.GoStringN(strout, (C.int)(strlen))
 		return reply, nil
-	} else {
-		return "", RadosError(int(ret))
 	}
+	return "", RadosError(int(ret))
 }
 
 // Connect establishes a connection to a RADOS cluster. It returns an error,
@@ -89,9 +88,8 @@ func (c *Conn) OpenIOContext(pool string) (*IOContext, error) {
 	ret := C.rados_ioctx_create(c.cluster, c_pool, &ioctx.ioctx)
 	if ret == 0 {
 		return ioctx, nil
-	} else {
-		return nil, RadosError(int(ret))
 	}
+	return nil, RadosError(int(ret))
 }
 
 // ListPools returns the names of all existing pools.
@@ -145,9 +143,8 @@ func (c *Conn) GetConfigOption(name string) (value string, err error) {
 	if ret == 0 {
 		value = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
 		return value, nil
-	} else {
-		return "", RadosError(ret)
 	}
+	return "", RadosError(ret)
 }
 
 // WaitForLatestOSDMap blocks the caller until the latest OSD map has been
@@ -160,9 +157,8 @@ func (c *Conn) WaitForLatestOSDMap() error {
 func (c *Conn) ensure_connected() error {
 	if c.connected {
 		return nil
-	} else {
-		return ErrNotConnected
 	}
+	return ErrNotConnected
 }
 
 // GetClusterStats returns statistics about the cluster associated with the
@@ -175,14 +171,13 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 	ret := C.rados_cluster_stat(c.cluster, &c_stat)
 	if ret < 0 {
 		return ClusterStat{}, RadosError(int(ret))
-	} else {
-		return ClusterStat{
-			Kb:          uint64(c_stat.kb),
-			Kb_used:     uint64(c_stat.kb_used),
-			Kb_avail:    uint64(c_stat.kb_avail),
-			Num_objects: uint64(c_stat.num_objects),
-		}, nil
 	}
+	return ClusterStat{
+		Kb:          uint64(c_stat.kb),
+		Kb_used:     uint64(c_stat.kb_used),
+		Kb_avail:    uint64(c_stat.kb_avail),
+		Num_objects: uint64(c_stat.num_objects),
+	}, nil
 }
 
 // ParseCmdLineArgs configures the connection from command line arguments.
@@ -222,9 +217,8 @@ func (c *Conn) GetFSID() (fsid string, err error) {
 	if ret == 36 {
 		fsid = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
 		return fsid, nil
-	} else {
-		return "", RadosError(int(ret))
 	}
+	return "", RadosError(int(ret))
 }
 
 // GetInstanceID returns a globally unique identifier for the cluster
@@ -263,9 +257,8 @@ func (c *Conn) GetPoolByName(name string) (int64, error) {
 	ret := int64(C.rados_pool_lookup(c.cluster, c_name))
 	if ret < 0 {
 		return 0, RadosError(ret)
-	} else {
-		return ret, nil
 	}
+	return ret, nil
 }
 
 // GetPoolByID returns the name of a pool by a given ID.
@@ -278,9 +271,8 @@ func (c *Conn) GetPoolByID(id int64) (string, error) {
 	ret := int(C.rados_pool_reverse_lookup(c.cluster, c_id, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
 	if ret < 0 {
 		return "", RadosError(ret)
-	} else {
-		return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 	}
+	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 }
 
 // MonCommand sends a command to one of the monitors
