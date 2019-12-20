@@ -410,6 +410,11 @@ func (suite *RadosTestSuite) TestPingMonitor() {
 	reply, err := suite.conn.PingMonitor("a")
 	assert.NoError(suite.T(), err)
 	assert.NotEqual(suite.T(), reply, "")
+
+	// invalid mon id
+	reply, err = suite.conn.PingMonitor("charlieB")
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), reply, "")
 }
 
 func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
