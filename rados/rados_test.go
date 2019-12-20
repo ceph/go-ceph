@@ -300,18 +300,11 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 
 	// check that new pool name is unique
 	new_name := uuid.Must(uuid.NewV4()).String()
-	for _, poolname := range pools {
-		if new_name == poolname {
-			suite.T().Error("Random pool name exists!")
-			return
-		}
-	}
+	require.NotContains(
+		suite.T(), pools, new_name, "Random pool name exists!")
 
 	pool, _ := suite.conn.GetPoolByName(new_name)
-	if pool != 0 {
-		suite.T().Error("Pool does not exist, but was found!")
-		return
-	}
+	assert.Equal(suite.T(), int64(0), pool, "Pool does not exist, but was found!")
 
 	// create pool
 	err = suite.conn.MakePool(new_name)
@@ -320,24 +313,12 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	// verify that the new pool name exists
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
-
-	found := false
-	for _, poolname := range pools {
-		if new_name == poolname {
-			found = true
-		}
-	}
-
-	if !found {
-		suite.T().Error("Cannot find newly created pool")
-	}
+	assert.Contains(
+		suite.T(), pools, new_name, "Cannot find newly created pool")
 
 	pool, err = suite.conn.GetPoolByName(new_name)
 	assert.NoError(suite.T(), err)
-	if pool == 0 {
-		suite.T().Error("Pool not found!")
-		return
-	}
+	assert.NotEqual(suite.T(), int64(0), pool, "Pool not found!")
 
 	// delete the pool
 	err = suite.conn.DeletePool(new_name)
@@ -346,23 +327,13 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	// verify that it is gone
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
-
-	found = false
-	for _, poolname := range pools {
-		if new_name == poolname {
-			found = true
-		}
-	}
-
-	if found {
-		suite.T().Error("Deleted pool still exists")
-	}
+	assert.NotContains(
+		suite.T(), pools, new_name, "Deleted pool still exists")
 
 	pool, err = suite.conn.GetPoolByName(new_name)
-	if pool != 0 || err == nil {
-		suite.T().Error("Pool should have been deleted, but was found!")
-		return
-	}
+	assert.Error(suite.T(), err)
+	assert.Equal(
+		suite.T(), int64(0), pool, "Pool should have been deleted, but was found!")
 }
 
 func (suite *RadosTestSuite) TestGetPoolByID() {
