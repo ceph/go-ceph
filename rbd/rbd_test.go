@@ -238,7 +238,7 @@ func TestGetImageNames(t *testing.T) {
 	conn.Shutdown()
 }
 
-func TestImageOpen(t *testing.T) {
+func TestDeprecatedImageOpen(t *testing.T) {
 	conn := radosConnect(t)
 
 	poolname := GetUUID()
@@ -255,6 +255,12 @@ func TestImageOpen(t *testing.T) {
 	// an integer is not a valid argument
 	err = image.Open(123)
 	assert.Error(t, err)
+
+	// open read-write
+	err = image.Open()
+	assert.NoError(t, err)
+	err = image.Close()
+	assert.NoError(t, err)
 
 	// open read-only
 	err = image.Open(true)
