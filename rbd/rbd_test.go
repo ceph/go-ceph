@@ -300,7 +300,7 @@ func TestImageResize(t *testing.T) {
 	err = image.Resize(reqSize * 2)
 	assert.Equal(t, err, ErrImageNotOpen)
 
-	err = image.Open()
+	image, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	size, err := image.GetSize()
@@ -337,11 +337,11 @@ func TestImageProperties(t *testing.T) {
 
 	name := GetUUID()
 	reqSize := uint64(1024 * 1024 * 4) // 4MB
-	img, err := Create3(ioctx, name, reqSize,
+	_, err = Create3(ioctx, name, reqSize,
 		RbdFeatureLayering|RbdFeatureStripingV2, 22, 4096, 2)
 	require.NoError(t, err)
 
-	err = img.Open()
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	require.NoError(t, err)
 
 	format, err := img.IsOldFormat()
@@ -418,10 +418,10 @@ func TestImageSeek(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	_, err = Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
-	err = img.Open()
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	_, err = img.Seek(0, SeekSet)
@@ -486,10 +486,10 @@ func TestImageDiscard(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	_, err = Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
-	err = img.Open()
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	n, err := img.Discard(0, 1<<16)
@@ -499,7 +499,7 @@ func TestImageDiscard(t *testing.T) {
 	err = img.Close()
 	assert.NoError(t, err)
 
-	err = img.Open(true)
+	img, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	// when read-only, discard should fail
@@ -534,7 +534,7 @@ func TestIOReaderWriter(t *testing.T) {
 	img, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
-	err = img.Open()
+	img, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	stats, err := img.Stat()
@@ -789,20 +789,22 @@ func TestCreateSnapshot(t *testing.T) {
 	img, err := Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
-	err = img.Open()
+	img, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	snapshot, err := img.CreateSnapshot("mysnap")
 	assert.NoError(t, err)
 
 	err = img.Close()
-	err = img.Open("mysnap")
+	assert.NoError(t, err)
+
+	snapImage, err := OpenImage(ioctx, name, "mysnap")
+	assert.NoError(t, err)
+
+	err = snapImage.Close()
 	assert.NoError(t, err)
 
 	snapshot.Remove()
-	assert.NoError(t, err)
-
-	err = img.Close()
 	assert.NoError(t, err)
 
 	img.Remove()
@@ -827,7 +829,7 @@ func TestParentInfo(t *testing.T) {
 	img, err := Create(ioctx, name, 1<<22, 22, 1)
 	assert.NoError(t, err)
 
-	err = img.Open()
+	img, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	snapshot, err := img.CreateSnapshot("mysnap")
@@ -837,8 +839,7 @@ func TestParentInfo(t *testing.T) {
 	assert.NoError(t, err)
 
 	// create an image context with the parent+snapshot
-	snapImg := GetImage(ioctx, "parent")
-	err = snapImg.Open("mysnap")
+	snapImg, err := OpenImage(ioctx, name, "mysnap")
 	assert.NoError(t, err)
 
 	// ensure no children prior to clone
@@ -851,10 +852,10 @@ func TestParentInfo(t *testing.T) {
 	_, err = img.Clone("mysnap", ioctx, "child", 1, -1)
 	assert.Error(t, err)
 
-	imgNew, err := img.Clone("mysnap", ioctx, "child", 1, 22)
+	_, err = img.Clone("mysnap", ioctx, "child", 1, 22)
 	assert.NoError(t, err)
 
-	err = imgNew.Open()
+	imgNew, err := OpenImage(ioctx, "child", NoSnapshot)
 	assert.NoError(t, err)
 	parentPool := make([]byte, 128)
 	parentName := make([]byte, 128)
@@ -1013,12 +1014,9 @@ func TestNotFound(t *testing.T) {
 
 	name := GetUUID()
 
-	img := GetImage(ioctx, name)
-	err = img.Open()
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.Equal(t, err, ErrNotFound)
-
-	err = img.Remove()
-	assert.Equal(t, err, ErrNotFound)
+	assert.Nil(t, img)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
@@ -1036,10 +1034,10 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	_, err = Create(ioctx, name, 1<<22, 22)
 	assert.NoError(t, err)
 
-	err = img.Open()
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	// this actually works for some reason?!
@@ -1148,7 +1146,7 @@ func TestImageMetadata(t *testing.T) {
 	assert.Equal(t, "", value)
 	assert.Equal(t, err, ErrImageNotOpen)
 
-	err = image.Open()
+	image, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	// Set a metadata key/value
