@@ -61,6 +61,9 @@ const (
 	imageNeedsIOContext
 	imageIsOpen
 	snapshotNeedsName
+
+	// NoSnapshot indicates that no snapshot name is in use (see OpenImage)
+	NoSnapshot = ""
 )
 
 //
@@ -1285,4 +1288,75 @@ func TrashRestore(ioctx *rados.IOContext, id, name string) error {
 	defer C.free(unsafe.Pointer(c_name))
 
 	return GetError(C.rbd_trash_restore(C.rados_ioctx_t(ioctx.Pointer()), c_id, c_name))
+}
+
+// OpenImage will open an existing rbd image by name and snapshot name,
+// returning a new opened image. Pass the NoSnapshot sentinel value as the
+// snapName to explicitly indicate that no snapshot name is being provided.
+//
+// Implements:
+//  int rbd_open(rados_ioctx_t io, const char *name,
+//               rbd_image_t *image, const char *snap_name);
+func OpenImage(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	var cSnapName *C.char
+	if snapName != NoSnapshot {
+		cSnapName = C.CString(snapName)
+		defer C.free(unsafe.Pointer(cSnapName))
+	}
+
+	var cImage C.rbd_image_t
+	ret := C.rbd_open(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cName,
+		&cImage,
+		cSnapName)
+
+	if ret != 0 {
+		return nil, GetError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		name:  name,
+		image: cImage,
+	}, nil
+}
+
+// OpenImageReadOnly will open an existing rbd image by name and snapshot name,
+// returning a new opened-for-read image.  Pass the NoSnapshot sentinel value
+// as the snapName to explicitly indicate that no snapshot name is being
+// provided.
+//
+// Implements:
+//  int rbd_open_read_only(rados_ioctx_t io, const char *name,
+//                         rbd_image_t *image, const char *snap_name);
+func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	var cSnapName *C.char
+	if snapName != NoSnapshot {
+		cSnapName = C.CString(snapName)
+		defer C.free(unsafe.Pointer(cSnapName))
+	}
+
+	var cImage C.rbd_image_t
+	ret := C.rbd_open_read_only(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cName,
+		&cImage,
+		cSnapName)
+
+	if ret != 0 {
+		return nil, GetError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		name:  name,
+		image: cImage,
+	}, nil
 }
