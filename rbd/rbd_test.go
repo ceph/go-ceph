@@ -1259,3 +1259,50 @@ func TestClosedImage(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestOpenImage(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+
+	_, err = OpenImage(ioctx, name, NoSnapshot)
+	assert.Error(t, err)
+
+	image, err := Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	oImage, err := OpenImage(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+	assert.Equal(t, name, oImage.name)
+	err = oImage.Close()
+	assert.NoError(t, err)
+
+	// open read-only
+	oImage, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+
+	bytes_in := []byte("input data")
+	_, err = image.Write(bytes_in)
+	// writing should fail in read-only mode
+	assert.Error(t, err)
+
+	err = oImage.Close()
+	assert.NoError(t, err)
+
+	err = oImage.Remove()
+	assert.NoError(t, err)
+
+	_, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
+	assert.Error(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
