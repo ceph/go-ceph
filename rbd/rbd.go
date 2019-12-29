@@ -446,47 +446,46 @@ func (image *Image) Rename(destname string) error {
 	return err
 }
 
-// int rbd_open(rados_ioctx_t io, const char *name, rbd_image_t *image, const char *snap_name);
-// int rbd_open_read_only(rados_ioctx_t io, const char *name, rbd_image_t *image,
-//                const char *snap_name);
+// Open the rbd image.
+//
+// Deprecated: The Open function was provided in earlier versions of the API
+// and now exists to support older code. The use of OpenImage and
+// OpenImageReadOnly is preferred.
 func (image *Image) Open(args ...interface{}) error {
 	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
 		return err
 	}
 
-	var c_image C.rbd_image_t
-	var c_snap_name *C.char
-	var ret C.int
-	var read_only bool
-
-	c_name := C.CString(image.name)
-
-	defer C.free(unsafe.Pointer(c_name))
+	var (
+		snapName string
+		readOnly bool
+	)
 	for _, arg := range args {
 		switch t := arg.(type) {
 		case string:
-			if t != "" {
-				c_snap_name = C.CString(t)
-				defer C.free(unsafe.Pointer(c_snap_name))
-			}
+			snapName = t
 		case bool:
-			read_only = t
+			readOnly = t
 		default:
 			return errors.New("Unexpected argument")
 		}
 	}
 
-	if read_only {
-		ret = C.rbd_open_read_only(C.rados_ioctx_t(image.ioctx.Pointer()), c_name,
-			&c_image, c_snap_name)
+	var (
+		tmp *Image
+		err error
+	)
+	if readOnly {
+		tmp, err = OpenImageReadOnly(image.ioctx, image.name, snapName)
 	} else {
-		ret = C.rbd_open(C.rados_ioctx_t(image.ioctx.Pointer()), c_name,
-			&c_image, c_snap_name)
+		tmp, err = OpenImage(image.ioctx, image.name, snapName)
+	}
+	if err != nil {
+		return err
 	}
 
-	image.image = c_image
-
-	return GetError(ret)
+	image.image = tmp.image
+	return nil
 }
 
 // Close an open rbd image.
