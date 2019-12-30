@@ -1082,7 +1082,7 @@ func (image *Image) RemoveMetadata(key string) error {
 	return nil
 }
 
-// int rbd_snap_remove(rbd_image_t image, const char *snapname);
+// Remove will remove the specified snapshot.
 func (snapshot *Snapshot) Remove() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -1094,9 +1094,7 @@ func (snapshot *Snapshot) Remove() error {
 	return GetError(C.rbd_snap_remove(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_rollback(rbd_image_t image, const char *snapname);
-// int rbd_snap_rollback_with_progress(rbd_image_t image, const char *snapname,
-//                  librbd_progress_fn_t cb, void *cbdata);
+// Rollback will rollback to the the specified snapshot.
 func (snapshot *Snapshot) Rollback() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -1108,7 +1106,8 @@ func (snapshot *Snapshot) Rollback() error {
 	return GetError(C.rbd_snap_rollback(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_protect(rbd_image_t image, const char *snap_name);
+// Protect prevents a snapshot from being deleted until it is unprotected.
+// Returns 0 on success, negative error code on failure.
 func (snapshot *Snapshot) Protect() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -1120,7 +1119,8 @@ func (snapshot *Snapshot) Protect() error {
 	return GetError(C.rbd_snap_protect(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_unprotect(rbd_image_t image, const char *snap_name);
+// Unprotect will allow a snapshot to be deleted.
+// Returns 0 on success, negative error code on failure
 func (snapshot *Snapshot) Unprotect() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -1132,8 +1132,8 @@ func (snapshot *Snapshot) Unprotect() error {
 	return GetError(C.rbd_snap_unprotect(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,
-//               int *is_protected);
+// IsProtected determine whether a snapshot is protected.
+// Returns a boolean and the error code.
 func (snapshot *Snapshot) IsProtected() (bool, error) {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return false, err
@@ -1153,7 +1153,8 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 	return c_is_protected != 0, nil
 }
 
-// int rbd_snap_set(rbd_image_t image, const char *snapname);
+// Set sets the snapshot name and the image.
+// Returns 0 on success, negative error code on failure.
 func (snapshot *Snapshot) Set() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
