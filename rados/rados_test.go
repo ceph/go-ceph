@@ -407,6 +407,59 @@ func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
 	assert.NoError(suite.T(), err)
 }
 
+func (suite *RadosTestSuite) TestSetLocator() {
+	suite.SetupConnection()
+
+	// Set Locator Key
+	suite.ioctx.SetLocator("Locator123")
+
+	// Write and Read
+	for i := 1; i <= 50; i++ {
+		bytes_in := []byte("input data")
+		err := suite.ioctx.Write("objNr"+string(i), bytes_in, 0)
+		assert.NoError(suite.T(), err)
+
+		bytes_out := make([]byte, len(bytes_in))
+		n_out, err := suite.ioctx.Read("objNr"+string(i), bytes_out, 0)
+
+		assert.Equal(suite.T(), n_out, len(bytes_in))
+		assert.Equal(suite.T(), bytes_in, bytes_out)
+	}
+
+	// Check placement location
+	objmap := make(map[string]string, 50)
+	for i := 1; i <= 50; i++ {
+		command, err := json.Marshal(map[string]interface{}{
+			"prefix":  "osd map",
+			"pool":    suite.pool,
+			"objname": "objNr" + string(i),
+			"format":  "json",
+		})
+		assert.NoError(suite.T(), err)
+
+		buf, info, err := suite.conn.MonCommand(command)
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), info, "")
+
+		var message map[string]json.RawMessage
+		err = json.Unmarshal(buf, &message)
+		assert.NoError(suite.T(), err)
+
+		// Append objectName and pgId to the map
+		var str string
+		err = json.Unmarshal(message["pgid"], &str)
+		assert.NoError(suite.T(), err)
+		objmap["objNr"+string(i)] = str
+
+	}
+
+	// check if all objects are in the same placement group.
+	pgid := objmap["objNr1"]
+	for _, v := range objmap {
+		assert.Equal(suite.T(), pgid, v)
+	}
+}
+
 func (suite *RadosTestSuite) TestReadWrite() {
 	suite.SetupConnection()
 
