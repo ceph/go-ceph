@@ -1356,6 +1356,79 @@ func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, e
 	}, nil
 }
 
+// OpenImageById will open an existing rbd image by ID and snapshot name,
+// returning a new opened image. Pass the NoSnapshot sentinel value as the
+// snapName to explicitly indicate that no snapshot name is being provided.
+// Error handling will fail & segfault unless compiled with a version of ceph
+// that fixes https://tracker.ceph.com/issues/43178
+//
+// Implements:
+//  int rbd_open_by_id(rados_ioctx_t io, const char *id,
+//                     rbd_image_t *image, const char *snap_name);
+func OpenImageById(ioctx *rados.IOContext, id, snapName string) (*Image, error) {
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
+
+	var cSnapName *C.char
+	if snapName != NoSnapshot {
+		cSnapName = C.CString(snapName)
+		defer C.free(unsafe.Pointer(cSnapName))
+	}
+
+	var cImage C.rbd_image_t
+	ret := C.rbd_open_by_id(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cid,
+		&cImage,
+		cSnapName)
+
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		image: cImage,
+	}, nil
+}
+
+// OpenImageByIdReadOnly will open an existing rbd image by ID and snapshot
+// name, returning a new opened-for-read image. Pass the NoSnapshot sentinel
+// value as the snapName to explicitly indicate that no snapshot name is being
+// provided.
+// Error handling will fail & segfault unless compiled with a version of ceph
+// that fixes https://tracker.ceph.com/issues/43178
+//
+// Implements:
+//  int rbd_open_by_id_read_only(rados_ioctx_t io, const char *id,
+//                               rbd_image_t *image, const char *snap_name);
+func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image, error) {
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
+
+	var cSnapName *C.char
+	if snapName != NoSnapshot {
+		cSnapName = C.CString(snapName)
+		defer C.free(unsafe.Pointer(cSnapName))
+	}
+
+	var cImage C.rbd_image_t
+	ret := C.rbd_open_by_id_read_only(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cid,
+		&cImage,
+		cSnapName)
+
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		image: cImage,
+	}, nil
+}
+
 // CreateImage creates a new rbd image using provided image options.
 //
 // Implements:
