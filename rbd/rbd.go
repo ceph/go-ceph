@@ -1065,8 +1065,8 @@ func (image *Image) SetMetadata(key string, value string) error {
 	return nil
 }
 
-// int rbd_metadata_remove(rbd_image_t image, const char *key)
-func (image *Image) RemoveMetadata(key string) error {
+// RemoveMetadataKey will remove specified key from the image metadata.
+func (image *Image) RemoveMetadataKey(key string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
 	}

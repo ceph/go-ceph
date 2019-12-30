@@ -1042,7 +1042,7 @@ func TestImageMetadata(t *testing.T) {
 	assert.Equal(t, err, ErrImageNotOpen)
 	assert.Equal(t, "", value)
 	// Remove the metadata key on unopen image
-	err = image.RemoveMetadata(metadataKey)
+	err = image.RemoveMetadataKey(metadataKey)
 	assert.Equal(t, err, ErrImageNotOpen)
 	// check key is removed on unopen image
 	value, err = image.GetMetadata(metadataKey)
@@ -1060,7 +1060,7 @@ func TestImageMetadata(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, metadataValue, value)
 	// Remove the metadata key
-	err = image.RemoveMetadata(metadataKey)
+	err = image.RemoveMetadataKey(metadataKey)
 	assert.NoError(t, err)
 	// check key is removed
 	value, err = image.GetMetadata(metadataKey)
