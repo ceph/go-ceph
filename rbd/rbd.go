@@ -1125,6 +1125,32 @@ func (image *Image) RemoveMetadata(key string) error {
 	return nil
 }
 
+// GetId returns the internal image ID string.
+//
+// Implements:
+//  int rbd_get_id(rbd_image_t image, char *id, size_t id_len);
+func (image *Image) GetId() (string, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return "", err
+	}
+	size := C.size_t(1024)
+	buf := make([]byte, size)
+	for {
+		ret := C.rbd_get_id(
+			image.image,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			size)
+		if ret == -C.ERANGE && size <= 8192 {
+			size *= 2
+			buf = make([]byte, size)
+		} else if ret < 0 {
+			return "", getError(ret)
+		}
+		id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+		return id, nil
+	}
+}
+
 // int rbd_snap_remove(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Remove() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
