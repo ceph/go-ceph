@@ -1425,3 +1425,41 @@ func quickCreate(ioctx *rados.IOContext, name string, size uint64, order int) er
 	}
 	return CreateImage(ioctx, name, size, options)
 }
+
+func TestGetId(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t,
+		options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder)))
+	err = CreateImage(ioctx, name, testImageSize, options)
+	assert.NoError(t, err)
+
+	image, err := OpenImage(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+	id, err := image.GetId()
+	assert.NoError(t, err)
+	assert.Greater(t, len(id), 8)
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	id, err = image.GetId()
+	assert.Error(t, err)
+	assert.Equal(t, "", id)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
