@@ -1457,3 +1457,47 @@ func RemoveImage(ioctx *rados.IOContext, name string) error {
 	defer C.free(unsafe.Pointer(c_name))
 	return getError(C.rbd_remove(C.rados_ioctx_t(ioctx.Pointer()), c_name))
 }
+
+// CloneImage creates a clone of the image from the named snapshot in the
+// provided io-context with the given name and image options.
+//
+// Implements:
+//   int rbd_clone3(rados_ioctx_t p_ioctx, const char *p_name,
+//                  const char *p_snapname, rados_ioctx_t c_ioctx,
+//                  const char *c_name, rbd_image_options_t c_opts);
+func CloneImage(ioctx *rados.IOContext, parentName, snapName string,
+	destctx *rados.IOContext, name string, rio *RbdImageOptions) error {
+
+	if rio == nil {
+		return RBDError(C.EINVAL)
+	}
+
+	cParentName := C.CString(parentName)
+	defer C.free(unsafe.Pointer(cParentName))
+	cParentSnapName := C.CString(snapName)
+	defer C.free(unsafe.Pointer(cParentSnapName))
+	cCloneName := C.CString(name)
+	defer C.free(unsafe.Pointer(cCloneName))
+
+	ret := C.rbd_clone3(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cParentName,
+		cParentSnapName,
+		C.rados_ioctx_t(destctx.Pointer()),
+		cCloneName,
+		C.rbd_image_options_t(rio.options))
+	return getError(ret)
+}
+
+// CloneFromImage creates a clone of the image from the named snapshot in the
+// provided io-context with the given name and image options.
+// This function is a convenience wrapper around CloneImage to support cloning
+// from an existing Image.
+func CloneFromImage(parent *Image, snapName string,
+	destctx *rados.IOContext, name string, rio *RbdImageOptions) error {
+
+	if err := parent.validate(imageNeedsIOContext); err != nil {
+		return err
+	}
+	return CloneImage(parent.ioctx, parent.name, snapName, destctx, name, rio)
+}

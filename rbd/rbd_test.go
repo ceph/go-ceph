@@ -1413,6 +1413,112 @@ func TestRemoveImage(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestCloneImage(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	imageName := "parent1"
+	snapName := "snap1"
+	cloneName := "clone1"
+	options := NewRbdImageOptions()
+	defer options.Destroy()
+	err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+	assert.NoError(t, err)
+	err = options.SetUint64(RbdImageOptionFeatures, 1)
+	assert.NoError(t, err)
+	err = CreateImage(ioctx, imageName, testImageSize, options)
+	assert.NoError(t, err)
+
+	image, err := OpenImage(ioctx, imageName, NoSnapshot)
+	assert.NoError(t, err)
+
+	snapshot, err := image.CreateSnapshot(snapName)
+	assert.NoError(t, err)
+	err = snapshot.Protect()
+	assert.NoError(t, err)
+
+	t.Run("cloneImage", func(t *testing.T) {
+		imageNames, err := GetImageNames(ioctx)
+		assert.NoError(t, err)
+		assert.Contains(t, imageNames, imageName)
+		assert.NotContains(t, imageNames, cloneName)
+
+		options := NewRbdImageOptions()
+		defer options.Destroy()
+		err = options.SetUint64(RbdImageOptionFormat, uint64(2))
+		assert.NoError(t, err)
+		err = CloneImage(ioctx, imageName, snapName, ioctx, cloneName, options)
+		assert.NoError(t, err)
+
+		imageNames, err = GetImageNames(ioctx)
+		assert.NoError(t, err)
+		assert.Contains(t, imageNames, imageName)
+		assert.Contains(t, imageNames, cloneName)
+
+		err = RemoveImage(ioctx, cloneName)
+		assert.NoError(t, err)
+	})
+
+	t.Run("cloneFromImage", func(t *testing.T) {
+		imageNames, err := GetImageNames(ioctx)
+		assert.NoError(t, err)
+		assert.Contains(t, imageNames, imageName)
+		assert.NotContains(t, imageNames, cloneName)
+
+		options := NewRbdImageOptions()
+		defer options.Destroy()
+		err = options.SetUint64(RbdImageOptionFormat, uint64(2))
+		assert.NoError(t, err)
+		err = CloneFromImage(image, snapName, ioctx, cloneName, options)
+		assert.NoError(t, err)
+
+		imageNames, err = GetImageNames(ioctx)
+		assert.NoError(t, err)
+		assert.Contains(t, imageNames, imageName)
+		assert.Contains(t, imageNames, cloneName)
+
+		err = RemoveImage(ioctx, cloneName)
+		assert.NoError(t, err)
+	})
+
+	t.Run("cloneFromImageInvalidCtx", func(t *testing.T) {
+		options := NewRbdImageOptions()
+		defer options.Destroy()
+		err = options.SetUint64(RbdImageOptionFormat, uint64(2))
+		assert.NoError(t, err)
+		badImage := GetImage(nil, image.name)
+		err = CloneFromImage(badImage, snapName, ioctx, cloneName, options)
+		assert.Error(t, err)
+	})
+
+	t.Run("cloneImageNilOpts", func(t *testing.T) {
+		err = CloneImage(ioctx, imageName, snapName, ioctx, cloneName, nil)
+		assert.Error(t, err)
+	})
+
+	err = snapshot.Unprotect()
+	assert.NoError(t, err)
+
+	err = snapshot.Remove()
+	assert.NoError(t, err)
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 // quickCreate creates an image similar to Create but uses CreateImage.
 // If possible, avoid using this function for new code/tests. It mainly exists
 // to help with refactoring of existing tests.
