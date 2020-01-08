@@ -9,7 +9,7 @@ ifeq ($(SELINUX),Enforcing)
 endif
 
 build:
-	go build -v
+	go build -v $(shell go list ./... | grep -v /contrib)
 fmt:
 	go fmt ./...
 test:
