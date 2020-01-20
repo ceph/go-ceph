@@ -3,6 +3,7 @@ package rbd
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"sort"
 	"testing"
 	"time"
@@ -37,10 +38,28 @@ func TestVersion(t *testing.T) {
 	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
 }
 
+func radosConnect(t *testing.T) *rados.Conn {
+	conn, err := rados.NewConn()
+	require.NoError(t, err)
+	err = conn.ReadDefaultConfigFile()
+	require.NoError(t, err)
+
+	timeout := time.After(time.Second * 5)
+	ch := make(chan error)
+	go func(conn *rados.Conn) {
+		ch <- conn.Connect()
+	}(conn)
+	select {
+	case err = <-ch:
+	case <-timeout:
+		err = fmt.Errorf("timed out waiting for connect")
+	}
+	require.NoError(t, err)
+	return conn
+}
+
 func TestImageCreate(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -85,9 +104,7 @@ func TestImageCreate(t *testing.T) {
 }
 
 func TestImageCreate2(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -109,9 +126,7 @@ func TestImageCreate2(t *testing.T) {
 }
 
 func TestImageCreate3(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -133,9 +148,7 @@ func TestImageCreate3(t *testing.T) {
 }
 
 func TestCreateImageWithOptions(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -189,9 +202,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 }
 
 func TestGetImageNames(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -227,9 +238,7 @@ func TestGetImageNames(t *testing.T) {
 }
 
 func TestImageOpen(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -267,9 +276,7 @@ func TestImageOpen(t *testing.T) {
 }
 
 func TestImageResize(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -312,9 +319,7 @@ func TestImageResize(t *testing.T) {
 }
 
 func TestImageProperties(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -369,9 +374,7 @@ func TestImageProperties(t *testing.T) {
 }
 
 func TestImageRename(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -398,9 +401,7 @@ func TestImageRename(t *testing.T) {
 }
 
 func TestImageSeek(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -468,9 +469,7 @@ func TestImageSeek(t *testing.T) {
 }
 
 func TestImageDiscard(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -515,9 +514,7 @@ func TestImageDiscard(t *testing.T) {
 }
 
 func TestIOReaderWriter(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -577,9 +574,7 @@ func TestIOReaderWriter(t *testing.T) {
 }
 
 func TestImageCopy(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -665,9 +660,7 @@ func TestImageCopy(t *testing.T) {
 }
 
 func TestCreateSnapshot(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -705,9 +698,7 @@ func TestCreateSnapshot(t *testing.T) {
 }
 
 func TestParentInfo(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -895,9 +886,7 @@ func TestErrorImageNotOpen(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -921,9 +910,7 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestErrorSnapshotNoName(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -974,9 +961,7 @@ func TestErrorSnapshotNoName(t *testing.T) {
 }
 
 func TestTrashImage(t *testing.T) {
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
@@ -1019,9 +1004,7 @@ func TestImageMetadata(t *testing.T) {
 	metadataKey := "mykey"
 	metadataValue := "myvalue"
 
-	conn, _ := rados.NewConn()
-	conn.ReadDefaultConfigFile()
-	conn.Connect()
+	conn := radosConnect(t)
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
