@@ -23,6 +23,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionFormat)
 	assert.Error(t, err)
+	set, err := options.IsSet(rbd.RbdImageOptionFormat)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionFormat)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionFeatures, 1)
 	assert.NoError(t, err)
@@ -33,6 +38,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionFeatures)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionFeatures)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionFeatures)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionOrder, 1)
 	assert.NoError(t, err)
@@ -43,6 +53,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionOrder)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionOrder)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionOrder)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionStripeUnit, 1)
 	assert.NoError(t, err)
@@ -53,6 +68,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionStripeUnit)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionStripeUnit)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionStripeUnit)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionStripeCount, 1)
 	assert.NoError(t, err)
@@ -63,6 +83,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionStripeCount)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionStripeCount)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionStripeCount)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionJournalOrder, 1)
 	assert.NoError(t, err)
@@ -73,6 +98,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionJournalOrder)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionJournalOrder)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionJournalOrder)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionJournalSplayWidth, 1)
 	assert.NoError(t, err)
@@ -83,6 +113,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionJournalSplayWidth)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionJournalSplayWidth)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionJournalSplayWidth)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionJournalPool, 1)
 	assert.Error(t, err)
@@ -93,6 +128,11 @@ func TestRbdOptions(t *testing.T) {
 	s, err = options.GetString(rbd.RbdImageOptionJournalPool)
 	assert.NoError(t, err)
 	assert.True(t, s == "journal")
+	set, err = options.IsSet(rbd.RbdImageOptionJournalPool)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionJournalPool)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionFeaturesSet, 1)
 	assert.NoError(t, err)
@@ -103,6 +143,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionFeaturesSet)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionFeaturesSet)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionFeaturesSet)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionFeaturesClear, 1)
 	assert.NoError(t, err)
@@ -113,6 +158,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionFeaturesClear)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionFeaturesClear)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionFeaturesClear)
+	assert.NoError(t, err)
 
 	err = options.SetUint64(rbd.RbdImageOptionDataPool, 1)
 	assert.Error(t, err)
@@ -123,6 +173,11 @@ func TestRbdOptions(t *testing.T) {
 	s, err = options.GetString(rbd.RbdImageOptionDataPool)
 	assert.NoError(t, err)
 	assert.True(t, s == "data")
+	set, err = options.IsSet(rbd.RbdImageOptionDataPool)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionDataPool)
+	assert.NoError(t, err)
 
 	/* introduced with Ceph Mimic, can not be tested on Luminous
 	err = options.SetUint64(rbd.RbdImageOptionFlatten, 1)
@@ -134,6 +189,11 @@ func TestRbdOptions(t *testing.T) {
 	assert.True(t, i == 1)
 	_, err = options.GetString(rbd.RbdImageOptionFlatten)
 	assert.Error(t, err)
+	set, err = options.IsSet(rbd.RbdImageOptionFlatten)
+	assert.NoError(t, err)
+	assert.True(t, set)
+	err = options.Unset(rbd.RbdImageOptionFlatten)
+	assert.NoError(t, err)
 	*/
 }
 
@@ -150,6 +210,21 @@ func TestRbdOptionsClear(t *testing.T) {
 	options.Clear()
 	empty = options.IsEmpty()
 	assert.True(t, empty)
+
+	options.Destroy()
+}
+
+func TestInvalidRbdOption(t *testing.T) {
+	options := rbd.NewRbdImageOptions()
+
+	err := options.SetUint64(rbd.RbdImageOption(-1), 1)
+	assert.Error(t, err)
+
+	_, err = options.IsSet(rbd.RbdImageOption(-1))
+	assert.Error(t, err)
+
+	err = options.Unset(rbd.RbdImageOption(-1))
+	assert.Error(t, err)
 
 	options.Destroy()
 }
