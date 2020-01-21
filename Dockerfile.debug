@@ -1,0 +1,11 @@
+FROM go-ceph-base
+
+RUN apt-get update && apt-get install -y \
+  gdb \
+  ceph-base-dbg \
+  ceph-common-dbg \
+  librados2-dbg \
+  libradosstriper1-dbg \
+  librbd1-dbg
+
+RUN go get github.com/go-delve/delve/cmd/dlv
