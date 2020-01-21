@@ -1059,3 +1059,93 @@ func TestImageMetadata(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestClosedImage(t *testing.T) {
+	t.Skipf("many of the following functions cause a panic or hang, skip this test")
+
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	image, err := Create(ioctx, name, 1<<22, 22)
+	assert.NoError(t, err)
+
+	err = image.Open()
+	assert.NoError(t, err)
+
+	// keep the rbdImage around after close
+	rbdImage := image.image
+
+	// close the image
+	err = image.Close()
+	assert.NoError(t, err)
+
+	// restore the image so image.validate() succeeds
+	image.image = rbdImage
+
+	// functions should now fail with an RBDError
+
+	err = image.Close()
+	assert.Error(t, err)
+
+	err = image.Resize(1 << 22)
+	assert.Error(t, err)
+
+	_, err = image.Stat()
+	assert.Error(t, err)
+
+	_, err = image.IsOldFormat()
+	assert.Error(t, err)
+
+	_, err = image.GetSize()
+	assert.Error(t, err)
+
+	_, err = image.GetFeatures()
+	assert.Error(t, err)
+
+	_, err = image.GetStripeUnit()
+	assert.Error(t, err)
+
+	_, err = image.GetStripeCount()
+	assert.Error(t, err)
+
+	_, err = image.GetOverlap()
+	assert.Error(t, err)
+
+	err = image.Flatten()
+	assert.Error(t, err)
+
+	_, _, err = image.ListChildren()
+	assert.Error(t, err)
+
+	err = image.Flush()
+	assert.Error(t, err)
+
+	_, err = image.GetSnapshotNames()
+	assert.Error(t, err)
+
+	_, err = image.CreateSnapshot("new_snapshot")
+	assert.Error(t, err)
+
+	_, err = image.GetMetadata("metadata-key")
+	assert.Error(t, err)
+
+	err = image.SetMetadata("metadata-key", "metadata-value")
+	assert.Error(t, err)
+
+	err = image.RemoveMetadata("metadata-key")
+	assert.Error(t, err)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
