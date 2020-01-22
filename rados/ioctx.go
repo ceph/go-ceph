@@ -768,7 +768,7 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 	}
 }
 
-// Release a shared or exclusive lock on an object.
+// Unlock releases a shared or exclusive lock on an object.
 func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
 	c_oid := C.CString(oid)
 	c_name := C.CString(name)
@@ -853,7 +853,7 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 	return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
 }
 
-// Releases a shared or exclusive lock on an object, which was taken by the specified client.
+// BreakLock releases a shared or exclusive lock on an object, which was taken by the specified client.
 func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error) {
 	c_oid := C.CString(oid)
 	c_name := C.CString(name)
