@@ -557,8 +557,14 @@ func TestIOReaderWriter(t *testing.T) {
 	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
+	// reading 0 bytes should succeed
+	nil_bytes := make([]byte, 0)
+	n_out, err := img.Read(nil_bytes)
+	assert.Equal(t, n_out, 0)
+	assert.NoError(t, err)
+
 	bytes_out := make([]byte, len(bytes_in))
-	n_out, err := img.Read(bytes_out)
+	n_out, err = img.Read(bytes_out)
 
 	assert.Equal(t, n_out, len(bytes_in))
 	assert.Equal(t, bytes_in, bytes_out)
