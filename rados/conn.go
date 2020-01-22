@@ -329,11 +329,25 @@ func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string,
 }
 
 // PGCommand sends a command to one of the PGs
+//
+// Implements:
+//  int rados_pg_command(rados_t cluster, const char *pgstr,
+//                       const char **cmd, size_t cmdlen,
+//                       const char *inbuf, size_t inbuflen,
+//                       char **outbuf, size_t *outbuflen,
+//                       char **outs, size_t *outslen);
 func (c *Conn) PGCommand(pgid []byte, args [][]byte) (buffer []byte, info string, err error) {
 	return c.pgCommand(pgid, args, nil)
 }
 
-// PGCommand sends a command to one of the PGs, with an input buffer
+// PGCommandWithInputBuffer sends a command to one of the PGs, with an input buffer
+//
+// Implements:
+//  int rados_pg_command(rados_t cluster, const char *pgstr,
+//                       const char **cmd, size_t cmdlen,
+//                       const char *inbuf, size_t inbuflen,
+//                       char **outbuf, size_t *outbuflen,
+//                       char **outs, size_t *outslen);
 func (c *Conn) PGCommandWithInputBuffer(pgid []byte, args [][]byte, inputBuffer []byte) (buffer []byte, info string, err error) {
 	return c.pgCommand(pgid, args, inputBuffer)
 }
