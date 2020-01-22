@@ -370,7 +370,7 @@ func (ioctx *IOContext) RmXattr(oid string, name string) error {
 	return getRadosError(int(ret))
 }
 
-// Append the map `pairs` to the omap `oid`
+// SetOmap appends the map `pairs` to the omap `oid`
 func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
