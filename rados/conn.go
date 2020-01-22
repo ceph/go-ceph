@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	// ErrNotConnected is returned when functions are called without a RADOS connection
 	ErrNotConnected = errors.New("RADOS not connected")
 )
 
