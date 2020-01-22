@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"sort"
 	"testing"
 	"time"
@@ -566,6 +567,80 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.NoError(t, err)
 
 	img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestReadAt(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	img, err := Create(ioctx, name, 1<<22, 22)
+	require.NoError(t, err)
+
+	err = img.Open()
+	assert.NoError(t, err)
+
+	// write 0 bytes should succeed
+	data_out := make([]byte, 0)
+	n_out, err := img.WriteAt(data_out, 256)
+	assert.Equal(t, 0, n_out)
+	assert.NoError(t, err)
+
+	// reading 0 bytes should be successful
+	data_in := make([]byte, 0)
+	n_in, err := img.ReadAt(data_in, 256)
+	assert.Equal(t, 0, n_in)
+	assert.NoError(t, err)
+
+	// write some data at the end of the image
+	data_out = []byte("Hi rbd! Nice to talk through go-ceph :)")
+
+	stats, err := img.Stat()
+	require.NoError(t, err)
+	offset := int64(stats.Size) - int64(len(data_out))
+
+	n_out, err = img.WriteAt(data_out, offset)
+	assert.Equal(t, len(data_out), n_out)
+	assert.NoError(t, err)
+
+	data_in = make([]byte, len(data_out))
+	n_in, err = img.ReadAt(data_in, offset)
+	assert.Equal(t, n_in, len(data_in))
+	assert.Equal(t, data_in, data_out)
+	assert.NoError(t, err)
+
+	// reading after EOF (needs to be large enough to hit EOF)
+	data_in = make([]byte, len(data_out)+256)
+	n_in, err = img.ReadAt(data_in, offset)
+	assert.Equal(t, n_in, len(data_out))
+	assert.Equal(t, data_in[0:len(data_out)], data_out)
+	assert.Equal(t, io.EOF, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	// writing to a read-only image should fail
+	err = img.Open(true)
+	assert.NoError(t, err)
+
+	_, err = img.WriteAt(data_out, 256)
+	assert.Error(t, err)
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	err = img.Remove()
 	assert.NoError(t, err)
 
 	ioctx.Destroy()
