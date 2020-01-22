@@ -190,6 +190,10 @@ func (ioctx *IOContext) Destroy() {
 
 // GetPoolStats returns a set of statistics about the pool associated with this I/O
 // context.
+//
+// Implements:
+//  int rados_ioctx_pool_stat(rados_ioctx_t io,
+//                            struct rados_pool_stat_t *stats);
 func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
 	c_stat := C.struct_rados_pool_stat_t{}
 	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &c_stat)
