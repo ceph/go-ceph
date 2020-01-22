@@ -305,7 +305,7 @@ func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, 
 	return 0, getRadosError(int(ret))
 }
 
-// Sets an xattr for an object with key `name` with value as `data`
+// SetXattr sets an xattr for an object with key `name` with value as `data`
 func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error {
 	c_object := C.CString(object)
 	c_name := C.CString(name)
