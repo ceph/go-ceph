@@ -188,7 +188,7 @@ func (ioctx *IOContext) Destroy() {
 	C.rados_ioctx_destroy(ioctx.ioctx)
 }
 
-// Stat returns a set of statistics about the pool associated with this I/O
+// GetPoolStats returns a set of statistics about the pool associated with this I/O
 // context.
 func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
 	c_stat := C.struct_rados_pool_stat_t{}
