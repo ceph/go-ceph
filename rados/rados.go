@@ -26,10 +26,15 @@ func (e RadosError) Error() string {
 	return fmt.Sprintf("rados: ret=%d, %s", errno, s)
 }
 
-var RadosAllNamespaces = C.LIBRADOS_ALL_NSPACES
+var (
+	// RadosAllNamespaces is used to reset a selected namespace to all namespaces. See the IOContext SetNamespace function.
+	RadosAllNamespaces = C.LIBRADOS_ALL_NSPACES
 
-var RadosErrorNotFound = RadosError(-C.ENOENT)
-var RadosErrorPermissionDenied = RadosError(-C.EPERM)
+	// RadosErrorNotFound indicates a missing resource.
+	RadosErrorNotFound = RadosError(-C.ENOENT)
+	// RadosErrorPermissionDenied indicates a permissions issue.
+	RadosErrorPermissionDenied = RadosError(-C.EPERM)
+)
 
 func getRadosError(err int) error {
 	if err == 0 {
