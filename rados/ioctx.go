@@ -797,9 +797,11 @@ func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
 	}
 }
 
-// List clients that have locked the named object lock and information about the lock.
-// The number of bytes required in each buffer is put in the corresponding size out parameter.
-// If any of the provided buffers are too short, -ERANGE is returned after these sizes are filled in.
+// ListLockers lists clients that have locked the named object lock and
+// information about the lock.
+// The number of bytes required in each buffer is put in the corresponding size
+// out parameter.  If any of the provided buffers are too short, -ERANGE is
+// returned after these sizes are filled in.
 func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 	c_oid := C.CString(oid)
 	c_name := C.CString(name)
