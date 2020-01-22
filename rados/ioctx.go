@@ -322,9 +322,8 @@ func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error 
 	return getRadosError(int(ret))
 }
 
-// function that lists all the xattrs for an object, since xattrs are
-// a k-v pair, this function returns a map of k-v pairs on
-// success, error code on failure
+// ListXattrs lists all the xattrs for an object. The xattrs are returned as a
+// mapping of string keys and byte-slice values.
 func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
