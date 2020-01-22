@@ -14,8 +14,10 @@ import (
 	"github.com/ceph/go-ceph/errutil"
 )
 
+// RadosError represents an error condition returned from the Ceph RADOS APIs.
 type RadosError int
 
+// Error returns the error string for the RadosError type.
 func (e RadosError) Error() string {
 	errno, s := errutil.FormatErrno(int(e))
 	if s == "" {
