@@ -569,6 +569,35 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.Equal(t, n_out, len(bytes_in))
 	assert.Equal(t, bytes_in, bytes_out)
 
+	// write some data at the end of the image
+	offset := int64(stats.Size) - int64(len(bytes_in))
+
+	_, err = img.Seek(offset, SeekSet)
+	assert.NoError(t, err)
+
+	n_out, err = img.Write(bytes_in)
+	assert.Equal(t, len(bytes_in), n_out)
+	assert.NoError(t, err)
+
+	_, err = img.Seek(offset, SeekSet)
+	assert.NoError(t, err)
+
+	bytes_out = make([]byte, len(bytes_in))
+	n_out, err = img.Read(bytes_out)
+	assert.Equal(t, n_out, len(bytes_in))
+	assert.Equal(t, bytes_in, bytes_out)
+	assert.NoError(t, err)
+
+	// reading after EOF (needs to be large enough to hit EOF)
+	_, err = img.Seek(offset, SeekSet)
+	assert.NoError(t, err)
+
+	bytes_in = make([]byte, len(bytes_out)+256)
+	n_out, err = img.Read(bytes_in)
+	assert.Equal(t, n_out, len(bytes_out))
+	assert.Equal(t, bytes_in[0:len(bytes_out)], bytes_out)
+	assert.Equal(t, io.EOF, err)
+
 	err = img.Close()
 	assert.NoError(t, err)
 

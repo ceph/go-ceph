@@ -876,7 +876,7 @@ func (image *Image) BreakLock(client string, cookie string) error {
 //              const char *fromsnapname,
 //              uint64_t ofs, uint64_t len,
 //              int (*cb)(uint64_t, size_t, int, void *), void *arg);
-func (image *Image) Read(data []byte) (n int, err error) {
+func (image *Image) Read(data []byte) (int, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
 	}
@@ -896,7 +896,7 @@ func (image *Image) Read(data []byte) (n int, err error) {
 	}
 
 	image.offset += int64(ret)
-	if ret < n {
+	if ret < len(data) {
 		return ret, io.EOF
 	}
 
