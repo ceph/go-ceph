@@ -131,6 +131,10 @@ func (suite *RadosTestSuite) TestGetSetConfigOption() {
 	err := suite.conn.SetConfigOption("___dne___", "value")
 	assert.Error(suite.T(), err, "Invalid option")
 
+	// check error for  get invalid option
+	_, err = suite.conn.GetConfigOption("__dne__")
+	assert.Error(suite.T(), err)
+
 	// verify SetConfigOption changes a values
 	prev_val, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
@@ -296,18 +300,11 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 
 	// check that new pool name is unique
 	new_name := uuid.Must(uuid.NewV4()).String()
-	for _, poolname := range pools {
-		if new_name == poolname {
-			suite.T().Error("Random pool name exists!")
-			return
-		}
-	}
+	require.NotContains(
+		suite.T(), pools, new_name, "Random pool name exists!")
 
 	pool, _ := suite.conn.GetPoolByName(new_name)
-	if pool != 0 {
-		suite.T().Error("Pool does not exist, but was found!")
-		return
-	}
+	assert.Equal(suite.T(), int64(0), pool, "Pool does not exist, but was found!")
 
 	// create pool
 	err = suite.conn.MakePool(new_name)
@@ -316,24 +313,12 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	// verify that the new pool name exists
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
-
-	found := false
-	for _, poolname := range pools {
-		if new_name == poolname {
-			found = true
-		}
-	}
-
-	if !found {
-		suite.T().Error("Cannot find newly created pool")
-	}
+	assert.Contains(
+		suite.T(), pools, new_name, "Cannot find newly created pool")
 
 	pool, err = suite.conn.GetPoolByName(new_name)
 	assert.NoError(suite.T(), err)
-	if pool == 0 {
-		suite.T().Error("Pool not found!")
-		return
-	}
+	assert.NotEqual(suite.T(), int64(0), pool, "Pool not found!")
 
 	// delete the pool
 	err = suite.conn.DeletePool(new_name)
@@ -342,23 +327,13 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	// verify that it is gone
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
-
-	found = false
-	for _, poolname := range pools {
-		if new_name == poolname {
-			found = true
-		}
-	}
-
-	if found {
-		suite.T().Error("Deleted pool still exists")
-	}
+	assert.NotContains(
+		suite.T(), pools, new_name, "Deleted pool still exists")
 
 	pool, err = suite.conn.GetPoolByName(new_name)
-	if pool != 0 || err == nil {
-		suite.T().Error("Pool should have been deleted, but was found!")
-		return
-	}
+	assert.Error(suite.T(), err)
+	assert.Equal(
+		suite.T(), int64(0), pool, "Pool should have been deleted, but was found!")
 }
 
 func (suite *RadosTestSuite) TestGetPoolByID() {
@@ -403,6 +378,54 @@ func (suite *RadosTestSuite) TestGetPoolByID() {
 	}
 }
 
+func (suite *RadosTestSuite) TestGetLargePoolList() {
+	suite.SetupConnection()
+
+	// get current list of pool
+	pools, err := suite.conn.ListPools()
+	assert.NoError(suite.T(), err)
+
+	fill := func(r rune) string {
+		b := make([]rune, 512)
+		for i := range b {
+			b[i] = r
+		}
+		return string(b)
+	}
+	// try to ensure we exceed the default 4096 byte initial buffer
+	// size and make use of the increased buffer size code path
+	names := []string{
+		fill('a'),
+		fill('b'),
+		fill('c'),
+		fill('d'),
+		fill('e'),
+		fill('f'),
+		fill('g'),
+		fill('h'),
+		fill('i'),
+		fill('j'),
+	}
+
+	defer func(origPools []string) {
+		for _, name := range names {
+			suite.conn.DeletePool(name)
+		}
+		cleanPools, err := suite.conn.ListPools()
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), origPools, cleanPools)
+	}(pools)
+
+	for _, name := range names {
+		err = suite.conn.MakePool(name)
+		require.NoError(suite.T(), err)
+	}
+	pools, err = suite.conn.ListPools()
+	for _, name := range names {
+		assert.Contains(suite.T(), pools, name)
+	}
+}
+
 func (suite *RadosTestSuite) TestPingMonitor() {
 	suite.SetupConnection()
 
@@ -410,6 +433,11 @@ func (suite *RadosTestSuite) TestPingMonitor() {
 	reply, err := suite.conn.PingMonitor("a")
 	assert.NoError(suite.T(), err)
 	assert.NotEqual(suite.T(), reply, "")
+
+	// invalid mon id
+	reply, err = suite.conn.PingMonitor("charlieB")
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), reply, "")
 }
 
 func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
@@ -1143,6 +1171,12 @@ func (suite *RadosTestSuite) TestOmapOnNonexistentObjectError() {
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.GetAllOmapValues(oid, "", "", 100)
 	assert.Equal(suite.T(), err, RadosErrorNotFound)
+}
+
+func (suite *RadosTestSuite) TestOpenIOContextInvalidPool() {
+	ioctx, err := suite.conn.OpenIOContext("cmartel")
+	require.Error(suite.T(), err)
+	require.Nil(suite.T(), ioctx)
 }
 
 func TestRadosTestSuite(t *testing.T) {
