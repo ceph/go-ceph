@@ -447,6 +447,20 @@ func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
 	assert.NoError(suite.T(), err)
 }
 
+func (suite *RadosTestSuite) TestCreate() {
+	suite.SetupConnection()
+
+	err := suite.ioctx.Create("unique", CreateExclusive)
+	assert.NoError(suite.T(), err)
+
+	err = suite.ioctx.Create("unique", CreateExclusive)
+	assert.Error(suite.T(), err)
+	assert.Equal(suite.T(), err, ErrObjectExists)
+
+	err = suite.ioctx.Create("unique", CreateIdempotent)
+	assert.NoError(suite.T(), err)
+}
+
 func (suite *RadosTestSuite) TestReadWrite() {
 	suite.SetupConnection()
 

@@ -34,6 +34,8 @@ var (
 	RadosErrorNotFound = RadosError(-C.ENOENT)
 	// RadosErrorPermissionDenied indicates a permissions issue.
 	RadosErrorPermissionDenied = RadosError(-C.EPERM)
+	// ErrObjectExists indicates that an exclusive object creation failed.
+	ErrObjectExists = RadosError(-C.EEXIST)
 )
 
 func getRadosError(err int) error {
