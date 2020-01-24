@@ -15,6 +15,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	testImageSize  = uint64(1 << 22)
+	testImageOrder = 22
+)
+
 func GetUUID() string {
 	return uuid.Must(uuid.NewV4()).String()
 }
@@ -70,20 +75,20 @@ func TestImageCreate(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	name = GetUUID()
-	image, err = Create(ioctx, name, 1<<22, 22,
+	image, err = Create(ioctx, name, testImageSize, testImageOrder,
 		RbdFeatureLayering|RbdFeatureStripingV2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
 
 	name = GetUUID()
-	image, err = Create(ioctx, name, 1<<22, 22,
+	image, err = Create(ioctx, name, testImageSize, testImageOrder,
 		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
@@ -91,11 +96,11 @@ func TestImageCreate(t *testing.T) {
 
 	// invalid order
 	name = GetUUID()
-	_, err = Create(ioctx, name, 1<<22, -1)
+	_, err = Create(ioctx, name, testImageSize, -1)
 	assert.Error(t, err)
 
 	// too many arguments
-	_, err = Create(ioctx, name, 1<<22, 22,
+	_, err = Create(ioctx, name, testImageSize, testImageOrder,
 		RbdFeatureLayering|RbdFeatureStripingV2, 4096, 2, 123)
 	assert.Error(t, err)
 
@@ -115,8 +120,8 @@ func TestImageCreate2(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create2(ioctx, name, 1<<22,
-		RbdFeatureLayering|RbdFeatureStripingV2, 22)
+	image, err := Create2(ioctx, name, testImageSize,
+		RbdFeatureLayering|RbdFeatureStripingV2, testImageOrder)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -137,8 +142,8 @@ func TestImageCreate3(t *testing.T) {
 	assert.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create3(ioctx, name, 1<<22,
-		RbdFeatureLayering|RbdFeatureStripingV2, 22, 4096, 2)
+	image, err := Create3(ioctx, name, testImageSize,
+		RbdFeatureLayering|RbdFeatureStripingV2, testImageOrder, 4096, 2)
 	assert.NoError(t, err)
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -160,23 +165,23 @@ func TestCreateImageWithOptions(t *testing.T) {
 
 	// nil options, causes a panic if not handled correctly
 	name := GetUUID()
-	err = CreateImage(ioctx, name, 1<<22, nil)
+	err = CreateImage(ioctx, name, testImageSize, nil)
 	assert.Error(t, err)
 
 	options := NewRbdImageOptions()
 
 	// empty/default options
 	name = GetUUID()
-	err = CreateImage(ioctx, name, 1<<22, options)
+	err = CreateImage(ioctx, name, testImageSize, options)
 	assert.NoError(t, err)
 	err = RemoveImage(ioctx, name)
 	assert.NoError(t, err)
 
 	// create image with RbdImageOptionOrder
-	err = options.SetUint64(RbdImageOptionOrder, 22)
+	err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
 	assert.NoError(t, err)
 	name = GetUUID()
-	err = CreateImage(ioctx, name, 1<<22, options)
+	err = CreateImage(ioctx, name, testImageSize, options)
 	assert.NoError(t, err)
 	err = RemoveImage(ioctx, name)
 	assert.NoError(t, err)
@@ -189,7 +194,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 	err = options.SetString(RbdImageOptionDataPool, datapool)
 	assert.NoError(t, err)
 	name = GetUUID()
-	err = CreateImage(ioctx, name, 1<<22, options)
+	err = CreateImage(ioctx, name, testImageSize, options)
 	assert.NoError(t, err)
 	err = RemoveImage(ioctx, name)
 	assert.NoError(t, err)
@@ -215,7 +220,7 @@ func TestGetImageNames(t *testing.T) {
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
 		name := GetUUID()
-		_, err := Create(ioctx, name, 1<<22, 22)
+		_, err := Create(ioctx, name, testImageSize, testImageOrder)
 		assert.NoError(t, err)
 		createdList = append(createdList, name)
 	}
@@ -249,7 +254,7 @@ func TestDeprecatedImageOpen(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	// an integer is not a valid argument
@@ -294,7 +299,7 @@ func TestImageResize(t *testing.T) {
 
 	name := GetUUID()
 	reqSize := uint64(1024 * 1024 * 4) // 4MB
-	image, err := Create(ioctx, name, reqSize, 22)
+	image, err := Create(ioctx, name, reqSize, testImageOrder)
 	assert.NoError(t, err)
 
 	err = image.Resize(reqSize * 2)
@@ -338,7 +343,7 @@ func TestImageProperties(t *testing.T) {
 	name := GetUUID()
 	reqSize := uint64(1024 * 1024 * 4) // 4MB
 	_, err = Create3(ioctx, name, reqSize,
-		RbdFeatureLayering|RbdFeatureStripingV2, 22, 4096, 2)
+		RbdFeatureLayering|RbdFeatureStripingV2, testImageOrder, 4096, 2)
 	require.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -391,7 +396,7 @@ func TestImageRename(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	err = img.Rename(name)
@@ -418,7 +423,7 @@ func TestImageSeek(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	_, err = Create(ioctx, name, 1<<22, 22)
+	_, err = Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -456,7 +461,7 @@ func TestImageSeek(t *testing.T) {
 
 	pos, err = img.Seek(0, SeekEnd)
 	assert.NoError(t, err)
-	assert.Equal(t, pos, int64(1<<22))
+	assert.Equal(t, pos, int64(testImageSize))
 
 	_, err = img.Seek(0, -1)
 	assert.Error(t, err)
@@ -486,7 +491,7 @@ func TestImageDiscard(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	_, err = Create(ioctx, name, 1<<22, 22)
+	_, err = Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -531,7 +536,7 @@ func TestIOReaderWriter(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err = OpenImage(ioctx, name, NoSnapshot)
@@ -626,7 +631,7 @@ func TestReadAt(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, testImageSize, testImageOrder)
 	require.NoError(t, err)
 
 	err = img.Open()
@@ -700,7 +705,7 @@ func TestImageCopy(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, testImageSize, testImageOrder)
 	require.NoError(t, err)
 
 	// img not open, should fail
@@ -740,7 +745,7 @@ func TestImageCopy(t *testing.T) {
 
 	// test with Image as parameter
 	name = GetUUID()
-	img2, err = Create(ioctx, name, 1<<22, 22)
+	img2, err = Create(ioctx, name, testImageSize, testImageOrder)
 	require.NoError(t, err)
 
 	err = img.Copy2(img2)
@@ -786,7 +791,7 @@ func TestCreateSnapshot(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, 1<<22, 22)
+	img, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err = OpenImage(ioctx, name, NoSnapshot)
@@ -826,7 +831,7 @@ func TestParentInfo(t *testing.T) {
 	require.NoError(t, err)
 
 	name := "parent"
-	img, err := Create(ioctx, name, 1<<22, 22, 1)
+	img, err := Create(ioctx, name, testImageSize, testImageOrder, 1)
 	assert.NoError(t, err)
 
 	img, err = OpenImage(ioctx, name, NoSnapshot)
@@ -852,7 +857,7 @@ func TestParentInfo(t *testing.T) {
 	_, err = img.Clone("mysnap", ioctx, "child", 1, -1)
 	assert.Error(t, err)
 
-	_, err = img.Clone("mysnap", ioctx, "child", 1, 22)
+	_, err = img.Clone("mysnap", ioctx, "child", 1, testImageOrder)
 	assert.NoError(t, err)
 
 	imgNew, err := OpenImage(ioctx, "child", NoSnapshot)
@@ -1034,7 +1039,7 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	_, err = Create(ioctx, name, 1<<22, 22)
+	_, err = Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -1085,7 +1090,7 @@ func TestTrashImage(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	err = image.Trash(time.Hour)
@@ -1128,7 +1133,7 @@ func TestImageMetadata(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	// Set a metadata key/value on unopen image
@@ -1187,7 +1192,7 @@ func TestClosedImage(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	err = image.Open()
@@ -1279,7 +1284,7 @@ func TestOpenImage(t *testing.T) {
 	_, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.Error(t, err)
 
-	image, err := Create(ioctx, name, 1<<22, 22)
+	image, err := Create(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	oImage, err := OpenImage(ioctx, name, NoSnapshot)
@@ -1327,7 +1332,7 @@ func TestRemoveImage(t *testing.T) {
 
 	// create and then remove an image
 	name := GetUUID()
-	err = CreateImage(ioctx, name, 1<<22, NewRbdImageOptions())
+	err = CreateImage(ioctx, name, testImageSize, NewRbdImageOptions())
 	assert.NoError(t, err)
 
 	imageNames, err := GetImageNames(ioctx)
