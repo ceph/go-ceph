@@ -631,10 +631,14 @@ func TestReadAt(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, testImageSize, testImageOrder)
+	options := NewRbdImageOptions()
+	defer options.Destroy()
+	err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+	assert.NoError(t, err)
+	err = CreateImage(ioctx, name, testImageSize, options)
 	require.NoError(t, err)
 
-	err = img.Open()
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	// write 0 bytes should succeed
@@ -677,7 +681,7 @@ func TestReadAt(t *testing.T) {
 	assert.NoError(t, err)
 
 	// writing to a read-only image should fail
-	err = img.Open(true)
+	img, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	_, err = img.WriteAt(data_out, 256)
