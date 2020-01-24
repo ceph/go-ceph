@@ -376,10 +376,7 @@ func (image *Image) Remove() error {
 	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
 		return err
 	}
-
-	c_name := C.CString(image.name)
-	defer C.free(unsafe.Pointer(c_name))
-	return GetError(C.rbd_remove(C.rados_ioctx_t(image.ioctx.Pointer()), c_name))
+	return RemoveImage(image.ioctx, image.name)
 }
 
 // Trash will move an image into the RBD trash, where it will be protected (i.e., salvageable) for
@@ -1351,4 +1348,14 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImage
 	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
 		C.uint64_t(size), C.rbd_image_options_t(rio.options))
 	return GetError(ret)
+}
+
+// RemoveImage removes the specified rbd image.
+//
+// Implements:
+//  int rbd_remove(rados_ioctx_t io, const char *name);
+func RemoveImage(ioctx *rados.IOContext, name string) error {
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
+	return GetError(C.rbd_remove(C.rados_ioctx_t(ioctx.Pointer()), c_name))
 }

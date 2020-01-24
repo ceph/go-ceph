@@ -169,7 +169,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 	name = GetUUID()
 	err = CreateImage(ioctx, name, 1<<22, options)
 	assert.NoError(t, err)
-	err = GetImage(ioctx, name).Remove()
+	err = RemoveImage(ioctx, name)
 	assert.NoError(t, err)
 
 	// create image with RbdImageOptionOrder
@@ -178,7 +178,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 	name = GetUUID()
 	err = CreateImage(ioctx, name, 1<<22, options)
 	assert.NoError(t, err)
-	err = GetImage(ioctx, name).Remove()
+	err = RemoveImage(ioctx, name)
 	assert.NoError(t, err)
 	options.Clear()
 
@@ -191,7 +191,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 	name = GetUUID()
 	err = CreateImage(ioctx, name, 1<<22, options)
 	assert.NoError(t, err)
-	err = GetImage(ioctx, name).Remove()
+	err = RemoveImage(ioctx, name)
 	assert.NoError(t, err)
 	conn.DeletePool(datapool)
 
@@ -1305,6 +1305,41 @@ func TestOpenImage(t *testing.T) {
 
 	_, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.Error(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestRemoveImage(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	// trying to remove a non-existent image is an error
+	err = RemoveImage(ioctx, "bananarama")
+	require.Error(t, err)
+
+	// create and then remove an image
+	name := GetUUID()
+	err = CreateImage(ioctx, name, 1<<22, NewRbdImageOptions())
+	assert.NoError(t, err)
+
+	imageNames, err := GetImageNames(ioctx)
+	assert.NoError(t, err)
+	assert.Contains(t, imageNames, name)
+
+	err = RemoveImage(ioctx, name)
+	assert.NoError(t, err)
+
+	imageNames, err = GetImageNames(ioctx)
+	assert.NoError(t, err)
+	assert.NotContains(t, imageNames, name)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
