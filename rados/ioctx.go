@@ -30,6 +30,19 @@ import (
 	"unsafe"
 )
 
+// CreateOption is passed to IOContext.Create() and should be one of
+// CreateExclusive or CreateIdempotent.
+type CreateOption int
+
+const (
+	// CreateExclusive if used with IOContext.Create() and the object
+	// already exists, the function will return an error.
+	CreateExclusive = C.LIBRADOS_CREATE_EXCLUSIVE
+	// CreateIdempotent if used with IOContext.Create() and the object
+	// already exists, the function will not return an error.
+	CreateIdempotent = C.LIBRADOS_CREATE_IDEMPOTENT
+)
+
 // PoolStat represents Ceph pool statistics.
 type PoolStat struct {
 	// space used in bytes
@@ -91,6 +104,23 @@ func (ioctx *IOContext) SetNamespace(namespace string) {
 		defer C.free(unsafe.Pointer(c_ns))
 	}
 	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
+}
+
+// Create a new object with key oid.
+//
+// Implements:
+//  void rados_write_op_create(rados_write_op_t write_op, int exclusive,
+//                             const char* category)
+func (ioctx *IOContext) Create(oid string, exclusive CreateOption) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	op := C.rados_create_write_op()
+	C.rados_write_op_create(op, C.int(exclusive), nil)
+	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
+	C.rados_release_write_op(op)
+
+	return getRadosError(int(ret))
 }
 
 // Write writes len(data) bytes to the object with key oid starting at byte
