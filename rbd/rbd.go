@@ -334,32 +334,6 @@ func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
 	}, nil
 }
 
-// Create4 creates a new rbd image using provided image options.
-//
-// Implements:
-//  int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
-//                 rbd_image_options_t opts);
-func Create4(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOptions) (image *Image, err error) {
-	if rio == nil {
-		return nil, RBDError(C.EINVAL)
-	}
-
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
-
-	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
-		C.uint64_t(size), C.rbd_image_options_t(rio.options))
-
-	if ret < 0 {
-		return nil, RBDError(ret)
-	}
-
-	return &Image{
-		ioctx: ioctx,
-		name:  name,
-	}, nil
-}
-
 // Clone a new rbd image from a snapshot.
 //
 // Implements:
@@ -1358,4 +1332,23 @@ func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, e
 		name:  name,
 		image: cImage,
 	}, nil
+}
+
+// CreateImage creates a new rbd image using provided image options.
+//
+// Implements:
+//  int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
+//                 rbd_image_options_t opts);
+func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOptions) error {
+
+	if rio == nil {
+		return RBDError(C.EINVAL)
+	}
+
+	c_name := C.CString(name)
+	defer C.free(unsafe.Pointer(c_name))
+
+	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+		C.uint64_t(size), C.rbd_image_options_t(rio.options))
+	return GetError(ret)
 }
