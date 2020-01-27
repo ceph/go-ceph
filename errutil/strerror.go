@@ -1,3 +1,7 @@
+/*
+Package errutil provides common functions for dealing with error conditions for
+all ceph api wrappers.
+*/
 package errutil
 
 /* force XSI-complaint strerror_r() */
