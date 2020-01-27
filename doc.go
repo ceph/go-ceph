@@ -6,7 +6,7 @@ and contains no functions.
 
 The "rados" sub-package wraps APIs that handle RADOS specific functions.
 
-The "rdb" sub-package wraps APIs that handle RBD specific functions.
+The "rbd" sub-package wraps APIs that handle RBD specific functions.
 
 The "cephfs" sub-package wraps APIs that handle CephFS specific functions.
 
