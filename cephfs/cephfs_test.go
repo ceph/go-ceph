@@ -224,10 +224,7 @@ func TestCreateFromRados(t *testing.T) {
 }
 
 func TestCreateMountWithId(t *testing.T) {
-	// TODO: the entity_id is visible w/in the 'session ls' output
-	// of mds. Consider running the equivalent api call and checking
-	// that the string is set.
-	mount, err := CreateMountWithId("bob")
+	mount, err := CreateMountWithId("bobolink")
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
 
@@ -236,6 +233,17 @@ func TestCreateMountWithId(t *testing.T) {
 
 	err = mount.Mount()
 	assert.NoError(t, err)
+
+	// verify the custom entity_id is visible in the 'session ls' output
+	// of mds.
+	cmd := []byte(`{"prefix": "session ls"}`)
+	buf, info, err := mount.MdsCommand(
+		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		[][]byte{cmd})
+	assert.NoError(t, err)
+	assert.NotEqual(t, "", string(buf))
+	assert.Equal(t, "", string(info))
+	assert.Contains(t, string(buf), `"bobolink"`)
 }
 
 func TestMdsCommand(t *testing.T) {
