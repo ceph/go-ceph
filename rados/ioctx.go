@@ -686,7 +686,7 @@ func (iter *Iter) Namespace() string {
 
 // Err checks whether the iterator has encountered an error.
 func (iter *Iter) Err() error {
-	if iter.err == RadosErrorNotFound {
+	if iter.err == ErrNotFound {
 		return nil
 	}
 	return iter.err

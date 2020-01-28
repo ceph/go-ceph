@@ -514,7 +514,7 @@ func (suite *RadosTestSuite) TestReadNotFound() {
 	var bytes []byte
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.Read(oid, bytes, 0)
-	assert.Equal(suite.T(), err, RadosErrorNotFound)
+	assert.Equal(suite.T(), err, ErrNotFound)
 }
 
 func (suite *RadosTestSuite) TestDeleteNotFound() {
@@ -522,7 +522,7 @@ func (suite *RadosTestSuite) TestDeleteNotFound() {
 
 	oid := suite.GenObjectName()
 	err := suite.ioctx.Delete(oid)
-	assert.Equal(suite.T(), err, RadosErrorNotFound)
+	assert.Equal(suite.T(), err, ErrNotFound)
 }
 
 func (suite *RadosTestSuite) TestStatNotFound() {
@@ -530,7 +530,7 @@ func (suite *RadosTestSuite) TestStatNotFound() {
 
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), err, RadosErrorNotFound)
+	assert.Equal(suite.T(), err, ErrNotFound)
 }
 
 func (suite *RadosTestSuite) TestObjectStat() {
@@ -763,7 +763,7 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	objectListNS2 := []string{}
 
 	// populate list of current objects
-	suite.ioctx.SetNamespace(RadosAllNamespaces)
+	suite.ioctx.SetNamespace(AllNamespaces)
 	existingList := []string{}
 	iter, err := suite.ioctx.Iter()
 	assert.NoError(suite.T(), err)
@@ -796,7 +796,7 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	}
 	assert.True(suite.T(), len(createdList) == 20)
 
-	suite.ioctx.SetNamespace(RadosAllNamespaces)
+	suite.ioctx.SetNamespace(AllNamespaces)
 	iter, err = suite.ioctx.Iter()
 	assert.NoError(suite.T(), err)
 	rogueList := []string{}
@@ -1033,7 +1033,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 	// oid isn't seen in space1 ns
 	suite.ioctx.SetNamespace("space1")
 	stat, err = suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), err, RadosErrorNotFound)
+	assert.Equal(suite.T(), err, ErrNotFound)
 
 	// create oid2 in space1 ns
 	oid2 := suite.GenObjectName()
@@ -1043,7 +1043,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 
 	suite.ioctx.SetNamespace("")
 	stat, err = suite.ioctx.Stat(oid2)
-	assert.Equal(suite.T(), err, RadosErrorNotFound)
+	assert.Equal(suite.T(), err, ErrNotFound)
 
 	stat, err = suite.ioctx.Stat(oid)
 	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
@@ -1081,7 +1081,7 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 	assert.EqualValues(suite.T(), 1, nsFoundObjects)
 
 	// count objects in pool
-	suite.ioctx.SetNamespace(RadosAllNamespaces)
+	suite.ioctx.SetNamespace(AllNamespaces)
 	allFoundObjects := 0
 	err = suite.ioctx.ListObjects(func(oid string) {
 		allFoundObjects++
@@ -1184,7 +1184,7 @@ func (suite *RadosTestSuite) TestOmapOnNonexistentObjectError() {
 	suite.SetupConnection()
 	oid := suite.GenObjectName()
 	_, err := suite.ioctx.GetAllOmapValues(oid, "", "", 100)
-	assert.Equal(suite.T(), err, RadosErrorNotFound)
+	assert.Equal(suite.T(), err, ErrNotFound)
 }
 
 func (suite *RadosTestSuite) TestOpenIOContextInvalidPool() {
