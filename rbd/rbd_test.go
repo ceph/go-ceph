@@ -220,7 +220,7 @@ func TestGetImageNames(t *testing.T) {
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
 		name := GetUUID()
-		_, err := Create(ioctx, name, testImageSize, testImageOrder)
+		err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 		assert.NoError(t, err)
 		createdList = append(createdList, name)
 	}
@@ -299,13 +299,10 @@ func TestImageResize(t *testing.T) {
 
 	name := GetUUID()
 	reqSize := uint64(1024 * 1024 * 4) // 4MB
-	image, err := Create(ioctx, name, reqSize, testImageOrder)
+	err = quickCreate(ioctx, name, reqSize, testImageOrder)
 	assert.NoError(t, err)
 
-	err = image.Resize(reqSize * 2)
-	assert.Equal(t, err, ErrImageNotOpen)
-
-	image, err = OpenImage(ioctx, name, NoSnapshot)
+	image, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	size, err := image.GetSize()
@@ -321,6 +318,9 @@ func TestImageResize(t *testing.T) {
 
 	err = image.Close()
 	assert.NoError(t, err)
+
+	err = image.Resize(reqSize * 2)
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.Remove()
 	assert.NoError(t, err)
@@ -396,9 +396,10 @@ func TestImageRename(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
+	img := GetImage(ioctx, name)
 	err = img.Rename(name)
 	assert.Error(t, err)
 
@@ -423,7 +424,7 @@ func TestImageSeek(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	_, err = Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -491,7 +492,7 @@ func TestImageDiscard(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	_, err = Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -536,10 +537,10 @@ func TestIOReaderWriter(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
-	img, err = OpenImage(ioctx, name, NoSnapshot)
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	stats, err := img.Stat()
@@ -848,10 +849,10 @@ func TestCreateSnapshot(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	img, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
-	img, err = OpenImage(ioctx, name, NoSnapshot)
+	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	snapshot, err := img.CreateSnapshot("mysnap")
@@ -1096,7 +1097,7 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	_, err = Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	img, err := OpenImage(ioctx, name, NoSnapshot)
@@ -1147,9 +1148,10 @@ func TestTrashImage(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
+	image := GetImage(ioctx, name)
 	err = image.Trash(time.Hour)
 	assert.NoError(t, err)
 
@@ -1190,9 +1192,10 @@ func TestImageMetadata(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
+	image := GetImage(ioctx, name)
 	// Set a metadata key/value on unopen image
 	err = image.SetMetadata(metadataKey, metadataValue)
 	assert.Equal(t, err, ErrImageNotOpen)
@@ -1249,10 +1252,10 @@ func TestClosedImage(t *testing.T) {
 	require.NoError(t, err)
 
 	name := GetUUID()
-	image, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
-	err = image.Open()
+	image, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
 	// keep the rbdImage around after close
@@ -1341,7 +1344,7 @@ func TestOpenImage(t *testing.T) {
 	_, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.Error(t, err)
 
-	image, err := Create(ioctx, name, testImageSize, testImageOrder)
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
 	assert.NoError(t, err)
 
 	oImage, err := OpenImage(ioctx, name, NoSnapshot)
@@ -1355,7 +1358,7 @@ func TestOpenImage(t *testing.T) {
 	assert.NoError(t, err)
 
 	bytes_in := []byte("input data")
-	_, err = image.Write(bytes_in)
+	_, err = oImage.Write(bytes_in)
 	// writing should fail in read-only mode
 	assert.Error(t, err)
 
@@ -1408,4 +1411,17 @@ func TestRemoveImage(t *testing.T) {
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
 	conn.Shutdown()
+}
+
+// quickCreate creates an image similar to Create but uses CreateImage.
+// If possible, avoid using this function for new code/tests. It mainly exists
+// to help with refactoring of existing tests.
+func quickCreate(ioctx *rados.IOContext, name string, size uint64, order int) error {
+	options := NewRbdImageOptions()
+	defer options.Destroy()
+	err := options.SetUint64(RbdImageOptionOrder, uint64(order))
+	if err != nil {
+		return err
+	}
+	return CreateImage(ioctx, name, size, options)
 }
