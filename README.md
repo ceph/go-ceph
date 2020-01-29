@@ -18,6 +18,18 @@ On rpm based systems (dnf, yum, etc):
 libcephfs-devel librbd-devel librados-devel
 ```
 
+go-ceph tries to support different Ceph versions. However some functions might
+only be available in recent versions, and others can be deprecated. In order to
+work with non-current versions of Ceph, it is required to pass build-tags to on
+the `go` commandline. A tag with the named Ceph release will enable/disable
+certain features of the go-ceph packages, and prevent warnings or compile
+problems. E.g. build against libcephfs/librados/librbd from Mimic, or run `go
+test` against Limunous, use:
+```sh
+go build -tags mimic ....
+go test -tags luminous ....
+```
+
 ## Documentation
 
 Detailed documentation is available at
