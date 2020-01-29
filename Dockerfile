@@ -9,21 +9,24 @@ RUN apt-get update && apt-get install -y \
 
 ARG CEPH_REPO_URL=https://download.ceph.com/debian-nautilus/
 RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
-RUN apt-add-repository "deb ${CEPH_REPO_URL} xenial main"
+RUN true && \
+  apt-add-repository "deb ${CEPH_REPO_URL} xenial main" && \
+  apt-get update && \
+  apt-get install -y ceph libcephfs-dev librados-dev librbd-dev curl gcc g++
 
-RUN add-apt-repository -y ppa:gophers/archive
-
-RUN apt-get update && apt-get install -y \
-  ceph \
-  libcephfs-dev \
-  librados-dev \
-  librbd-dev \
-  golang-1.10-go
+ENV GOTAR=go1.12.16.linux-amd64.tar.gz
+RUN true && \
+  curl -o /tmp/${GOTAR} https://dl.google.com/go/${GOTAR} && \
+  tar -x -C /opt/ -f /tmp/${GOTAR} && \
+  rm -f /tmp/${GOTAR}
 
 # add user account to test permissions
 RUN groupadd -g 1010 bob
 RUN useradd -u 1010 -g bob -M bob
 
+ENV PATH="${PATH}:/opt/go/bin"
+ENV GOROOT=/opt/go
+ENV GO111MODULE=on
 ENV GOPATH /go
 WORKDIR /go/src/github.com/ceph/go-ceph
 VOLUME /go/src/github.com/ceph/go-ceph

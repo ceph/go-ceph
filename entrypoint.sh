@@ -55,8 +55,6 @@ mkdir -p /tmp/ceph
 "${MICRO_OSD_PATH}" /tmp/ceph
 export CEPH_CONF=/tmp/ceph/ceph.conf
 
-export PATH=/usr/lib/go-1.10/bin:$PATH
-
 if [[ ${TEST_RUN} == NONE ]]; then
     echo "skipping test execution"
 else
