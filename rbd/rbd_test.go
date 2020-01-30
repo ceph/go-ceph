@@ -1332,7 +1332,9 @@ func TestRemoveImage(t *testing.T) {
 
 	// create and then remove an image
 	name := GetUUID()
-	err = CreateImage(ioctx, name, testImageSize, NewRbdImageOptions())
+	options := NewRbdImageOptions()
+	defer options.Destroy()
+	err = CreateImage(ioctx, name, testImageSize, options)
 	assert.NoError(t, err)
 
 	imageNames, err := GetImageNames(ioctx)
