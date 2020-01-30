@@ -16,8 +16,7 @@ matrix:
     - env: CEPH_VERSION=nautilus
 
 before_install: |
-  CEPH_REPO_URL="https://download.ceph.com/debian-${CEPH_VERSION}/"
-  docker build --build-arg CEPH_REPO_URL="${CEPH_REPO_URL}" -t ceph-golang-ci .
+  docker build --build-arg CEPH_VERSION="${CEPH_VERSION}" -t ceph-golang-ci .
 
 before_script:
   - go get github.com/mgechev/revive
