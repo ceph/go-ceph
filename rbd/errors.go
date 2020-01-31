@@ -61,6 +61,8 @@ var (
 	ErrSnapshotNoName = errors.New("RBD snapshot does not have a name")
 	// ErrImageNotOpen may be returned if an api call requires an open image handle and one is not provided.
 	ErrImageNotOpen = errors.New("RBD image not open")
+	// ErrImageIsOpen may be returned if an api call requires a closed image handle and one is not provided.
+	ErrImageIsOpen = errors.New("RBD image is open")
 	// ErrNotFound may be returned from an api call when the requested item is
 	// missing.
 	ErrNotFound = errors.New("RBD image not found")

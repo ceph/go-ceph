@@ -263,6 +263,10 @@ func TestDeprecatedImageOpen(t *testing.T) {
 	// writing should fail in read-only mode
 	assert.Error(t, err)
 
+	err = image.Remove()
+	// removing should fail while image is opened
+	assert.Equal(t, err, ErrImageIsOpen)
+
 	err = image.Close()
 	assert.NoError(t, err)
 
