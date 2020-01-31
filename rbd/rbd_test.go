@@ -406,7 +406,8 @@ func TestImageRename(t *testing.T) {
 	err = img.Rename(GetUUID())
 	assert.NoError(t, err)
 
-	img.Remove()
+	err = img.Remove()
+	assert.NoError(t, err)
 
 	ioctx.Destroy()
 	conn.DeletePool(poolname)
@@ -613,7 +614,7 @@ func TestIOReaderWriter(t *testing.T) {
 	err = img.Close()
 	assert.NoError(t, err)
 
-	img.Remove()
+	err = img.Remove()
 	assert.NoError(t, err)
 
 	ioctx.Destroy()
@@ -855,7 +856,7 @@ func TestCreateSnapshot(t *testing.T) {
 	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	snapshot, err := img.CreateSnapshot("mysnap")
+	_, err = img.CreateSnapshot("mysnap")
 	assert.NoError(t, err)
 
 	err = img.Close()
@@ -867,10 +868,18 @@ func TestCreateSnapshot(t *testing.T) {
 	err = snapImage.Close()
 	assert.NoError(t, err)
 
-	snapshot.Remove()
+	img2, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	img.Remove()
+	snapshot := img2.GetSnapshot("mysnap")
+
+	err = snapshot.Remove()
+	assert.NoError(t, err)
+
+	err = img2.Close()
+	assert.NoError(t, err)
+
+	err = img.Remove()
 	assert.NoError(t, err)
 
 	ioctx.Destroy()
