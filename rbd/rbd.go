@@ -38,6 +38,7 @@ const (
 	imageNeedsName uint32 = 1 << iota
 	imageNeedsIOContext
 	imageIsOpen
+	imageIsNotOpen
 	snapshotNeedsName
 
 	// NoSnapshot indicates that no snapshot name is in use (see OpenImage)
@@ -121,6 +122,8 @@ func (image *Image) validate(req uint32) error {
 		return ErrNoIOContext
 	} else if hasBit(req, imageIsOpen) && image.image == nil {
 		return ErrImageNotOpen
+	} else if hasBit(req, imageIsNotOpen) && image.image != nil {
+		return ErrImageIsOpen
 	}
 
 	return nil
@@ -278,7 +281,7 @@ func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name stri
 // Implements:
 //  int rbd_remove(rados_ioctx_t io, const char *name);
 func (image *Image) Remove() error {
-	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
+	if err := image.validate(imageNeedsIOContext | imageNeedsName | imageIsNotOpen); err != nil {
 		return err
 	}
 	return RemoveImage(image.ioctx, image.name)
