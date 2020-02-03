@@ -70,6 +70,22 @@ test_pkg() {
     grep -v "^mode: count" "$pkg.cover.out" >> "cover.out"
 }
 
+pre_all_tests() {
+    # Prepare Go code
+    go get -t -v ./...
+    diff -u <(echo -n) <(gofmt -d -s .)
+
+    # TODO: Consider enabling go vet but it currently fails
+
+    # Reset whole-module coverage file
+    echo "mode: count" > "cover.out"
+}
+
+post_all_tests() {
+    mkdir -p /results/coverage
+    go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+}
+
 test_go_ceph() {
     mkdir -p /tmp/ceph
     "${MICRO_OSD_PATH}" /tmp/ceph
@@ -80,11 +96,6 @@ test_go_ceph() {
         return 0
     fi
 
-    go get -t -v ./...
-    diff -u <(echo -n) <(gofmt -d -s .)
-    #go vet ./...
-    #go list ./...
-    echo "mode: count" > "cover.out"
     P=github.com/ceph/go-ceph
     pkgs=(\
         "cephfs" \
@@ -92,11 +103,11 @@ test_go_ceph() {
         "rados" \
         "rbd" \
         )
+    pre_all_tests
     for pkg in "${pkgs[@]}"; do
         test_pkg "$pkg"
     done
-    mkdir -p /results/coverage
-    go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+    post_all_tests
 }
 
 pause_if_needed() {
