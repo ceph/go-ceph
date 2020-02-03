@@ -51,6 +51,11 @@ while true ; do
     esac
 done
 
+show() {
+    echo "*** running:" "$@"
+    "$@"
+}
+
 test_failed() {
     local pkg="$1"
     echo "*** ERROR: ${pkg} tests failed"
@@ -73,7 +78,7 @@ test_pkg() {
         testargs+=("-run" "${TEST_RUN}")
     fi
 
-    go test -v "${testargs[@]}" "./$pkg"
+    show go test -v "${testargs[@]}" "./$pkg"
     ret=$?
     grep -v "^mode: count" "$pkg.cover.out" >> "cover.out"
     return ${ret}
@@ -92,12 +97,12 @@ pre_all_tests() {
 
 post_all_tests() {
     mkdir -p /results/coverage
-    go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+    show go tool cover -html=cover.out -o /results/coverage/go-ceph.html
 }
 
 test_go_ceph() {
     mkdir -p /tmp/ceph
-    "${MICRO_OSD_PATH}" /tmp/ceph
+    show "${MICRO_OSD_PATH}" /tmp/ceph
     export CEPH_CONF=/tmp/ceph/ceph.conf
 
     if [[ ${TEST_RUN} == NONE ]]; then
