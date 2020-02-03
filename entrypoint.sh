@@ -51,6 +51,25 @@ while true ; do
     esac
 done
 
+test_pkg() {
+    local pkg="$1"
+    if [[ "$TEST_PKG" && "$TEST_PKG" != "$pkg" ]]; then
+        return 0
+    fi
+    testargs=(\
+        "-covermode=count" \
+        "-coverprofile=$pkg.cover.out" \
+        "-coverpkg=$P/$pkg")
+    # disable caching of tests results
+    testargs+=("-count=1")
+    if [[ ${TEST_RUN} != ALL ]]; then
+        testargs+=("-run" "${TEST_RUN}")
+    fi
+
+    go test -v "${testargs[@]}" "./$pkg"
+    grep -v "^mode: count" "$pkg.cover.out" >> "cover.out"
+}
+
 test_go_ceph() {
     mkdir -p /tmp/ceph
     "${MICRO_OSD_PATH}" /tmp/ceph
@@ -58,39 +77,26 @@ test_go_ceph() {
 
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"
-    else
-        go get -t -v ./...
-        diff -u <(echo -n) <(gofmt -d -s .)
-        #go vet ./...
-        #go list ./...
-        echo "mode: count" > "cover.out"
-        P=github.com/ceph/go-ceph
-        pkgs=(\
-            "cephfs" \
-            "errutil" \
-            "rados" \
-            "rbd" \
-            )
-        for pkg in "${pkgs[@]}"; do
-            if [[ "$TEST_PKG" && "$TEST_PKG" != "$pkg" ]]; then
-                continue
-            fi
-            testargs=(\
-                "-covermode=count" \
-                "-coverprofile=$pkg.cover.out" \
-                "-coverpkg=$P/$pkg")
-            # disable caching of tests results
-            testargs+=("-count=1")
-            if [[ ${TEST_RUN} != ALL ]]; then
-                testargs+=("-run" "${TEST_RUN}")
-            fi
-
-            go test -v "${testargs[@]}" "./$pkg"
-            grep -v "^mode: count" "$pkg.cover.out" >> "cover.out"
-        done
-        mkdir -p /results/coverage
-        go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+        return 0
     fi
+
+    go get -t -v ./...
+    diff -u <(echo -n) <(gofmt -d -s .)
+    #go vet ./...
+    #go list ./...
+    echo "mode: count" > "cover.out"
+    P=github.com/ceph/go-ceph
+    pkgs=(\
+        "cephfs" \
+        "errutil" \
+        "rados" \
+        "rbd" \
+        )
+    for pkg in "${pkgs[@]}"; do
+        test_pkg "$pkg"
+    done
+    mkdir -p /results/coverage
+    go tool cover -html=cover.out -o /results/coverage/go-ceph.html
 }
 
 pause_if_needed() {
