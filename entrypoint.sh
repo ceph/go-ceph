@@ -4,11 +4,12 @@ set -e
 
 TEST_RUN=ALL
 PAUSE=no
+COVERAGE=yes
 CPUPROFILE=no
 MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,micro-osd:,help -n "$0" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,help -n "$0" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "$1" in
@@ -39,6 +40,10 @@ while true ; do
             MEMPROFILE=yes
             shift
         ;;
+        --no-cover)
+            COVERAGE=no
+            shift
+        ;;
         -h|--help)
             echo "Options:"
             echo "  --test-run=VALUE    Run selected test or ALL, NONE"
@@ -48,6 +53,7 @@ while true ; do
             echo "  --micro-osd         Specify path to micro-osd script"
             echo "  --cpuprofile        Run tests with cpu profiling"
             echo "  --memprofile        Run tests with mem profiling"
+            echo "  --no-cover          Disable code coverage profiling"
             echo "  -h|--help           Display help text"
             echo ""
             exit 0
@@ -80,14 +86,16 @@ test_pkg() {
     if [[ "$TEST_PKG" && "$TEST_PKG" != "$pkg" ]]; then
         return 0
     fi
-    testargs=(\
-        "-covermode=count" \
-        "-coverprofile=$pkg.cover.out" \
-        "-coverpkg=$P/$pkg")
     # disable caching of tests results
-    testargs+=("-count=1")
+    testargs=("-count=1")
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
+    fi
+    if [[ ${COVERAGE} = yes ]]; then
+        testargs+=(\
+            "-covermode=count" \
+            "-coverprofile=$pkg.cover.out" \
+            "-coverpkg=$P/$pkg")
     fi
     if [[ ${CPUPROFILE} = yes ]]; then
         testargs+=("-cpuprofile" "${pkg}.cpu.out")
@@ -114,8 +122,10 @@ pre_all_tests() {
 }
 
 post_all_tests() {
-    mkdir -p /results/coverage
-    show go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+    if [[ ${COVERAGE} = yes ]]; then
+        mkdir -p /results/coverage
+        show go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+    fi
 }
 
 test_go_ceph() {
