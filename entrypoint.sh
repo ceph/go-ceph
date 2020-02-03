@@ -4,9 +4,11 @@ set -e
 
 TEST_RUN=ALL
 PAUSE=no
+CPUPROFILE=no
+MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,micro-osd:,help -n "$0" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,micro-osd:,help -n "$0" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "$1" in
@@ -29,6 +31,14 @@ while true ; do
             shift
             shift
         ;;
+        --cpuprofile)
+            CPUPROFILE=yes
+            shift
+        ;;
+        --memprofile)
+            MEMPROFILE=yes
+            shift
+        ;;
         -h|--help)
             echo "Options:"
             echo "  --test-run=VALUE    Run selected test or ALL, NONE"
@@ -36,6 +46,8 @@ while true ; do
             echo "  --test-pkg=PKG      Run only tests from PKG"
             echo "  --pause             Sleep forever after tests execute"
             echo "  --micro-osd         Specify path to micro-osd script"
+            echo "  --cpuprofile        Run tests with cpu profiling"
+            echo "  --memprofile        Run tests with mem profiling"
             echo "  -h|--help           Display help text"
             echo ""
             exit 0
@@ -76,6 +88,12 @@ test_pkg() {
     testargs+=("-count=1")
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
+    fi
+    if [[ ${CPUPROFILE} = yes ]]; then
+        testargs+=("-cpuprofile" "${pkg}.cpu.out")
+    fi
+    if [[ ${MEMPROFILE} = yes ]]; then
+        testargs+=("-memprofile" "${pkg}.mem.out")
     fi
 
     show go test -v "${testargs[@]}" "./$pkg"
