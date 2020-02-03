@@ -51,6 +51,13 @@ while true ; do
     esac
 done
 
+test_failed() {
+    local pkg="$1"
+    echo "*** ERROR: ${pkg} tests failed"
+    pause_if_needed
+    return 1
+}
+
 test_pkg() {
     local pkg="$1"
     if [[ "$TEST_PKG" && "$TEST_PKG" != "$pkg" ]]; then
@@ -67,7 +74,9 @@ test_pkg() {
     fi
 
     go test -v "${testargs[@]}" "./$pkg"
+    ret=$?
     grep -v "^mode: count" "$pkg.cover.out" >> "cover.out"
+    return ${ret}
 }
 
 pre_all_tests() {
@@ -105,13 +114,14 @@ test_go_ceph() {
         )
     pre_all_tests
     for pkg in "${pkgs[@]}"; do
-        test_pkg "$pkg"
+        test_pkg "$pkg" || test_failed "$pkg"
     done
     post_all_tests
 }
 
 pause_if_needed() {
     if [[ ${PAUSE} = yes ]]; then
+        echo "*** pausing execution"
         sleep infinity
     fi
 }
