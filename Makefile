@@ -26,3 +26,15 @@ check:
 	# Configure project's revive checks using .revive.toml
 	# See: https://github.com/mgechev/revive
 	@for d in $$(go list ./... | grep -v /vendor/); do revive -config .revive.toml $${d}; done
+
+# Do a quick compile only check of the tests and impliclity the
+# library code as well.
+test-binaries: cephfs.test errutil.test rados.test rbd.test
+test-bins: test-binaries
+
+%.test: % force_go_build
+	go test -c ./$<
+
+# force_go_build is phony and builds nothing, can be used for forcing
+# go toolchain commands to always run
+.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build
