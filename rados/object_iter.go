@@ -5,6 +5,7 @@ package rados
 //
 import "C"
 
+// Iter supports iterating over objects in the ioctx.
 type Iter struct {
 	ctx       C.rados_list_ctx_t
 	err       error
@@ -12,6 +13,7 @@ type Iter struct {
 	namespace string
 }
 
+// IterToken supports reporting on and seeking to different positions.
 type IterToken uint32
 
 // Iter returns a Iterator object that can be used to list the object names in the current pool
@@ -28,6 +30,7 @@ func (iter *Iter) Token() IterToken {
 	return IterToken(C.rados_nobjects_list_get_pg_hash_position(iter.ctx))
 }
 
+// Seek moves the iterator to the position indicated by the token.
 func (iter *Iter) Seek(token IterToken) {
 	C.rados_nobjects_list_seek(iter.ctx, C.uint32_t(token))
 }
@@ -82,7 +85,7 @@ func (iter *Iter) Err() error {
 	return iter.err
 }
 
-// Closes the iterator cursor on the server. Be aware that iterators are not closed automatically
+// Close the iterator cursor on the server. Be aware that iterators are not closed automatically
 // at the end of iteration.
 func (iter *Iter) Close() {
 	C.rados_nobjects_list_close(iter.ctx)
