@@ -148,6 +148,7 @@ test_go_ceph() {
     pkgs=(\
         "cephfs" \
         "errutil" \
+        "internal/callbacks" \
         "rados" \
         "rbd" \
         )
