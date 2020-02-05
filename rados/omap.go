@@ -70,7 +70,9 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 // visited by ListOmapValues
 type OmapListFunc func(key string, value []byte)
 
-// Iterate on a set of keys and their values from an omap
+// ListOmapValues iterates over the keys and values in an omap by way of
+// a callback function.
+//
 // `startAfter`: iterate only on the keys after this specified one
 // `filterPrefix`: iterate only on the keys beginning with this prefix
 // `maxReturn`: iterate no more than `maxReturn` key/value pairs
@@ -131,7 +133,7 @@ func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPref
 	return nil
 }
 
-// Fetch a set of keys and their values from an omap and returns then as a map
+// GetOmapValues fetches a set of keys and their values from an omap and returns then as a map
 // `startAfter`: retrieve only the keys after this specified one
 // `filterPrefix`: retrieve only the keys beginning with this prefix
 // `maxReturn`: retrieve no more than `maxReturn` key/value pairs
@@ -148,7 +150,7 @@ func (ioctx *IOContext) GetOmapValues(oid string, startAfter string, filterPrefi
 	return omap, err
 }
 
-// Fetch all the keys and their values from an omap and returns then as a map
+// GetAllOmapValues fetches all the keys and their values from an omap and returns then as a map
 // `startAfter`: retrieve only the keys after this specified one
 // `filterPrefix`: retrieve only the keys beginning with this prefix
 // `iteratorSize`: internal number of keys to fetch during a read operation
