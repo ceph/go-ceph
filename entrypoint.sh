@@ -9,17 +9,17 @@ CPUPROFILE=no
 MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,help -n "$0" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
-    case "$1" in
+    case "${1}" in
         --test-pkg)
-            TEST_PKG="$2"
+            TEST_PKG="${2}"
             shift
             shift
         ;;
         --test-run)
-            TEST_RUN="$2"
+            TEST_RUN="${2}"
             shift
             shift
         ;;
@@ -28,7 +28,7 @@ while true ; do
             shift
         ;;
         --micro-osd)
-            MICRO_OSD_PATH="$2"
+            MICRO_OSD_PATH="${2}"
             shift
             shift
         ;;
@@ -75,15 +75,15 @@ show() {
 }
 
 test_failed() {
-    local pkg="$1"
+    local pkg="${1}"
     echo "*** ERROR: ${pkg} tests failed"
     pause_if_needed
     return 1
 }
 
 test_pkg() {
-    local pkg="$1"
-    if [[ "$TEST_PKG" && "$TEST_PKG" != "$pkg" ]]; then
+    local pkg="${1}"
+    if [[ "${TEST_PKG}" && "${TEST_PKG}" != "${pkg}" ]]; then
         return 0
     fi
     # disable caching of tests results
@@ -94,8 +94,8 @@ test_pkg() {
     if [[ ${COVERAGE} = yes ]]; then
         testargs+=(\
             "-covermode=count" \
-            "-coverprofile=$pkg.cover.out" \
-            "-coverpkg=$P/$pkg")
+            "-coverprofile=${pkg}.cover.out" \
+            "-coverpkg=${P}/${pkg}")
     fi
     if [[ ${CPUPROFILE} = yes ]]; then
         testargs+=("-cpuprofile" "${pkg}.cpu.out")
@@ -104,9 +104,9 @@ test_pkg() {
         testargs+=("-memprofile" "${pkg}.mem.out")
     fi
 
-    show go test -v "${testargs[@]}" "./$pkg"
+    show go test -v "${testargs[@]}" "./${pkg}"
     ret=$?
-    grep -v "^mode: count" "$pkg.cover.out" >> "cover.out"
+    grep -v "^mode: count" "${pkg}.cover.out" >> "cover.out"
     return ${ret}
 }
 
@@ -147,7 +147,7 @@ test_go_ceph() {
         )
     pre_all_tests
     for pkg in "${pkgs[@]}"; do
-        test_pkg "$pkg" || test_failed "$pkg"
+        test_pkg "${pkg}" || test_failed "${pkg}"
     done
     post_all_tests
 }
