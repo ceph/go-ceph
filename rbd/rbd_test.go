@@ -1425,3 +1425,139 @@ func quickCreate(ioctx *rados.IOContext, name string, size uint64, order int) er
 	}
 	return CreateImage(ioctx, name, size, options)
 }
+
+func TestGetId(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t,
+		options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder)))
+	err = CreateImage(ioctx, name, testImageSize, options)
+	assert.NoError(t, err)
+
+	image, err := OpenImage(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+	id, err := image.GetId()
+	assert.NoError(t, err)
+	assert.Greater(t, len(id), 8)
+
+	err = image.Close()
+	assert.NoError(t, err)
+
+	id, err = image.GetId()
+	assert.Error(t, err)
+	assert.Equal(t, "", id)
+
+	err = image.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestOpenImageById(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t,
+		options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder)))
+	err = CreateImage(ioctx, name, testImageSize, options)
+	assert.NoError(t, err)
+
+	workingImage, err := OpenImage(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+	id, err := workingImage.GetId()
+	assert.NoError(t, err)
+	err = workingImage.Close()
+	assert.NoError(t, err)
+
+	t.Run("ReadWriteBadId", func(t *testing.T) {
+		t.Skip("segfaults due to https://tracker.ceph.com/issues/43178")
+		// phony id
+		img, err := OpenImageById(ioctx, "102f00aaabbbccd", NoSnapshot)
+		require.Error(t, err)
+		require.Nil(t, img)
+	})
+	t.Run("ReadOnlyBadId", func(t *testing.T) {
+		t.Skip("segfaults due to https://tracker.ceph.com/issues/43178")
+		// phony id
+		img, err := OpenImageByIdReadOnly(ioctx, "blubb", NoSnapshot)
+		require.Error(t, err)
+		require.Nil(t, img)
+	})
+	t.Run("ReadWrite", func(t *testing.T) {
+		img, err := OpenImageById(ioctx, id, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, img)
+		defer func() { assert.NoError(t, img.Close()) }()
+
+		data := []byte("input data")
+		_, err = img.Write(data)
+		assert.NoError(t, err)
+	})
+	t.Run("ReadOnly", func(t *testing.T) {
+		img, err := OpenImageByIdReadOnly(ioctx, id, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, img)
+		defer func() { assert.NoError(t, img.Close()) }()
+
+		data := []byte("input data")
+		_, err = img.Write(data)
+		// writing should fail in read-only mode
+		assert.Error(t, err)
+	})
+	t.Run("Snapshot", func(t *testing.T) {
+		img, err := OpenImageById(ioctx, id, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, img)
+		defer func() { assert.NoError(t, img.Close()) }()
+
+		snapshot, err := img.CreateSnapshot("snerpshort")
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, snapshot.Remove()) }()
+
+		snapImage, err := OpenImageById(ioctx, id, "snerpshort")
+		require.NoError(t, err)
+		require.NotNil(t, snapImage)
+		assert.NoError(t, snapImage.Close())
+	})
+	t.Run("ReadOnlySnapshot", func(t *testing.T) {
+		img, err := OpenImageById(ioctx, id, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, img)
+		defer func() { assert.NoError(t, img.Close()) }()
+
+		snapshot, err := img.CreateSnapshot("snerpshort2")
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, snapshot.Remove()) }()
+
+		snapImage, err := OpenImageByIdReadOnly(ioctx, id, "snerpshort2")
+		require.NoError(t, err)
+		require.NotNil(t, snapImage)
+		assert.NoError(t, snapImage.Close())
+	})
+
+	err = workingImage.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}

@@ -1125,6 +1125,32 @@ func (image *Image) RemoveMetadata(key string) error {
 	return nil
 }
 
+// GetId returns the internal image ID string.
+//
+// Implements:
+//  int rbd_get_id(rbd_image_t image, char *id, size_t id_len);
+func (image *Image) GetId() (string, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return "", err
+	}
+	size := C.size_t(1024)
+	buf := make([]byte, size)
+	for {
+		ret := C.rbd_get_id(
+			image.image,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			size)
+		if ret == -C.ERANGE && size <= 8192 {
+			size *= 2
+			buf = make([]byte, size)
+		} else if ret < 0 {
+			return "", getError(ret)
+		}
+		id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+		return id, nil
+	}
+}
+
 // int rbd_snap_remove(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Remove() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
@@ -1326,6 +1352,79 @@ func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, e
 	return &Image{
 		ioctx: ioctx,
 		name:  name,
+		image: cImage,
+	}, nil
+}
+
+// OpenImageById will open an existing rbd image by ID and snapshot name,
+// returning a new opened image. Pass the NoSnapshot sentinel value as the
+// snapName to explicitly indicate that no snapshot name is being provided.
+// Error handling will fail & segfault unless compiled with a version of ceph
+// that fixes https://tracker.ceph.com/issues/43178
+//
+// Implements:
+//  int rbd_open_by_id(rados_ioctx_t io, const char *id,
+//                     rbd_image_t *image, const char *snap_name);
+func OpenImageById(ioctx *rados.IOContext, id, snapName string) (*Image, error) {
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
+
+	var cSnapName *C.char
+	if snapName != NoSnapshot {
+		cSnapName = C.CString(snapName)
+		defer C.free(unsafe.Pointer(cSnapName))
+	}
+
+	var cImage C.rbd_image_t
+	ret := C.rbd_open_by_id(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cid,
+		&cImage,
+		cSnapName)
+
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
+		image: cImage,
+	}, nil
+}
+
+// OpenImageByIdReadOnly will open an existing rbd image by ID and snapshot
+// name, returning a new opened-for-read image. Pass the NoSnapshot sentinel
+// value as the snapName to explicitly indicate that no snapshot name is being
+// provided.
+// Error handling will fail & segfault unless compiled with a version of ceph
+// that fixes https://tracker.ceph.com/issues/43178
+//
+// Implements:
+//  int rbd_open_by_id_read_only(rados_ioctx_t io, const char *id,
+//                               rbd_image_t *image, const char *snap_name);
+func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image, error) {
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
+
+	var cSnapName *C.char
+	if snapName != NoSnapshot {
+		cSnapName = C.CString(snapName)
+		defer C.free(unsafe.Pointer(cSnapName))
+	}
+
+	var cImage C.rbd_image_t
+	ret := C.rbd_open_by_id_read_only(
+		C.rados_ioctx_t(ioctx.Pointer()),
+		cid,
+		&cImage,
+		cSnapName)
+
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+
+	return &Image{
+		ioctx: ioctx,
 		image: cImage,
 	}, nil
 }
