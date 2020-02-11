@@ -185,8 +185,7 @@ func (e RBDError) Error() string {
 	return fmt.Sprintf("rbd: ret=%d, %s", errno, s)
 }
 
-//
-func GetError(err C.int) error {
+func getError(err C.int) error {
 	if err != 0 {
 		if err == -C.ENOENT {
 			return ErrNotFound
@@ -389,7 +388,7 @@ func (image *Image) Trash(delay time.Duration) error {
 	c_name := C.CString(image.name)
 	defer C.free(unsafe.Pointer(c_name))
 
-	return GetError(C.rbd_trash_move(C.rados_ioctx_t(image.ioctx.Pointer()), c_name,
+	return getError(C.rbd_trash_move(C.rados_ioctx_t(image.ioctx.Pointer()), c_name,
 		C.uint64_t(delay.Seconds())))
 }
 
@@ -485,7 +484,7 @@ func (image *Image) Resize(size uint64) error {
 		return err
 	}
 
-	return GetError(C.rbd_resize(image.image, C.uint64_t(size)))
+	return getError(C.rbd_resize(image.image, C.uint64_t(size)))
 }
 
 // Stat an rbd image.
@@ -629,7 +628,7 @@ func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 	c_destname := C.CString(destname)
 	defer C.free(unsafe.Pointer(c_destname))
 
-	return GetError(C.rbd_copy(image.image,
+	return getError(C.rbd_copy(image.image,
 		C.rados_ioctx_t(ioctx.Pointer()), c_destname))
 }
 
@@ -644,7 +643,7 @@ func (image *Image) Copy2(dest *Image) error {
 		return err
 	}
 
-	return GetError(C.rbd_copy2(image.image, dest.image))
+	return getError(C.rbd_copy2(image.image, dest.image))
 }
 
 // Flatten removes snapshot references from the image.
@@ -656,7 +655,7 @@ func (image *Image) Flatten() error {
 		return err
 	}
 
-	return GetError(C.rbd_flatten(image.image))
+	return getError(C.rbd_flatten(image.image))
 }
 
 // ListChildren returns a list of images that reference the current snapshot.
@@ -788,7 +787,7 @@ func (image *Image) LockExclusive(cookie string) error {
 	c_cookie := C.CString(cookie)
 	defer C.free(unsafe.Pointer(c_cookie))
 
-	return GetError(C.rbd_lock_exclusive(image.image, c_cookie))
+	return getError(C.rbd_lock_exclusive(image.image, c_cookie))
 }
 
 // LockShared acquires a shared lock on the rbd image.
@@ -805,7 +804,7 @@ func (image *Image) LockShared(cookie string, tag string) error {
 	defer C.free(unsafe.Pointer(c_cookie))
 	defer C.free(unsafe.Pointer(c_tag))
 
-	return GetError(C.rbd_lock_shared(image.image, c_cookie, c_tag))
+	return getError(C.rbd_lock_shared(image.image, c_cookie, c_tag))
 }
 
 // Unlock releases a lock on the image.
@@ -820,7 +819,7 @@ func (image *Image) Unlock(cookie string) error {
 	c_cookie := C.CString(cookie)
 	defer C.free(unsafe.Pointer(c_cookie))
 
-	return GetError(C.rbd_unlock(image.image, c_cookie))
+	return getError(C.rbd_unlock(image.image, c_cookie))
 }
 
 // BreakLock forces the release of a lock held by another client.
@@ -837,7 +836,7 @@ func (image *Image) BreakLock(client string, cookie string) error {
 	defer C.free(unsafe.Pointer(c_client))
 	defer C.free(unsafe.Pointer(c_cookie))
 
-	return GetError(C.rbd_break_lock(image.image, c_client, c_cookie))
+	return getError(C.rbd_break_lock(image.image, c_client, c_cookie))
 }
 
 // ssize_t rbd_read(rbd_image_t image, uint64_t ofs, size_t len, char *buf);
@@ -979,7 +978,7 @@ func (image *Image) Flush() error {
 		return err
 	}
 
-	return GetError(C.rbd_flush(image.image))
+	return getError(C.rbd_flush(image.image))
 }
 
 // int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
@@ -1135,7 +1134,7 @@ func (snapshot *Snapshot) Remove() error {
 	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
-	return GetError(C.rbd_snap_remove(snapshot.image.image, c_snapname))
+	return getError(C.rbd_snap_remove(snapshot.image.image, c_snapname))
 }
 
 // int rbd_snap_rollback(rbd_image_t image, const char *snapname);
@@ -1149,7 +1148,7 @@ func (snapshot *Snapshot) Rollback() error {
 	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
-	return GetError(C.rbd_snap_rollback(snapshot.image.image, c_snapname))
+	return getError(C.rbd_snap_rollback(snapshot.image.image, c_snapname))
 }
 
 // int rbd_snap_protect(rbd_image_t image, const char *snap_name);
@@ -1161,7 +1160,7 @@ func (snapshot *Snapshot) Protect() error {
 	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
-	return GetError(C.rbd_snap_protect(snapshot.image.image, c_snapname))
+	return getError(C.rbd_snap_protect(snapshot.image.image, c_snapname))
 }
 
 // int rbd_snap_unprotect(rbd_image_t image, const char *snap_name);
@@ -1173,7 +1172,7 @@ func (snapshot *Snapshot) Unprotect() error {
 	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
-	return GetError(C.rbd_snap_unprotect(snapshot.image.image, c_snapname))
+	return getError(C.rbd_snap_unprotect(snapshot.image.image, c_snapname))
 }
 
 // int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,
@@ -1206,7 +1205,7 @@ func (snapshot *Snapshot) Set() error {
 	c_snapname := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(c_snapname))
 
-	return GetError(C.rbd_snap_set(snapshot.image.image, c_snapname))
+	return getError(C.rbd_snap_set(snapshot.image.image, c_snapname))
 }
 
 // GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
@@ -1246,7 +1245,7 @@ func TrashRemove(ioctx *rados.IOContext, id string, force bool) error {
 	c_id := C.CString(id)
 	defer C.free(unsafe.Pointer(c_id))
 
-	return GetError(C.rbd_trash_remove(C.rados_ioctx_t(ioctx.Pointer()), c_id, C.bool(force)))
+	return getError(C.rbd_trash_remove(C.rados_ioctx_t(ioctx.Pointer()), c_id, C.bool(force)))
 }
 
 // TrashRestore restores the trashed RBD with the specified id back to the pool from whence it
@@ -1257,7 +1256,7 @@ func TrashRestore(ioctx *rados.IOContext, id, name string) error {
 	defer C.free(unsafe.Pointer(c_id))
 	defer C.free(unsafe.Pointer(c_name))
 
-	return GetError(C.rbd_trash_restore(C.rados_ioctx_t(ioctx.Pointer()), c_id, c_name))
+	return getError(C.rbd_trash_restore(C.rados_ioctx_t(ioctx.Pointer()), c_id, c_name))
 }
 
 // OpenImage will open an existing rbd image by name and snapshot name,
@@ -1285,7 +1284,7 @@ func OpenImage(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
 		cSnapName)
 
 	if ret != 0 {
-		return nil, GetError(ret)
+		return nil, getError(ret)
 	}
 
 	return &Image{
@@ -1321,7 +1320,7 @@ func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, e
 		cSnapName)
 
 	if ret != 0 {
-		return nil, GetError(ret)
+		return nil, getError(ret)
 	}
 
 	return &Image{
@@ -1347,7 +1346,7 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImage
 
 	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
 		C.uint64_t(size), C.rbd_image_options_t(rio.options))
-	return GetError(ret)
+	return getError(ret)
 }
 
 // RemoveImage removes the specified rbd image.
@@ -1357,5 +1356,5 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImage
 func RemoveImage(ioctx *rados.IOContext, name string) error {
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
-	return GetError(C.rbd_remove(C.rados_ioctx_t(ioctx.Pointer()), c_name))
+	return getError(C.rbd_remove(C.rados_ioctx_t(ioctx.Pointer()), c_name))
 }

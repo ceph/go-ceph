@@ -64,7 +64,7 @@ func (rio *RbdImageOptions) SetString(option RbdImageOption, value string) error
 	ret := C.rbd_image_options_set_string(rio.options, C.int(option), c_value)
 	if ret != 0 {
 		return fmt.Errorf("%v, could not set option %v to \"%v\"",
-			GetError(ret), option, value)
+			getError(ret), option, value)
 	}
 
 	return nil
@@ -82,7 +82,7 @@ func (rio *RbdImageOptions) GetString(option RbdImageOption) (string, error) {
 		(*C.char)(unsafe.Pointer(&value[0])),
 		C.size_t(len(value)))
 	if ret != 0 {
-		return "", fmt.Errorf("%v, could not get option %v", GetError(ret), option)
+		return "", fmt.Errorf("%v, could not get option %v", getError(ret), option)
 	}
 
 	return C.GoString((*C.char)(unsafe.Pointer(&value[0]))), nil
@@ -99,7 +99,7 @@ func (rio *RbdImageOptions) SetUint64(option RbdImageOption, value uint64) error
 	ret := C.rbd_image_options_set_uint64(rio.options, C.int(option), c_value)
 	if ret != 0 {
 		return fmt.Errorf("%v, could not set option %v to \"%v\"",
-			GetError(ret), option, value)
+			getError(ret), option, value)
 	}
 
 	return nil
@@ -115,7 +115,7 @@ func (rio *RbdImageOptions) GetUint64(option RbdImageOption) (uint64, error) {
 
 	ret := C.rbd_image_options_get_uint64(rio.options, C.int(option), &c_value)
 	if ret != 0 {
-		return 0, fmt.Errorf("%v, could not get option %v", GetError(ret), option)
+		return 0, fmt.Errorf("%v, could not get option %v", getError(ret), option)
 	}
 
 	return uint64(c_value), nil
@@ -131,7 +131,7 @@ func (rio *RbdImageOptions) IsSet(option RbdImageOption) (bool, error) {
 
 	ret := C.rbd_image_options_is_set(rio.options, C.int(option), &c_set)
 	if ret != 0 {
-		return false, fmt.Errorf("%v, could not check option %v", GetError(ret), option)
+		return false, fmt.Errorf("%v, could not check option %v", getError(ret), option)
 	}
 
 	return bool(c_set), nil
@@ -144,7 +144,7 @@ func (rio *RbdImageOptions) IsSet(option RbdImageOption) (bool, error) {
 func (rio *RbdImageOptions) Unset(option RbdImageOption) error {
 	ret := C.rbd_image_options_unset(rio.options, C.int(option))
 	if ret != 0 {
-		return fmt.Errorf("%v, could not unset option %v", GetError(ret), option)
+		return fmt.Errorf("%v, could not unset option %v", getError(ret), option)
 	}
 
 	return nil
