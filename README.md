@@ -33,7 +33,7 @@ go test -tags luminous ....
 ## Documentation
 
 Detailed documentation is available at
-<http://godoc.org/github.com/ceph/go-ceph>.
+<https://pkg.go.dev/github.com/ceph/go-ceph>.
 
 ### Connecting to a cluster
 
