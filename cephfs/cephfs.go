@@ -16,8 +16,10 @@ import (
 	"github.com/ceph/go-ceph/rados"
 )
 
+// CephFSError represents an error condition returned from the CephFS APIs.
 type CephFSError int
 
+// Error returns the error string for the CephFSError type.
 func (e CephFSError) Error() string {
 	errno, s := errutil.FormatErrno(int(e))
 	if s == "" {
