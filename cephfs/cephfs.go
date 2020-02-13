@@ -91,6 +91,17 @@ func (mount *MountInfo) Mount() error {
 	return getError(ret)
 }
 
+// MountWithRoot mounts the file system using the path provided for the root of
+// the mount. This establishes a connection capable of I/O.
+//
+// Implements:
+//  int ceph_mount(struct ceph_mount_info *cmount, const char *root);
+func (mount *MountInfo) MountWithRoot(root string) error {
+	croot := C.CString(root)
+	defer C.free(unsafe.Pointer(croot))
+	return getError(C.ceph_mount(mount.mount, croot))
+}
+
 // Unmount the file system.
 //
 // Implements:

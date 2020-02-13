@@ -276,3 +276,55 @@ func TestMdsCommandError(t *testing.T) {
 	assert.NotEqual(t, "", string(info))
 	assert.Contains(t, string(info), "unparseable JSON")
 }
+
+func TestMountWithRoot(t *testing.T) {
+	bMount := fsConnect(t)
+	defer func() {
+		assert.NoError(t, bMount.Unmount())
+		assert.NoError(t, bMount.Release())
+	}()
+
+	dir1 := "/test-mount-with-root"
+	err := bMount.MakeDir(dir1, 0755)
+	assert.NoError(t, err)
+	defer bMount.RemoveDir(dir1)
+
+	sub1 := "/i.was.here"
+	dir2 := dir1 + sub1
+	err = bMount.MakeDir(dir2, 0755)
+	assert.NoError(t, err)
+	defer bMount.RemoveDir(dir2)
+
+	t.Run("withRoot", func(t *testing.T) {
+		mount, err := CreateMount()
+		require.NoError(t, err)
+		require.NotNil(t, mount)
+		defer func() {
+			assert.NoError(t, mount.Unmount())
+			assert.NoError(t, mount.Release())
+		}()
+
+		err = mount.ReadDefaultConfigFile()
+		require.NoError(t, err)
+
+		err = mount.MountWithRoot(dir1)
+		assert.NoError(t, err)
+
+		err = mount.ChangeDir(sub1)
+		assert.NoError(t, err)
+	})
+	t.Run("badRoot", func(t *testing.T) {
+		mount, err := CreateMount()
+		require.NoError(t, err)
+		require.NotNil(t, mount)
+		defer func() {
+			assert.NoError(t, mount.Release())
+		}()
+
+		err = mount.ReadDefaultConfigFile()
+		require.NoError(t, err)
+
+		err = mount.MountWithRoot("/i-yam-what-i-yam")
+		assert.Error(t, err)
+	})
+}
