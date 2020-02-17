@@ -16,8 +16,10 @@ import (
 	"github.com/ceph/go-ceph/rados"
 )
 
+// CephFSError represents an error condition returned from the CephFS APIs.
 type CephFSError int
 
+// Error returns the error string for the CephFSError type.
 func (e CephFSError) Error() string {
 	errno, s := errutil.FormatErrno(int(e))
 	if s == "" {
@@ -80,19 +82,28 @@ func (mount *MountInfo) ReadDefaultConfigFile() error {
 	return getError(ret)
 }
 
-// Mount mounts the mount handle.
+// Mount the file system, establishing a connection capable of I/O.
+//
+// Implements:
+//  int ceph_mount(struct ceph_mount_info *cmount, const char *root);
 func (mount *MountInfo) Mount() error {
 	ret := C.ceph_mount(mount.mount, nil)
 	return getError(ret)
 }
 
-// Unmount unmounts the mount handle.
+// Unmount the file system.
+//
+// Implements:
+//  int ceph_unmount(struct ceph_mount_info *cmount);
 func (mount *MountInfo) Unmount() error {
 	ret := C.ceph_unmount(mount.mount)
 	return getError(ret)
 }
 
 // Release destroys the mount handle.
+//
+// Implements:
+//  int ceph_release(struct ceph_mount_info *cmount);
 func (mount *MountInfo) Release() error {
 	ret := C.ceph_release(mount.mount)
 	return getError(ret)
