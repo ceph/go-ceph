@@ -91,6 +91,42 @@ const (
 	RbdFeaturesSingleClient   = uint64(C.RBD_FEATURES_SINGLE_CLIENT)
 )
 
+// FeatureSet is a combination of the bit value for multiple featurs.
+type FeatureSet uint64
+
+var (
+	featureNameToBit = map[string]uint64{
+		FeatureNameLayering:      FeatureLayering,
+		FeatureNameStripingV2:    FeatureStripingV2,
+		FeatureNameExclusiveLock: FeatureExclusiveLock,
+		FeatureNameObjectMap:     FeatureObjectMap,
+		FeatureNameFastDiff:      FeatureFastDiff,
+		FeatureNameDeepFlatten:   FeatureDeepFlatten,
+		FeatureNameJournaling:    FeatureJournaling,
+		FeatureNameDataPool:      FeatureDataPool,
+	}
+)
+
+func FeatureSetFromNames(names []string) FeatureSet {
+	var fs uint64
+	for _, name := range names {
+		fs |= featureNameToBit[name]
+	}
+	return FeatureSet(fs)
+}
+
+func (fs *FeatureSet) Names() []string {
+	names := []string{}
+
+	for name, bit := range featureNameToBit {
+		if (uint64(*fs) & bit) == bit {
+			names = append(names, name)
+		}
+	}
+
+	return names
+}
+
 // GetFeatures returns the features bitmask for the rbd image.
 //
 // Implements:

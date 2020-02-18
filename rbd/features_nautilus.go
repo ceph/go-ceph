@@ -14,3 +14,7 @@ const (
 	// RBD_FEATURE_NAME_MIGRATING from librbd
 	FeatureNameMigrating = C.RBD_FEATURE_NAME_MIGRATING
 )
+
+func init() {
+	featureNameToBit[FeatureNameMigrating] = FeatureMigrating
+}
