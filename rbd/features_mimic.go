@@ -14,3 +14,7 @@ const (
 	// RBD_FEATURE_NAME_OPERATIONS from librbd
 	FeatureNameOperations = C.RBD_FEATURE_NAME_OPERATIONS
 )
+
+func init() {
+	featureNameToBit[FeatureNameOperations] = FeatureOperations
+}
