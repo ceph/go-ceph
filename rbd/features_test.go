@@ -1,6 +1,7 @@
 package rbd
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -49,6 +50,26 @@ func TestGetFeatures(t *testing.T) {
 		assert.True(t, hasLayering, "FeatureLayering is not set")
 		assert.True(t, hasStripingV2, "FeatureStripingV2 is not set")
 	})
+
+	t.Run("compareFeatureSet", func(t *testing.T) {
+		fs := FeatureSet(features)
+		assert.Contains(t, fs.Names(), FeatureNameLayering)
+		assert.Contains(t, fs.Names(), FeatureNameStripingV2)
+	})
+}
+
+func TestFeatureSet(t *testing.T) {
+	fsBits := FeatureSet(FeatureExclusiveLock | FeatureDeepFlatten)
+	fsNames := FeatureSetFromNames([]string{FeatureNameExclusiveLock, FeatureNameDeepFlatten})
+	assert.Equal(t, fsBits, fsNames)
+
+	fsBitsSorted := fsBits.Names()
+	sort.Strings(fsBitsSorted)
+
+	fsNamesSorted := fsNames.Names()
+	sort.Strings(fsNamesSorted)
+
+	assert.Equal(t, fsBitsSorted, fsNamesSorted)
 }
 
 func TestUpdateFeatures(t *testing.T) {
