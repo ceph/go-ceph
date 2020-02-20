@@ -50,3 +50,75 @@ func TestGetFeatures(t *testing.T) {
 		assert.True(t, hasStripingV2, "FeatureStripingV2 is not set")
 	})
 }
+
+func TestUpdateFeatures(t *testing.T) {
+	conn := radosConnect(t)
+	require.NotNil(t, conn)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	name := GetUUID()
+
+	options := NewRbdImageOptions()
+	// test with FeatureExclusiveLock as that is mutable
+	err = options.SetUint64(RbdImageOptionFeatures, FeatureExclusiveLock)
+	require.NoError(t, err)
+
+	err = CreateImage(ioctx, name, 16*1024*1024, options)
+	require.NoError(t, err)
+	defer func() { assert.NoError(t, RemoveImage(ioctx, name)) }()
+
+	image, err := OpenImage(ioctx, name, NoSnapshot)
+	require.NoError(t, err)
+	defer func() { assert.NoError(t, image.Close()) }()
+
+	t.Run("imageNotOpen", func(t *testing.T) {
+		img, err := OpenImageReadOnly(ioctx, name, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, img)
+
+		err = img.Close()
+		require.NoError(t, err)
+
+		err = img.UpdateFeatures(FeatureExclusiveLock, false)
+		assert.Equal(t, err, ErrImageNotOpen)
+	})
+
+	t.Run("verifyFeatureEnabled", func(t *testing.T) {
+		features, err := image.GetFeatures()
+		require.NoError(t, err)
+
+		hasExclusiveLock := (features & FeatureExclusiveLock) == FeatureExclusiveLock
+		require.True(t, hasExclusiveLock, "FeatureExclusiveLock is not set")
+	})
+
+	t.Run("disableFeature", func(t *testing.T) {
+		err = image.UpdateFeatures(FeatureExclusiveLock, false)
+		require.NoError(t, err)
+
+		features, err := image.GetFeatures()
+		require.NoError(t, err)
+
+		hasExclusiveLock := (features & FeatureExclusiveLock) == FeatureExclusiveLock
+		require.False(t, hasExclusiveLock, "FeatureExclusiveLock is set")
+	})
+
+	t.Run("enableFeature", func(t *testing.T) {
+		err = image.UpdateFeatures(FeatureExclusiveLock, true)
+		require.NoError(t, err)
+
+		features, err := image.GetFeatures()
+		require.NoError(t, err)
+
+		hasExclusiveLock := (features & FeatureExclusiveLock) == FeatureExclusiveLock
+		require.True(t, hasExclusiveLock, "FeatureExclusiveLock is not set")
+	})
+}
