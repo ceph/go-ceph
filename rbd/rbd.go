@@ -99,7 +99,7 @@ type Locker struct {
 	Addr   string
 }
 
-//
+// Image is a handle for an RBD image.
 type Image struct {
 	io.Reader
 	io.Writer
