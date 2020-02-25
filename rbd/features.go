@@ -74,21 +74,32 @@ const (
 	FeatureNameDataPool = C.RBD_FEATURE_NAME_DATA_POOL
 
 	// old names for backwards compatibility (unused?)
-	RbdFeatureLayering      = FeatureLayering
-	RbdFeatureStripingV2    = FeatureStripingV2
-	RbdFeatureExclusiveLock = FeatureExclusiveLock
-	RbdFeatureObjectMap     = FeatureObjectMap
-	RbdFeatureFastDiff      = FeatureFastDiff
-	RbdFeatureDeepFlatten   = FeatureDeepFlatten
-	RbdFeatureJournaling    = FeatureJournaling
-	RbdFeatureDataPool      = FeatureDataPool
 
+	// RbdFeatureLayering deprecated alias for FeatureLayering
+	RbdFeatureLayering = FeatureLayering
+	// RbdFeatureStripingV2 deprecated alias for FeatureStripingV2
+	RbdFeatureStripingV2 = FeatureStripingV2
+	// RbdFeatureExclusiveLock deprecated alias for FeatureExclusiveLock
+	RbdFeatureExclusiveLock = FeatureExclusiveLock
+	// RbdFeatureObjectMap deprecated alias for FeatureObjectMap
+	RbdFeatureObjectMap = FeatureObjectMap
+	// RbdFeatureFastDiff deprecated alias for FeatureFastDiff
+	RbdFeatureFastDiff = FeatureFastDiff
+	// RbdFeatureDeepFlatten deprecated alias for FeatureDeepFlatten
+	RbdFeatureDeepFlatten = FeatureDeepFlatten
+	// RbdFeatureJournaling deprecated alias for FeatureJournaling
+	RbdFeatureJournaling = FeatureJournaling
+	// RbdFeatureDataPool deprecated alias for FeatureDataPool
+	RbdFeatureDataPool = FeatureDataPool
+
+	// revive:disable:exported Maybe unused
 	// the following are probably really unused?
 	RbdFeaturesDefault        = uint64(C.RBD_FEATURES_DEFAULT)
 	RbdFeaturesIncompatible   = uint64(C.RBD_FEATURES_INCOMPATIBLE)
 	RbdFeaturesRwIncompatible = uint64(C.RBD_FEATURES_RW_INCOMPATIBLE)
 	RbdFeaturesMutable        = uint64(C.RBD_FEATURES_MUTABLE)
 	RbdFeaturesSingleClient   = uint64(C.RBD_FEATURES_SINGLE_CLIENT)
+	// revive:enable:exported
 )
 
 // FeatureSet is a combination of the bit value for multiple featurs.
@@ -107,6 +118,8 @@ var (
 	}
 )
 
+// FeatureSetFromNames returns a FeatureSet built from flag bits corresponding
+// to the provided feature names.
 func FeatureSetFromNames(names []string) FeatureSet {
 	var fs uint64
 	for _, name := range names {
@@ -115,6 +128,8 @@ func FeatureSetFromNames(names []string) FeatureSet {
 	return FeatureSet(fs)
 }
 
+// Names converts all of the enabled feature bits in the FeatureSet to
+// a slice of strings corresponding to the names for each feature.
 func (fs *FeatureSet) Names() []string {
 	names := []string{}
 
