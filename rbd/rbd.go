@@ -552,7 +552,7 @@ func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 		cephIoctx(ioctx), c_destname))
 }
 
-// Copy one rbd image to another, using an image handle.
+// Copy2 copies one rbd image to another, using an image handle.
 //
 // Implements:
 //  int rbd_copy2(rbd_image_t src, rbd_image_t dest);
