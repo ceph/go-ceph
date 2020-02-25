@@ -16,8 +16,12 @@ import (
 	"github.com/ceph/go-ceph/rados"
 )
 
+// revive:disable:exported Temporarily live with stuttering
+
 // CephFSError represents an error condition returned from the CephFS APIs.
 type CephFSError int
+
+// revive:enable:exported
 
 // Error returns the error string for the CephFSError type.
 func (e CephFSError) Error() string {
