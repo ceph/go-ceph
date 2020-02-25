@@ -878,8 +878,11 @@ func (image *Image) Flush() error {
 	return getError(C.rbd_flush(image.image))
 }
 
-// int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
-// void rbd_snap_list_end(rbd_snap_info_t *snaps);
+// GetSnapshotNames returns more than just the names of snapshots
+// associated with the rbd image.
+//
+// Implements:
+//  int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);
 func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return nil, err
