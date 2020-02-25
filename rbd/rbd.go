@@ -819,6 +819,7 @@ func (image *Image) Discard(ofs uint64, length uint64) (int, error) {
 	return int(ret), nil
 }
 
+// ReadAt copies data from the image into the supplied buffer.
 func (image *Image) ReadAt(data []byte, off int64) (int, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
@@ -845,6 +846,7 @@ func (image *Image) ReadAt(data []byte, off int64) (int, error) {
 	return ret, nil
 }
 
+// WriteAt copies data from the supplied buffer to the image.
 func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
