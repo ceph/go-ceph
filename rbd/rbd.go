@@ -866,7 +866,10 @@ func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
 	return ret, err
 }
 
-// int rbd_flush(rbd_image_t image);
+// Flush all cached writes to storage.
+//
+// Implements:
+//  int rbd_flush(rbd_image_t image);
 func (image *Image) Flush() error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
