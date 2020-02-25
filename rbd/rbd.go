@@ -911,7 +911,10 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 	return snaps[:len(snaps)-1], nil
 }
 
-// int rbd_metadata_get(rbd_image_t image, const char *key, char *value, size_t *vallen)
+// GetMetadata returns the metadata string associated with the given key.
+//
+// Implements:
+//  int rbd_metadata_get(rbd_image_t image, const char *key, char *value, size_t *vallen)
 func (image *Image) GetMetadata(key string) (string, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return "", err
@@ -938,7 +941,10 @@ func (image *Image) GetMetadata(key string) (string, error) {
 	return string(value), nil
 }
 
-// int rbd_metadata_set(rbd_image_t image, const char *key, const char *value)
+// SetMetadata updates the metadata string associated with the given key.
+//
+// Implements:
+//  int rbd_metadata_set(rbd_image_t image, const char *key, const char *value)
 func (image *Image) SetMetadata(key string, value string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
@@ -957,7 +963,10 @@ func (image *Image) SetMetadata(key string, value string) error {
 	return nil
 }
 
-// int rbd_metadata_remove(rbd_image_t image, const char *key)
+// RemoveMetadata clears the metadata associated with the given key.
+//
+// Implements:
+//  int rbd_metadata_remove(rbd_image_t image, const char *key)
 func (image *Image) RemoveMetadata(key string) error {
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
