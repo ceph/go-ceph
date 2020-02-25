@@ -74,7 +74,7 @@ var (
 	// revive:enable:exported
 )
 
-//
+// ImageInfo represents the status information for an image.
 type ImageInfo struct {
 	Size              uint64
 	Obj_size          uint64
@@ -85,7 +85,7 @@ type ImageInfo struct {
 	Parent_name       string
 }
 
-//
+// SnapInfo represents the status information for a snapshot.
 type SnapInfo struct {
 	Id   uint64
 	Size uint64
