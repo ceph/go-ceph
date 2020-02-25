@@ -14,8 +14,12 @@ import (
 	"github.com/ceph/go-ceph/internal/errutil"
 )
 
+// revive:disable:exported Temporarily live with stuttering
+
 // RadosError represents an error condition returned from the Ceph RADOS APIs.
 type RadosError int
+
+// revive:enable:exported
 
 // Error returns the error string for the RadosError type.
 func (e RadosError) Error() string {
