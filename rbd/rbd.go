@@ -800,7 +800,12 @@ func (image *Image) Seek(offset int64, whence int) (int64, error) {
 	return image.offset, nil
 }
 
-// int rbd_discard(rbd_image_t image, uint64_t ofs, uint64_t len);
+// Discard the supplied range from the image. The supplied range will be read
+// as zeros once Discard returns. The discarded range will no longer take up
+// space.
+//
+// Implements:
+//  int rbd_discard(rbd_image_t image, uint64_t ofs, uint64_t len);
 func (image *Image) Discard(ofs uint64, length uint64) (int, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
