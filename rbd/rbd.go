@@ -45,8 +45,12 @@ const (
 	NoSnapshot = ""
 )
 
+// revive:disable:exported Temporarily live with stuttering
+
 // RBDError represents an error condition returned from the librbd APIs.
 type RBDError int
+
+// revive:enable:exported
 
 var (
 	// ErrNoIOContext may be returned if an api call requires an IOContext and
