@@ -23,9 +23,14 @@ import (
 )
 
 const (
-	// Image.Seek() constants
+	// Image.Seek() constants:
+
+	// SeekSet is used with Seek to absolutely position the file.
 	SeekSet = int(C.SEEK_SET)
+	// SeekCur is used with Seek to position the file relatively to the current
+	// position.
 	SeekCur = int(C.SEEK_CUR)
+	// SeekEnd is used with Seek to position the file relatively to the end.
 	SeekEnd = int(C.SEEK_END)
 )
 
