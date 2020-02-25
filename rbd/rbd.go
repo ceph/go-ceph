@@ -92,7 +92,7 @@ type SnapInfo struct {
 	Name string
 }
 
-//
+// Locker provides info about a client that is locking an image.
 type Locker struct {
 	Client string
 	Cookie string
