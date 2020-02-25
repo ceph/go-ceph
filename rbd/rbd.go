@@ -1209,7 +1209,7 @@ func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image,
 // Implements:
 //  int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
 //                 rbd_image_options_t opts);
-func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImageOptions) error {
+func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *ImageOptions) error {
 
 	if rio == nil {
 		return RBDError(C.EINVAL)
@@ -1241,7 +1241,7 @@ func RemoveImage(ioctx *rados.IOContext, name string) error {
 //                  const char *p_snapname, rados_ioctx_t c_ioctx,
 //                  const char *c_name, rbd_image_options_t c_opts);
 func CloneImage(ioctx *rados.IOContext, parentName, snapName string,
-	destctx *rados.IOContext, name string, rio *RbdImageOptions) error {
+	destctx *rados.IOContext, name string, rio *ImageOptions) error {
 
 	if rio == nil {
 		return RBDError(C.EINVAL)
@@ -1269,7 +1269,7 @@ func CloneImage(ioctx *rados.IOContext, parentName, snapName string,
 // This function is a convenience wrapper around CloneImage to support cloning
 // from an existing Image.
 func CloneFromImage(parent *Image, snapName string,
-	destctx *rados.IOContext, name string, rio *RbdImageOptions) error {
+	destctx *rados.IOContext, name string, rio *ImageOptions) error {
 
 	if err := parent.validate(imageNeedsIOContext); err != nil {
 		return err

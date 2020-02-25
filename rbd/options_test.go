@@ -216,13 +216,13 @@ func TestRbdOptionsClear(t *testing.T) {
 func TestInvalidRbdOption(t *testing.T) {
 	options := NewRbdImageOptions()
 
-	err := options.SetUint64(RbdImageOption(-1), 1)
+	err := options.SetUint64(ImageOption(-1), 1)
 	assert.Error(t, err)
 
-	_, err = options.IsSet(RbdImageOption(-1))
+	_, err = options.IsSet(ImageOption(-1))
 	assert.Error(t, err)
 
-	err = options.Unset(RbdImageOption(-1))
+	err = options.Unset(ImageOption(-1))
 	assert.Error(t, err)
 
 	options.Destroy()
