@@ -45,7 +45,7 @@ const (
 	NoSnapshot = ""
 )
 
-//
+// RBDError represents an error condition returned from the librbd APIs.
 type RBDError int
 
 var (
