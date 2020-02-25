@@ -9,13 +9,17 @@ import (
 	"unsafe"
 )
 
-//
+// Snapshot represents a snapshot on a particular rbd image.
 type Snapshot struct {
 	image *Image
 	name  string
 }
 
-// int rbd_snap_create(rbd_image_t image, const char *snapname);
+// CreateSnapshot returns a new Snapshot objects after creating
+// a snapshot of the rbd image.
+//
+// Implements:
+//  int rbd_snap_create(rbd_image_t image, const char *snapname);
 func (image *Image) CreateSnapshot(snapname string) (*Snapshot, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return nil, err
@@ -48,7 +52,8 @@ func (snapshot *Snapshot) validate(req uint32) error {
 	return nil
 }
 
-//
+// GetSnapshot constructs a snapshot object for the image given
+// the snap name. It does not validate that this snapshot exists.
 func (image *Image) GetSnapshot(snapname string) *Snapshot {
 	return &Snapshot{
 		image: image,
@@ -56,7 +61,10 @@ func (image *Image) GetSnapshot(snapname string) *Snapshot {
 	}
 }
 
-// int rbd_snap_remove(rbd_image_t image, const char *snapname);
+// Remove the snapshot from the connected rbd image.
+//
+// Implements:
+//  int rbd_snap_remove(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Remove() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -68,9 +76,10 @@ func (snapshot *Snapshot) Remove() error {
 	return getError(C.rbd_snap_remove(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_rollback(rbd_image_t image, const char *snapname);
-// int rbd_snap_rollback_with_progress(rbd_image_t image, const char *snapname,
-//                  librbd_progress_fn_t cb, void *cbdata);
+// Rollback the image to the snapshot.
+//
+// Implements:
+//  int rbd_snap_rollback(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Rollback() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -82,7 +91,10 @@ func (snapshot *Snapshot) Rollback() error {
 	return getError(C.rbd_snap_rollback(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_protect(rbd_image_t image, const char *snap_name);
+// Protect a snapshot from unwanted deletion.
+//
+// Implements:
+//  int rbd_snap_protect(rbd_image_t image, const char *snap_name);
 func (snapshot *Snapshot) Protect() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -94,7 +106,10 @@ func (snapshot *Snapshot) Protect() error {
 	return getError(C.rbd_snap_protect(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_unprotect(rbd_image_t image, const char *snap_name);
+// Unprotect stops protecting the snapshot.
+//
+// Implements:
+//  int rbd_snap_unprotect(rbd_image_t image, const char *snap_name);
 func (snapshot *Snapshot) Unprotect() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
@@ -106,7 +121,10 @@ func (snapshot *Snapshot) Unprotect() error {
 	return getError(C.rbd_snap_unprotect(snapshot.image.image, c_snapname))
 }
 
-// int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,
+// IsProtected returns true if the snapshot is currently protected.
+//
+// Implements:
+//  int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,
 //               int *is_protected);
 func (snapshot *Snapshot) IsProtected() (bool, error) {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
@@ -127,7 +145,11 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 	return c_is_protected != 0, nil
 }
 
-// int rbd_snap_set(rbd_image_t image, const char *snapname);
+// Set updates the rbd image (not the Snapshot) such that the snapshot
+// is the source of readable data.
+//
+// Implements:
+//  int rbd_snap_set(rbd_image_t image, const char *snapname);
 func (snapshot *Snapshot) Set() error {
 	if err := snapshot.validate(snapshotNeedsName | imageIsOpen); err != nil {
 		return err
