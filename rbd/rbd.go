@@ -781,6 +781,7 @@ func (image *Image) Write(data []byte) (n int, err error) {
 	return ret, err
 }
 
+// Seek updates the internal file position for the current image.
 func (image *Image) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
 	case SeekSet:
