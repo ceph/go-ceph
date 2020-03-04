@@ -328,3 +328,30 @@ func TestMountWithRoot(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestGetSetConfigOption(t *testing.T) {
+	// we don't need an active connection for this, just the handle
+	mount, err := CreateMount()
+	require.NoError(t, err)
+	require.NotNil(t, mount)
+
+	err = mount.SetConfigOption("__dne__", "value")
+	assert.Error(t, err)
+	_, err = mount.GetConfigOption("__dne__")
+	assert.Error(t, err)
+
+	origVal, err := mount.GetConfigOption("log_file")
+	assert.NoError(t, err)
+
+	err = mount.SetConfigOption("log_file", "/dev/null")
+	assert.NoError(t, err)
+	currVal, err := mount.GetConfigOption("log_file")
+	assert.NoError(t, err)
+	assert.Equal(t, "/dev/null", currVal)
+
+	err = mount.SetConfigOption("log_file", origVal)
+	assert.NoError(t, err)
+	currVal, err = mount.GetConfigOption("log_file")
+	assert.NoError(t, err)
+	assert.Equal(t, origVal, currVal)
+}
