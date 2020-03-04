@@ -176,6 +176,7 @@ test_go_ceph() {
         "cephfs" \
         "internal/callbacks" \
         "internal/errutil" \
+        "internal/retry" \
         "rados" \
         "rbd" \
         )
