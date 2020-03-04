@@ -8,6 +8,8 @@ import "C"
 import (
 	"bytes"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/retry"
 )
 
 // ClusterStat represents Ceph cluster statistics.
@@ -140,19 +142,25 @@ func (c *Conn) SetConfigOption(option, value string) error {
 // GetConfigOption returns the value of the Ceph configuration option
 // identified by the given name.
 func (c *Conn) GetConfigOption(name string) (value string, err error) {
-	buf := make([]byte, 4096)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
-	ret := int(C.rados_conf_get(c.cluster, c_name,
-		(*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
-	// FIXME: ret may be -ENAMETOOLONG if the buffer is not large enough. We
-	// can handle this case, but we need a reliable way to test for
-	// -ENAMETOOLONG constant. Will the syscall/Errno stuff in Go help?
-	if ret == 0 {
-		value = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
-		return value, nil
+	cOption := C.CString(name)
+	defer C.free(unsafe.Pointer(cOption))
+
+	var buf []byte
+	// range from 4k to 256KiB
+	for sizer := retry.NewSizerEV(4096, 1<<18, errNameTooLong); sizer.Continue(); {
+		buf = make([]byte, sizer.Size())
+		ret := C.rados_conf_get(
+			c.cluster,
+			cOption,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			C.size_t(len(buf)))
+		err = sizer.Update(getError(ret))
 	}
-	return "", RadosError(ret)
+	if err != nil {
+		return "", err
+	}
+	value = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+	return value, nil
 }
 
 // WaitForLatestOSDMap blocks the caller until the latest OSD map has been

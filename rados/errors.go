@@ -61,3 +61,9 @@ const (
 	// Deprecated: use ErrPermissionDenied instead
 	RadosErrorPermissionDenied = ErrPermissionDenied
 )
+
+// Private errors:
+
+const (
+	errNameTooLong = RadosError(-C.ENAMETOOLONG)
+)
