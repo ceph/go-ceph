@@ -9,8 +9,9 @@ CPUPROFILE=no
 MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
 BUILD_TAGS=""
+RESULTS_DIR=/results
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,results:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -33,6 +34,11 @@ while true ; do
             shift
             shift
         ;;
+        --results)
+            RESULTS_DIR="${2}"
+            shift
+            shift
+        ;;
         --cpuprofile)
             CPUPROFILE=yes
             shift
@@ -52,6 +58,7 @@ while true ; do
             echo "  --test-pkg=PKG      Run only tests from PKG"
             echo "  --pause             Sleep forever after tests execute"
             echo "  --micro-osd         Specify path to micro-osd script"
+            echo "  --results=PATH      Specify path to store test results"
             echo "  --cpuprofile        Run tests with cpu profiling"
             echo "  --memprofile        Run tests with mem profiling"
             echo "  --no-cover          Disable code coverage profiling"
@@ -129,8 +136,8 @@ pre_all_tests() {
 
 post_all_tests() {
     if [[ ${COVERAGE} = yes ]]; then
-        mkdir -p /results/coverage
-        show go tool cover -html=cover.out -o /results/coverage/go-ceph.html
+        mkdir -p "${RESULTS_DIR}/coverage"
+        show go tool cover -html=cover.out -o "${RESULTS_DIR}/coverage/go-ceph.html"
     fi
 }
 
