@@ -28,6 +28,8 @@ import (
 	"syscall"
 	"time"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/retry"
 )
 
 // CreateOption is passed to IOContext.Create() and should be one of
@@ -249,19 +251,23 @@ func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
 
 // GetPoolName returns the name of the pool associated with the I/O context.
 func (ioctx *IOContext) GetPoolName() (name string, err error) {
-	buf := make([]byte, 128)
-	for {
-		ret := C.rados_ioctx_get_pool_name(ioctx.ioctx,
-			(*C.char)(unsafe.Pointer(&buf[0])), C.unsigned(len(buf)))
-		if ret == -C.ERANGE {
-			buf = make([]byte, len(buf)*2)
-			continue
-		} else if ret < 0 {
-			return "", getError(ret)
-		}
-		name = C.GoStringN((*C.char)(unsafe.Pointer(&buf[0])), ret)
-		return name, nil
+	var (
+		buf []byte
+		ret C.int
+	)
+	for sizer := retry.NewSizerEV(128, 8192, errRange); sizer.Continue(); {
+		buf = make([]byte, sizer.Size())
+		ret = C.rados_ioctx_get_pool_name(
+			ioctx.ioctx,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			C.unsigned(len(buf)))
+		err = sizer.Update(getErrorIfNegative(ret))
 	}
+	if err != nil {
+		return "", err
+	}
+	name = C.GoStringN((*C.char)(unsafe.Pointer(&buf[0])), ret)
+	return name, nil
 }
 
 // ObjectListFunc is the type of the function called for each object visited
