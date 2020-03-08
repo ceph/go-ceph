@@ -964,21 +964,25 @@ func (image *Image) GetId() (string, error) {
 // GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
 // currently residing in the trash.
 func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
-	var num_entries C.size_t
-
-	// Call rbd_trash_list with nil pointer to get number of trash entries.
-	if C.rbd_trash_list(cephIoctx(ioctx), nil, &num_entries); num_entries == 0 {
-		return nil, nil
+	var (
+		err     error
+		count   C.size_t
+		entries []C.rbd_trash_image_info_t
+	)
+	for sizer := retry.NewSizerEV(32, 1024, errRange); sizer.Continue(); {
+		count = C.size_t(sizer.Size())
+		entries = make([]C.rbd_trash_image_info_t, count)
+		ret := C.rbd_trash_list(cephIoctx(ioctx), &entries[0], &count)
+		err = sizer.UpdateWants(getErrorIfNegative(ret), int(count))
 	}
-
-	c_entries := make([]C.rbd_trash_image_info_t, num_entries)
-	trashList := make([]TrashInfo, num_entries)
-
-	if ret := C.rbd_trash_list(cephIoctx(ioctx), &c_entries[0], &num_entries); ret < 0 {
-		return nil, RBDError(ret)
+	if err != nil {
+		return nil, err
 	}
+	// Free rbd_trash_image_info_t pointers
+	defer C.rbd_trash_list_cleanup(&entries[0], count)
 
-	for i, ti := range c_entries {
+	trashList := make([]TrashInfo, count)
+	for i, ti := range entries[:count] {
 		trashList[i] = TrashInfo{
 			Id:               C.GoString(ti.id),
 			Name:             C.GoString(ti.name),
@@ -986,10 +990,6 @@ func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
 			DefermentEndTime: time.Unix(int64(ti.deferment_end_time), 0),
 		}
 	}
-
-	// Free rbd_trash_image_info_t pointers
-	C.rbd_trash_list_cleanup(&c_entries[0], num_entries)
-
 	return trashList, nil
 }
 
