@@ -17,6 +17,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/retry"
 	"github.com/ceph/go-ceph/rados"
 )
 
@@ -873,22 +874,23 @@ func (image *Image) GetMetadata(key string) (string, error) {
 	c_key := C.CString(key)
 	defer C.free(unsafe.Pointer(c_key))
 
-	var c_vallen C.size_t
-	ret := C.rbd_metadata_get(image.image, c_key, nil, (*C.size_t)(&c_vallen))
-	// get size of value
-	// ret -34 because we pass nil as value pointer
-	if ret != 0 && ret != -C.ERANGE {
-		return "", RBDError(ret)
+	var (
+		buf []byte
+		err error
+	)
+	for sizer := retry.NewSizerEV(4096, 262144, errRange); sizer.Continue(); {
+		csize := C.size_t(sizer.Size())
+		buf = make([]byte, csize)
+		// rbd_metadata_get is a bit quirky and *does not* update the size
+		// value if the size passed in >= the needed size.
+		ret := C.rbd_metadata_get(
+			image.image, c_key, (*C.char)(unsafe.Pointer(&buf[0])), &csize)
+		err = sizer.UpdateWants(getError(ret), int(csize))
 	}
-
-	// make a bytes array with a good size
-	value := make([]byte, c_vallen-1)
-	ret = C.rbd_metadata_get(image.image, c_key, (*C.char)(unsafe.Pointer(&value[0])), (*C.size_t)(&c_vallen))
-	if ret < 0 {
-		return "", RBDError(ret)
+	if err != nil {
+		return "", err
 	}
-
-	return string(value), nil
+	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 }
 
 // SetMetadata updates the metadata string associated with the given key.

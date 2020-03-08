@@ -61,3 +61,9 @@ var (
 	RbdErrorNotFound     = ErrNotFound
 	// revive:enable:exported
 )
+
+// Private errors:
+
+const (
+	errRange = RBDError(-C.ERANGE)
+)
