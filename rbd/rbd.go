@@ -18,7 +18,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/ceph/go-ceph/errutil"
+	"github.com/ceph/go-ceph/internal/errutil"
 	"github.com/ceph/go-ceph/rados"
 )
 

@@ -37,7 +37,7 @@ check:
 
 # Do a quick compile only check of the tests and impliclity the
 # library code as well.
-test-binaries: cephfs.test errutil.test rados.test rbd.test
+test-binaries: cephfs.test internal/errutil.test rados.test rbd.test
 test-bins: test-binaries
 
 %.test: % force_go_build
