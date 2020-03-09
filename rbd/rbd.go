@@ -113,6 +113,11 @@ func split(buf []byte) (values []string) {
 	return values
 }
 
+// cephIoctx returns a ceph rados_ioctx_t given a go-ceph rados IOContext.
+func cephIoctx(radosIoctx *rados.IOContext) C.rados_ioctx_t {
+	return C.rados_ioctx_t(radosIoctx.Pointer())
+}
+
 // test if a bit is set in the given value
 func hasBit(value, bit uint32) bool {
 	return (value & bit) == bit
@@ -193,7 +198,7 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 
 		defer C.free(unsafe.Pointer(c_name))
 
-		ret = C.rbd_create(C.rados_ioctx_t(ioctx.Pointer()),
+		ret = C.rbd_create(cephIoctx(ioctx),
 			c_name, C.uint64_t(size), &c_order)
 	default:
 		return nil, errors.New("Wrong number of argument")
@@ -223,7 +228,7 @@ func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
 
 	defer C.free(unsafe.Pointer(c_name))
 
-	ret = C.rbd_create2(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+	ret = C.rbd_create2(cephIoctx(ioctx), c_name,
 		C.uint64_t(size), C.uint64_t(features), &c_order)
 	if ret < 0 {
 		return nil, RBDError(ret)
@@ -251,7 +256,7 @@ func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
 
 	defer C.free(unsafe.Pointer(c_name))
 
-	ret = C.rbd_create3(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+	ret = C.rbd_create3(cephIoctx(ioctx), c_name,
 		C.uint64_t(size), C.uint64_t(features), &c_order,
 		C.uint64_t(stripe_unit), C.uint64_t(stripe_count))
 	if ret < 0 {
@@ -284,9 +289,9 @@ func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name stri
 	defer C.free(unsafe.Pointer(c_p_snapname))
 	defer C.free(unsafe.Pointer(c_c_name))
 
-	ret := C.rbd_clone(C.rados_ioctx_t(image.ioctx.Pointer()),
+	ret := C.rbd_clone(cephIoctx(image.ioctx),
 		c_p_name, c_p_snapname,
-		C.rados_ioctx_t(c_ioctx.Pointer()),
+		cephIoctx(c_ioctx),
 		c_c_name, C.uint64_t(features), &c_order)
 	if ret < 0 {
 		return nil, RBDError(ret)
@@ -319,7 +324,7 @@ func (image *Image) Trash(delay time.Duration) error {
 	c_name := C.CString(image.name)
 	defer C.free(unsafe.Pointer(c_name))
 
-	return getError(C.rbd_trash_move(C.rados_ioctx_t(image.ioctx.Pointer()), c_name,
+	return getError(C.rbd_trash_move(cephIoctx(image.ioctx), c_name,
 		C.uint64_t(delay.Seconds())))
 }
 
@@ -338,7 +343,7 @@ func (image *Image) Rename(destname string) error {
 	defer C.free(unsafe.Pointer(c_srcname))
 	defer C.free(unsafe.Pointer(c_destname))
 
-	err := RBDError(C.rbd_rename(C.rados_ioctx_t(image.ioctx.Pointer()),
+	err := RBDError(C.rbd_rename(cephIoctx(image.ioctx),
 		c_srcname, c_destname))
 	if err == 0 {
 		image.name = destname
@@ -544,7 +549,7 @@ func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 	defer C.free(unsafe.Pointer(c_destname))
 
 	return getError(C.rbd_copy(image.image,
-		C.rados_ioctx_t(ioctx.Pointer()), c_destname))
+		cephIoctx(ioctx), c_destname))
 }
 
 // Copy one rbd image to another, using an image handle.
@@ -968,14 +973,14 @@ func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
 	var num_entries C.size_t
 
 	// Call rbd_trash_list with nil pointer to get number of trash entries.
-	if C.rbd_trash_list(C.rados_ioctx_t(ioctx.Pointer()), nil, &num_entries); num_entries == 0 {
+	if C.rbd_trash_list(cephIoctx(ioctx), nil, &num_entries); num_entries == 0 {
 		return nil, nil
 	}
 
 	c_entries := make([]C.rbd_trash_image_info_t, num_entries)
 	trashList := make([]TrashInfo, num_entries)
 
-	if ret := C.rbd_trash_list(C.rados_ioctx_t(ioctx.Pointer()), &c_entries[0], &num_entries); ret < 0 {
+	if ret := C.rbd_trash_list(cephIoctx(ioctx), &c_entries[0], &num_entries); ret < 0 {
 		return nil, RBDError(ret)
 	}
 
@@ -999,7 +1004,7 @@ func TrashRemove(ioctx *rados.IOContext, id string, force bool) error {
 	c_id := C.CString(id)
 	defer C.free(unsafe.Pointer(c_id))
 
-	return getError(C.rbd_trash_remove(C.rados_ioctx_t(ioctx.Pointer()), c_id, C.bool(force)))
+	return getError(C.rbd_trash_remove(cephIoctx(ioctx), c_id, C.bool(force)))
 }
 
 // TrashRestore restores the trashed RBD with the specified id back to the pool from whence it
@@ -1010,7 +1015,7 @@ func TrashRestore(ioctx *rados.IOContext, id, name string) error {
 	defer C.free(unsafe.Pointer(c_id))
 	defer C.free(unsafe.Pointer(c_name))
 
-	return getError(C.rbd_trash_restore(C.rados_ioctx_t(ioctx.Pointer()), c_id, c_name))
+	return getError(C.rbd_trash_restore(cephIoctx(ioctx), c_id, c_name))
 }
 
 // OpenImage will open an existing rbd image by name and snapshot name,
@@ -1032,7 +1037,7 @@ func OpenImage(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
 
 	var cImage C.rbd_image_t
 	ret := C.rbd_open(
-		C.rados_ioctx_t(ioctx.Pointer()),
+		cephIoctx(ioctx),
 		cName,
 		&cImage,
 		cSnapName)
@@ -1068,7 +1073,7 @@ func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, e
 
 	var cImage C.rbd_image_t
 	ret := C.rbd_open_read_only(
-		C.rados_ioctx_t(ioctx.Pointer()),
+		cephIoctx(ioctx),
 		cName,
 		&cImage,
 		cSnapName)
@@ -1105,7 +1110,7 @@ func OpenImageById(ioctx *rados.IOContext, id, snapName string) (*Image, error) 
 
 	var cImage C.rbd_image_t
 	ret := C.rbd_open_by_id(
-		C.rados_ioctx_t(ioctx.Pointer()),
+		cephIoctx(ioctx),
 		cid,
 		&cImage,
 		cSnapName)
@@ -1142,7 +1147,7 @@ func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image,
 
 	var cImage C.rbd_image_t
 	ret := C.rbd_open_by_id_read_only(
-		C.rados_ioctx_t(ioctx.Pointer()),
+		cephIoctx(ioctx),
 		cid,
 		&cImage,
 		cSnapName)
@@ -1171,7 +1176,7 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImage
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
 
-	ret := C.rbd_create4(C.rados_ioctx_t(ioctx.Pointer()), c_name,
+	ret := C.rbd_create4(cephIoctx(ioctx), c_name,
 		C.uint64_t(size), C.rbd_image_options_t(rio.options))
 	return getError(ret)
 }
@@ -1183,7 +1188,7 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *RbdImage
 func RemoveImage(ioctx *rados.IOContext, name string) error {
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
-	return getError(C.rbd_remove(C.rados_ioctx_t(ioctx.Pointer()), c_name))
+	return getError(C.rbd_remove(cephIoctx(ioctx), c_name))
 }
 
 // CloneImage creates a clone of the image from the named snapshot in the
@@ -1208,10 +1213,10 @@ func CloneImage(ioctx *rados.IOContext, parentName, snapName string,
 	defer C.free(unsafe.Pointer(cCloneName))
 
 	ret := C.rbd_clone3(
-		C.rados_ioctx_t(ioctx.Pointer()),
+		cephIoctx(ioctx),
 		cParentName,
 		cParentSnapName,
-		C.rados_ioctx_t(destctx.Pointer()),
+		cephIoctx(destctx),
 		cCloneName,
 		C.rbd_image_options_t(rio.options))
 	return getError(ret)
