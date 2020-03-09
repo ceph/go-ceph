@@ -95,7 +95,6 @@ const (
 //                        int (*cb)(uint64_t, size_t, int, void *),
 //                        void *arg);
 func (image *Image) DiffIterate(config DiffIterateConfig) error {
-
 	if err := image.validate(imageIsOpen); err != nil {
 		return err
 	}
