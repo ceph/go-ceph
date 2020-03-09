@@ -98,6 +98,12 @@ test_pkg() {
     if [[ "${TEST_PKG}" && "${TEST_PKG}" != "${pkg}" ]]; then
         return 0
     fi
+
+    # run go vet and capture the result for the package, but still execute the
+    # test suite anyway
+    show go vet ${BUILD_TAGS} "./${pkg}"
+    ret=$?
+
     # disable caching of tests results
     testargs=("-count=1"\
             ${BUILD_TAGS})
@@ -118,7 +124,7 @@ test_pkg() {
     fi
 
     show go test -v "${testargs[@]}" "./${pkg}"
-    ret=$?
+    ret=$(($?+${ret}))
     grep -v "^mode: count" "${pkg}.cover.out" >> "cover.out"
     return ${ret}
 }
@@ -127,8 +133,6 @@ pre_all_tests() {
     # Prepare Go code
     go get -t -v ${BUILD_TAGS} ./...
     diff -u <(echo -n) <(gofmt -d -s .)
-
-    # TODO: Consider enabling go vet but it currently fails
 
     # Reset whole-module coverage file
     echo "mode: count" > "cover.out"
