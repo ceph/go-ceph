@@ -17,8 +17,8 @@ static inline int wrap_rbd_diff_iterate2(
 			uint64_t ofs, uint64_t len,
 			uint8_t include_parent, uint8_t whole_object,
 			void *cb,
-			void *arg) {
-	return rbd_diff_iterate2(image, fromsnapname, ofs, len, include_parent, whole_object, cb, arg);
+			uintptr_t arg) {
+	return rbd_diff_iterate2(image, fromsnapname, ofs, len, include_parent, whole_object, cb, (void*)arg);
 }
 */
 import "C"
@@ -120,7 +120,7 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 		C.uint8_t(config.IncludeParent),
 		C.uint8_t(config.WholeObject),
 		C.callDiffIterateCallback,
-		unsafe.Pointer(uintptr(cbIndex)))
+		C.uintptr_t(cbIndex))
 
 	return getError(ret)
 }
