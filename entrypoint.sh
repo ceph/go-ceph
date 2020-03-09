@@ -147,8 +147,8 @@ test_go_ceph() {
     P=github.com/ceph/go-ceph
     pkgs=(\
         "cephfs" \
-        "errutil" \
         "internal/callbacks" \
+        "internal/errutil" \
         "rados" \
         "rbd" \
         )
