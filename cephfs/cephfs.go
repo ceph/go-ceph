@@ -82,6 +82,41 @@ func (mount *MountInfo) ReadDefaultConfigFile() error {
 	return getError(ret)
 }
 
+// SetConfigOption sets the value of the configuration option identified by
+// the given name.
+//
+// Implements:
+//  int ceph_conf_set(struct ceph_mount_info *cmount, const char *option, const char *value);
+func (mount *MountInfo) SetConfigOption(option, value string) error {
+	cOption := C.CString(option)
+	defer C.free(unsafe.Pointer(cOption))
+	cValue := C.CString(value)
+	defer C.free(unsafe.Pointer(cValue))
+	return getError(C.ceph_conf_set(mount.mount, cOption, cValue))
+}
+
+// GetConfigOption returns the value of the Ceph configuration option
+// identified by the given name.
+//
+// Implements:
+//  int ceph_conf_get(struct ceph_mount_info *cmount, const char *option, char *buf, size_t len);
+func (mount *MountInfo) GetConfigOption(option string) (string, error) {
+	cOption := C.CString(option)
+	defer C.free(unsafe.Pointer(cOption))
+	buf := make([]byte, 4096)
+	// TODO: handle ENAMETOOLONG cases. problem also exists in rados
+	ret := C.ceph_conf_get(
+		mount.mount,
+		cOption,
+		(*C.char)(unsafe.Pointer(&buf[0])),
+		C.size_t(len(buf)))
+	if ret < 0 {
+		return "", getError(ret)
+	}
+	value := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+	return value, nil
+}
+
 // Mount the file system, establishing a connection capable of I/O.
 //
 // Implements:
