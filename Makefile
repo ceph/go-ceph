@@ -1,6 +1,7 @@
 DOCKER_CI_IMAGE = go-ceph-ci
 CONTAINER_CMD := docker
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disabled" || echo "apparmor:unconfined")
+CONTAINER_CONFIG_DIR := .
 VOLUME_FLAGS := 
 CEPH_VERSION := nautilus
 
@@ -23,8 +24,8 @@ test-container: check-ceph-version .build-docker
 
 .PHONY: ci-image
 ci-image: .build-docker
-.build-docker: Dockerfile entrypoint.sh
-	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(DOCKER_CI_IMAGE) .
+.build-docker: $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh
+	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(DOCKER_CI_IMAGE) -f $(CONTAINER_CONFIG_DIR)/Dockerfile .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(DOCKER_CI_IMAGE) > .build-docker
 	echo $(CEPH_VERSION) >> .build-docker
 
