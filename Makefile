@@ -1,7 +1,7 @@
 DOCKER_CI_IMAGE = go-ceph-ci
 CONTAINER_CMD := docker
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disabled" || echo "apparmor:unconfined")
-CONTAINER_CONFIG_DIR := .
+CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS := 
 CEPH_VERSION := nautilus
 
