@@ -1,6 +1,6 @@
 sudo: required
 language: go
-dist:     trusty
+dist:     bionic
 
 services:
   - docker
