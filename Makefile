@@ -16,9 +16,13 @@ fmt:
 test:
 	go test -v ./...
 
-test-docker: check-ceph-version .build-docker
+.PHONY: test-docker test-container
+test-docker: test-container
+test-container: check-ceph-version .build-docker
 	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -it -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(DOCKER_CI_IMAGE)
 
+.PHONY: ci-image
+ci-image: .build-docker
 .build-docker: Dockerfile entrypoint.sh
 	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(DOCKER_CI_IMAGE) .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(DOCKER_CI_IMAGE) > .build-docker
