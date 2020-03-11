@@ -605,6 +605,13 @@ func (suite *RadosTestSuite) TestMonCommand() {
 	assert.NoError(suite.T(), err)
 }
 
+// NB: ceph octopus appears to be stricter about the formatting of the keyring
+// and now rejects whitespace that older versions did not have a problem with.
+const clientKeyFormat = `
+[%s]
+key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
+`
+
 func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
 	suite.SetupConnection()
 
@@ -618,10 +625,7 @@ func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
 	})
 	assert.NoError(suite.T(), err)
 
-	client_key := fmt.Sprintf(`
-	  [%s]
-	  key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
-	`, entity)
+	client_key := fmt.Sprintf(clientKeyFormat, entity)
 
 	inbuf := []byte(client_key)
 
