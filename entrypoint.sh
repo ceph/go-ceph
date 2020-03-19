@@ -10,8 +10,9 @@ MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
 BUILD_TAGS=""
 RESULTS_DIR=/results
+CEPH_CONF=/tmp/ceph/ceph.conf
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,results:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,results:,ceph-conf:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -39,6 +40,11 @@ while true ; do
             shift
             shift
         ;;
+        --ceph-conf)
+            CEPH_CONF="${2}"
+            shift
+            shift
+        ;;
         --cpuprofile)
             CPUPROFILE=yes
             shift
@@ -59,6 +65,7 @@ while true ; do
             echo "  --pause             Sleep forever after tests execute"
             echo "  --micro-osd         Specify path to micro-osd script"
             echo "  --results=PATH      Specify path to store test results"
+            echo "  --ceph-conf=PATH    Specify path to ceph configuration"
             echo "  --cpuprofile        Run tests with cpu profiling"
             echo "  --memprofile        Run tests with mem profiling"
             echo "  --no-cover          Disable code coverage profiling"
@@ -148,7 +155,7 @@ post_all_tests() {
 test_go_ceph() {
     mkdir -p /tmp/ceph
     show "${MICRO_OSD_PATH}" /tmp/ceph
-    export CEPH_CONF=/tmp/ceph/ceph.conf
+    export CEPH_CONF
 
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"
