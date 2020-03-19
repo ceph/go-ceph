@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"syscall"
 	"testing"
 	"time"
@@ -15,8 +16,48 @@ import (
 )
 
 var (
-	CephMountTest = "/tmp/ceph/mds/mnt/"
+	CephMountDir     = "/tmp/ceph/mds/mnt/"
+	requireCephMount = false
 )
+
+func init() {
+	mdir := os.Getenv("GO_CEPH_TEST_MOUNT_DIR")
+	if mdir != "" {
+		CephMountDir = mdir
+	}
+	reqMount := os.Getenv("GO_CEPH_TEST_REQUIRE_MOUNT")
+	if reqMount == "yes" || reqMount == "true" {
+		requireCephMount = true
+	}
+}
+
+func useMount(t *testing.T) {
+	fail := func(m string) {
+		if requireCephMount {
+			t.Fatalf("cephfs mount required: %s %s", CephMountDir, m)
+		} else {
+			t.Skipf("cephfs mount needed: %s %s", CephMountDir, m)
+		}
+	}
+
+	s, err := os.Stat(CephMountDir)
+	if err != nil || !s.IsDir() {
+		fail("missing or not a directory")
+	}
+
+	if us, ok := s.Sys().(*syscall.Stat_t); ok {
+		ps, err := os.Stat(path.Dir(path.Clean(CephMountDir)))
+		if err != nil {
+			fail("missing parent directory (race condition?)")
+		}
+		if ps.Sys().(*syscall.Stat_t).Dev == us.Dev {
+			fail("not a mount point")
+		}
+	} else {
+		fail("not a unix-like file system? how did you even compile this?" +
+			"no, seriously please contact us or file an issue and let us know!")
+	}
+}
 
 func TestCreateMount(t *testing.T) {
 	mount := fsConnect(t)
@@ -79,7 +120,10 @@ func TestChangeDir(t *testing.T) {
 }
 
 func TestRemoveDir(t *testing.T) {
+	useMount(t)
+
 	dirname := "one"
+	localPath := path.Join(CephMountDir, dirname)
 	mount := fsConnect(t)
 
 	err := mount.MakeDir(dirname, 0755)
@@ -89,15 +133,15 @@ func TestRemoveDir(t *testing.T) {
 	assert.NoError(t, err)
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	_, err = os.Stat(CephMountTest + dirname)
+	_, err = os.Stat(localPath)
 	assert.NoError(t, err)
 
 	err = mount.RemoveDir(dirname)
 	assert.NoError(t, err)
 
-	_, err = os.Stat(CephMountTest + dirname)
+	_, err = os.Stat(localPath)
 	assert.EqualError(t, err,
-		fmt.Sprintf("stat %s: no such file or directory", CephMountTest+dirname))
+		fmt.Sprintf("stat %s: no such file or directory", localPath))
 }
 
 func TestUnmountMount(t *testing.T) {
@@ -127,6 +171,8 @@ func TestReleaseMount(t *testing.T) {
 }
 
 func TestChmodDir(t *testing.T) {
+	useMount(t)
+
 	dirname := "two"
 	var stats_before uint32 = 0755
 	var stats_after uint32 = 0700
@@ -139,7 +185,7 @@ func TestChmodDir(t *testing.T) {
 	assert.NoError(t, err)
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	stats, err := os.Stat(CephMountTest + dirname)
+	stats, err := os.Stat(path.Join(CephMountDir, dirname))
 	require.NoError(t, err)
 
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_before)
@@ -147,12 +193,15 @@ func TestChmodDir(t *testing.T) {
 	err = mount.Chmod(dirname, stats_after)
 	assert.NoError(t, err)
 
-	stats, err = os.Stat(CephMountTest + dirname)
+	stats, err = os.Stat(path.Join(CephMountDir, dirname))
+	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_after)
 }
 
 // Not cross-platform, go's os does not specifiy Sys return type
 func TestChown(t *testing.T) {
+	useMount(t)
+
 	dirname := "three"
 	// dockerfile creates bob user account
 	var bob uint32 = 1010
@@ -167,7 +216,7 @@ func TestChown(t *testing.T) {
 	assert.NoError(t, err)
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	stats, err := os.Stat(CephMountTest + dirname)
+	stats, err := os.Stat(path.Join(CephMountDir, dirname))
 	require.NoError(t, err)
 
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), root)
@@ -176,7 +225,7 @@ func TestChown(t *testing.T) {
 	err = mount.Chown(dirname, bob, bob)
 	assert.NoError(t, err)
 
-	stats, err = os.Stat(CephMountTest + dirname)
+	stats, err = os.Stat(path.Join(CephMountDir, dirname))
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
