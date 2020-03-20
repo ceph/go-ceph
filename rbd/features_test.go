@@ -25,12 +25,12 @@ func TestGetFeatures(t *testing.T) {
 	name := GetUUID()
 
 	options := NewRbdImageOptions()
-	err = options.SetUint64(RbdImageOptionFeatures, FeatureLayering|FeatureStripingV2)
+	err = options.SetUint64(ImageOptionFeatures, FeatureLayering|FeatureStripingV2)
 	require.NoError(t, err)
 	// FeatureStripingV2 only works with additional arguments
-	err = options.SetUint64(RbdImageOptionStripeUnit, 1024*1024)
+	err = options.SetUint64(ImageOptionStripeUnit, 1024*1024)
 	require.NoError(t, err)
-	err = options.SetUint64(RbdImageOptionStripeCount, 4)
+	err = options.SetUint64(ImageOptionStripeCount, 4)
 	require.NoError(t, err)
 
 	err = CreateImage(ioctx, name, 16*1024*1024, options)
@@ -90,7 +90,7 @@ func TestUpdateFeatures(t *testing.T) {
 
 	options := NewRbdImageOptions()
 	// test with FeatureExclusiveLock as that is mutable
-	err = options.SetUint64(RbdImageOptionFeatures, FeatureExclusiveLock)
+	err = options.SetUint64(ImageOptionFeatures, FeatureExclusiveLock)
 	require.NoError(t, err)
 
 	err = CreateImage(ioctx, name, 16*1024*1024, options)
