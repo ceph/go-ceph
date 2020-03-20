@@ -178,7 +178,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 	assert.NoError(t, err)
 
 	// create image with RbdImageOptionOrder
-	err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+	err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 	assert.NoError(t, err)
 	name = GetUUID()
 	err = CreateImage(ioctx, name, testImageSize, options)
@@ -191,7 +191,7 @@ func TestCreateImageWithOptions(t *testing.T) {
 	datapool := GetUUID()
 	err = conn.MakePool(datapool)
 	assert.NoError(t, err)
-	err = options.SetString(RbdImageOptionDataPool, datapool)
+	err = options.SetString(ImageOptionDataPool, datapool)
 	assert.NoError(t, err)
 	name = GetUUID()
 	err = CreateImage(ioctx, name, testImageSize, options)
@@ -635,7 +635,7 @@ func TestReadAt(t *testing.T) {
 	name := GetUUID()
 	options := NewRbdImageOptions()
 	defer options.Destroy()
-	err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+	err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 	assert.NoError(t, err)
 	err = CreateImage(ioctx, name, testImageSize, options)
 	require.NoError(t, err)
@@ -714,7 +714,7 @@ func TestImageCopy(t *testing.T) {
 		name := GetUUID()
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+		err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 		assert.NoError(t, err)
 		err = CreateImage(ioctx, name, testImageSize, options)
 		require.NoError(t, err)
@@ -748,7 +748,7 @@ func TestImageCopy(t *testing.T) {
 		name := GetUUID()
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+		err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 		assert.NoError(t, err)
 		err = CreateImage(ioctx, name, testImageSize, options)
 		require.NoError(t, err)
@@ -784,7 +784,7 @@ func TestImageCopy(t *testing.T) {
 
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+		err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 		assert.NoError(t, err)
 		err = CreateImage(ioctx, name, testImageSize, options)
 		require.NoError(t, err)
@@ -806,7 +806,7 @@ func TestImageCopy(t *testing.T) {
 
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+		err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 		assert.NoError(t, err)
 		err = CreateImage(ioctx, name, testImageSize, options)
 		require.NoError(t, err)
@@ -1338,9 +1338,9 @@ func TestCloneImage(t *testing.T) {
 	cloneName := "clone1"
 	options := NewRbdImageOptions()
 	defer options.Destroy()
-	err = options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder))
+	err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
 	assert.NoError(t, err)
-	err = options.SetUint64(RbdImageOptionFeatures, 1)
+	err = options.SetUint64(ImageOptionFeatures, 1)
 	assert.NoError(t, err)
 	err = CreateImage(ioctx, imageName, testImageSize, options)
 	assert.NoError(t, err)
@@ -1361,7 +1361,7 @@ func TestCloneImage(t *testing.T) {
 
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionFormat, uint64(2))
+		err = options.SetUint64(ImageOptionFormat, uint64(2))
 		assert.NoError(t, err)
 		err = CloneImage(ioctx, imageName, snapName, ioctx, cloneName, options)
 		assert.NoError(t, err)
@@ -1383,7 +1383,7 @@ func TestCloneImage(t *testing.T) {
 
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionFormat, uint64(2))
+		err = options.SetUint64(ImageOptionFormat, uint64(2))
 		assert.NoError(t, err)
 		err = CloneFromImage(image, snapName, ioctx, cloneName, options)
 		assert.NoError(t, err)
@@ -1400,7 +1400,7 @@ func TestCloneImage(t *testing.T) {
 	t.Run("cloneFromImageInvalidCtx", func(t *testing.T) {
 		options := NewRbdImageOptions()
 		defer options.Destroy()
-		err = options.SetUint64(RbdImageOptionFormat, uint64(2))
+		err = options.SetUint64(ImageOptionFormat, uint64(2))
 		assert.NoError(t, err)
 		badImage := GetImage(nil, image.name)
 		err = CloneFromImage(badImage, snapName, ioctx, cloneName, options)
@@ -1435,7 +1435,7 @@ func TestCloneImage(t *testing.T) {
 func quickCreate(ioctx *rados.IOContext, name string, size uint64, order int) error {
 	options := NewRbdImageOptions()
 	defer options.Destroy()
-	err := options.SetUint64(RbdImageOptionOrder, uint64(order))
+	err := options.SetUint64(ImageOptionOrder, uint64(order))
 	if err != nil {
 		return err
 	}
@@ -1455,7 +1455,7 @@ func TestGetId(t *testing.T) {
 	name := GetUUID()
 	options := NewRbdImageOptions()
 	assert.NoError(t,
-		options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder)))
+		options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
 	err = CreateImage(ioctx, name, testImageSize, options)
 	assert.NoError(t, err)
 
@@ -1493,7 +1493,7 @@ func TestOpenImageById(t *testing.T) {
 	name := GetUUID()
 	options := NewRbdImageOptions()
 	assert.NoError(t,
-		options.SetUint64(RbdImageOptionOrder, uint64(testImageOrder)))
+		options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
 	err = CreateImage(ioctx, name, testImageSize, options)
 	assert.NoError(t, err)
 
