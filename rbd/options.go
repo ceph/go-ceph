@@ -12,17 +12,64 @@ import (
 
 const (
 	// RBD image options.
-	RbdImageOptionFormat            = C.RBD_IMAGE_OPTION_FORMAT
-	RbdImageOptionFeatures          = C.RBD_IMAGE_OPTION_FEATURES
-	RbdImageOptionOrder             = C.RBD_IMAGE_OPTION_ORDER
-	RbdImageOptionStripeUnit        = C.RBD_IMAGE_OPTION_STRIPE_UNIT
-	RbdImageOptionStripeCount       = C.RBD_IMAGE_OPTION_STRIPE_COUNT
-	RbdImageOptionJournalOrder      = C.RBD_IMAGE_OPTION_JOURNAL_ORDER
-	RbdImageOptionJournalSplayWidth = C.RBD_IMAGE_OPTION_JOURNAL_SPLAY_WIDTH
-	RbdImageOptionJournalPool       = C.RBD_IMAGE_OPTION_JOURNAL_POOL
-	RbdImageOptionFeaturesSet       = C.RBD_IMAGE_OPTION_FEATURES_SET
-	RbdImageOptionFeaturesClear     = C.RBD_IMAGE_OPTION_FEATURES_CLEAR
-	RbdImageOptionDataPool          = C.RBD_IMAGE_OPTION_DATA_POOL
+
+	// ImageOptionFormat is the representation of RBD_IMAGE_OPTION_FORMAT from
+	// librbd
+	ImageOptionFormat = C.RBD_IMAGE_OPTION_FORMAT
+	// ImageOptionFeatures is the representation of RBD_IMAGE_OPTION_FEATURES
+	// from librbd
+	ImageOptionFeatures = C.RBD_IMAGE_OPTION_FEATURES
+	// ImageOptionOrder is the representation of RBD_IMAGE_OPTION_ORDER from
+	// librbd
+	ImageOptionOrder = C.RBD_IMAGE_OPTION_ORDER
+	// ImageOptionStripeUnit is the representation of
+	// RBD_IMAGE_OPTION_STRIPE_UNIT from librbd
+	ImageOptionStripeUnit = C.RBD_IMAGE_OPTION_STRIPE_UNIT
+	// ImageOptionStripeCount is the representation of
+	// RBD_IMAGE_OPTION_STRIPE_COUNT from librbd
+	ImageOptionStripeCount = C.RBD_IMAGE_OPTION_STRIPE_COUNT
+	// ImageOptionJournalOrder is the representation of
+	// RBD_IMAGE_OPTION_JOURNAL_ORDER from librbd
+	ImageOptionJournalOrder = C.RBD_IMAGE_OPTION_JOURNAL_ORDER
+	// ImageOptionJournalSplayWidth is the representation of
+	// RBD_IMAGE_OPTION_JOURNAL_SPLAY_WIDTH from librbd
+	ImageOptionJournalSplayWidth = C.RBD_IMAGE_OPTION_JOURNAL_SPLAY_WIDTH
+	// ImageOptionJournalPool is the representation of
+	// RBD_IMAGE_OPTION_JOURNAL_POOL from librbd
+	ImageOptionJournalPool = C.RBD_IMAGE_OPTION_JOURNAL_POOL
+	// ImageOptionFeaturesSet is the representation of
+	// RBD_IMAGE_OPTION_FEATURES_SET from librbd
+	ImageOptionFeaturesSet = C.RBD_IMAGE_OPTION_FEATURES_SET
+	// ImageOptionFeaturesClear is the representation of
+	// RBD_IMAGE_OPTION_FEATURES_CLEAR from librbd
+	ImageOptionFeaturesClear = C.RBD_IMAGE_OPTION_FEATURES_CLEAR
+	// ImageOptionDataPool is the representation of RBD_IMAGE_OPTION_DATA_POOL
+	// from librbd
+	ImageOptionDataPool = C.RBD_IMAGE_OPTION_DATA_POOL
+
+	// RbdImageOptionFormat deprecated alias for ImageOptionFormat
+	RbdImageOptionFormat = ImageOptionFormat
+	// RbdImageOptionFeatures deprecated alias for ImageOptionFeatures
+	RbdImageOptionFeatures = ImageOptionFeatures
+	// RbdImageOptionOrder deprecated alias for ImageOptionOrder
+	RbdImageOptionOrder = ImageOptionOrder
+	// RbdImageOptionStripeUnit deprecated alias for ImageOptionStripeUnit
+	RbdImageOptionStripeUnit = ImageOptionStripeUnit
+	// RbdImageOptionStripeCount deprecated alias for ImageOptionStripeCount
+	RbdImageOptionStripeCount = ImageOptionStripeCount
+	// RbdImageOptionJournalOrder deprecated alias for ImageOptionJournalOrder
+	RbdImageOptionJournalOrder = ImageOptionJournalOrder
+	// RbdImageOptionJournalSplayWidth deprecated alias for
+	RbdImageOptionJournalSplayWidth = ImageOptionJournalSplayWidth
+	// RbdImageOptionJournalPool deprecated alias for ImageOptionJournalPool
+	RbdImageOptionJournalPool = ImageOptionJournalPool
+	// RbdImageOptionFeaturesSet deprecated alias for ImageOptionFeaturesSet
+	RbdImageOptionFeaturesSet = ImageOptionFeaturesSet
+	// RbdImageOptionFeaturesClear deprecated alias for ImageOptionFeaturesClear
+	RbdImageOptionFeaturesClear = ImageOptionFeaturesClear
+	// RbdImageOptionDataPool deprecated alias for ImageOptionDataPool
+	RbdImageOptionDataPool = ImageOptionDataPool
+
 	// introduced with Ceph Mimic
 	//RbdImageOptionFlatten = C.RBD_IMAGE_OPTION_FLATTEN
 )
