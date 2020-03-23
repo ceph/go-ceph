@@ -354,7 +354,6 @@ func TestMountWithRoot(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, mount)
 		defer func() {
-			assert.NoError(t, mount.Unmount())
 			assert.NoError(t, mount.Release())
 		}()
 
@@ -363,6 +362,9 @@ func TestMountWithRoot(t *testing.T) {
 
 		err = mount.MountWithRoot(dir1)
 		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, mount.Unmount())
+		}()
 
 		err = mount.ChangeDir(sub1)
 		assert.NoError(t, err)
