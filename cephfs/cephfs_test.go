@@ -130,6 +130,11 @@ func TestChangeDir(t *testing.T) {
 	assert.NotEqual(t, dir1, dir2)
 	assert.Equal(t, dir1, "/")
 	assert.Equal(t, dir2, "/asdf")
+
+	err = mount.ChangeDir("/")
+	assert.NoError(t, err)
+	err = mount.RemoveDir("/asdf")
+	assert.NoError(t, err)
 }
 
 func TestRemoveDir(t *testing.T) {
