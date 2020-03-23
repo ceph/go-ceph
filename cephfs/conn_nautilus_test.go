@@ -12,6 +12,7 @@ import (
 func TestGetFsCid(t *testing.T) {
 	t.Run("unmounted", func(t *testing.T) {
 		mount, err := CreateMount()
+		defer func() { assert.NoError(t, mount.Release()) }()
 		require.NoError(t, err)
 		require.NotNil(t, mount)
 
