@@ -164,9 +164,11 @@ func TestUnmountMount(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, mount)
 		assert.False(t, mount.IsMounted())
+		assert.NoError(t, mount.Release())
 	})
 	t.Run("mountUnmount", func(t *testing.T) {
 		mount := fsConnect(t)
+		defer func() { assert.NoError(t, mount.Release()) }()
 		assert.True(t, mount.IsMounted())
 
 		err := mount.Unmount()
@@ -292,12 +294,14 @@ func TestCreateMountWithId(t *testing.T) {
 	mount, err := CreateMountWithId("bobolink")
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
+	defer func() { assert.NoError(t, mount.Release()) }()
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
 	err = mount.Mount()
 	assert.NoError(t, err)
+	defer func() { assert.NoError(t, mount.Unmount()) }()
 
 	// verify the custom entity_id is visible in the 'session ls' output
 	// of mds.
@@ -400,6 +404,7 @@ func TestGetSetConfigOption(t *testing.T) {
 	mount, err := CreateMount()
 	require.NoError(t, err)
 	require.NotNil(t, mount)
+	defer func() { assert.NoError(t, mount.Release()) }()
 
 	err = mount.SetConfigOption("__dne__", "value")
 	assert.Error(t, err)
