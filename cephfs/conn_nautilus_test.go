@@ -24,6 +24,7 @@ func TestGetFsCid(t *testing.T) {
 	})
 	t.Run("mounted", func(t *testing.T) {
 		mount := fsConnect(t)
+		defer fsDisconnect(t, mount)
 
 		cid, err := mount.GetFsCid()
 		assert.NoError(t, err)
