@@ -187,8 +187,9 @@ func TestReleaseMount(t *testing.T) {
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
-	err = mount.Release()
-	assert.NoError(t, err)
+	assert.NoError(t, mount.Release())
+	// call release again to ensure idempotency of the func
+	assert.NoError(t, mount.Release())
 }
 
 func TestChmodDir(t *testing.T) {
