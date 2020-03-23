@@ -18,6 +18,7 @@ import (
 var (
 	CephMountDir     = "/tmp/ceph/mds/mnt/"
 	requireCephMount = false
+	testMdsName      = "Z"
 )
 
 func init() {
@@ -28,6 +29,10 @@ func init() {
 	reqMount := os.Getenv("GO_CEPH_TEST_REQUIRE_MOUNT")
 	if reqMount == "yes" || reqMount == "true" {
 		requireCephMount = true
+	}
+	mdsName := os.Getenv("GO_CEPH_TEST_MDS_NAME")
+	if mdsName != "" {
+		testMdsName = mdsName
 	}
 }
 
@@ -287,7 +292,7 @@ func TestCreateMountWithId(t *testing.T) {
 	// of mds.
 	cmd := []byte(`{"prefix": "session ls"}`)
 	buf, info, err := mount.MdsCommand(
-		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		testMdsName,
 		[][]byte{cmd})
 	assert.NoError(t, err)
 	assert.NotEqual(t, "", string(buf))
@@ -300,7 +305,7 @@ func TestMdsCommand(t *testing.T) {
 
 	cmd := []byte(`{"prefix": "client ls"}`)
 	buf, info, err := mount.MdsCommand(
-		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		testMdsName,
 		[][]byte{cmd})
 	assert.NoError(t, err)
 	assert.NotEqual(t, "", string(buf))
@@ -318,7 +323,7 @@ func TestMdsCommandError(t *testing.T) {
 
 	cmd := []byte("iAMinValId~~~")
 	buf, info, err := mount.MdsCommand(
-		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		testMdsName,
 		[][]byte{cmd})
 	assert.Error(t, err)
 	assert.Equal(t, "", string(buf))
