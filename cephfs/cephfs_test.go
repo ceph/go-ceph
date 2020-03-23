@@ -65,10 +65,10 @@ func useMount(t *testing.T) {
 }
 
 func TestCreateMount(t *testing.T) {
-	mount := fsConnect(t)
 	mount, err := CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
+	assert.NoError(t, mount.Release())
 }
 
 func fsConnect(t *testing.T) *MountInfo {
