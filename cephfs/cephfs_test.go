@@ -93,12 +93,19 @@ func fsConnect(t *testing.T) *MountInfo {
 	return mount
 }
 
+func fsDisconnect(t *testing.T, mount *MountInfo) {
+	assert.NoError(t, mount.Unmount())
+	assert.NoError(t, mount.Release())
+}
+
 func TestMountRoot(t *testing.T) {
-	fsConnect(t)
+	mount := fsConnect(t)
+	fsDisconnect(t, mount)
 }
 
 func TestSyncFs(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.SyncFs()
 	assert.NoError(t, err)
@@ -106,6 +113,7 @@ func TestSyncFs(t *testing.T) {
 
 func TestChangeDir(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	dir1 := mount.CurrentDir()
 	assert.NotNil(t, dir1)
@@ -130,6 +138,7 @@ func TestRemoveDir(t *testing.T) {
 	dirname := "one"
 	localPath := path.Join(CephMountDir, dirname)
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
@@ -182,6 +191,7 @@ func TestChmodDir(t *testing.T) {
 	var stats_before uint32 = 0755
 	var stats_after uint32 = 0700
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.MakeDir(dirname, stats_before)
 	assert.NoError(t, err)
@@ -213,6 +223,7 @@ func TestChown(t *testing.T) {
 	var root uint32
 
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
@@ -302,6 +313,7 @@ func TestCreateMountWithId(t *testing.T) {
 
 func TestMdsCommand(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	cmd := []byte(`{"prefix": "client ls"}`)
 	buf, info, err := mount.MdsCommand(
@@ -320,6 +332,7 @@ func TestMdsCommand(t *testing.T) {
 
 func TestMdsCommandError(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	cmd := []byte("iAMinValId~~~")
 	buf, info, err := mount.MdsCommand(
@@ -333,10 +346,7 @@ func TestMdsCommandError(t *testing.T) {
 
 func TestMountWithRoot(t *testing.T) {
 	bMount := fsConnect(t)
-	defer func() {
-		assert.NoError(t, bMount.Unmount())
-		assert.NoError(t, bMount.Release())
-	}()
+	defer fsDisconnect(t, bMount)
 
 	dir1 := "/test-mount-with-root"
 	err := bMount.MakeDir(dir1, 0755)
