@@ -14,9 +14,7 @@ matrix:
     - env: CEPH_VERSION=luminous
     - env: CEPH_VERSION=mimic
     - env: CEPH_VERSION=nautilus
-    # use 'master' for soon-to-be-released 'octopus' until we have proper
-    # octopus named tags on containers
-    - env: CEPH_VERSION=master
+    - env: CEPH_VERSION=octopus
 
 before_install: |
   make ci-image CEPH_VERSION=${CEPH_VERSION}
