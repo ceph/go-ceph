@@ -96,6 +96,14 @@ func (mount *MountInfo) GetConfigOption(option string) (string, error) {
 	return value, nil
 }
 
+// Init the file system client without actually mounting the file system.
+//
+// Implements:
+//  int ceph_init(struct ceph_mount_info *cmount);
+func (mount *MountInfo) Init() error {
+	return getError(C.ceph_init(mount.mount))
+}
+
 // Mount the file system, establishing a connection capable of I/O.
 //
 // Implements:
