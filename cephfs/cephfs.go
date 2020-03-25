@@ -155,24 +155,6 @@ func (mount *MountInfo) SyncFs() error {
 	return getError(ret)
 }
 
-// Chmod changes the mode bits (permissions) of a file/directory.
-func (mount *MountInfo) Chmod(path string, mode uint32) error {
-	cPath := C.CString(path)
-	defer C.free(unsafe.Pointer(cPath))
-
-	ret := C.ceph_chmod(mount.mount, cPath, C.mode_t(mode))
-	return getError(ret)
-}
-
-// Chown changes the ownership of a file/directory.
-func (mount *MountInfo) Chown(path string, user uint32, group uint32) error {
-	cPath := C.CString(path)
-	defer C.free(unsafe.Pointer(cPath))
-
-	ret := C.ceph_chown(mount.mount, cPath, C.int(user), C.int(group))
-	return getError(ret)
-}
-
 // IsMounted checks mount status.
 func (mount *MountInfo) IsMounted() bool {
 	ret := C.ceph_is_mounted(mount.mount)
