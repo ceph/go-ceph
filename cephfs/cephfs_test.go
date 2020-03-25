@@ -203,6 +203,7 @@ func TestChmodDir(t *testing.T) {
 
 	err := mount.MakeDir(dirname, stats_before)
 	assert.NoError(t, err)
+	defer mount.RemoveDir(dirname)
 
 	err = mount.SyncFs()
 	assert.NoError(t, err)
@@ -235,6 +236,7 @@ func TestChown(t *testing.T) {
 
 	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
+	defer mount.RemoveDir(dirname)
 
 	err = mount.SyncFs()
 	assert.NoError(t, err)
