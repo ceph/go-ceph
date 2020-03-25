@@ -38,4 +38,6 @@ func getError(e C.int) error {
 
 const (
 	errNameTooLong = CephFSError(-C.ENAMETOOLONG)
+
+	errInvalid = CephFSError(-C.EINVAL)
 )
