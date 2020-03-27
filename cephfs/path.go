@@ -44,3 +44,15 @@ func (mount *MountInfo) RemoveDir(path string) error {
 	ret := C.ceph_rmdir(mount.mount, cPath)
 	return getError(ret)
 }
+
+// Unlink removes a file.
+//
+// Implements:
+//  int ceph_unlink(struct ceph_mount_info *cmount, const char *path);
+func (mount *MountInfo) Unlink(path string) error {
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	ret := C.ceph_unlink(mount.mount, cPath)
+	return getError(ret)
+}

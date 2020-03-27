@@ -21,7 +21,7 @@ func TestFileOpen(t *testing.T) {
 		assert.NotNil(t, f1)
 		err = f1.Close()
 		assert.NoError(t, err)
-		// TODO: clean up file
+		assert.NoError(t, mount.Unlink(fname))
 	})
 
 	t.Run("errorMissing", func(t *testing.T) {
@@ -39,6 +39,7 @@ func TestFileOpen(t *testing.T) {
 		assert.NotNil(t, f1)
 		err = f1.Close()
 		assert.NoError(t, err)
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		s, err := os.Stat(path.Join(CephMountDir, fname))
 		assert.NoError(t, err)
@@ -59,6 +60,7 @@ func TestFileReadWrite(t *testing.T) {
 		assert.EqualValues(t, 12, n)
 		err = f1.Close()
 		assert.NoError(t, err)
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		buf := make([]byte, 1024)
 		f2, err := mount.Open(fname, os.O_RDONLY, 0)
@@ -107,6 +109,7 @@ func TestFileReadWriteAt(t *testing.T) {
 		assert.EqualValues(t, 3, n)
 		err = f1.Close()
 		assert.NoError(t, err)
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		buf := make([]byte, 4)
 		f2, err := mount.Open(fname, os.O_RDONLY, 0)
@@ -153,6 +156,7 @@ func TestFileInterfaces(t *testing.T) {
 		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, f1.Close()) }()
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		var w io.Writer = f1
 		_, err = w.Write([]byte("foo"))
@@ -167,6 +171,7 @@ func TestFileInterfaces(t *testing.T) {
 		f1, err = mount.Open(fname, os.O_RDONLY, 0666)
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, f1.Close()) }()
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		var r io.Reader = f1
 		buf := make([]byte, 32)
@@ -184,6 +189,7 @@ func TestFileSeek(t *testing.T) {
 		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, f1.Close()) }()
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		o, err := f1.Seek(8, SeekSet)
 		assert.NoError(t, err)
@@ -198,6 +204,7 @@ func TestFileSeek(t *testing.T) {
 		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, f1.Close()) }()
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		o, err := f1.Seek(8, 1776)
 		assert.Error(t, err)
@@ -208,6 +215,7 @@ func TestFileSeek(t *testing.T) {
 		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, f1.Close()) }()
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
 		o, err := f1.Seek(-22, SeekSet)
 		assert.Error(t, err)
