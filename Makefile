@@ -38,7 +38,7 @@ check-ceph-version:
 check:
 	# Configure project's revive checks using .revive.toml
 	# See: https://github.com/mgechev/revive
-	@for d in $$(go list ./... | grep -v /vendor/); do revive -config .revive.toml $${d}; done
+	revive -config .revive.toml $$(go list ./... | grep -v /vendor/)
 
 # Do a quick compile only check of the tests and impliclity the
 # library code as well.
