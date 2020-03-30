@@ -106,7 +106,7 @@ func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPref
 	if int(ret) != 0 {
 		return getError(ret)
 	} else if int(c_prval) != 0 {
-		return RadosError(int(c_prval))
+		return getError(c_prval)
 	}
 
 	for {

@@ -445,7 +445,7 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 	case -C.EEXIST:
 		return int(ret), nil
 	default:
-		return int(ret), RadosError(int(ret))
+		return int(ret), getError(ret)
 	}
 }
 
@@ -496,7 +496,7 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 	case -C.EEXIST:
 		return int(ret), nil
 	default:
-		return int(ret), RadosError(int(ret))
+		return int(ret), getError(ret)
 	}
 }
 
@@ -525,7 +525,7 @@ func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
 	case -C.ENOENT:
 		return int(ret), nil
 	default:
-		return int(ret), RadosError(int(ret))
+		return int(ret), getError(ret)
 	}
 }
 
@@ -582,7 +582,7 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 	}
 
 	if ret < 0 {
-		return nil, RadosError(int(ret))
+		return nil, RadosError(ret)
 	}
 	return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
 }
@@ -618,6 +618,6 @@ func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error)
 	case -C.EINVAL: // -EINVAL
 		return int(ret), nil
 	default:
-		return int(ret), RadosError(int(ret))
+		return int(ret), getError(ret)
 	}
 }
