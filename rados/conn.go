@@ -7,13 +7,7 @@ import "C"
 
 import (
 	"bytes"
-	"errors"
 	"unsafe"
-)
-
-var (
-	// ErrNotConnected is returned when functions are called without a RADOS connection
-	ErrNotConnected = errors.New("RADOS not connected")
 )
 
 // ClusterStat represents Ceph cluster statistics.
