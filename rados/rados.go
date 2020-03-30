@@ -42,7 +42,7 @@ func newConn(user *C.char) (*Conn, error) {
 	ret := C.rados_create(&conn.cluster, user)
 
 	if ret != 0 {
-		return nil, RadosError(int(ret))
+		return nil, getError(ret)
 	}
 
 	runtime.SetFinalizer(conn, freeConn)
@@ -75,7 +75,7 @@ func NewConnWithClusterAndUser(clusterName string, userName string) (*Conn, erro
 	conn := makeConn()
 	ret := C.rados_create2(&conn.cluster, c_cluster_name, c_name, 0)
 	if ret != 0 {
-		return nil, RadosError(int(ret))
+		return nil, getError(ret)
 	}
 
 	runtime.SetFinalizer(conn, freeConn)

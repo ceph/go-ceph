@@ -47,7 +47,7 @@ func (c *Conn) PingMonitor(id string) (string, error) {
 		reply := C.GoStringN(strout, (C.int)(strlen))
 		return reply, nil
 	}
-	return "", RadosError(int(ret))
+	return "", getError(ret)
 }
 
 // Connect establishes a connection to a RADOS cluster. It returns an error,
@@ -55,7 +55,7 @@ func (c *Conn) PingMonitor(id string) (string, error) {
 func (c *Conn) Connect() error {
 	ret := C.rados_connect(c.cluster)
 	if ret != 0 {
-		return RadosError(int(ret))
+		return getError(ret)
 	}
 	c.connected = true
 	return nil
@@ -97,20 +97,20 @@ func (c *Conn) OpenIOContext(pool string) (*IOContext, error) {
 	if ret == 0 {
 		return ioctx, nil
 	}
-	return nil, RadosError(int(ret))
+	return nil, getError(ret)
 }
 
 // ListPools returns the names of all existing pools.
 func (c *Conn) ListPools() (names []string, err error) {
 	buf := make([]byte, 4096)
 	for {
-		ret := int(C.rados_pool_list(c.cluster,
-			(*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+		ret := C.rados_pool_list(c.cluster,
+			(*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 		if ret < 0 {
-			return nil, RadosError(int(ret))
+			return nil, getError(ret)
 		}
 
-		if ret > len(buf) {
+		if int(ret) > len(buf) {
 			buf = make([]byte, ret)
 			continue
 		}
@@ -178,7 +178,7 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 	c_stat := C.struct_rados_cluster_stat_t{}
 	ret := C.rados_cluster_stat(c.cluster, &c_stat)
 	if ret < 0 {
-		return ClusterStat{}, RadosError(int(ret))
+		return ClusterStat{}, getError(ret)
 	}
 	return ClusterStat{
 		Kb:          uint64(c_stat.kb),
@@ -219,14 +219,14 @@ func (c *Conn) ParseDefaultConfigEnv() error {
 // is a unique identifier of an entire Ceph cluster.
 func (c *Conn) GetFSID() (fsid string, err error) {
 	buf := make([]byte, 37)
-	ret := int(C.rados_cluster_fsid(c.cluster,
-		(*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+	ret := C.rados_cluster_fsid(c.cluster,
+		(*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
 	// FIXME: the success case isn't documented correctly in librados.h
 	if ret == 36 {
 		fsid = C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
 		return fsid, nil
 	}
-	return "", RadosError(int(ret))
+	return "", getError(ret)
 }
 
 // GetInstanceID returns a globally unique identifier for the cluster
@@ -323,7 +323,7 @@ func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string,
 		C.free(unsafe.Pointer(outbuf))
 	}
 	if ret != 0 {
-		err = RadosError(int(ret))
+		err = getError(ret)
 		return nil, info, err
 	}
 
@@ -394,7 +394,7 @@ func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) (buffer
 		C.free(unsafe.Pointer(outbuf))
 	}
 	if ret != 0 {
-		err = RadosError(int(ret))
+		err = getError(ret)
 		return nil, info, err
 	}
 
