@@ -28,11 +28,11 @@ func (e RadosError) Error() string {
 	return fmt.Sprintf("rados: ret=%d, %s", errno, s)
 }
 
-func getRadosError(err int) error {
-	if err == 0 {
+func getError(e C.int) error {
+	if e == 0 {
 		return nil
 	}
-	return RadosError(err)
+	return RadosError(e)
 }
 
 // Public go errors:
