@@ -256,19 +256,6 @@ func TestChown(t *testing.T) {
 
 }
 
-func TestCephFSError(t *testing.T) {
-	err := getError(0)
-	assert.NoError(t, err)
-
-	err = getError(-5) // IO error
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "cephfs: ret=5, Input/output error")
-
-	err = getError(345) // no such errno
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "cephfs: ret=345")
-}
-
 func radosConnect(t *testing.T) *rados.Conn {
 	conn, err := rados.NewConn()
 	require.NoError(t, err)
