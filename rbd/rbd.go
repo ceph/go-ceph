@@ -943,22 +943,24 @@ func (image *Image) GetId() (string, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return "", err
 	}
-	size := C.size_t(1024)
-	buf := make([]byte, size)
-	for {
+	var (
+		err error
+		buf []byte
+	)
+	for sizer := retry.NewSizerEV(1, 8192, errRange); sizer.Continue(); {
+		buf = make([]byte, sizer.Size())
 		ret := C.rbd_get_id(
 			image.image,
 			(*C.char)(unsafe.Pointer(&buf[0])),
-			size)
-		if ret == -C.ERANGE && size <= 8192 {
-			size *= 2
-			buf = make([]byte, size)
-		} else if ret < 0 {
-			return "", getError(ret)
-		}
-		id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
-		return id, nil
+			C.size_t(sizer.Size()))
+		err = sizer.Update(getErrorIfNegative(ret))
 	}
+	if err != nil {
+		return "", err
+	}
+	id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+	return id, nil
+
 }
 
 // GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
