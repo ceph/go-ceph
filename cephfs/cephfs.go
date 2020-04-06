@@ -130,8 +130,15 @@ func (mount *MountInfo) Unmount() error {
 // Implements:
 //  int ceph_release(struct ceph_mount_info *cmount);
 func (mount *MountInfo) Release() error {
+	if mount.mount == nil {
+		return nil
+	}
 	ret := C.ceph_release(mount.mount)
-	return getError(ret)
+	if err := getError(ret); err != nil {
+		return err
+	}
+	mount.mount = nil
+	return nil
 }
 
 // SyncFs synchronizes all filesystem data to persistent media.

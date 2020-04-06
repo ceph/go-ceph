@@ -12,6 +12,15 @@ BUILD_TAGS=""
 RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
 
+# env vars consumed by go code directly.
+# set defaults if they are currently unset in the environment
+: "${GO_CEPH_TEST_REQUIRE_MOUNT:=yes}"
+
+# Default env vars that are not currently changed by this script
+# but can be used to change the test behavior:
+# GO_CEPH_TEST_MOUNT_DIR
+# GO_CEPH_TEST_MDS_NAME
+
 CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,results:,ceph-conf:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
@@ -155,7 +164,7 @@ post_all_tests() {
 test_go_ceph() {
     mkdir -p /tmp/ceph
     show "${MICRO_OSD_PATH}" /tmp/ceph
-    export CEPH_CONF
+    export CEPH_CONF GO_CEPH_TEST_REQUIRE_MOUNT
 
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"

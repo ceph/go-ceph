@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"syscall"
 	"testing"
 	"time"
@@ -15,14 +16,59 @@ import (
 )
 
 var (
-	CephMountTest = "/tmp/ceph/mds/mnt/"
+	CephMountDir     = "/tmp/ceph/mds/mnt/"
+	requireCephMount = false
+	testMdsName      = "Z"
 )
 
+func init() {
+	mdir := os.Getenv("GO_CEPH_TEST_MOUNT_DIR")
+	if mdir != "" {
+		CephMountDir = mdir
+	}
+	reqMount := os.Getenv("GO_CEPH_TEST_REQUIRE_MOUNT")
+	if reqMount == "yes" || reqMount == "true" {
+		requireCephMount = true
+	}
+	mdsName := os.Getenv("GO_CEPH_TEST_MDS_NAME")
+	if mdsName != "" {
+		testMdsName = mdsName
+	}
+}
+
+func useMount(t *testing.T) {
+	fail := func(m string) {
+		if requireCephMount {
+			t.Fatalf("cephfs mount required: %s %s", CephMountDir, m)
+		} else {
+			t.Skipf("cephfs mount needed: %s %s", CephMountDir, m)
+		}
+	}
+
+	s, err := os.Stat(CephMountDir)
+	if err != nil || !s.IsDir() {
+		fail("missing or not a directory")
+	}
+
+	if us, ok := s.Sys().(*syscall.Stat_t); ok {
+		ps, err := os.Stat(path.Dir(path.Clean(CephMountDir)))
+		if err != nil {
+			fail("missing parent directory (race condition?)")
+		}
+		if ps.Sys().(*syscall.Stat_t).Dev == us.Dev {
+			fail("not a mount point")
+		}
+	} else {
+		fail("not a unix-like file system? how did you even compile this?" +
+			"no, seriously please contact us or file an issue and let us know!")
+	}
+}
+
 func TestCreateMount(t *testing.T) {
-	mount := fsConnect(t)
 	mount, err := CreateMount()
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
+	assert.NoError(t, mount.Release())
 }
 
 func fsConnect(t *testing.T) *MountInfo {
@@ -47,12 +93,19 @@ func fsConnect(t *testing.T) *MountInfo {
 	return mount
 }
 
+func fsDisconnect(t *testing.T, mount *MountInfo) {
+	assert.NoError(t, mount.Unmount())
+	assert.NoError(t, mount.Release())
+}
+
 func TestMountRoot(t *testing.T) {
-	fsConnect(t)
+	mount := fsConnect(t)
+	fsDisconnect(t, mount)
 }
 
 func TestSyncFs(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.SyncFs()
 	assert.NoError(t, err)
@@ -60,6 +113,7 @@ func TestSyncFs(t *testing.T) {
 
 func TestChangeDir(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	dir1 := mount.CurrentDir()
 	assert.NotNil(t, dir1)
@@ -76,11 +130,20 @@ func TestChangeDir(t *testing.T) {
 	assert.NotEqual(t, dir1, dir2)
 	assert.Equal(t, dir1, "/")
 	assert.Equal(t, dir2, "/asdf")
+
+	err = mount.ChangeDir("/")
+	assert.NoError(t, err)
+	err = mount.RemoveDir("/asdf")
+	assert.NoError(t, err)
 }
 
 func TestRemoveDir(t *testing.T) {
+	useMount(t)
+
 	dirname := "one"
+	localPath := path.Join(CephMountDir, dirname)
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
@@ -89,15 +152,15 @@ func TestRemoveDir(t *testing.T) {
 	assert.NoError(t, err)
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	_, err = os.Stat(CephMountTest + dirname)
+	_, err = os.Stat(localPath)
 	assert.NoError(t, err)
 
 	err = mount.RemoveDir(dirname)
 	assert.NoError(t, err)
 
-	_, err = os.Stat(CephMountTest + dirname)
+	_, err = os.Stat(localPath)
 	assert.EqualError(t, err,
-		fmt.Sprintf("stat %s: no such file or directory", CephMountTest+dirname))
+		fmt.Sprintf("stat %s: no such file or directory", localPath))
 }
 
 func TestUnmountMount(t *testing.T) {
@@ -106,9 +169,11 @@ func TestUnmountMount(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, mount)
 		assert.False(t, mount.IsMounted())
+		assert.NoError(t, mount.Release())
 	})
 	t.Run("mountUnmount", func(t *testing.T) {
 		mount := fsConnect(t)
+		defer func() { assert.NoError(t, mount.Release()) }()
 		assert.True(t, mount.IsMounted())
 
 		err := mount.Unmount()
@@ -122,15 +187,19 @@ func TestReleaseMount(t *testing.T) {
 	assert.NoError(t, err)
 	require.NotNil(t, mount)
 
-	err = mount.Release()
-	assert.NoError(t, err)
+	assert.NoError(t, mount.Release())
+	// call release again to ensure idempotency of the func
+	assert.NoError(t, mount.Release())
 }
 
 func TestChmodDir(t *testing.T) {
+	useMount(t)
+
 	dirname := "two"
 	var stats_before uint32 = 0755
 	var stats_after uint32 = 0700
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.MakeDir(dirname, stats_before)
 	assert.NoError(t, err)
@@ -139,7 +208,7 @@ func TestChmodDir(t *testing.T) {
 	assert.NoError(t, err)
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	stats, err := os.Stat(CephMountTest + dirname)
+	stats, err := os.Stat(path.Join(CephMountDir, dirname))
 	require.NoError(t, err)
 
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_before)
@@ -147,18 +216,22 @@ func TestChmodDir(t *testing.T) {
 	err = mount.Chmod(dirname, stats_after)
 	assert.NoError(t, err)
 
-	stats, err = os.Stat(CephMountTest + dirname)
+	stats, err = os.Stat(path.Join(CephMountDir, dirname))
+	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Mode().Perm()), stats_after)
 }
 
 // Not cross-platform, go's os does not specifiy Sys return type
 func TestChown(t *testing.T) {
+	useMount(t)
+
 	dirname := "three"
 	// dockerfile creates bob user account
 	var bob uint32 = 1010
 	var root uint32
 
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	err := mount.MakeDir(dirname, 0755)
 	assert.NoError(t, err)
@@ -167,7 +240,7 @@ func TestChown(t *testing.T) {
 	assert.NoError(t, err)
 
 	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	stats, err := os.Stat(CephMountTest + dirname)
+	stats, err := os.Stat(path.Join(CephMountDir, dirname))
 	require.NoError(t, err)
 
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), root)
@@ -176,7 +249,7 @@ func TestChown(t *testing.T) {
 	err = mount.Chown(dirname, bob, bob)
 	assert.NoError(t, err)
 
-	stats, err = os.Stat(CephMountTest + dirname)
+	stats, err = os.Stat(path.Join(CephMountDir, dirname))
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
@@ -214,18 +287,20 @@ func TestCreateMountWithId(t *testing.T) {
 	mount, err := CreateMountWithId("bobolink")
 	assert.NoError(t, err)
 	assert.NotNil(t, mount)
+	defer func() { assert.NoError(t, mount.Release()) }()
 
 	err = mount.ReadDefaultConfigFile()
 	assert.NoError(t, err)
 
 	err = mount.Mount()
 	assert.NoError(t, err)
+	defer func() { assert.NoError(t, mount.Unmount()) }()
 
 	// verify the custom entity_id is visible in the 'session ls' output
 	// of mds.
 	cmd := []byte(`{"prefix": "session ls"}`)
 	buf, info, err := mount.MdsCommand(
-		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		testMdsName,
 		[][]byte{cmd})
 	assert.NoError(t, err)
 	assert.NotEqual(t, "", string(buf))
@@ -235,10 +310,11 @@ func TestCreateMountWithId(t *testing.T) {
 
 func TestMdsCommand(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	cmd := []byte(`{"prefix": "client ls"}`)
 	buf, info, err := mount.MdsCommand(
-		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		testMdsName,
 		[][]byte{cmd})
 	assert.NoError(t, err)
 	assert.NotEqual(t, "", string(buf))
@@ -253,10 +329,11 @@ func TestMdsCommand(t *testing.T) {
 
 func TestMdsCommandError(t *testing.T) {
 	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
 
 	cmd := []byte("iAMinValId~~~")
 	buf, info, err := mount.MdsCommand(
-		"Z", // TODO: fix hard-coded name mds (from ci container script)
+		testMdsName,
 		[][]byte{cmd})
 	assert.Error(t, err)
 	assert.Equal(t, "", string(buf))
@@ -266,10 +343,7 @@ func TestMdsCommandError(t *testing.T) {
 
 func TestMountWithRoot(t *testing.T) {
 	bMount := fsConnect(t)
-	defer func() {
-		assert.NoError(t, bMount.Unmount())
-		assert.NoError(t, bMount.Release())
-	}()
+	defer fsDisconnect(t, bMount)
 
 	dir1 := "/test-mount-with-root"
 	err := bMount.MakeDir(dir1, 0755)
@@ -287,7 +361,6 @@ func TestMountWithRoot(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, mount)
 		defer func() {
-			assert.NoError(t, mount.Unmount())
 			assert.NoError(t, mount.Release())
 		}()
 
@@ -296,6 +369,9 @@ func TestMountWithRoot(t *testing.T) {
 
 		err = mount.MountWithRoot(dir1)
 		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, mount.Unmount())
+		}()
 
 		err = mount.ChangeDir(sub1)
 		assert.NoError(t, err)
@@ -321,6 +397,7 @@ func TestGetSetConfigOption(t *testing.T) {
 	mount, err := CreateMount()
 	require.NoError(t, err)
 	require.NotNil(t, mount)
+	defer func() { assert.NoError(t, mount.Release()) }()
 
 	err = mount.SetConfigOption("__dne__", "value")
 	assert.Error(t, err)
