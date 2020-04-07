@@ -145,3 +145,13 @@ Contributions are welcome & greatly appreciated, every little bit helps. Make co
 ```
 make test-docker
 ```
+
+### Interactive "Office Hours"
+
+The maintenance team plans to be available regularly for questions, comments,
+pings, etc for about an hour twice a week. The current schedule is:
+
+* 2:00pm EDT (currently 18:00 UTC) Mondays
+* 9:00am EDT (currently 13:00 UTC) Thursdays
+
+We will use the [#ceph-devel IRC channel](https://ceph.io/irc/)
