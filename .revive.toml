@@ -42,3 +42,7 @@ warningCode = 0
   arguments = [7]
 [rule.function-result-limit]
   arguments = [3]
+
+[rule.unhandled-error]
+  # functions to ignore unhandled errors on
+  arguments = ["fmt.Printf", "fmt.Println"]
