@@ -37,3 +37,8 @@ warningCode = 0
 [rule.constant-logical-expr]
 [rule.unnecessary-stmt]
 [rule.unused-receiver]
+
+[rule.argument-limit]
+  arguments = [7]
+[rule.function-result-limit]
+  arguments = [3]
