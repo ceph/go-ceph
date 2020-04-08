@@ -16,6 +16,11 @@ type SizerCheckFunc func(error) bool
 // If the check function returns true iteration continues but nil
 // will be returned from the update function, effectively clearing
 // the error state, *unless* the current size now exceeds maxSize.
+//
+// When the Sizer's Update & UpdateWants methods are called the size will be
+// doubled, unless UpdateWants is provided with a size hint that is greater
+// than the current size. Therefore, it is highly recommended to provide start
+// and max size values that are powers of two.
 type Sizer struct {
 	size    int
 	maxSize int
