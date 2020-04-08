@@ -193,7 +193,11 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 
 	// create conf file that changes log_file conf option
 	file, err := ioutil.TempFile("/tmp", "go-rados")
-	assert.NoError(suite.T(), err)
+	require.NoError(suite.T(), err)
+	defer func() {
+		assert.NoError(suite.T(), file.Close())
+		assert.NoError(suite.T(), os.Remove(file.Name()))
+	}()
 
 	next_val := prev_val + 1
 	conf := fmt.Sprintf("[global]\nlog_max_new = %d\n", next_val)
@@ -213,9 +217,6 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 
 	assert.NotEqual(suite.T(), prev_str, curr_str)
 	assert.Equal(suite.T(), curr_val, prev_val+1)
-
-	file.Close()
-	os.Remove(file.Name())
 }
 
 func (suite *RadosTestSuite) TestGetClusterStats() {
