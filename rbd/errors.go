@@ -33,9 +33,8 @@ func getError(err C.int) error {
 			return ErrNotFound
 		}
 		return RBDError(err)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // Public go errors:
