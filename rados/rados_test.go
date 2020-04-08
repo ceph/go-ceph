@@ -64,7 +64,8 @@ func (suite *RadosTestSuite) SetupTest() {
 	conn, err := NewConn()
 	require.NoError(suite.T(), err)
 	suite.conn = conn
-	suite.conn.ReadDefaultConfigFile()
+	err = suite.conn.ReadDefaultConfigFile()
+	require.NoError(suite.T(), err)
 }
 
 func (suite *RadosTestSuite) SetupConnection() {
@@ -105,7 +106,8 @@ func (suite *RadosTestSuite) TearDownSuite() {
 	require.NoError(suite.T(), err)
 	defer conn.Shutdown()
 
-	conn.ReadDefaultConfigFile()
+	err = conn.ReadDefaultConfigFile()
+	require.NoError(suite.T(), err)
 
 	if err = conn.Connect(); assert.NoError(suite.T(), err) {
 		err = conn.DeletePool(suite.pool)
