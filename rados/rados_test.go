@@ -413,7 +413,8 @@ func (suite *RadosTestSuite) TestGetLargePoolList() {
 
 	defer func(origPools []string) {
 		for _, name := range names {
-			suite.conn.DeletePool(name)
+			err := suite.conn.DeletePool(name)
+			assert.NoError(suite.T(), err)
 		}
 		cleanPools, err := suite.conn.ListPools()
 		assert.NoError(suite.T(), err)
