@@ -535,7 +535,7 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.NoError(t, err)
 
 	encoder := json.NewEncoder(img)
-	encoder.Encode(stats)
+	assert.NoError(t, encoder.Encode(stats))
 
 	err = img.Flush()
 	assert.NoError(t, err)
@@ -545,7 +545,7 @@ func TestIOReaderWriter(t *testing.T) {
 
 	var stats2 *ImageInfo
 	decoder := json.NewDecoder(img)
-	decoder.Decode(&stats2)
+	assert.NoError(t, decoder.Decode(&stats2))
 
 	assert.Equal(t, &stats, &stats2)
 
