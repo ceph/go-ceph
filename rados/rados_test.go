@@ -230,7 +230,8 @@ func (suite *RadosTestSuite) TestGetClusterStats() {
 	buf := make([]byte, 1<<20)
 	for i := 0; i < 10; i++ {
 		objname := suite.GenObjectName()
-		suite.ioctx.Write(objname, buf, 0)
+		err = suite.ioctx.Write(objname, buf, 0)
+		assert.NoError(suite.T(), err)
 	}
 
 	// wait a while for the stats to change
@@ -560,7 +561,8 @@ func (suite *RadosTestSuite) TestGetPoolStats() {
 	buf := make([]byte, 1<<20)
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		suite.ioctx.Write(oid, buf, 0)
+		err = suite.ioctx.Write(oid, buf, 0)
+		assert.NoError(suite.T(), err)
 	}
 
 	// wait a while for the stats to change
