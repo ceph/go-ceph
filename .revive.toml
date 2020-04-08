@@ -31,3 +31,9 @@ warningCode = 0
 [rule.unused-parameter]
 [rule.unreachable-code]
 [rule.redefines-builtin-id]
+
+[rule.atomic]
+[rule.bool-literal-in-expr]
+[rule.constant-logical-expr]
+[rule.unnecessary-stmt]
+[rule.unused-receiver]
