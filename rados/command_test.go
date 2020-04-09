@@ -87,3 +87,45 @@ func (suite *RadosTestSuite) TestPGCommand() {
 	err = json.Unmarshal(buf, &message)
 	assert.NoError(suite.T(), err)
 }
+
+func (suite *RadosTestSuite) TestMgrCommandDescrptions() {
+	suite.SetupConnection()
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "get_command_descriptions", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.MgrCommand([][]byte{command})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+
+	var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *RadosTestSuite) TestMgrCommand() {
+	suite.SetupConnection()
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "balancer status", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.MgrCommand([][]byte{command})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+
+	var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *RadosTestSuite) TestMgrCommandMalformedCommand() {
+	suite.SetupConnection()
+
+	command := []byte("JUNK!")
+	buf, info, err := suite.conn.MgrCommand([][]byte{command})
+	assert.Error(suite.T(), err)
+	assert.NotEqual(suite.T(), info, "")
+	assert.Len(suite.T(), buf, 0)
+}
