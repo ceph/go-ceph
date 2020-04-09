@@ -1,7 +1,6 @@
 package rados
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -593,86 +592,6 @@ func (suite *RadosTestSuite) TestGetPoolName() {
 	assert.NoError(suite.T(), err)
 
 	assert.Equal(suite.T(), name, suite.pool)
-}
-
-func (suite *RadosTestSuite) TestMonCommand() {
-	suite.SetupConnection()
-
-	command, err := json.Marshal(
-		map[string]string{"prefix": "df", "format": "json"})
-	assert.NoError(suite.T(), err)
-
-	buf, info, err := suite.conn.MonCommand(command)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), info, "")
-
-	var message map[string]interface{}
-	err = json.Unmarshal(buf, &message)
-	assert.NoError(suite.T(), err)
-}
-
-// NB: ceph octopus appears to be stricter about the formatting of the keyring
-// and now rejects whitespace that older versions did not have a problem with.
-const clientKeyFormat = `
-[%s]
-key = AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw==
-`
-
-func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
-	suite.SetupConnection()
-
-	entity := fmt.Sprintf("client.testMonCmdUser%d", time.Now().UnixNano())
-
-	// first add the new test user, specifying its key in the input buffer
-	command, err := json.Marshal(map[string]interface{}{
-		"prefix": "auth add",
-		"format": "json",
-		"entity": entity,
-	})
-	assert.NoError(suite.T(), err)
-
-	client_key := fmt.Sprintf(clientKeyFormat, entity)
-
-	inbuf := []byte(client_key)
-
-	buf, info, err := suite.conn.MonCommandWithInputBuffer(command, inbuf)
-	assert.NoError(suite.T(), err)
-	expected_info := fmt.Sprintf("added key for %s", entity)
-	assert.Equal(suite.T(), expected_info, info)
-	assert.Equal(suite.T(), "", string(buf[:]))
-
-	// get the key and verify that it's what we previously set
-	command, err = json.Marshal(map[string]interface{}{
-		"prefix": "auth get-key",
-		"format": "json",
-		"entity": entity,
-	})
-	assert.NoError(suite.T(), err)
-
-	buf, info, err = suite.conn.MonCommand(command)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "", info)
-	assert.Equal(suite.T(),
-		`{"key":"AQD4PGNXBZJNHhAA582iUgxe9DsN+MqFN4Z6Jw=="}`,
-		string(buf[:]))
-}
-
-func (suite *RadosTestSuite) TestPGCommand() {
-	suite.SetupConnection()
-
-	pgid := "1.2"
-
-	command, err := json.Marshal(
-		map[string]string{"prefix": "query", "pgid": pgid, "format": "json"})
-	assert.NoError(suite.T(), err)
-
-	buf, info, err := suite.conn.PGCommand([]byte(pgid), [][]byte{[]byte(command)})
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), info, "")
-
-	var message map[string]interface{}
-	err = json.Unmarshal(buf, &message)
-	assert.NoError(suite.T(), err)
 }
 
 func (suite *RadosTestSuite) TestObjectListObjects() {
