@@ -10,20 +10,22 @@ import (
 )
 
 // MonCommand sends a command to one of the monitors
-func (c *Conn) MonCommand(args []byte) (buffer []byte, info string, err error) {
+func (c *Conn) MonCommand(args []byte) ([]byte, string, error) {
 	return c.monCommand(args, nil)
 }
 
 // MonCommandWithInputBuffer sends a command to one of the monitors, with an input buffer
-func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) (buffer []byte, info string, err error) {
+func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) ([]byte, string, error) {
 	return c.monCommand(args, inputBuffer)
 }
 
-func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string, err error) {
+func (c *Conn) monCommand(args, inputBuffer []byte) ([]byte, string, error) {
 	argv := C.CString(string(args))
 	defer C.free(unsafe.Pointer(argv))
 
 	var (
+		info               string
+		buffer             []byte
 		outs, outbuf       *C.char
 		outslen, outbuflen C.size_t
 	)
@@ -49,11 +51,11 @@ func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string,
 		C.free(unsafe.Pointer(outbuf))
 	}
 	if ret != 0 {
-		err = getError(ret)
+		err := getError(ret)
 		return nil, info, err
 	}
 
-	return
+	return buffer, info, nil
 }
 
 // PGCommand sends a command to one of the PGs
@@ -64,7 +66,7 @@ func (c *Conn) monCommand(args, inputBuffer []byte) (buffer []byte, info string,
 //                       const char *inbuf, size_t inbuflen,
 //                       char **outbuf, size_t *outbuflen,
 //                       char **outs, size_t *outslen);
-func (c *Conn) PGCommand(pgid []byte, args [][]byte) (buffer []byte, info string, err error) {
+func (c *Conn) PGCommand(pgid []byte, args [][]byte) ([]byte, string, error) {
 	return c.pgCommand(pgid, args, nil)
 }
 
@@ -76,11 +78,11 @@ func (c *Conn) PGCommand(pgid []byte, args [][]byte) (buffer []byte, info string
 //                       const char *inbuf, size_t inbuflen,
 //                       char **outbuf, size_t *outbuflen,
 //                       char **outs, size_t *outslen);
-func (c *Conn) PGCommandWithInputBuffer(pgid []byte, args [][]byte, inputBuffer []byte) (buffer []byte, info string, err error) {
+func (c *Conn) PGCommandWithInputBuffer(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
 	return c.pgCommand(pgid, args, inputBuffer)
 }
 
-func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) (buffer []byte, info string, err error) {
+func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
 	name := C.CString(string(pgid))
 	defer C.free(unsafe.Pointer(name))
 
@@ -93,6 +95,8 @@ func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) (buffer
 	}
 
 	var (
+		info               string
+		buffer             []byte
 		outs, outbuf       *C.char
 		outslen, outbuflen C.size_t
 	)
@@ -120,9 +124,9 @@ func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) (buffer
 		C.free(unsafe.Pointer(outbuf))
 	}
 	if ret != 0 {
-		err = getError(ret)
+		err := getError(ret)
 		return nil, info, err
 	}
 
-	return
+	return buffer, info, nil
 }
