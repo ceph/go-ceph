@@ -33,3 +33,9 @@ func getError(e C.int) error {
 	}
 	return CephFSError(e)
 }
+
+// Private errors:
+
+const (
+	errNameTooLong = CephFSError(-C.ENAMETOOLONG)
+)

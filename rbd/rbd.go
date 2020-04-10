@@ -17,6 +17,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/retry"
 	"github.com/ceph/go-ceph/rados"
 )
 
@@ -873,22 +874,24 @@ func (image *Image) GetMetadata(key string) (string, error) {
 	c_key := C.CString(key)
 	defer C.free(unsafe.Pointer(c_key))
 
-	var c_vallen C.size_t
-	ret := C.rbd_metadata_get(image.image, c_key, nil, (*C.size_t)(&c_vallen))
-	// get size of value
-	// ret -34 because we pass nil as value pointer
-	if ret != 0 && ret != -C.ERANGE {
-		return "", RBDError(ret)
+	var (
+		buf []byte
+		err error
+	)
+	retry.WithSizes(4096, 262144, func(size int) retry.Hint {
+		csize := C.size_t(size)
+		buf = make([]byte, csize)
+		// rbd_metadata_get is a bit quirky and *does not* update the size
+		// value if the size passed in >= the needed size.
+		ret := C.rbd_metadata_get(
+			image.image, c_key, (*C.char)(unsafe.Pointer(&buf[0])), &csize)
+		err = getError(ret)
+		return retry.Size(int(csize)).If(err == errRange)
+	})
+	if err != nil {
+		return "", err
 	}
-
-	// make a bytes array with a good size
-	value := make([]byte, c_vallen-1)
-	ret = C.rbd_metadata_get(image.image, c_key, (*C.char)(unsafe.Pointer(&value[0])), (*C.size_t)(&c_vallen))
-	if ret < 0 {
-		return "", RBDError(ret)
-	}
-
-	return string(value), nil
+	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 }
 
 // SetMetadata updates the metadata string associated with the given key.
@@ -941,42 +944,50 @@ func (image *Image) GetId() (string, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return "", err
 	}
-	size := C.size_t(1024)
-	buf := make([]byte, size)
-	for {
+	var (
+		err error
+		buf []byte
+	)
+	retry.WithSizes(1, 8192, func(size int) retry.Hint {
+		buf = make([]byte, size)
 		ret := C.rbd_get_id(
 			image.image,
 			(*C.char)(unsafe.Pointer(&buf[0])),
-			size)
-		if ret == -C.ERANGE && size <= 8192 {
-			size *= 2
-			buf = make([]byte, size)
-		} else if ret < 0 {
-			return "", getError(ret)
-		}
-		id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
-		return id, nil
+			C.size_t(size))
+		err = getErrorIfNegative(ret)
+		return retry.DoubleSize.If(err == errRange)
+	})
+	if err != nil {
+		return "", err
 	}
+	id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+	return id, nil
+
 }
 
 // GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
 // currently residing in the trash.
 func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
-	var num_entries C.size_t
-
-	// Call rbd_trash_list with nil pointer to get number of trash entries.
-	if C.rbd_trash_list(cephIoctx(ioctx), nil, &num_entries); num_entries == 0 {
-		return nil, nil
+	var (
+		err     error
+		count   C.size_t
+		entries []C.rbd_trash_image_info_t
+	)
+	retry.WithSizes(32, 1024, func(size int) retry.Hint {
+		count = C.size_t(size)
+		entries = make([]C.rbd_trash_image_info_t, count)
+		ret := C.rbd_trash_list(cephIoctx(ioctx), &entries[0], &count)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(count)).If(err == errRange)
+	})
+	if err != nil {
+		return nil, err
 	}
+	// Free rbd_trash_image_info_t pointers
+	defer C.rbd_trash_list_cleanup(&entries[0], count)
 
-	c_entries := make([]C.rbd_trash_image_info_t, num_entries)
-	trashList := make([]TrashInfo, num_entries)
-
-	if ret := C.rbd_trash_list(cephIoctx(ioctx), &c_entries[0], &num_entries); ret < 0 {
-		return nil, RBDError(ret)
-	}
-
-	for i, ti := range c_entries {
+	trashList := make([]TrashInfo, count)
+	for i, ti := range entries[:count] {
 		trashList[i] = TrashInfo{
 			Id:               C.GoString(ti.id),
 			Name:             C.GoString(ti.name),
@@ -984,10 +995,6 @@ func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
 			DefermentEndTime: time.Unix(int64(ti.deferment_end_time), 0),
 		}
 	}
-
-	// Free rbd_trash_image_info_t pointers
-	C.rbd_trash_list_cleanup(&c_entries[0], num_entries)
-
 	return trashList, nil
 }
 

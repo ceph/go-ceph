@@ -37,6 +37,16 @@ func getError(err C.int) error {
 	return nil
 }
 
+// getErrorIfNegative converts a ceph return code to error if negative.
+// This is useful for functions that return a usable positive value on
+// success but a negative error number on error.
+func getErrorIfNegative(ret C.int) error {
+	if ret >= 0 {
+		return nil
+	}
+	return getError(ret)
+}
+
 // Public go errors:
 
 var (
@@ -59,4 +69,10 @@ var (
 	RbdErrorImageNotOpen = ErrImageNotOpen
 	RbdErrorNotFound     = ErrNotFound
 	// revive:enable:exported
+)
+
+// Private errors:
+
+const (
+	errRange = RBDError(-C.ERANGE)
 )
