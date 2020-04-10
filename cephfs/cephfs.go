@@ -11,6 +11,7 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/retry"
 	"github.com/ceph/go-ceph/rados"
 )
 
@@ -82,15 +83,24 @@ func (mount *MountInfo) SetConfigOption(option, value string) error {
 func (mount *MountInfo) GetConfigOption(option string) (string, error) {
 	cOption := C.CString(option)
 	defer C.free(unsafe.Pointer(cOption))
-	buf := make([]byte, 4096)
-	// TODO: handle ENAMETOOLONG cases. problem also exists in rados
-	ret := C.ceph_conf_get(
-		mount.mount,
-		cOption,
-		(*C.char)(unsafe.Pointer(&buf[0])),
-		C.size_t(len(buf)))
-	if ret < 0 {
-		return "", getError(ret)
+
+	var (
+		err error
+		buf []byte
+	)
+	// range from 4k to 256KiB
+	retry.WithSizes(4096, 1<<18, func(size int) retry.Hint {
+		buf = make([]byte, size)
+		ret := C.ceph_conf_get(
+			mount.mount,
+			cOption,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			C.size_t(len(buf)))
+		err = getError(ret)
+		return retry.DoubleSize.If(err == errNameTooLong)
+	})
+	if err != nil {
+		return "", err
 	}
 	value := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
 	return value, nil
