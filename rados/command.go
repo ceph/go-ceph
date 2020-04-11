@@ -7,6 +7,8 @@ import "C"
 
 import (
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 // MonCommand sends a command to one of the monitors
@@ -20,42 +22,23 @@ func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) ([]byte, stri
 }
 
 func (c *Conn) monCommand(args, inputBuffer []byte) ([]byte, string, error) {
-	argv := C.CString(string(args))
-	defer C.free(unsafe.Pointer(argv))
+	ci := cutil.NewCommandInput([][]byte{args}, inputBuffer)
+	defer ci.Free()
+	co := cutil.NewCommandOutput()
+	defer co.Free()
 
-	var (
-		info               string
-		buffer             []byte
-		outs, outbuf       *C.char
-		outslen, outbuflen C.size_t
-	)
-	inbuf := C.CString(string(inputBuffer))
-	inbufLen := len(inputBuffer)
-	defer C.free(unsafe.Pointer(inbuf))
-
-	ret := C.rados_mon_command(c.cluster,
-		&argv, 1,
-		inbuf,              // bulk input (e.g. crush map)
-		C.size_t(inbufLen), // length inbuf
-		&outbuf,            // buffer
-		&outbuflen,         // buffer length
-		&outs,              // status string
-		&outslen)
-
-	if outslen > 0 {
-		info = C.GoStringN(outs, C.int(outslen))
-		C.free(unsafe.Pointer(outs))
-	}
-	if outbuflen > 0 {
-		buffer = C.GoBytes(unsafe.Pointer(outbuf), C.int(outbuflen))
-		C.free(unsafe.Pointer(outbuf))
-	}
-	if ret != 0 {
-		err := getError(ret)
-		return nil, info, err
-	}
-
-	return buffer, info, nil
+	ret := C.rados_mon_command(
+		c.cluster,
+		(**C.char)(ci.Cmd()),
+		C.size_t(ci.CmdLen()),
+		(*C.char)(ci.InBuf()),
+		C.size_t(ci.InBufLen()),
+		(**C.char)(co.OutBuf()),
+		(*C.size_t)(co.OutBufLen()),
+		(**C.char)(co.Outs()),
+		(*C.size_t)(co.OutsLen()))
+	buf, status := co.GoValues()
+	return buf, status, getError(ret)
 }
 
 // PGCommand sends a command to one of the PGs
@@ -85,50 +68,24 @@ func (c *Conn) PGCommandWithInputBuffer(pgid []byte, args [][]byte, inputBuffer 
 func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
 	name := C.CString(string(pgid))
 	defer C.free(unsafe.Pointer(name))
+	ci := cutil.NewCommandInput(args, inputBuffer)
+	defer ci.Free()
+	co := cutil.NewCommandOutput()
+	defer co.Free()
 
-	argc := len(args)
-	argv := make([]*C.char, argc)
-
-	for i, arg := range args {
-		argv[i] = C.CString(string(arg))
-		defer C.free(unsafe.Pointer(argv[i]))
-	}
-
-	var (
-		info               string
-		buffer             []byte
-		outs, outbuf       *C.char
-		outslen, outbuflen C.size_t
-	)
-	inbuf := C.CString(string(inputBuffer))
-	inbufLen := len(inputBuffer)
-	defer C.free(unsafe.Pointer(inbuf))
-
-	ret := C.rados_pg_command(c.cluster,
+	ret := C.rados_pg_command(
+		c.cluster,
 		name,
-		&argv[0],
-		C.size_t(argc),
-		inbuf,              // bulk input
-		C.size_t(inbufLen), // length inbuf
-		&outbuf,            // buffer
-		&outbuflen,         // buffer length
-		&outs,              // status string
-		&outslen)
-
-	if outslen > 0 {
-		info = C.GoStringN(outs, C.int(outslen))
-		C.free(unsafe.Pointer(outs))
-	}
-	if outbuflen > 0 {
-		buffer = C.GoBytes(unsafe.Pointer(outbuf), C.int(outbuflen))
-		C.free(unsafe.Pointer(outbuf))
-	}
-	if ret != 0 {
-		err := getError(ret)
-		return nil, info, err
-	}
-
-	return buffer, info, nil
+		(**C.char)(ci.Cmd()),
+		C.size_t(ci.CmdLen()),
+		(*C.char)(ci.InBuf()),
+		C.size_t(ci.InBufLen()),
+		(**C.char)(co.OutBuf()),
+		(*C.size_t)(co.OutBufLen()),
+		(**C.char)(co.Outs()),
+		(*C.size_t)(co.OutsLen()))
+	buf, status := co.GoValues()
+	return buf, status, getError(ret)
 }
 
 // MgrCommand sends a command to a ceph-mgr.
@@ -148,47 +105,21 @@ func (c *Conn) MgrCommandWithInputBuffer(args [][]byte, inputBuffer []byte) ([]b
 //                         size_t *outbuflen, char **outs,
 //                          size_t *outslen);
 func (c *Conn) mgrCommand(args [][]byte, inputBuffer []byte) ([]byte, string, error) {
-	argc := len(args)
-	argv := make([]*C.char, argc)
-
-	for i, arg := range args {
-		argv[i] = C.CString(string(arg))
-		defer C.free(unsafe.Pointer(argv[i]))
-	}
-
-	var (
-		info               string
-		buffer             []byte
-		outs, outbuf       *C.char
-		outslen, outbuflen C.size_t
-	)
-	inbuf := C.CString(string(inputBuffer))
-	inbufLen := len(inputBuffer)
-	defer C.free(unsafe.Pointer(inbuf))
+	ci := cutil.NewCommandInput(args, inputBuffer)
+	defer ci.Free()
+	co := cutil.NewCommandOutput()
+	defer co.Free()
 
 	ret := C.rados_mgr_command(
 		c.cluster,
-		&argv[0],
-		C.size_t(argc),
-		inbuf,
-		C.size_t(inbufLen),
-		&outbuf,
-		&outbuflen,
-		&outs,
-		&outslen)
-
-	if outslen > 0 {
-		info = C.GoStringN(outs, C.int(outslen))
-		C.free(unsafe.Pointer(outs))
-	}
-	if outbuflen > 0 {
-		buffer = C.GoBytes(unsafe.Pointer(outbuf), C.int(outbuflen))
-		C.free(unsafe.Pointer(outbuf))
-	}
-	if ret != 0 {
-		err := getError(ret)
-		return nil, info, err
-	}
-
-	return buffer, info, nil
+		(**C.char)(ci.Cmd()),
+		C.size_t(ci.CmdLen()),
+		(*C.char)(ci.InBuf()),
+		C.size_t(ci.InBufLen()),
+		(**C.char)(co.OutBuf()),
+		(*C.size_t)(co.OutBufLen()),
+		(**C.char)(co.Outs()),
+		(*C.size_t)(co.OutsLen()))
+	buf, status := co.GoValues()
+	return buf, status, getError(ret)
 }
