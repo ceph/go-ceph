@@ -175,6 +175,7 @@ test_go_ceph() {
     pkgs=(\
         "cephfs" \
         "internal/callbacks" \
+        "internal/cutil" \
         "internal/errutil" \
         "internal/retry" \
         "rados" \
