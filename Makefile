@@ -4,10 +4,15 @@ CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/ls
 CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS := 
 CEPH_VERSION := nautilus
+RESULTS_DIR :=
 
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
 	VOLUME_FLAGS = :z
+endif
+
+ifdef RESULTS_DIR
+	RESULTS_VOLUME := -v $(RESULTS_DIR):/results$(VOLUME_FLAGS)
 endif
 
 build:
@@ -19,8 +24,13 @@ test:
 
 .PHONY: test-docker test-container
 test-docker: test-container
-test-container: check-ceph-version .build-docker
-	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(DOCKER_CI_IMAGE)
+test-container: check-ceph-version .build-docker $(RESULTS_DIR)
+	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(DOCKER_CI_IMAGE)
+
+ifdef RESULTS_DIR
+$(RESULTS_DIR):
+	mkdir -p $(RESULTS_DIR)
+endif
 
 .PHONY: ci-image
 ci-image: .build-docker
