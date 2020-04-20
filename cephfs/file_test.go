@@ -45,6 +45,34 @@ func TestFileOpen(t *testing.T) {
 		assert.NoError(t, err)
 		assert.EqualValues(t, 0, s.Size())
 	})
+
+	t.Run("idempotentClose", func(t *testing.T) {
+		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		assert.NoError(t, err)
+		assert.NotNil(t, f1)
+		assert.NoError(t, f1.Close())
+		assert.NoError(t, f1.Close()) // call close again. it should not fail
+		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
+	})
+
+	t.Run("uninitializedFileClose", func(t *testing.T) {
+		f := &File{}
+		err := f.Close()
+		assert.Error(t, err)
+		assert.Equal(t, ErrNotConnected, err)
+	})
+
+	t.Run("invalidFdClose", func(t *testing.T) {
+		f := &File{mount, 1980}
+		err := f.Close()
+		assert.Error(t, err)
+	})
+
+	t.Run("openInvalidMount", func(t *testing.T) {
+		m := &MountInfo{}
+		_, err := m.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+		assert.Error(t, err)
+	})
 }
 
 func TestFileReadWrite(t *testing.T) {
@@ -90,6 +118,17 @@ func TestFileReadWrite(t *testing.T) {
 		defer func() { assert.NoError(t, f1.Close()) }()
 		_, err = f1.Write([]byte("yo"))
 		assert.Error(t, err)
+	})
+
+	t.Run("uninitializedFile", func(t *testing.T) {
+		f := &File{}
+		b := []byte("testme")
+		_, err := f.Write(b)
+		assert.Error(t, err)
+		assert.Equal(t, ErrNotConnected, err)
+		_, err = f.Read(b)
+		assert.Error(t, err)
+		assert.Equal(t, ErrNotConnected, err)
 	})
 }
 
@@ -144,6 +183,17 @@ func TestFileReadWriteAt(t *testing.T) {
 		defer func() { assert.NoError(t, f1.Close()) }()
 		_, err = f1.WriteAt([]byte("yo"), 0)
 		assert.Error(t, err)
+	})
+
+	t.Run("uninitializedFile", func(t *testing.T) {
+		f := &File{}
+		b := []byte("testme")
+		_, err := f.WriteAt(b, 0)
+		assert.Error(t, err)
+		assert.Equal(t, ErrNotConnected, err)
+		_, err = f.ReadAt(b, 0)
+		assert.Error(t, err)
+		assert.Equal(t, ErrNotConnected, err)
 	})
 }
 
@@ -220,5 +270,12 @@ func TestFileSeek(t *testing.T) {
 		o, err := f1.Seek(-22, SeekSet)
 		assert.Error(t, err)
 		assert.EqualValues(t, 0, o)
+	})
+
+	t.Run("uninitializedFile", func(t *testing.T) {
+		f := &File{}
+		_, err := f.Seek(0, SeekSet)
+		assert.Error(t, err)
+		assert.Equal(t, ErrNotConnected, err)
 	})
 }
