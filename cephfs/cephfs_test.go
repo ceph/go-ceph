@@ -1,7 +1,6 @@
 package cephfs
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -111,58 +110,6 @@ func TestSyncFs(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestChangeDir(t *testing.T) {
-	mount := fsConnect(t)
-	defer fsDisconnect(t, mount)
-
-	dir1 := mount.CurrentDir()
-	assert.NotNil(t, dir1)
-
-	err := mount.MakeDir("/asdf", 0755)
-	assert.NoError(t, err)
-
-	err = mount.ChangeDir("/asdf")
-	assert.NoError(t, err)
-
-	dir2 := mount.CurrentDir()
-	assert.NotNil(t, dir2)
-
-	assert.NotEqual(t, dir1, dir2)
-	assert.Equal(t, dir1, "/")
-	assert.Equal(t, dir2, "/asdf")
-
-	err = mount.ChangeDir("/")
-	assert.NoError(t, err)
-	err = mount.RemoveDir("/asdf")
-	assert.NoError(t, err)
-}
-
-func TestRemoveDir(t *testing.T) {
-	useMount(t)
-
-	dirname := "one"
-	localPath := path.Join(CephMountDir, dirname)
-	mount := fsConnect(t)
-	defer fsDisconnect(t, mount)
-
-	err := mount.MakeDir(dirname, 0755)
-	assert.NoError(t, err)
-
-	err = mount.SyncFs()
-	assert.NoError(t, err)
-
-	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	_, err = os.Stat(localPath)
-	assert.NoError(t, err)
-
-	err = mount.RemoveDir(dirname)
-	assert.NoError(t, err)
-
-	_, err = os.Stat(localPath)
-	assert.EqualError(t, err,
-		fmt.Sprintf("stat %s: no such file or directory", localPath))
-}
-
 func TestUnmountMount(t *testing.T) {
 	t.Run("neverMounted", func(t *testing.T) {
 		mount, err := CreateMount()
@@ -190,72 +137,6 @@ func TestReleaseMount(t *testing.T) {
 	assert.NoError(t, mount.Release())
 	// call release again to ensure idempotency of the func
 	assert.NoError(t, mount.Release())
-}
-
-func TestChmodDir(t *testing.T) {
-	useMount(t)
-
-	dirname := "two"
-	var stats_before uint32 = 0755
-	var stats_after uint32 = 0700
-	mount := fsConnect(t)
-	defer fsDisconnect(t, mount)
-
-	err := mount.MakeDir(dirname, stats_before)
-	assert.NoError(t, err)
-	defer mount.RemoveDir(dirname)
-
-	err = mount.SyncFs()
-	assert.NoError(t, err)
-
-	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	stats, err := os.Stat(path.Join(CephMountDir, dirname))
-	require.NoError(t, err)
-
-	assert.Equal(t, uint32(stats.Mode().Perm()), stats_before)
-
-	err = mount.Chmod(dirname, stats_after)
-	assert.NoError(t, err)
-
-	stats, err = os.Stat(path.Join(CephMountDir, dirname))
-	assert.NoError(t, err)
-	assert.Equal(t, uint32(stats.Mode().Perm()), stats_after)
-}
-
-// Not cross-platform, go's os does not specifiy Sys return type
-func TestChown(t *testing.T) {
-	useMount(t)
-
-	dirname := "three"
-	// dockerfile creates bob user account
-	var bob uint32 = 1010
-	var root uint32
-
-	mount := fsConnect(t)
-	defer fsDisconnect(t, mount)
-
-	err := mount.MakeDir(dirname, 0755)
-	assert.NoError(t, err)
-	defer mount.RemoveDir(dirname)
-
-	err = mount.SyncFs()
-	assert.NoError(t, err)
-
-	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	stats, err := os.Stat(path.Join(CephMountDir, dirname))
-	require.NoError(t, err)
-
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), root)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), root)
-
-	err = mount.Chown(dirname, bob, bob)
-	assert.NoError(t, err)
-
-	stats, err = os.Stat(path.Join(CephMountDir, dirname))
-	assert.NoError(t, err)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
-
 }
 
 func radosConnect(t *testing.T) *rados.Conn {
@@ -308,39 +189,6 @@ func TestCreateMountWithId(t *testing.T) {
 	assert.NotEqual(t, "", string(buf))
 	assert.Equal(t, "", string(info))
 	assert.Contains(t, string(buf), `"bobolink"`)
-}
-
-func TestMdsCommand(t *testing.T) {
-	mount := fsConnect(t)
-	defer fsDisconnect(t, mount)
-
-	cmd := []byte(`{"prefix": "client ls"}`)
-	buf, info, err := mount.MdsCommand(
-		testMdsName,
-		[][]byte{cmd})
-	assert.NoError(t, err)
-	assert.NotEqual(t, "", string(buf))
-	assert.Equal(t, "", string(info))
-	assert.Contains(t, string(buf), "ceph_version")
-	// response should also be valid json
-	var j []interface{}
-	err = json.Unmarshal(buf, &j)
-	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, len(j), 1)
-}
-
-func TestMdsCommandError(t *testing.T) {
-	mount := fsConnect(t)
-	defer fsDisconnect(t, mount)
-
-	cmd := []byte("iAMinValId~~~")
-	buf, info, err := mount.MdsCommand(
-		testMdsName,
-		[][]byte{cmd})
-	assert.Error(t, err)
-	assert.Equal(t, "", string(buf))
-	assert.NotEqual(t, "", string(info))
-	assert.Contains(t, string(info), "unparseable JSON")
 }
 
 func TestMountWithRoot(t *testing.T) {
