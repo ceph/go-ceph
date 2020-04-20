@@ -34,6 +34,14 @@ func getError(e C.int) error {
 	return CephFSError(e)
 }
 
+// Public go errors:
+
+const (
+	// ErrNotConnected may be returned when client is not connected
+	// to a cluster.
+	ErrNotConnected = CephFSError(-C.ENOTCONN)
+)
+
 // Private errors:
 
 const (
