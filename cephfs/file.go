@@ -9,6 +9,7 @@ package cephfs
 import "C"
 
 import (
+	"io"
 	"unsafe"
 )
 
@@ -85,14 +86,18 @@ func (f *File) read(buf []byte, offset int64) (int, error) {
 	bufptr := (*C.char)(unsafe.Pointer(&buf[0]))
 	ret := C.ceph_read(
 		f.mount.mount, f.fd, bufptr, C.int64_t(len(buf)), C.int64_t(offset))
-	if ret < 0 {
-		return int(ret), getError(ret)
+	switch {
+	case ret < 0:
+		return 0, getError(ret)
+	case ret == 0:
+		return 0, io.EOF
 	}
 	return int(ret), nil
 }
 
 // Read data from file. Up to len(buf) bytes will be read from the file.
 // The number of bytes read will be returned.
+// When nothing is left to read from the file, Read returns, 0, io.EOF.
 func (f *File) Read(buf []byte) (int, error) {
 	// to-consider: should we mimic Go's behavior of returning an
 	// io.ErrShortWrite error if write length < buf size?
@@ -102,6 +107,7 @@ func (f *File) Read(buf []byte) (int, error) {
 // ReadAt will read data from the file starting at the given offset.
 // Up to len(buf) bytes will be read from the file.
 // The number of bytes read will be returned.
+// When nothing is left to read from the file, ReadAt returns, 0, io.EOF.
 func (f *File) ReadAt(buf []byte, offset int64) (int, error) {
 	return f.read(buf, offset)
 }

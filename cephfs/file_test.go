@@ -216,6 +216,8 @@ func TestFileInterfaces(t *testing.T) {
 	t.Run("ioReader", func(t *testing.T) {
 		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		assert.NoError(t, err)
+		_, err = f1.Write([]byte("foo"))
+		assert.NoError(t, err)
 		assert.NoError(t, f1.Close())
 
 		f1, err = mount.Open(fname, os.O_RDONLY, 0666)
@@ -227,6 +229,9 @@ func TestFileInterfaces(t *testing.T) {
 		buf := make([]byte, 32)
 		_, err = r.Read(buf)
 		assert.NoError(t, err)
+		n, err := r.Read(buf)
+		assert.Equal(t, 0, n)
+		assert.Equal(t, io.EOF, err)
 	})
 }
 
