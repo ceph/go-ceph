@@ -284,3 +284,50 @@ func TestFileSeek(t *testing.T) {
 		assert.Equal(t, ErrNotConnected, err)
 	})
 }
+
+func TestMixedReadReadAt(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+	fname := "TestMixedReadReadAt.txt"
+
+	f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	assert.NoError(t, err)
+	_, err = f1.Write([]byte("abc def ghi wow!"))
+	assert.NoError(t, err)
+	assert.NoError(t, f1.Close())
+	defer func() { assert.NoError(t, mount.Unlink(fname)) }()
+
+	buf := make([]byte, 4)
+	f2, err := mount.Open(fname, os.O_RDONLY, 0)
+	n, err := f2.ReadAt(buf, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+	assert.Equal(t, "abc ", string(buf))
+
+	n, err = f2.Read(buf)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+	assert.Equal(t, "abc ", string(buf))
+
+	n, err = f2.Read(buf)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+	assert.Equal(t, "def ", string(buf))
+
+	n, err = f2.ReadAt(buf, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+	assert.Equal(t, "abc ", string(buf))
+
+	n, err = f2.ReadAt(buf, 12)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+	assert.Equal(t, "wow!", string(buf))
+
+	n, err = f2.Read(buf)
+	assert.NoError(t, err)
+	assert.Equal(t, 4, n)
+	assert.Equal(t, "ghi ", string(buf))
+
+	assert.NoError(t, f1.Close())
+}
