@@ -146,6 +146,9 @@ func TestFileReadWriteAt(t *testing.T) {
 		n, err = f1.WriteAt([]byte("bar"), 6)
 		assert.NoError(t, err)
 		assert.EqualValues(t, 3, n)
+		// assert that negative offsets return an error
+		_, err = f1.WriteAt([]byte("baz"), -10)
+		assert.Error(t, err)
 		err = f1.Close()
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
@@ -161,6 +164,9 @@ func TestFileReadWriteAt(t *testing.T) {
 		assert.NoError(t, err)
 		assert.EqualValues(t, 3, n)
 		assert.Equal(t, "bar", string(buf[:3]))
+		// assert that negative offsets return an error
+		_, err = f2.ReadAt(buf, -10)
+		assert.Error(t, err)
 	})
 
 	t.Run("openForWriteOnly", func(t *testing.T) {

@@ -109,6 +109,9 @@ func (f *File) Read(buf []byte) (int, error) {
 // The number of bytes read will be returned.
 // When nothing is left to read from the file, ReadAt returns, 0, io.EOF.
 func (f *File) ReadAt(buf []byte, offset int64) (int, error) {
+	if offset < 0 {
+		return 0, errInvalid
+	}
 	return f.read(buf, offset)
 }
 
@@ -141,6 +144,9 @@ func (f *File) Write(buf []byte) (int, error) {
 // WriteAt writes data from buf to the file at the specified offset.
 // The number of bytes written is returned.
 func (f *File) WriteAt(buf []byte, offset int64) (int, error) {
+	if offset < 0 {
+		return 0, errInvalid
+	}
 	return f.write(buf, offset)
 }
 
