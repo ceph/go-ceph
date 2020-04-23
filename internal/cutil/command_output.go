@@ -12,6 +12,7 @@ import (
 // CommandOutput can be used to manage the outputs of ceph's *_command
 // functions.
 type CommandOutput struct {
+	free      FreeFunc
 	outBuf    *C.char
 	outBufLen C.size_t
 	outs      *C.char
@@ -22,16 +23,28 @@ type CommandOutput struct {
 // a CommandOutput provides can be used to get the results of ceph's
 // *_command functions.
 func NewCommandOutput() *CommandOutput {
-	return &CommandOutput{}
+	return &CommandOutput{
+		free: free,
+	}
+}
+
+// SetFreeFunc sets the function used to free memory held by CommandOutput.
+// Not all uses of CommandOutput expect to use the basic C.free function
+// and either require or prefer the use of a custom deallocation function.
+// Use SetFreeFunc to change the free function and return the modified
+// CommandOutput object.
+func (co *CommandOutput) SetFreeFunc(f FreeFunc) *CommandOutput {
+	co.free = f
+	return co
 }
 
 // Free any C memory tracked by this object.
 func (co *CommandOutput) Free() {
 	if co.outBuf != nil {
-		C.free(unsafe.Pointer(co.outBuf))
+		co.free(unsafe.Pointer(co.outBuf))
 	}
 	if co.outs != nil {
-		C.free(unsafe.Pointer(co.outs))
+		co.free(unsafe.Pointer(co.outs))
 	}
 }
 
@@ -78,4 +91,10 @@ func testSetString(strp CharPtrPtr, lenp SizeTPtr, s string) {
 	lp := (*C.size_t)(lenp)
 	*sp = C.CString(s)
 	*lp = C.size_t(len(s))
+}
+
+// free wraps C.free.
+// Required for unit tests that may not use cgo directly.
+func free(p unsafe.Pointer) {
+	C.free(p)
 }

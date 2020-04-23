@@ -23,3 +23,6 @@ type CharPtr unsafe.Pointer
 
 // SizeTPtr is an unsafe pointer wrapping C's `size_t*`.
 type SizeTPtr unsafe.Pointer
+
+// FreeFunc is a wrapper around calls to, or act like, C's free function.
+type FreeFunc func(unsafe.Pointer)

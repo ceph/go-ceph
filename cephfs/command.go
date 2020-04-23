@@ -14,6 +14,10 @@ import (
 	"github.com/ceph/go-ceph/internal/cutil"
 )
 
+func cephBufferFree(p unsafe.Pointer) {
+	C.ceph_buffer_free((*C.char)(p))
+}
+
 // MdsCommand sends commands to the specified MDS.
 func (mount *MountInfo) MdsCommand(mdsSpec string, args [][]byte) ([]byte, string, error) {
 	return mount.mdsCommand(mdsSpec, args, nil)
@@ -40,7 +44,7 @@ func (mount *MountInfo) mdsCommand(mdsSpec string, args [][]byte, inputBuffer []
 	defer C.free(unsafe.Pointer(spec))
 	ci := cutil.NewCommandInput(args, inputBuffer)
 	defer ci.Free()
-	co := cutil.NewCommandOutput()
+	co := cutil.NewCommandOutput().SetFreeFunc(cephBufferFree)
 	defer co.Free()
 
 	ret := C.ceph_mds_command(
