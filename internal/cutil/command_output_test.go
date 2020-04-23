@@ -2,6 +2,7 @@ package cutil
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -39,5 +40,17 @@ func TestCommandOutput(t *testing.T) {
 		b, s := co.GoValues()
 		assert.Nil(t, b)
 		assert.EqualValues(t, "i got rhythm", s)
+	})
+	t.Run("customFreeFunc", func(t *testing.T) {
+		callCount := 0
+		co := NewCommandOutput().SetFreeFunc(func(p unsafe.Pointer) {
+			callCount++
+			free(p)
+		})
+		assert.NotNil(t, co)
+		testSetString(co.OutBuf(), co.OutBufLen(), "i got style")
+		testSetString(co.Outs(), co.OutsLen(), "i got rhythm")
+		co.Free()
+		assert.Equal(t, 2, callCount)
 	})
 }

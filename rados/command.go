@@ -11,6 +11,10 @@ import (
 	"github.com/ceph/go-ceph/internal/cutil"
 )
 
+func radosBufferFree(p unsafe.Pointer) {
+	C.rados_buffer_free((*C.char)(p))
+}
+
 // MonCommand sends a command to one of the monitors
 func (c *Conn) MonCommand(args []byte) ([]byte, string, error) {
 	return c.monCommand(args, nil)
@@ -24,7 +28,7 @@ func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) ([]byte, stri
 func (c *Conn) monCommand(args, inputBuffer []byte) ([]byte, string, error) {
 	ci := cutil.NewCommandInput([][]byte{args}, inputBuffer)
 	defer ci.Free()
-	co := cutil.NewCommandOutput()
+	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
 	defer co.Free()
 
 	ret := C.rados_mon_command(
@@ -70,7 +74,7 @@ func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte
 	defer C.free(unsafe.Pointer(name))
 	ci := cutil.NewCommandInput(args, inputBuffer)
 	defer ci.Free()
-	co := cutil.NewCommandOutput()
+	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
 	defer co.Free()
 
 	ret := C.rados_pg_command(
@@ -107,7 +111,7 @@ func (c *Conn) MgrCommandWithInputBuffer(args [][]byte, inputBuffer []byte) ([]b
 func (c *Conn) mgrCommand(args [][]byte, inputBuffer []byte) ([]byte, string, error) {
 	ci := cutil.NewCommandInput(args, inputBuffer)
 	defer ci.Free()
-	co := cutil.NewCommandOutput()
+	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
 	defer co.Free()
 
 	ret := C.rados_mgr_command(
