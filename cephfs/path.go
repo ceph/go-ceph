@@ -130,3 +130,29 @@ func (mount *MountInfo) Readlink(path string) (string, error) {
 
 	return string(buf[:ret]), nil
 }
+
+// Statx returns information about a file/directory.
+//
+// Implements:
+//  int ceph_statx(struct ceph_mount_info *cmount, const char *path, struct ceph_statx *stx,
+//                 unsigned int want, unsigned int flags);
+func (mount *MountInfo) Statx(path string, want StatxMask, flags AtFlags) (*CephStatx, error) {
+	if err := mount.validate(); err != nil {
+		return nil, err
+	}
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	var stx C.struct_ceph_statx
+	ret := C.ceph_statx(
+		mount.mount,
+		cPath,
+		&stx,
+		C.uint(want),
+		C.uint(flags),
+	)
+	if err := getError(ret); err != nil {
+		return nil, err
+	}
+	return cStructToCephStatx(stx), nil
+}

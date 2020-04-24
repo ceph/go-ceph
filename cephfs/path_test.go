@@ -357,3 +357,23 @@ func TestReadlink(t *testing.T) {
 		assert.Equal(t, buf, "")
 	})
 }
+
+func TestStatx(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	dirname := "statme"
+	assert.NoError(t, mount.MakeDir(dirname, 0755))
+
+	st, err := mount.Statx(dirname, StatxBasicStats, 0)
+	assert.NoError(t, err)
+	assert.NotNil(t, st)
+	assert.Equal(t, uint16(0755), st.Mode&0777)
+
+	assert.NoError(t, mount.RemoveDir(dirname))
+
+	st, err = mount.Statx(dirname, StatxBasicStats, 0)
+	assert.Error(t, err)
+	assert.Nil(t, st)
+	assert.Equal(t, errNoEntry, err)
+}

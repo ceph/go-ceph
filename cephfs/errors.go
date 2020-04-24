@@ -45,7 +45,7 @@ const (
 // Private errors:
 
 const (
+	errInvalid     = CephFSError(-C.EINVAL)
 	errNameTooLong = CephFSError(-C.ENAMETOOLONG)
-
-	errInvalid = CephFSError(-C.EINVAL)
+	errNoEntry     = CephFSError(-C.ENOENT)
 )
