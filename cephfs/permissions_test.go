@@ -14,12 +14,12 @@ func TestChmodDir(t *testing.T) {
 	useMount(t)
 
 	dirname := "two"
-	var stats_before uint32 = 0755
-	var stats_after uint32 = 0700
+	var statsBefore uint32 = 0755
+	var statsAfter uint32 = 0700
 	mount := fsConnect(t)
 	defer fsDisconnect(t, mount)
 
-	err := mount.MakeDir(dirname, stats_before)
+	err := mount.MakeDir(dirname, statsBefore)
 	assert.NoError(t, err)
 	defer mount.RemoveDir(dirname)
 
@@ -30,16 +30,17 @@ func TestChmodDir(t *testing.T) {
 	stats, err := os.Stat(path.Join(CephMountDir, dirname))
 	require.NoError(t, err)
 
-	assert.Equal(t, uint32(stats.Mode().Perm()), stats_before)
+	assert.Equal(t, uint32(stats.Mode().Perm()), statsBefore)
 
-	err = mount.Chmod(dirname, stats_after)
+	err = mount.Chmod(dirname, statsAfter)
 	assert.NoError(t, err)
 
 	stats, err = os.Stat(path.Join(CephMountDir, dirname))
-	assert.Equal(t, uint32(stats.Mode().Perm()), stats_after)
+	assert.Equal(t, uint32(stats.Mode().Perm()), statsAfter)
+	assert.NoError(t, err)
 }
 
-// Not cross-platform, go's os does not specifiy Sys return type
+// Not cross-platform, go's os does not specify Sys return type
 func TestChown(t *testing.T) {
 	useMount(t)
 

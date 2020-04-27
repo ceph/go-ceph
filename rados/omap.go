@@ -12,42 +12,42 @@ import (
 
 // SetOmap appends the map `pairs` to the omap `oid`
 func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	var s C.size_t
 	var c *C.char
 	ptrSize := unsafe.Sizeof(c)
 
-	c_keys := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
-	c_values := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
-	c_lengths := C.malloc(C.size_t(len(pairs)) * C.size_t(unsafe.Sizeof(s)))
+	cKeys := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
+	cValues := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
+	cLengths := C.malloc(C.size_t(len(pairs)) * C.size_t(unsafe.Sizeof(s)))
 
-	defer C.free(unsafe.Pointer(c_keys))
-	defer C.free(unsafe.Pointer(c_values))
-	defer C.free(unsafe.Pointer(c_lengths))
+	defer C.free(unsafe.Pointer(cKeys))
+	defer C.free(unsafe.Pointer(cValues))
+	defer C.free(unsafe.Pointer(cLengths))
 
 	i := 0
 	for key, value := range pairs {
 		// key
-		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
-		*c_key_ptr = C.CString(key)
-		defer C.free(unsafe.Pointer(*c_key_ptr))
+		cKeyPtr := (**C.char)(unsafe.Pointer(uintptr(cKeys) + uintptr(i)*ptrSize))
+		*cKeyPtr = C.CString(key)
+		defer C.free(unsafe.Pointer(*cKeyPtr))
 
 		// value and its length
-		c_value_ptr := (**C.char)(unsafe.Pointer(uintptr(c_values) + uintptr(i)*ptrSize))
+		cValuePtr := (**C.char)(unsafe.Pointer(uintptr(cValues) + uintptr(i)*ptrSize))
 
-		var c_length C.size_t
+		var cLength C.size_t
 		if len(value) > 0 {
-			*c_value_ptr = (*C.char)(unsafe.Pointer(&value[0]))
-			c_length = C.size_t(len(value))
+			*cValuePtr = (*C.char)(unsafe.Pointer(&value[0]))
+			cLength = C.size_t(len(value))
 		} else {
-			*c_value_ptr = nil
-			c_length = C.size_t(0)
+			*cValuePtr = nil
+			cLength = C.size_t(0)
 		}
 
-		c_length_ptr := (*C.size_t)(unsafe.Pointer(uintptr(c_lengths) + uintptr(i)*ptrSize))
-		*c_length_ptr = c_length
+		cLengthPtr := (*C.size_t)(unsafe.Pointer(uintptr(cLengths) + uintptr(i)*ptrSize))
+		*cLengthPtr = cLength
 
 		i++
 	}
@@ -55,12 +55,12 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	op := C.rados_create_write_op()
 	C.rados_write_op_omap_set(
 		op,
-		(**C.char)(c_keys),
-		(**C.char)(c_values),
-		(*C.size_t)(c_lengths),
+		(**C.char)(cKeys),
+		(**C.char)(cValues),
+		(*C.size_t)(cLengths),
 		C.size_t(len(pairs)))
 
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
+	ret := C.rados_write_op_operate(op, ioctx.ioctx, cOid, nil, 0)
 	C.rados_release_write_op(op)
 
 	return getError(ret)
@@ -78,56 +78,56 @@ type OmapListFunc func(key string, value []byte)
 // `maxReturn`: iterate no more than `maxReturn` key/value pairs
 // `listFn`: the function called at each iteration
 func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPrefix string, maxReturn int64, listFn OmapListFunc) error {
-	c_oid := C.CString(oid)
-	c_start_after := C.CString(startAfter)
-	c_filter_prefix := C.CString(filterPrefix)
-	c_max_return := C.uint64_t(maxReturn)
+	cOid := C.CString(oid)
+	cStartAfter := C.CString(startAfter)
+	cFilterPrefix := C.CString(filterPrefix)
+	cMaxReturn := C.uint64_t(maxReturn)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_start_after))
-	defer C.free(unsafe.Pointer(c_filter_prefix))
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cStartAfter))
+	defer C.free(unsafe.Pointer(cFilterPrefix))
 
 	op := C.rados_create_read_op()
 
-	var c_iter C.rados_omap_iter_t
-	var c_prval C.int
+	var cIter C.rados_omap_iter_t
+	var cPrval C.int
 	C.rados_read_op_omap_get_vals2(
 		op,
-		c_start_after,
-		c_filter_prefix,
-		c_max_return,
-		&c_iter,
+		cStartAfter,
+		cFilterPrefix,
+		cMaxReturn,
+		&cIter,
 		nil,
-		&c_prval,
+		&cPrval,
 	)
 
-	ret := C.rados_read_op_operate(op, ioctx.ioctx, c_oid, 0)
+	ret := C.rados_read_op_operate(op, ioctx.ioctx, cOid, 0)
 
 	if int(ret) != 0 {
 		return getError(ret)
-	} else if int(c_prval) != 0 {
-		return getError(c_prval)
+	} else if int(cPrval) != 0 {
+		return getError(cPrval)
 	}
 
 	for {
-		var c_key *C.char
-		var c_val *C.char
-		var c_len C.size_t
+		var cKey *C.char
+		var cVal *C.char
+		var cLen C.size_t
 
-		ret = C.rados_omap_get_next(c_iter, &c_key, &c_val, &c_len)
+		ret = C.rados_omap_get_next(cIter, &cKey, &cVal, &cLen)
 
 		if int(ret) != 0 {
 			return getError(ret)
 		}
 
-		if c_key == nil {
+		if cKey == nil {
 			break
 		}
 
-		listFn(C.GoString(c_key), C.GoBytes(unsafe.Pointer(c_val), C.int(c_len)))
+		listFn(C.GoString(cKey), C.GoBytes(unsafe.Pointer(cVal), C.int(cLen)))
 	}
 
-	C.rados_omap_get_end(c_iter)
+	C.rados_omap_get_end(cIter)
 	C.rados_release_read_op(op)
 
 	return nil
@@ -184,30 +184,30 @@ func (ioctx *IOContext) GetAllOmapValues(oid string, startAfter string, filterPr
 
 // RmOmapKeys removes the specified `keys` from the omap `oid`
 func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	var c *C.char
 	ptrSize := unsafe.Sizeof(c)
 
-	c_keys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
-	defer C.free(unsafe.Pointer(c_keys))
+	cKeys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
+	defer C.free(unsafe.Pointer(cKeys))
 
 	i := 0
 	for _, key := range keys {
-		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
-		*c_key_ptr = C.CString(key)
-		defer C.free(unsafe.Pointer(*c_key_ptr))
+		cKeyPtr := (**C.char)(unsafe.Pointer(uintptr(cKeys) + uintptr(i)*ptrSize))
+		*cKeyPtr = C.CString(key)
+		defer C.free(unsafe.Pointer(*cKeyPtr))
 		i++
 	}
 
 	op := C.rados_create_write_op()
 	C.rados_write_op_omap_rm_keys(
 		op,
-		(**C.char)(c_keys),
+		(**C.char)(cKeys),
 		C.size_t(len(keys)))
 
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
+	ret := C.rados_write_op_operate(op, ioctx.ioctx, cOid, nil, 0)
 	C.rados_release_write_op(op)
 
 	return getError(ret)
@@ -215,13 +215,13 @@ func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
 
 // CleanOmap clears the omap `oid`
 func (ioctx *IOContext) CleanOmap(oid string) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	op := C.rados_create_write_op()
 	C.rados_write_op_omap_clear(op)
 
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
+	ret := C.rados_write_op_operate(op, ioctx.ioctx, cOid, nil, 0)
 	C.rados_release_write_op(op)
 
 	return getError(ret)

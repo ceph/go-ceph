@@ -65,9 +65,10 @@ var (
 	// missing.
 	ErrNotFound = errors.New("RBD image not found")
 
-	// revive:disable:exported for compatibility with old versions
+	// RbdErrorImageNotOpen revive:disable:exported for compatibility with old versions
 	RbdErrorImageNotOpen = ErrImageNotOpen
-	RbdErrorNotFound     = ErrNotFound
+	// RbdErrorNotFound revive:disable:exported for compatibility with old versions
+	RbdErrorNotFound = ErrNotFound
 	// revive:enable:exported
 )
 

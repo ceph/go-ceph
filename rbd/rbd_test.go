@@ -258,8 +258,8 @@ func TestDeprecatedImageOpen(t *testing.T) {
 	err = image.Open(true)
 	assert.NoError(t, err)
 
-	bytes_in := []byte("input data")
-	_, err = image.Write(bytes_in)
+	bytesIn := []byte("input data")
+	_, err = image.Write(bytesIn)
 	// writing should fail in read-only mode
 	assert.Error(t, err)
 
@@ -421,28 +421,28 @@ func TestImageSeek(t *testing.T) {
 	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
-	bytes_in := []byte("input data")
-	n_in, err := img.Write(bytes_in)
+	bytesIn := []byte("input data")
+	nIn, err := img.Write(bytesIn)
 	assert.NoError(t, err)
-	assert.Equal(t, n_in, len(bytes_in))
+	assert.Equal(t, nIn, len(bytesIn))
 
 	pos, err := img.Seek(0, SeekCur)
 	assert.NoError(t, err)
-	assert.Equal(t, pos, int64(n_in))
+	assert.Equal(t, pos, int64(nIn))
 
 	pos, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 	assert.Equal(t, pos, int64(0))
 
-	bytes_out := make([]byte, len(bytes_in))
-	n_out, err := img.Read(bytes_out)
+	bytesOut := make([]byte, len(bytesIn))
+	nOut, err := img.Read(bytesOut)
 	assert.NoError(t, err)
-	assert.Equal(t, n_out, len(bytes_out))
-	assert.Equal(t, bytes_in, bytes_out)
+	assert.Equal(t, nOut, len(bytesOut))
+	assert.Equal(t, bytesIn, bytesOut)
 
 	pos, err = img.Seek(0, SeekCur)
 	assert.NoError(t, err)
-	assert.Equal(t, pos, int64(n_out))
+	assert.Equal(t, pos, int64(nOut))
 
 	pos, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
@@ -550,52 +550,55 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.Equal(t, &stats, &stats2)
 
 	_, err = img.Seek(0, SeekSet)
-	bytes_in := []byte("input data")
-	_, err = img.Write(bytes_in)
+	assert.NoError(t, err)
+
+	bytesIn := []byte("input data")
+	_, err = img.Write(bytesIn)
 	assert.NoError(t, err)
 
 	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
 	// reading 0 bytes should succeed
-	nil_bytes := make([]byte, 0)
-	n_out, err := img.Read(nil_bytes)
-	assert.Equal(t, n_out, 0)
+	nilBytes := make([]byte, 0)
+	nOut, err := img.Read(nilBytes)
+	assert.Equal(t, nOut, 0)
 	assert.NoError(t, err)
 
-	bytes_out := make([]byte, len(bytes_in))
-	n_out, err = img.Read(bytes_out)
+	bytesOut := make([]byte, len(bytesIn))
+	nOut, err = img.Read(bytesOut)
 
-	assert.Equal(t, n_out, len(bytes_in))
-	assert.Equal(t, bytes_in, bytes_out)
+	assert.NoError(t, err)
+	assert.Equal(t, nOut, len(bytesIn))
+	assert.Equal(t, bytesIn, bytesOut)
 
 	// write some data at the end of the image
-	offset := int64(stats.Size) - int64(len(bytes_in))
+	offset := int64(stats.Size) - int64(len(bytesIn))
 
 	_, err = img.Seek(offset, SeekSet)
 	assert.NoError(t, err)
 
-	n_out, err = img.Write(bytes_in)
-	assert.Equal(t, len(bytes_in), n_out)
+	nOut, err = img.Write(bytesIn)
+	assert.Equal(t, len(bytesIn), nOut)
 	assert.NoError(t, err)
 
 	_, err = img.Seek(offset, SeekSet)
 	assert.NoError(t, err)
 
-	bytes_out = make([]byte, len(bytes_in))
-	n_out, err = img.Read(bytes_out)
-	assert.Equal(t, n_out, len(bytes_in))
-	assert.Equal(t, bytes_in, bytes_out)
+	bytesOut = make([]byte, len(bytesIn))
+	nOut, err = img.Read(bytesOut)
+	assert.Equal(t, nOut, len(bytesIn))
+	assert.Equal(t, bytesIn, bytesOut)
 	assert.NoError(t, err)
 
 	// reading after EOF (needs to be large enough to hit EOF)
 	_, err = img.Seek(offset, SeekSet)
 	assert.NoError(t, err)
 
-	bytes_in = make([]byte, len(bytes_out)+256)
-	n_out, err = img.Read(bytes_in)
-	assert.Equal(t, n_out, len(bytes_out))
-	assert.Equal(t, bytes_in[0:len(bytes_out)], bytes_out)
+	bytesIn = make([]byte, len(bytesOut)+256)
+	nOut, err = img.Read(bytesIn)
+	assert.Equal(t, nOut, len(bytesOut))
+	assert.Equal(t, bytesIn[0:len(bytesOut)], bytesOut)
 	assert.Equal(t, io.EOF, err)
 
 	err = img.Close()
@@ -631,39 +634,39 @@ func TestReadAt(t *testing.T) {
 	assert.NoError(t, err)
 
 	// write 0 bytes should succeed
-	data_out := make([]byte, 0)
-	n_out, err := img.WriteAt(data_out, 256)
-	assert.Equal(t, 0, n_out)
+	dataOut := make([]byte, 0)
+	nOut, err := img.WriteAt(dataOut, 256)
+	assert.Equal(t, 0, nOut)
 	assert.NoError(t, err)
 
 	// reading 0 bytes should be successful
-	data_in := make([]byte, 0)
-	n_in, err := img.ReadAt(data_in, 256)
-	assert.Equal(t, 0, n_in)
+	dataIn := make([]byte, 0)
+	nIn, err := img.ReadAt(dataIn, 256)
+	assert.Equal(t, 0, nIn)
 	assert.NoError(t, err)
 
 	// write some data at the end of the image
-	data_out = []byte("Hi rbd! Nice to talk through go-ceph :)")
+	dataOut = []byte("Hi rbd! Nice to talk through go-ceph :)")
 
 	stats, err := img.Stat()
 	require.NoError(t, err)
-	offset := int64(stats.Size) - int64(len(data_out))
+	offset := int64(stats.Size) - int64(len(dataOut))
 
-	n_out, err = img.WriteAt(data_out, offset)
-	assert.Equal(t, len(data_out), n_out)
+	nOut, err = img.WriteAt(dataOut, offset)
+	assert.Equal(t, len(dataOut), nOut)
 	assert.NoError(t, err)
 
-	data_in = make([]byte, len(data_out))
-	n_in, err = img.ReadAt(data_in, offset)
-	assert.Equal(t, n_in, len(data_in))
-	assert.Equal(t, data_in, data_out)
+	dataIn = make([]byte, len(dataOut))
+	nIn, err = img.ReadAt(dataIn, offset)
+	assert.Equal(t, nIn, len(dataIn))
+	assert.Equal(t, dataIn, dataOut)
 	assert.NoError(t, err)
 
 	// reading after EOF (needs to be large enough to hit EOF)
-	data_in = make([]byte, len(data_out)+256)
-	n_in, err = img.ReadAt(data_in, offset)
-	assert.Equal(t, n_in, len(data_out))
-	assert.Equal(t, data_in[0:len(data_out)], data_out)
+	dataIn = make([]byte, len(dataOut)+256)
+	nIn, err = img.ReadAt(dataIn, offset)
+	assert.Equal(t, nIn, len(dataOut))
+	assert.Equal(t, dataIn[0:len(dataOut)], dataOut)
 	assert.Equal(t, io.EOF, err)
 
 	err = img.Close()
@@ -673,7 +676,7 @@ func TestReadAt(t *testing.T) {
 	img, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	_, err = img.WriteAt(data_out, 256)
+	_, err = img.WriteAt(dataOut, 256)
 	assert.Error(t, err)
 
 	err = img.Close()
@@ -1254,8 +1257,8 @@ func TestOpenImage(t *testing.T) {
 	oImage, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	bytes_in := []byte("input data")
-	_, err = oImage.Write(bytes_in)
+	bytesIn := []byte("input data")
+	_, err = oImage.Write(bytesIn)
 	// writing should fail in read-only mode
 	assert.Error(t, err)
 

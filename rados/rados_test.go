@@ -138,21 +138,21 @@ func (suite *RadosTestSuite) TestGetSetConfigOption() {
 	assert.Error(suite.T(), err)
 
 	// verify SetConfigOption changes a values
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	err = suite.conn.SetConfigOption("log_file", "/dev/null")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 }
 
 func (suite *RadosTestSuite) TestParseDefaultConfigEnv() {
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	err = os.Setenv("CEPH_ARGS", "--log-file /dev/null")
@@ -161,34 +161,34 @@ func (suite *RadosTestSuite) TestParseDefaultConfigEnv() {
 	err = suite.conn.ParseDefaultConfigEnv()
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 }
 
 func (suite *RadosTestSuite) TestParseCmdLineArgs() {
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	args := []string{"--log_file", "/dev/null"}
 	err = suite.conn.ParseCmdLineArgs(args)
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 }
 
 func (suite *RadosTestSuite) TestReadConfigFile() {
 	// check current log_file value
-	prev_str, err := suite.conn.GetConfigOption("log_max_new")
+	prevStr, err := suite.conn.GetConfigOption("log_max_new")
 	assert.NoError(suite.T(), err)
 
-	prev_val, err := strconv.Atoi(prev_str)
+	prevVal, err := strconv.Atoi(prevStr)
 	assert.NoError(suite.T(), err)
 
 	// create conf file that changes log_file conf option
@@ -199,8 +199,8 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 		assert.NoError(suite.T(), os.Remove(file.Name()))
 	}()
 
-	next_val := prev_val + 1
-	conf := fmt.Sprintf("[global]\nlog_max_new = %d\n", next_val)
+	nextVal := prevVal + 1
+	conf := fmt.Sprintf("[global]\nlog_max_new = %d\n", nextVal)
 	_, err = io.WriteString(file, conf)
 	assert.NoError(suite.T(), err)
 
@@ -209,22 +209,22 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 	assert.NoError(suite.T(), err)
 
 	// check current log_file value
-	curr_str, err := suite.conn.GetConfigOption("log_max_new")
+	currStr, err := suite.conn.GetConfigOption("log_max_new")
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := strconv.Atoi(curr_str)
+	currVal, err := strconv.Atoi(currStr)
 	assert.NoError(suite.T(), err)
 
-	assert.NotEqual(suite.T(), prev_str, curr_str)
-	assert.Equal(suite.T(), curr_val, prev_val+1)
+	assert.NotEqual(suite.T(), prevStr, currStr)
+	assert.Equal(suite.T(), currVal, prevVal+1)
 }
 
 func (suite *RadosTestSuite) TestGetClusterStats() {
 	suite.SetupConnection()
 
 	// grab current stats
-	prev_stat, err := suite.conn.GetClusterStats()
-	fmt.Printf("prev_stat: %+v\n", prev_stat)
+	prevStat, err := suite.conn.GetClusterStats()
+	fmt.Printf("prevStat: %+v\n", prevStat)
 	assert.NoError(suite.T(), err)
 
 	// make some changes to the cluster
@@ -241,12 +241,12 @@ func (suite *RadosTestSuite) TestGetClusterStats() {
 		assert.NoError(suite.T(), err)
 
 		// wait for something to change
-		if stat == prev_stat {
-			fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
+		if stat == prevStat {
+			fmt.Printf("currStat: %+v (trying again...)\n", stat)
 			time.Sleep(time.Second)
 		} else {
 			// success
-			fmt.Printf("curr_stat: %+v (change detected)\n", stat)
+			fmt.Printf("currStat: %+v (change detected)\n", stat)
 			return
 		}
 	}
@@ -265,19 +265,19 @@ func (suite *RadosTestSuite) TestMakeDeletePool() {
 	suite.SetupConnection()
 
 	// check that new pool name is unique
-	new_name := uuid.Must(uuid.NewV4()).String()
-	_, err := suite.conn.GetPoolByName(new_name)
+	newName := uuid.Must(uuid.NewV4()).String()
+	_, err := suite.conn.GetPoolByName(newName)
 	if err == nil {
 		suite.T().Error("Random pool name exists!")
 		return
 	}
 
 	// create pool
-	err = suite.conn.MakePool(new_name)
+	err = suite.conn.MakePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that the new pool name exists
-	pool, err := suite.conn.GetPoolByName(new_name)
+	pool, err := suite.conn.GetPoolByName(newName)
 	assert.NoError(suite.T(), err)
 
 	if pool == 0 {
@@ -285,11 +285,11 @@ func (suite *RadosTestSuite) TestMakeDeletePool() {
 	}
 
 	// delete the pool
-	err = suite.conn.DeletePool(new_name)
+	err = suite.conn.DeletePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that it is gone
-	pool, _ = suite.conn.GetPoolByName(new_name)
+	pool, _ = suite.conn.GetPoolByName(newName)
 	if pool != 0 {
 		suite.T().Error("Deleted pool still exists")
 	}
@@ -303,38 +303,38 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	assert.NoError(suite.T(), err)
 
 	// check that new pool name is unique
-	new_name := uuid.Must(uuid.NewV4()).String()
+	newName := uuid.Must(uuid.NewV4()).String()
 	require.NotContains(
-		suite.T(), pools, new_name, "Random pool name exists!")
+		suite.T(), pools, newName, "Random pool name exists!")
 
-	pool, _ := suite.conn.GetPoolByName(new_name)
+	pool, _ := suite.conn.GetPoolByName(newName)
 	assert.Equal(suite.T(), int64(0), pool, "Pool does not exist, but was found!")
 
 	// create pool
-	err = suite.conn.MakePool(new_name)
+	err = suite.conn.MakePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that the new pool name exists
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
 	assert.Contains(
-		suite.T(), pools, new_name, "Cannot find newly created pool")
+		suite.T(), pools, newName, "Cannot find newly created pool")
 
-	pool, err = suite.conn.GetPoolByName(new_name)
+	pool, err = suite.conn.GetPoolByName(newName)
 	assert.NoError(suite.T(), err)
 	assert.NotEqual(suite.T(), int64(0), pool, "Pool not found!")
 
 	// delete the pool
-	err = suite.conn.DeletePool(new_name)
+	err = suite.conn.DeletePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that it is gone
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
 	assert.NotContains(
-		suite.T(), pools, new_name, "Deleted pool still exists")
+		suite.T(), pools, newName, "Deleted pool still exists")
 
-	pool, err = suite.conn.GetPoolByName(new_name)
+	pool, err = suite.conn.GetPoolByName(newName)
 	assert.Error(suite.T(), err)
 	assert.Equal(
 		suite.T(), int64(0), pool, "Pool should have been deleted, but was found!")
@@ -344,19 +344,19 @@ func (suite *RadosTestSuite) TestGetPoolByID() {
 	suite.SetupConnection()
 
 	// check that new pool name is unique
-	new_name := uuid.Must(uuid.NewV4()).String()
-	pool, err := suite.conn.GetPoolByName(new_name)
+	newName := uuid.Must(uuid.NewV4()).String()
+	pool, err := suite.conn.GetPoolByName(newName)
 	if pool != 0 || err == nil {
 		suite.T().Error("Random pool name exists!")
 		return
 	}
 
 	// create pool
-	err = suite.conn.MakePool(new_name)
+	err = suite.conn.MakePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that the new pool name exists
-	id, err := suite.conn.GetPoolByName(new_name)
+	id, err := suite.conn.GetPoolByName(newName)
 	assert.NoError(suite.T(), err)
 
 	if id == 0 {
@@ -372,7 +372,7 @@ func (suite *RadosTestSuite) TestGetPoolByID() {
 	}
 
 	// delete the pool
-	err = suite.conn.DeletePool(new_name)
+	err = suite.conn.DeletePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that it is gone
@@ -425,7 +425,7 @@ func (suite *RadosTestSuite) TestGetLargePoolList() {
 		err = suite.conn.MakePool(name)
 		require.NoError(suite.T(), err)
 	}
-	pools, err = suite.conn.ListPools()
+	pools, _ = suite.conn.ListPools()
 	for _, name := range names {
 		assert.Contains(suite.T(), pools, name)
 	}
@@ -469,25 +469,27 @@ func (suite *RadosTestSuite) TestCreate() {
 func (suite *RadosTestSuite) TestReadWrite() {
 	suite.SetupConnection()
 
-	bytes_in := []byte("input data")
-	err := suite.ioctx.Write("obj", bytes_in, 0)
+	bytesIn := []byte("input data")
+	err := suite.ioctx.Write("obj", bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
-	bytes_out := make([]byte, len(bytes_in))
-	n_out, err := suite.ioctx.Read("obj", bytes_out, 0)
-
-	assert.Equal(suite.T(), n_out, len(bytes_in))
-	assert.Equal(suite.T(), bytes_in, bytes_out)
-
-	bytes_in = []byte("input another data")
-	err = suite.ioctx.WriteFull("obj", bytes_in)
+	bytesOut := make([]byte, len(bytesIn))
+	nOut, err := suite.ioctx.Read("obj", bytesOut, 0)
 	assert.NoError(suite.T(), err)
 
-	bytes_out = make([]byte, len(bytes_in))
-	n_out, err = suite.ioctx.Read("obj", bytes_out, 0)
+	assert.Equal(suite.T(), nOut, len(bytesIn))
+	assert.Equal(suite.T(), bytesIn, bytesOut)
 
-	assert.Equal(suite.T(), n_out, len(bytes_in))
-	assert.Equal(suite.T(), bytes_in, bytes_out)
+	bytesIn = []byte("input another data")
+	err = suite.ioctx.WriteFull("obj", bytesIn)
+	assert.NoError(suite.T(), err)
+
+	bytesOut = make([]byte, len(bytesIn))
+	nOut, err = suite.ioctx.Read("obj", bytesOut, 0)
+	assert.NoError(suite.T(), err)
+
+	assert.Equal(suite.T(), nOut, len(bytesIn))
+	assert.Equal(suite.T(), bytesIn, bytesOut)
 }
 
 func (suite *RadosTestSuite) TestAppend() {
@@ -549,14 +551,15 @@ func (suite *RadosTestSuite) TestObjectStat() {
 	stat, err := suite.ioctx.Stat(oid)
 	assert.Equal(suite.T(), uint64(len(bytes)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
+	assert.NoError(suite.T(), err)
 }
 
 func (suite *RadosTestSuite) TestGetPoolStats() {
 	suite.SetupConnection()
 
 	// grab current stats
-	prev_stat, err := suite.ioctx.GetPoolStats()
-	fmt.Printf("prev_stat: %+v\n", prev_stat)
+	prevStat, err := suite.ioctx.GetPoolStats()
+	fmt.Printf("prevStat: %+v\n", prevStat)
 	assert.NoError(suite.T(), err)
 
 	// make some changes to the cluster
@@ -573,12 +576,12 @@ func (suite *RadosTestSuite) TestGetPoolStats() {
 		assert.NoError(suite.T(), err)
 
 		// wait for something to change
-		if stat == prev_stat {
-			fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
+		if stat == prevStat {
+			fmt.Printf("currStat: %+v (trying again...)\n", stat)
 			time.Sleep(time.Second)
 		} else {
 			// success
-			fmt.Printf("curr_stat: %+v (change detected)\n", stat)
+			fmt.Printf("currStat: %+v (change detected)\n", stat)
 			return
 		}
 	}
@@ -631,14 +634,14 @@ func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
 	})
 	assert.NoError(suite.T(), err)
 
-	client_key := fmt.Sprintf(clientKeyFormat, entity)
+	clientKey := fmt.Sprintf(clientKeyFormat, entity)
 
-	inbuf := []byte(client_key)
+	inbuf := []byte(clientKey)
 
 	buf, info, err := suite.conn.MonCommandWithInputBuffer(command, inbuf)
 	assert.NoError(suite.T(), err)
-	expected_info := fmt.Sprintf("added key for %s", entity)
-	assert.Equal(suite.T(), expected_info, info)
+	expectedInfo := fmt.Sprintf("added key for %s", entity)
+	assert.Equal(suite.T(), expectedInfo, info)
 	assert.Equal(suite.T(), "", string(buf[:]))
 
 	// get the key and verify that it's what we previously set
@@ -728,8 +731,8 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 	// create an object in a different namespace to verify that
 	// iteration within a namespace does not return it
 	suite.ioctx.SetNamespace("ns1")
-	bytes_in := []byte("input data")
-	err = suite.ioctx.Write(suite.GenObjectName(), bytes_in, 0)
+	bytesIn := []byte("input data")
+	err = suite.ioctx.Write(suite.GenObjectName(), bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	// create some objects in default namespace
@@ -737,8 +740,8 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		bytes_in := []byte("input data")
-		err = suite.ioctx.Write(oid, bytes_in, 0)
+		bytesIn := []byte("input data")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
 		assert.NoError(suite.T(), err)
 		createdList = append(createdList, oid)
 	}
@@ -788,8 +791,8 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	suite.ioctx.SetNamespace("nsX")
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		bytes_in := []byte("input data")
-		err = suite.ioctx.Write(oid, bytes_in, 0)
+		bytesIn := []byte("input data")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
 		assert.NoError(suite.T(), err)
 		createdList = append(createdList, oid)
 	}
@@ -799,8 +802,8 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	suite.ioctx.SetNamespace("nsY")
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		bytes_in := []byte("input data")
-		err = suite.ioctx.Write(oid, bytes_in, 0)
+		bytesIn := []byte("input data")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
 		assert.NoError(suite.T(), err)
 		createdList = append(createdList, oid)
 	}
@@ -1032,13 +1035,14 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 
 	// create oid
 	oid := suite.GenObjectName()
-	bytes_in := []byte("input data")
-	err := suite.ioctx.Write(oid, bytes_in, 0)
+	bytesIn := []byte("input data")
+	err := suite.ioctx.Write(oid, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	stat, err := suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
+	assert.Equal(suite.T(), uint64(len(bytesIn)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
+	assert.NoError(suite.T(), err)
 
 	// oid isn't seen in space1 ns
 	suite.ioctx.SetNamespace("space1")
@@ -1047,8 +1051,8 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 
 	// create oid2 in space1 ns
 	oid2 := suite.GenObjectName()
-	bytes_in = []byte("input data")
-	err = suite.ioctx.Write(oid2, bytes_in, 0)
+	bytesIn = []byte("input data")
+	err = suite.ioctx.Write(oid2, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	suite.ioctx.SetNamespace("")
@@ -1056,8 +1060,9 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 	assert.Equal(suite.T(), err, ErrNotFound)
 
 	stat, err = suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
+	assert.Equal(suite.T(), uint64(len(bytesIn)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
+	assert.NoError(suite.T(), err)
 }
 
 func (suite *RadosTestSuite) TestListAcrossNamespaces() {
@@ -1068,18 +1073,19 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 	err := suite.ioctx.ListObjects(func(oid string) {
 		origObjects++
 	})
+	assert.NoError(suite.T(), err)
 
 	// create oid
 	oid := suite.GenObjectName()
-	bytes_in := []byte("input data")
-	err = suite.ioctx.Write(oid, bytes_in, 0)
+	bytesIn := []byte("input data")
+	err = suite.ioctx.Write(oid, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	// create oid2 in space1 ns
 	suite.ioctx.SetNamespace("space1")
 	oid2 := suite.GenObjectName()
-	bytes_in = []byte("input data")
-	err = suite.ioctx.Write(oid2, bytes_in, 0)
+	bytesIn = []byte("input data")
+	err = suite.ioctx.Write(oid2, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	// count objects in space1 ns

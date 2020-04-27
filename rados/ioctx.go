@@ -101,12 +101,12 @@ func (ioctx *IOContext) Pointer() unsafe.Pointer {
 // SetNamespace sets the namespace for objects within this IO context (pool).
 // Setting namespace to a empty or zero length string sets the pool to the default namespace.
 func (ioctx *IOContext) SetNamespace(namespace string) {
-	var c_ns *C.char
+	var cNs *C.char
 	if len(namespace) > 0 {
-		c_ns = C.CString(namespace)
-		defer C.free(unsafe.Pointer(c_ns))
+		cNs = C.CString(namespace)
+		defer C.free(unsafe.Pointer(cNs))
 	}
-	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
+	C.rados_ioctx_set_namespace(ioctx.ioctx, cNs)
 }
 
 // Create a new object with key oid.
@@ -115,12 +115,12 @@ func (ioctx *IOContext) SetNamespace(namespace string) {
 //  void rados_write_op_create(rados_write_op_t write_op, int exclusive,
 //                             const char* category)
 func (ioctx *IOContext) Create(oid string, exclusive CreateOption) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	op := C.rados_create_write_op()
 	C.rados_write_op_create(op, C.int(exclusive), nil)
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
+	ret := C.rados_write_op_operate(op, ioctx.ioctx, cOid, nil, 0)
 	C.rados_release_write_op(op)
 
 	return getError(ret)
@@ -129,15 +129,15 @@ func (ioctx *IOContext) Create(oid string, exclusive CreateOption) error {
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
 func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	dataPointer := unsafe.Pointer(nil)
 	if len(data) > 0 {
 		dataPointer = unsafe.Pointer(&data[0])
 	}
 
-	ret := C.rados_write(ioctx.ioctx, c_oid,
+	ret := C.rados_write(ioctx.ioctx, cOid,
 		(*C.char)(dataPointer),
 		(C.size_t)(len(data)),
 		(C.uint64_t)(offset))
@@ -149,10 +149,10 @@ func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
 // The object is filled with the provided data. If the object exists,
 // it is atomically truncated and then written. It returns an error, if any.
 func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
-	ret := C.rados_write_full(ioctx.ioctx, c_oid,
+	ret := C.rados_write_full(ioctx.ioctx, cOid,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 	return getError(ret)
@@ -162,10 +162,10 @@ func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
 // The object is appended with the provided data. If the object exists,
 // it is atomically appended to. It returns an error, if any.
 func (ioctx *IOContext) Append(oid string, data []byte) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
-	ret := C.rados_append(ioctx.ioctx, c_oid,
+	ret := C.rados_append(ioctx.ioctx, cOid,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 	return getError(ret)
@@ -174,8 +174,8 @@ func (ioctx *IOContext) Append(oid string, data []byte) error {
 // Read reads up to len(data) bytes from the object with key oid starting at byte
 // offset offset. It returns the number of bytes read and an error, if any.
 func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	var buf *C.char
 	if len(data) > 0 {
@@ -184,7 +184,7 @@ func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error
 
 	ret := C.rados_read(
 		ioctx.ioctx,
-		c_oid,
+		cOid,
 		buf,
 		(C.size_t)(len(data)),
 		(C.uint64_t)(offset))
@@ -197,10 +197,10 @@ func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error
 
 // Delete deletes the object with key oid. It returns an error, if any.
 func (ioctx *IOContext) Delete(oid string) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
-	return getError(C.rados_remove(ioctx.ioctx, c_oid))
+	return getError(C.rados_remove(ioctx.ioctx, cOid))
 }
 
 // Truncate resizes the object with key oid to size size. If the operation
@@ -208,10 +208,10 @@ func (ioctx *IOContext) Delete(oid string) error {
 // operation shrinks the object, the excess data is removed. It returns an
 // error, if any.
 func (ioctx *IOContext) Truncate(oid string, size uint64) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
-	return getError(C.rados_trunc(ioctx.ioctx, c_oid, (C.uint64_t)(size)))
+	return getError(C.rados_trunc(ioctx.ioctx, cOid, (C.uint64_t)(size)))
 }
 
 // Destroy informs librados that the I/O context is no longer in use.
@@ -228,24 +228,24 @@ func (ioctx *IOContext) Destroy() {
 //  int rados_ioctx_pool_stat(rados_ioctx_t io,
 //                            struct rados_pool_stat_t *stats);
 func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
-	c_stat := C.struct_rados_pool_stat_t{}
-	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &c_stat)
+	cStat := C.struct_rados_pool_stat_t{}
+	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &cStat)
 	if ret < 0 {
 		return PoolStat{}, getError(ret)
 	}
 	return PoolStat{
-		Num_bytes:                      uint64(c_stat.num_bytes),
-		Num_kb:                         uint64(c_stat.num_kb),
-		Num_objects:                    uint64(c_stat.num_objects),
-		Num_object_clones:              uint64(c_stat.num_object_clones),
-		Num_object_copies:              uint64(c_stat.num_object_copies),
-		Num_objects_missing_on_primary: uint64(c_stat.num_objects_missing_on_primary),
-		Num_objects_unfound:            uint64(c_stat.num_objects_unfound),
-		Num_objects_degraded:           uint64(c_stat.num_objects_degraded),
-		Num_rd:                         uint64(c_stat.num_rd),
-		Num_rd_kb:                      uint64(c_stat.num_rd_kb),
-		Num_wr:                         uint64(c_stat.num_wr),
-		Num_wr_kb:                      uint64(c_stat.num_wr_kb),
+		Num_bytes:                      uint64(cStat.num_bytes),
+		Num_kb:                         uint64(cStat.num_kb),
+		Num_objects:                    uint64(cStat.num_objects),
+		Num_object_clones:              uint64(cStat.num_object_clones),
+		Num_object_copies:              uint64(cStat.num_object_copies),
+		Num_objects_missing_on_primary: uint64(cStat.num_objects_missing_on_primary),
+		Num_objects_unfound:            uint64(cStat.num_objects_unfound),
+		Num_objects_degraded:           uint64(cStat.num_objects_degraded),
+		Num_rd:                         uint64(cStat.num_rd),
+		Num_rd_kb:                      uint64(cStat.num_rd_kb),
+		Num_wr:                         uint64(cStat.num_wr),
+		Num_wr_kb:                      uint64(cStat.num_wr_kb),
 	}, nil
 }
 
@@ -289,51 +289,51 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	defer func() { C.rados_nobjects_list_close(ctx) }()
 
 	for {
-		var c_entry *C.char
-		ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
+		var cEntry *C.char
+		ret := C.rados_nobjects_list_next(ctx, &cEntry, nil, nil)
 		if ret == -C.ENOENT {
 			return nil
 		} else if ret < 0 {
 			return getError(ret)
 		}
-		listFn(C.GoString(c_entry))
+		listFn(C.GoString(cEntry))
 	}
 }
 
 // Stat returns the size of the object and its last modification time
 func (ioctx *IOContext) Stat(object string) (stat ObjectStat, err error) {
-	var c_psize C.uint64_t
-	var c_pmtime C.time_t
-	c_object := C.CString(object)
-	defer C.free(unsafe.Pointer(c_object))
+	var cPsize C.uint64_t
+	var cPmtime C.time_t
+	cObject := C.CString(object)
+	defer C.free(unsafe.Pointer(cObject))
 
 	ret := C.rados_stat(
 		ioctx.ioctx,
-		c_object,
-		&c_psize,
-		&c_pmtime)
+		cObject,
+		&cPsize,
+		&cPmtime)
 
 	if ret < 0 {
 		return ObjectStat{}, getError(ret)
 	}
 	return ObjectStat{
-		Size:    uint64(c_psize),
-		ModTime: time.Unix(int64(c_pmtime), 0),
+		Size:    uint64(cPsize),
+		ModTime: time.Unix(int64(cPmtime), 0),
 	}, nil
 }
 
 // GetXattr gets an xattr with key `name`, it returns the length of
 // the key read or an error if not successful
 func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, error) {
-	c_object := C.CString(object)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_object))
-	defer C.free(unsafe.Pointer(c_name))
+	cObject := C.CString(object)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cObject))
+	defer C.free(unsafe.Pointer(cName))
 
 	ret := C.rados_getxattr(
 		ioctx.ioctx,
-		c_object,
-		c_name,
+		cObject,
+		cName,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 
@@ -345,15 +345,15 @@ func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, 
 
 // SetXattr sets an xattr for an object with key `name` with value as `data`
 func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error {
-	c_object := C.CString(object)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_object))
-	defer C.free(unsafe.Pointer(c_name))
+	cObject := C.CString(object)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cObject))
+	defer C.free(unsafe.Pointer(cName))
 
 	ret := C.rados_setxattr(
 		ioctx.ioctx,
-		c_object,
-		c_name,
+		cObject,
+		cName,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 
@@ -363,82 +363,82 @@ func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error 
 // ListXattrs lists all the xattrs for an object. The xattrs are returned as a
 // mapping of string keys and byte-slice values.
 func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	cOid := C.CString(oid)
+	defer C.free(unsafe.Pointer(cOid))
 
 	var it C.rados_xattrs_iter_t
 
-	ret := C.rados_getxattrs(ioctx.ioctx, c_oid, &it)
+	ret := C.rados_getxattrs(ioctx.ioctx, cOid, &it)
 	if ret < 0 {
 		return nil, getError(ret)
 	}
 	defer func() { C.rados_getxattrs_end(it) }()
 	m := make(map[string][]byte)
 	for {
-		var c_name, c_val *C.char
-		var c_len C.size_t
-		defer C.free(unsafe.Pointer(c_name))
-		defer C.free(unsafe.Pointer(c_val))
+		var cName, cVal *C.char
+		var cLen C.size_t
+		defer C.free(unsafe.Pointer(cName))
+		defer C.free(unsafe.Pointer(cVal))
 
-		ret := C.rados_getxattrs_next(it, &c_name, &c_val, &c_len)
+		ret := C.rados_getxattrs_next(it, &cName, &cVal, &cLen)
 		if ret < 0 {
 			return nil, getError(ret)
 		}
 		// rados api returns a null name,val & 0-length upon
 		// end of iteration
-		if c_name == nil {
+		if cName == nil {
 			return m, nil // stop iteration
 		}
-		m[C.GoString(c_name)] = C.GoBytes(unsafe.Pointer(c_val), (C.int)(c_len))
+		m[C.GoString(cName)] = C.GoBytes(unsafe.Pointer(cVal), (C.int)(cLen))
 	}
 }
 
 // RmXattr removes an xattr with key `name` from object `oid`
 func (ioctx *IOContext) RmXattr(oid string, name string) error {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
+	cOid := C.CString(oid)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cName))
 
 	ret := C.rados_rmxattr(
 		ioctx.ioctx,
-		c_oid,
-		c_name)
+		cOid,
+		cName)
 
 	return getError(ret)
 }
 
 // LockExclusive takes an exclusive lock on an object.
 func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration time.Duration, flags *byte) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_cookie := C.CString(cookie)
-	c_desc := C.CString(desc)
+	cOid := C.CString(oid)
+	cName := C.CString(name)
+	cCookie := C.CString(cookie)
+	cDesc := C.CString(desc)
 
-	var c_duration C.struct_timeval
+	var cDuration C.struct_timeval
 	if duration != 0 {
 		tv := syscall.NsecToTimeval(duration.Nanoseconds())
-		c_duration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
+		cDuration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
 	}
 
-	var c_flags C.uint8_t
+	var cFlags C.uint8_t
 	if flags != nil {
-		c_flags = C.uint8_t(*flags)
+		cFlags = C.uint8_t(*flags)
 	}
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_cookie))
-	defer C.free(unsafe.Pointer(c_desc))
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cCookie))
+	defer C.free(unsafe.Pointer(cDesc))
 
 	ret := C.rados_lock_exclusive(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_cookie,
-		c_desc,
-		&c_duration,
-		c_flags)
+		cOid,
+		cName,
+		cCookie,
+		cDesc,
+		&cDuration,
+		cFlags)
 
 	// 0 on success, negative error code on failure
 	// -EBUSY if the lock is already held by another (client, cookie) pair
@@ -458,38 +458,38 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 
 // LockShared takes a shared lock on an object.
 func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration time.Duration, flags *byte) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_cookie := C.CString(cookie)
-	c_tag := C.CString(tag)
-	c_desc := C.CString(desc)
+	cOid := C.CString(oid)
+	cName := C.CString(name)
+	cCookie := C.CString(cookie)
+	cTag := C.CString(tag)
+	cDesc := C.CString(desc)
 
-	var c_duration C.struct_timeval
+	var cDuration C.struct_timeval
 	if duration != 0 {
 		tv := syscall.NsecToTimeval(duration.Nanoseconds())
-		c_duration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
+		cDuration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
 	}
 
-	var c_flags C.uint8_t
+	var cFlags C.uint8_t
 	if flags != nil {
-		c_flags = C.uint8_t(*flags)
+		cFlags = C.uint8_t(*flags)
 	}
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_cookie))
-	defer C.free(unsafe.Pointer(c_tag))
-	defer C.free(unsafe.Pointer(c_desc))
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cCookie))
+	defer C.free(unsafe.Pointer(cTag))
+	defer C.free(unsafe.Pointer(cDesc))
 
 	ret := C.rados_lock_shared(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_cookie,
-		c_tag,
-		c_desc,
-		&c_duration,
-		c_flags)
+		cOid,
+		cName,
+		cCookie,
+		cTag,
+		cDesc,
+		&cDuration,
+		cFlags)
 
 	// 0 on success, negative error code on failure
 	// -EBUSY if the lock is already held by another (client, cookie) pair
@@ -509,22 +509,22 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 
 // Unlock releases a shared or exclusive lock on an object.
 func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_cookie := C.CString(cookie)
+	cOid := C.CString(oid)
+	cName := C.CString(name)
+	cCookie := C.CString(cookie)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_cookie))
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cCookie))
 
 	// 0 on success, negative error code on failure
 	// -ENOENT if the lock is not held by the specified (client, cookie) pair
 
 	ret := C.rados_unlock(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_cookie)
+		cOid,
+		cName,
+		cCookie)
 
 	switch ret {
 	case 0:
@@ -542,40 +542,40 @@ func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
 // out parameter.  If any of the provided buffers are too short, -ERANGE is
 // returned after these sizes are filled in.
 func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
+	cOid := C.CString(oid)
+	cName := C.CString(name)
 
-	c_tag := (*C.char)(C.malloc(C.size_t(1024)))
-	c_clients := (*C.char)(C.malloc(C.size_t(1024)))
-	c_cookies := (*C.char)(C.malloc(C.size_t(1024)))
-	c_addrs := (*C.char)(C.malloc(C.size_t(1024)))
+	cTag := (*C.char)(C.malloc(C.size_t(1024)))
+	cClients := (*C.char)(C.malloc(C.size_t(1024)))
+	cCookies := (*C.char)(C.malloc(C.size_t(1024)))
+	cAddrs := (*C.char)(C.malloc(C.size_t(1024)))
 
-	var c_exclusive C.int
-	c_tag_len := C.size_t(1024)
-	c_clients_len := C.size_t(1024)
-	c_cookies_len := C.size_t(1024)
-	c_addrs_len := C.size_t(1024)
+	var cExclusive C.int
+	cTag_len := C.size_t(1024)
+	cClients_len := C.size_t(1024)
+	cCookies_len := C.size_t(1024)
+	cAddrs_len := C.size_t(1024)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_tag))
-	defer C.free(unsafe.Pointer(c_clients))
-	defer C.free(unsafe.Pointer(c_cookies))
-	defer C.free(unsafe.Pointer(c_addrs))
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cTag))
+	defer C.free(unsafe.Pointer(cClients))
+	defer C.free(unsafe.Pointer(cCookies))
+	defer C.free(unsafe.Pointer(cAddrs))
 
 	ret := C.rados_list_lockers(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		&c_exclusive,
-		c_tag,
-		&c_tag_len,
-		c_clients,
-		&c_clients_len,
-		c_cookies,
-		&c_cookies_len,
-		c_addrs,
-		&c_addrs_len)
+		cOid,
+		cName,
+		&cExclusive,
+		cTag,
+		&cTag_len,
+		cClients,
+		&cClients_len,
+		cCookies,
+		&cCookies_len,
+		cAddrs,
+		&cAddrs_len)
 
 	splitCString := func(items *C.char, itemsLen C.size_t) []string {
 		currLen := 0
@@ -591,20 +591,20 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 	if ret < 0 {
 		return nil, RadosError(ret)
 	}
-	return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
+	return &LockInfo{int(ret), cExclusive == 1, C.GoString(cTag), splitCString(cClients, cClients_len), splitCString(cCookies, cCookies_len), splitCString(cAddrs, cAddrs_len)}, nil
 }
 
 // BreakLock releases a shared or exclusive lock on an object, which was taken by the specified client.
 func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_client := C.CString(client)
-	c_cookie := C.CString(cookie)
+	cOid := C.CString(oid)
+	cName := C.CString(name)
+	cClient := C.CString(client)
+	cCookie := C.CString(cookie)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_client))
-	defer C.free(unsafe.Pointer(c_cookie))
+	defer C.free(unsafe.Pointer(cOid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cClient))
+	defer C.free(unsafe.Pointer(cCookie))
 
 	// 0 on success, negative error code on failure
 	// -ENOENT if the lock is not held by the specified (client, cookie) pair
@@ -612,10 +612,10 @@ func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error)
 
 	ret := C.rados_break_lock(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_client,
-		c_cookie)
+		cOid,
+		cName,
+		cClient,
+		cCookie)
 
 	switch ret {
 	case 0:
