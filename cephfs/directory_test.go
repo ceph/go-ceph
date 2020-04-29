@@ -90,6 +90,9 @@ func TestReadDir(t *testing.T) {
 			}
 			assert.NotEqual(t, Inode(0), entry.Inode())
 			assert.NotEqual(t, "", entry.Name())
+			// we have created all the contents of this dir and they are all
+			// empty dirs.
+			assert.Equal(t, DTypeDir, entry.DType())
 			found = append(found, entry.Name())
 		}
 		assert.Subset(t, found, subdirs)

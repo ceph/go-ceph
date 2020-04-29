@@ -51,10 +51,34 @@ func (dir *Directory) Close() error {
 // Inode represents an inode number in the file system.
 type Inode uint64
 
+// DType values are used to determine, when possible, the file type
+// of a directory entry.
+type DType uint8
+
+const (
+	// DTypeBlk indicates a directory entry is a block device.
+	DTypeBlk = DType(C.DT_BLK)
+	// DTypeChr indicates a directory entry is a character device.
+	DTypeChr = DType(C.DT_CHR)
+	// DTypeDir indicates a directory entry is a directory.
+	DTypeDir = DType(C.DT_DIR)
+	// DTypeFIFO indicates a directory entry is a named pipe (FIFO).
+	DTypeFIFO = DType(C.DT_FIFO)
+	// DTypeLnk indicates a directory entry is a symbolic link.
+	DTypeLnk = DType(C.DT_LNK)
+	// DTypeReg indicates a directory entry is a regular file.
+	DTypeReg = DType(C.DT_REG)
+	// DTypeSock indicates a directory entry is a UNIX domain socket.
+	DTypeSock = DType(C.DT_SOCK)
+	// DTypeUnknown indicates that the file type could not be determined.
+	DTypeUnknown = DType(C.DT_UNKNOWN)
+)
+
 // DirEntry represents an entry within a directory.
 type DirEntry struct {
 	inode Inode
 	name  string
+	dtype DType
 }
 
 // Name returns the directory entry's name.
@@ -67,11 +91,20 @@ func (d *DirEntry) Inode() Inode {
 	return d.inode
 }
 
+// DType returns the Directory-entry's Type, indicating if it
+// is a regular file, directory, etc.
+// DType may be unknown and thus require an additional call
+// (stat for example) if Unknown.
+func (d *DirEntry) DType() DType {
+	return d.dtype
+}
+
 // toDirEntry converts a c struct dirent to our go wrapper.
 func toDirEntry(de *C.struct_dirent) *DirEntry {
 	return &DirEntry{
 		inode: Inode(de.d_ino),
 		name:  C.GoString(&de.d_name[0]),
+		dtype: DType(de.d_type),
 	}
 }
 
