@@ -883,3 +883,77 @@ func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error)
 		return int(ret), RadosError(int(ret))
 	}
 }
+
+// Snapshots
+// NOTE: self managed snapshots have not been implemented yet.
+
+// SnapHead represents the id of "no snapshot" used to resume normal operation when
+// reading and writing from a snapshot ioctx.
+const SnapHead uint64 = uint64(C.LIBRADOS_SNAP_HEAD)
+
+// SnapCreate creates a pool-wide snapshot
+func (ioctx *IOContext) SnapCreate(snapname string) error {
+	c_snapname := C.CString(snapname)
+	defer C.free(unsafe.Pointer(c_snapname))
+
+	ret := C.rados_ioctx_snap_create(ioctx.ioctx, c_snapname)
+	return GetRadosError(int(ret))
+}
+
+// SnapRemove deletes a pool snapshot
+func (ioctx *IOContext) SnapRemove(snapname string) error {
+	c_snapname := C.CString(snapname)
+	defer C.free(unsafe.Pointer(c_snapname))
+
+	ret := C.rados_ioctx_snap_remove(ioctx.ioctx, c_snapname)
+	return GetRadosError(int(ret))
+}
+
+// SnapRollback an object to a pool snapshot
+// The contents of the object will be the same as when the snapshot was taken.
+func (ioctx *IOContext) SnapRollback(oid, snapname string) error {
+	c_oid := C.CString(oid)
+	defer C.free(unsafe.Pointer(c_oid))
+
+	c_snapname := C.CString(snapname)
+	defer C.free(unsafe.Pointer(c_snapname))
+
+	ret := C.rados_ioctx_snap_rollback(ioctx.ioctx, c_oid, c_snapname)
+	return GetRadosError(int(ret))
+}
+
+// SetSnapRead sets the snapshot from which reads are performed.
+// Subsequent reads will return data as it was at the time of that snapshot.
+// Specify the id of the snapshot to set or use SnapHead for no snapshot in order to
+// resume normal operation on the ioctx.
+func (ioctx *IOContext) SetSnapRead(snap uint64) {
+	C.rados_ioctx_snap_set_read(ioctx.ioctx, C.rados_snap_t(snap))
+}
+
+// ListSnaps returns the ids of pool snapshots.
+// Specify the maximum length of the returned array (128 by default if zero or negative)
+// If the number of snapshots is greater than this length then -ERANGE is returned and
+// the user should retry with a larger maxlen.
+func (ioctx *IOContext) ListSnaps(maxlen int) ([]uint64, error) {
+	if maxlen < 1 {
+		maxlen = 128
+	}
+
+	c_maxlen := C.int(maxlen)
+	c_snaps := (*C.rados_snap_t)(C.malloc(C.size_t(maxlen)))
+	defer C.free(unsafe.Pointer(c_snaps))
+
+	ret := int(C.rados_ioctx_snap_list(ioctx.ioctx, c_snaps, c_maxlen))
+	if ret < 0 {
+		return nil, GetRadosError(ret)
+	}
+
+	// TODO: cgo snaps should be freed when c_snaps is freed?
+	snaps := make([]uint64, 0, ret)
+	cgo_snaps := (*[1 << 30]C.rados_snap_t)(unsafe.Pointer(c_snaps))
+	for i := 0; i < ret; i++ {
+		snaps = append(snaps, uint64(cgo_snaps[i]))
+	}
+
+	return snaps, nil
+}
