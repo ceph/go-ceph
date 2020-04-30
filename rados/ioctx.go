@@ -931,29 +931,18 @@ func (ioctx *IOContext) SetSnapRead(snap uint64) {
 }
 
 // ListSnaps returns the ids of pool snapshots.
-// Specify the maximum length of the returned array (128 by default if zero or negative)
+// Specify the maximum length of the returned array (512 by default if zero or negative)
 // If the number of snapshots is greater than this length then -ERANGE is returned and
 // the user should retry with a larger maxlen.
 func (ioctx *IOContext) ListSnaps(maxlen int) ([]uint64, error) {
 	if maxlen < 1 {
-		maxlen = 128
+		maxlen = 512
 	}
 
-	c_maxlen := C.int(maxlen)
-	c_snaps := (*C.rados_snap_t)(C.malloc(C.size_t(maxlen)))
-	defer C.free(unsafe.Pointer(c_snaps))
-
-	ret := int(C.rados_ioctx_snap_list(ioctx.ioctx, c_snaps, c_maxlen))
+	snaps := make([]uint64, maxlen)
+	ret := int(C.rados_ioctx_snap_list(ioctx.ioctx, (*C.rados_snap_t)(unsafe.Pointer(&snaps[0])), C.int(maxlen)))
 	if ret < 0 {
 		return nil, GetRadosError(ret)
 	}
-
-	// TODO: cgo snaps should be freed when c_snaps is freed?
-	snaps := make([]uint64, 0, ret)
-	cgo_snaps := (*[1 << 30]C.rados_snap_t)(unsafe.Pointer(c_snaps))
-	for i := 0; i < ret; i++ {
-		snaps = append(snaps, uint64(cgo_snaps[i]))
-	}
-
-	return snaps, nil
+	return snaps[0:ret], nil
 }
