@@ -930,11 +930,11 @@ func (ioctx *IOContext) SetSnapRead(snap uint64) {
 	C.rados_ioctx_snap_set_read(ioctx.ioctx, C.rados_snap_t(snap))
 }
 
-// ListSnaps returns the ids of pool snapshots.
+// SnapList returns the ids of pool snapshots.
 // Specify the maximum length of the returned array (512 by default if zero or negative)
 // If the number of snapshots is greater than this length then -ERANGE is returned and
 // the user should retry with a larger maxlen.
-func (ioctx *IOContext) ListSnaps(maxlen int) ([]uint64, error) {
+func (ioctx *IOContext) SnapList(maxlen int) ([]uint64, error) {
 	if maxlen < 1 {
 		maxlen = 512
 	}
@@ -945,4 +945,49 @@ func (ioctx *IOContext) ListSnaps(maxlen int) ([]uint64, error) {
 		return nil, GetRadosError(ret)
 	}
 	return snaps[0:ret], nil
+}
+
+// SnapLookup gets the id of a pool snapshot
+func (ioctx *IOContext) SnapLookup(snapname string) (uint64, error) {
+	c_snapname := C.CString(snapname)
+	defer C.free(unsafe.Pointer(c_snapname))
+
+	var snap uint64
+	ret := int(C.rados_ioctx_snap_lookup(
+		ioctx.ioctx, c_snapname, (*C.rados_snap_t)(unsafe.Pointer(&snap)),
+	))
+
+	if ret == 0 {
+		return snap, nil
+	}
+	return 0, GetRadosError(ret)
+}
+
+// SnapGetName gets the name of a pool snapshot
+func (ioctx *IOContext) SnapGetName(snap uint64) (string, error) {
+	buf := make([]byte, 4096)
+	ret := int(C.rados_ioctx_snap_get_name(
+		ioctx.ioctx, C.rados_snap_t(snap), (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)),
+	))
+
+	if ret == 0 {
+		value := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
+		return value, nil
+	}
+
+	return "", GetRadosError(ret)
+}
+
+// SnapGetStamp finds when a pool snapshort occurred
+func (ioctx *IOContext) SnapGetStamp(snap uint64) (time.Time, error) {
+	var nsec int64
+	ret := int(C.rados_ioctx_snap_get_stamp(
+		ioctx.ioctx, C.rados_snap_t(snap), (*C.time_t)(unsafe.Pointer(&nsec)),
+	))
+
+	if ret == 0 {
+		// Handle success case
+		return time.Unix(0, nsec), nil
+	}
+	return time.Time{}, GetRadosError(ret)
 }
