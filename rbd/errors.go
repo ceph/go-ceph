@@ -59,7 +59,7 @@ var (
 	// ErrSnapshotNoName may be returned if an aip call requires a snapshot
 	// name and it is not provided.
 	ErrSnapshotNoName = errors.New("RBD snapshot does not have a name")
-	// ErrImageNotOpen may be returnened if an api call requires an open image handle and one is not provided.
+	// ErrImageNotOpen may be returned if an api call requires an open image handle and one is not provided.
 	ErrImageNotOpen = errors.New("RBD image not open")
 	// ErrNotFound may be returned from an api call when the requested item is
 	// missing.

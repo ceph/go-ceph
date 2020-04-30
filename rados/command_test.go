@@ -88,7 +88,7 @@ func (suite *RadosTestSuite) TestPGCommand() {
 	assert.NoError(suite.T(), err)
 }
 
-func (suite *RadosTestSuite) TestMgrCommandDescrptions() {
+func (suite *RadosTestSuite) TestMgrCommandDescriptions() {
 	suite.SetupConnection()
 
 	command, err := json.Marshal(
