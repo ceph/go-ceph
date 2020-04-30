@@ -1,7 +1,7 @@
 
 # Go-Ceph Release Process
 
-Regular releases are planned starting mid-Februrary 2020. Until the API is
+Regular releases are planned starting mid-February 2020. Until the API is
 stable we will be issuing v0.y versions.
 
 ## Major-Minor release
