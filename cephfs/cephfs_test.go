@@ -269,3 +269,57 @@ func TestGetSetConfigOption(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, origVal, currVal)
 }
+
+func TestValidate(t *testing.T) {
+	mount, err := CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+	defer assert.NoError(t, mount.Release())
+
+	t.Run("mountCurrentDir", func(t *testing.T) {
+		path := mount.CurrentDir()
+		assert.Equal(t, path, "")
+	})
+
+	t.Run("mountChangeDir", func(t *testing.T) {
+		err := mount.ChangeDir("someDir")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+
+	t.Run("mountMakeDir", func(t *testing.T) {
+		err := mount.MakeDir("someName", 0444)
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+
+	t.Run("mountRemoveDir", func(t *testing.T) {
+		err := mount.RemoveDir("someDir")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+
+	t.Run("mountLink", func(t *testing.T) {
+		err := mount.Link("/", "/")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+
+	t.Run("mountUnlink", func(t *testing.T) {
+		err := mount.Unlink("someFile")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+
+	t.Run("mountSymlink", func(t *testing.T) {
+		err := mount.Symlink("/", "/")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+
+	t.Run("mountReadlink", func(t *testing.T) {
+		_, err := mount.Readlink("somePath")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrNotConnected)
+	})
+}

@@ -14,12 +14,18 @@ import (
 
 // CurrentDir gets the current working directory.
 func (mount *MountInfo) CurrentDir() string {
+	if err := mount.validate(); err != nil {
+		return ""
+	}
 	cDir := C.ceph_getcwd(mount.mount)
 	return C.GoString(cDir)
 }
 
 // ChangeDir changes the current working directory.
 func (mount *MountInfo) ChangeDir(path string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
@@ -29,6 +35,9 @@ func (mount *MountInfo) ChangeDir(path string) error {
 
 // MakeDir creates a directory.
 func (mount *MountInfo) MakeDir(path string, mode uint32) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
@@ -38,6 +47,9 @@ func (mount *MountInfo) MakeDir(path string, mode uint32) error {
 
 // RemoveDir removes a directory.
 func (mount *MountInfo) RemoveDir(path string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
@@ -50,6 +62,9 @@ func (mount *MountInfo) RemoveDir(path string) error {
 // Implements:
 //  int ceph_unlink(struct ceph_mount_info *cmount, const char *path);
 func (mount *MountInfo) Unlink(path string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
@@ -62,6 +77,9 @@ func (mount *MountInfo) Unlink(path string) error {
 // Implements:
 //  int ceph_link (struct ceph_mount_info *cmount, const char *existing, const char *newname);
 func (mount *MountInfo) Link(oldname, newname string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
 	cOldname := C.CString(oldname)
 	defer C.free(unsafe.Pointer(cOldname))
 
@@ -77,6 +95,9 @@ func (mount *MountInfo) Link(oldname, newname string) error {
 // Implements:
 //  int ceph_symlink(struct ceph_mount_info *cmount, const char *existing, const char *newname);
 func (mount *MountInfo) Symlink(existing, newname string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
 	cExisting := C.CString(existing)
 	defer C.free(unsafe.Pointer(cExisting))
 
@@ -92,6 +113,9 @@ func (mount *MountInfo) Symlink(existing, newname string) error {
 // Implements:
 //  int ceph_readlink(struct ceph_mount_info *cmount, const char *path, char *buf, int64_t size);
 func (mount *MountInfo) Readlink(path string) (string, error) {
+	if err := mount.validate(); err != nil {
+		return "", err
+	}
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
