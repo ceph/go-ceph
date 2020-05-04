@@ -29,6 +29,14 @@ func createMount(id *C.char) (*MountInfo, error) {
 	return mount, nil
 }
 
+// validate checks whether mount.mount is ready to use or not.
+func (mount *MountInfo) validate() error {
+	if mount.mount == nil {
+		return ErrNotConnected
+	}
+	return nil
+}
+
 // CreateMount creates a mount handle for interacting with Ceph.
 func CreateMount() (*MountInfo, error) {
 	return createMount(nil)
