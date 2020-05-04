@@ -71,6 +71,9 @@ test-bins: test-binaries
 %.test: % force_go_build
 	go test -c ./$<
 
+implements:
+	go build -o implements ./contrib/implements
+
 # force_go_build is phony and builds nothing, can be used for forcing
 # go toolchain commands to always run
 .PHONY: build fmt test test-docker check test-binaries test-bins force_go_build
