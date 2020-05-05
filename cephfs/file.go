@@ -173,3 +173,29 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 	}
 	return int64(ret), nil
 }
+
+// Fchmod changes the mode bits (permissions) of a file.
+//
+// Implements:
+//  int ceph_fchmod(struct ceph_mount_info *cmount, int fd, mode_t mode);
+func (f *File) Fchmod(mode uint32) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+
+	ret := C.ceph_fchmod(f.mount.mount, f.fd, C.mode_t(mode))
+	return getError(ret)
+}
+
+// Fchown changes the ownership of a file.
+//
+// Implements:
+//  int ceph_fchown(struct ceph_mount_info *cmount, int fd, int uid, int gid);
+func (f *File) Fchown(user uint32, group uint32) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+
+	ret := C.ceph_fchown(f.mount.mount, f.fd, C.int(user), C.int(group))
+	return getError(ret)
+}
