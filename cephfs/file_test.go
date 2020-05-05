@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -336,4 +337,71 @@ func TestMixedReadReadAt(t *testing.T) {
 	assert.Equal(t, "ghi ", string(buf))
 
 	assert.NoError(t, f1.Close())
+}
+
+func TestFchmod(t *testing.T) {
+	useMount(t)
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "file.txt"
+	var statsBefore uint32 = 0755
+	var statsAfter uint32 = 0700
+
+	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, statsBefore)
+	assert.NoError(t, err)
+	assert.NotNil(t, f1)
+	defer func() {
+		assert.NoError(t, f1.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	err = mount.SyncFs()
+	assert.NoError(t, err)
+
+	stats, err := os.Stat(path.Join(CephMountDir, fname))
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(stats.Mode().Perm()), statsBefore)
+
+	err = f1.Fchmod(statsAfter)
+	assert.NoError(t, err)
+
+	stats, err = os.Stat(path.Join(CephMountDir, fname))
+	assert.Equal(t, uint32(stats.Mode().Perm()), statsAfter)
+}
+
+func TestFchown(t *testing.T) {
+	useMount(t)
+
+	fname := "file.txt"
+	// dockerfile creates bob user account
+	var bob uint32 = 1010
+	var root uint32
+
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+	assert.NoError(t, err)
+	assert.NotNil(t, f1)
+	defer func() {
+		assert.NoError(t, f1.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	err = mount.SyncFs()
+	assert.NoError(t, err)
+
+	stats, err := os.Stat(path.Join(CephMountDir, fname))
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), root)
+	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), root)
+
+	err = f1.Fchown(bob, bob)
+	assert.NoError(t, err)
+
+	stats, err = os.Stat(path.Join(CephMountDir, fname))
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
+	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
 }
