@@ -6,6 +6,7 @@ VOLUME_FLAGS :=
 CEPH_VERSION := nautilus
 RESULTS_DIR :=
 CHECK_GOFMT_FLAGS := -e -s -l
+IMPLEMENTS_OPTS :=
 
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
@@ -74,6 +75,9 @@ test-bins: test-binaries
 implements:
 	go build -o implements ./contrib/implements
 
+check-implements: implements
+	./implements $(IMPLEMENTS_OPTS) ./cephfs ./rados ./rbd
+
 # force_go_build is phony and builds nothing, can be used for forcing
 # go toolchain commands to always run
-.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build
+.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements
