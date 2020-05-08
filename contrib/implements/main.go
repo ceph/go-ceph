@@ -13,7 +13,7 @@ package main
 //   ./implements ./cephfs ./rados ./rbd
 //
 //   # generate a comprehensive report on rbd in json
-//   ./implements --list --annotate --json rbd
+//   ./implements --list --json rbd
 
 import (
 	"flag"
@@ -27,7 +27,6 @@ import (
 var (
 	verbose    bool
 	list       bool
-	annotate   bool
 	reportJSON bool
 
 	// verbose logger
@@ -41,7 +40,6 @@ func abort(msg string) {
 func init() {
 	flag.BoolVar(&verbose, "verbose", false, "be more verbose (for debugging)")
 	flag.BoolVar(&list, "list", false, "list functions")
-	flag.BoolVar(&annotate, "annotate", false, "annotate functions")
 	flag.BoolVar(&reportJSON, "json", false, "use JSON output format")
 }
 
@@ -56,9 +54,11 @@ func main() {
 	}
 
 	var r implements.Reporter
+	// always annotate for now, leave the option of disabling it someday if it
+	// gets costly
 	o := implements.ReportOptions{
 		List:     list,
-		Annotate: annotate,
+		Annotate: true,
 	}
 	switch {
 	case reportJSON:
