@@ -47,7 +47,7 @@ type jrPackage struct {
 		Missing    int `json:"missing"`
 		Deprecated int `json:"deprecated"`
 	} `json:"summary"`
-	Covered []jrFunction `json:"covered,omitempty"`
+	Found   []jrFunction `json:"found,omitempty"`
 	Missing []jrFunction `json:"missing,omitempty"`
 }
 
@@ -90,7 +90,7 @@ func collectFuncs(jp *jrPackage, ii *Inspector) {
 			if n := ii.visitor.docMap[cf.Name]; n != "" {
 				refm[n] = true
 			}
-			jp.Covered = append(jp.Covered,
+			jp.Found = append(jp.Found,
 				jrFunction{cf.Name, jrFlags(flags), mkeys(refm)})
 		}
 	}

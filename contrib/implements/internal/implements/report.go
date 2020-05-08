@@ -78,7 +78,7 @@ func (r *TextReport) Report(name string, ii *Inspector) error {
 					tags = " (" + strings.TrimSpace(tags) + ")"
 				}
 			}
-			fmt.Printf("  Covered: %s%s\n", cf.Name, tags)
+			fmt.Printf("  Found: %s%s\n", cf.Name, tags)
 		}
 	}
 	for _, cf := range ii.expected {
