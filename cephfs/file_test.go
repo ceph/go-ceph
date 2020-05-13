@@ -415,3 +415,63 @@ func TestFchown(t *testing.T) {
 	err = f2.Fchown(bob, bob)
 	assert.Error(t, err)
 }
+
+func TestFstatx(t *testing.T) {
+	fname := "test_fstatx.txt"
+
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0600)
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	assert.NoError(t, f.Close())
+	defer func() { assert.NoError(t, mount.Unlink(fname)) }()
+
+	t.Run("emptyFile", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR, 0600)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
+
+		st, err := f.Fstatx(StatxBasicStats, 0)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
+
+		assert.Equal(t, uint16(0600), st.Mode&0600)
+		assert.Equal(t, uint64(0), st.Size)
+	})
+
+	t.Run("populateFile", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0600)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
+		defer func() { assert.NoError(t, f.Close()) }()
+
+		_, err = f.Write([]byte("See spot run.\nSee spot jump.\n"))
+		assert.NoError(t, err)
+
+		st, err := f.Fstatx(StatxBasicStats, 0)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
+
+		assert.Equal(t, uint16(0600), st.Mode&0600)
+		assert.Equal(t, uint64(29), st.Size)
+	})
+
+	t.Run("closedFile", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0600)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
+		assert.NoError(t, f.Close())
+
+		st, err := f.Fstatx(StatxBasicStats, 0)
+		assert.Error(t, err)
+		assert.Nil(t, st)
+	})
+
+	t.Run("invalidFile", func(t *testing.T) {
+		f := &File{}
+		_, err := f.Fstatx(StatxBasicStats, 0)
+		assert.Error(t, err)
+	})
+}
