@@ -199,3 +199,27 @@ func (f *File) Fchown(user uint32, group uint32) error {
 	ret := C.ceph_fchown(f.mount.mount, f.fd, C.int(user), C.int(group))
 	return getError(ret)
 }
+
+// Fstatx returns information about an open file.
+//
+// Implements:
+//  int ceph_fstatx(struct ceph_mount_info *cmount, int fd, struct ceph_statx *stx,
+//                  unsigned int want, unsigned int flags);
+func (f *File) Fstatx(want StatxMask, flags AtFlags) (*CephStatx, error) {
+	if err := f.validate(); err != nil {
+		return nil, err
+	}
+
+	var stx C.struct_ceph_statx
+	ret := C.ceph_fstatx(
+		f.mount.mount,
+		f.fd,
+		&stx,
+		C.uint(want),
+		C.uint(flags),
+	)
+	if err := getError(ret); err != nil {
+		return nil, err
+	}
+	return cStructToCephStatx(stx), nil
+}
