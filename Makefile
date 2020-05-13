@@ -5,6 +5,7 @@ CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS := 
 CEPH_VERSION := nautilus
 RESULTS_DIR :=
+CHECK_GOFMT_FLAGS := -e -s -l
 
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
@@ -45,7 +46,12 @@ ci-image: .build-docker
 check-ceph-version:
 	@grep -wq '$(CEPH_VERSION)' .build-docker 2>/dev/null || $(RM) .build-docker
 
-check:
+check: check-revive check-format
+
+check-format:
+	! gofmt $(CHECK_GOFMT_FLAGS) . | sed 's,^,formatting error: ,' | grep 'go$$'
+
+check-revive:
 	# Configure project's revive checks using .revive.toml
 	# See: https://github.com/mgechev/revive
 	revive -config .revive.toml $$(go list ./... | grep -v /vendor/)
