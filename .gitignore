@@ -1,3 +1,5 @@
 .build-docker
 *.swp
 *.out
+*.test
+*.json
