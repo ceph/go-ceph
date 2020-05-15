@@ -368,6 +368,11 @@ func TestFchmod(t *testing.T) {
 
 	stats, err = os.Stat(path.Join(CephMountDir, fname))
 	assert.Equal(t, uint32(stats.Mode().Perm()), statsAfter)
+
+	// TODO use t.Run sub-tests where appropriate
+	f2 := &File{}
+	err = f2.Fchmod(statsAfter)
+	assert.Error(t, err)
 }
 
 func TestFchown(t *testing.T) {
@@ -404,4 +409,9 @@ func TestFchown(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
 	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
+
+	// TODO use t.Run sub-tests where appropriate
+	f2 := &File{}
+	err = f2.Fchown(bob, bob)
+	assert.Error(t, err)
 }
