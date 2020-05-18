@@ -3,7 +3,9 @@ package cephfs
 /*
 #cgo LDFLAGS: -lcephfs
 #cgo CPPFLAGS: -D_FILE_OFFSET_BITS=64
+#define _GNU_SOURCE
 #include <stdlib.h>
+#include <fcntl.h>
 #include <cephfs/libcephfs.h>
 */
 import "C"
@@ -222,4 +224,34 @@ func (f *File) Fstatx(want StatxMask, flags AtFlags) (*CephStatx, error) {
 		return nil, err
 	}
 	return cStructToCephStatx(stx), nil
+}
+
+// FallocFlags represent flags which determine the operation to be
+// performed on the given range.
+// CephFS supports only following two flags.
+type FallocFlags int
+
+const (
+	// FallocNoFlag means default option.
+	FallocNoFlag = FallocFlags(0)
+	// FallocFlKeepSize specifies that the file size will not be changed.
+	FallocFlKeepSize = FallocFlags(C.FALLOC_FL_KEEP_SIZE)
+	// FallocFlPunchHole specifies that the operation is to deallocate
+	// space and zero the byte range.
+	FallocFlPunchHole = FallocFlags(C.FALLOC_FL_PUNCH_HOLE)
+)
+
+// Fallocate preallocates or releases disk space for the file for the
+// given byte range, the flags determine the operation to be performed
+// on the given range.
+//
+// Implements:
+//	int ceph_fallocate(struct ceph_mount_info *cmount, int fd, int mode,
+//								  int64_t offset, int64_t length);
+func (f *File) Fallocate(mode FallocFlags, offset, length int64) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+	ret := C.ceph_fallocate(f.mount.mount, f.fd, C.int(mode), C.int64_t(offset), C.int64_t(length))
+	return getError(ret)
 }

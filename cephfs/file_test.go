@@ -475,3 +475,143 @@ func TestFstatx(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestFallocate(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+	fname := "file1.txt"
+	f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	defer func() {
+		assert.NoError(t, f.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	// assert that negative values will return error.
+	t.Run("NegativeOffsetLength", func(t *testing.T) {
+		err = f.Fallocate(FallocNoFlag, -1, 10)
+		assert.Error(t, err)
+
+		err = f.Fallocate(FallocNoFlag, 10, -1)
+		assert.Error(t, err)
+	})
+
+	// Allocate space - default case, mode == 0.
+	t.Run("modeIsZero", func(t *testing.T) {
+		useMount(t)
+		// check file size.
+		s, err := os.Stat(path.Join(CephMountDir, fname))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 0, s.Size())
+		// write 10 bytes at offset 0.
+		err = f.Fallocate(FallocNoFlag, 0, 10)
+		assert.NoError(t, err)
+		// check file size again.
+		s, err = os.Stat(path.Join(CephMountDir, fname))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 10, s.Size())
+	})
+
+	// Allocate space - size increases, data remains intact.
+	t.Run("increaseSize", func(t *testing.T) {
+		useMount(t)
+		fname := "file2.txt"
+		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		assert.NoError(t, err)
+		assert.NotNil(t, f1)
+		defer func() {
+			assert.NoError(t, f1.Close())
+			assert.NoError(t, mount.Unlink(fname))
+		}()
+		// write to file.
+		n, err := f1.Write([]byte("Ten chars!"))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 10, n)
+		// check the file size.
+		s, err := os.Stat(path.Join(CephMountDir, fname))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 10, s.Size())
+		// allocate 10 more bytes from the middle.
+		err = f1.Fallocate(FallocNoFlag, 5, 10)
+		assert.NoError(t, err)
+		// check the size, it should increase.
+		s, err = os.Stat(path.Join(CephMountDir, fname))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 15, s.Size())
+		// Read the contents, first ten chars remain intact.
+		buf := make([]byte, 10)
+		n, err = f1.ReadAt(buf, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, "Ten chars!", string(buf[:n]))
+	})
+
+	// Allocate space - with FALLOC_FL_KEEP_SIZE.
+	t.Run("allocateSpaceWithFlag", func(t *testing.T) {
+		useMount(t)
+		fname := "file3.txt"
+		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		assert.NoError(t, err)
+		assert.NotNil(t, f1)
+		defer func() {
+			assert.NoError(t, f1.Close())
+			assert.NoError(t, mount.Unlink(fname))
+		}()
+		// Write to file.
+		n, err := f1.Write([]byte("tenchars!!"))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 10, n)
+		// Allocate 10 more bytes from the middle.
+		err = f1.Fallocate(FallocFlKeepSize, 5, 10)
+		assert.NoError(t, err)
+		// Check the file size, it should not increase.
+		s, err := os.Stat(path.Join(CephMountDir, fname))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 10, s.Size())
+	})
+
+	// Deallocate space - with only FALLOC_FL_PUNCH_HOLE.
+	t.Run("punchHoleFlagAlone", func(t *testing.T) {
+		err := f.Fallocate(FallocFlPunchHole, 0, 10)
+		// Not supported.
+		assert.Error(t, err)
+	})
+
+	// De-allocate space - punch holes.
+	t.Run("punchActualHoles", func(t *testing.T) {
+		fname := "file4.txt"
+		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		assert.NoError(t, err)
+		assert.NotNil(t, f1)
+		defer func() {
+			assert.NoError(t, f1.Close())
+			assert.NoError(t, mount.Unlink(fname))
+		}()
+		// Write some data.
+		n, err := f1.Write([]byte("Ten chars!"))
+		assert.NoError(t, err)
+		assert.EqualValues(t, 10, n)
+		// Read it back.
+		buf := make([]byte, 10)
+		n, err = f1.ReadAt(buf, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, "Ten chars!", string(buf[:n]))
+		// Punch holes.
+		err = f1.Fallocate(FallocFlPunchHole|FallocFlKeepSize, 0, 5)
+		assert.NoError(t, err)
+		// Read again - first five chars.
+		buf = make([]byte, 5)
+		n, err = f1.ReadAt(buf, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, "\x00\x00\x00\x00\x00", string(buf[:n]))
+		// Read again - last five chars.
+		n, err = f1.ReadAt(buf, 5)
+		assert.Equal(t, "hars!", string(buf[:n]))
+	})
+
+	t.Run("checkValidate", func(t *testing.T) {
+		f1 := &File{}
+		err := f1.Fallocate(FallocNoFlag, 0, 10)
+		assert.Error(t, err)
+	})
+}
