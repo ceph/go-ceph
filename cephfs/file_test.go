@@ -615,3 +615,99 @@ func TestFallocate(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestFlock(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	t.Run("validate", func(t *testing.T) {
+		f := &File{}
+		err := f.Flock(LockSH, 1010)
+		assert.Error(t, err)
+	})
+
+	t.Run("validateOperation", func(t *testing.T) {
+		fname := "Flockfile.txt"
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		assert.NoError(t, err)
+		assert.NotNil(t, f)
+		defer func() {
+			assert.NoError(t, f.Close())
+			assert.NoError(t, mount.Unlink(fname))
+		}()
+		err = f.Flock(LockSH|LockEX, 1010)
+		assert.Error(t, err)
+	})
+
+	t.Run("basicLocking", func(t *testing.T) {
+		const (
+			anna  = 42
+			bob   = 43
+			chris = 44
+		)
+		fname1 := "Flockfile1.txt"
+		f1, err := mount.Open(fname1, os.O_RDWR|os.O_CREATE, 0666)
+		assert.NoError(t, err)
+		assert.NotNil(t, f1)
+		defer func() {
+			assert.NoError(t, f1.Close())
+			assert.NoError(t, mount.Unlink(fname1))
+		}()
+		// Lock exclusively twice.
+		t.Run("exclusiveTwiceBlock", func(t *testing.T) {
+			err := f1.Flock(LockEX, anna)
+			assert.NoError(t, err)
+			defer func() {
+				assert.NoError(t, f1.Flock(LockUN, anna))
+			}()
+			err = f1.Flock(LockEX|LockNB, bob)
+			assert.Error(t, err)
+		})
+		t.Run("exclusiveTwiceNonBlock", func(t *testing.T) {
+			err := f1.Flock(LockEX|LockNB, anna)
+			assert.NoError(t, err)
+			defer func() {
+				assert.NoError(t, f1.Flock(LockUN, anna))
+			}()
+			err = f1.Flock(LockEX|LockNB, bob)
+			assert.Error(t, err)
+		})
+
+		// Lock shared.
+		t.Run("sharedLock", func(t *testing.T) {
+			err := f1.Flock(LockSH, anna)
+			assert.NoError(t, err)
+			err = f1.Flock(LockSH, bob)
+			assert.NoError(t, err)
+			defer func() {
+				assert.NoError(t, f1.Flock(LockUN, anna))
+				assert.NoError(t, f1.Flock(LockUN, bob))
+			}()
+			// Now try to take exclusive lock.
+			err = f1.Flock(LockEX|LockNB, chris)
+			assert.Error(t, err)
+		})
+
+		// Lock shared with upgrade to exclusive.
+		t.Run("sharedLockUpExclusive", func(t *testing.T) {
+			err := f1.Flock(LockSH, bob)
+			assert.NoError(t, err)
+			defer func() {
+				assert.NoError(t, f1.Flock(LockUN, bob))
+			}()
+			err = f1.Flock(LockEX, bob)
+			assert.NoError(t, err)
+		})
+
+		// Lock exclusive with downgrade to shared.
+		t.Run("exclusiveLockDownShared", func(t *testing.T) {
+			err := f1.Flock(LockEX, bob)
+			assert.NoError(t, err)
+			defer func() {
+				assert.NoError(t, f1.Flock(LockUN, bob))
+			}()
+			err = f1.Flock(LockSH, bob)
+			assert.NoError(t, err)
+		})
+	})
+}
