@@ -17,15 +17,11 @@ func radosBufferFree(p unsafe.Pointer) {
 
 // MonCommand sends a command to one of the monitors
 func (c *Conn) MonCommand(args []byte) ([]byte, string, error) {
-	return c.monCommand(args, nil)
+	return c.MonCommandWithInputBuffer(args, nil)
 }
 
 // MonCommandWithInputBuffer sends a command to one of the monitors, with an input buffer
 func (c *Conn) MonCommandWithInputBuffer(args, inputBuffer []byte) ([]byte, string, error) {
-	return c.monCommand(args, inputBuffer)
-}
-
-func (c *Conn) monCommand(args, inputBuffer []byte) ([]byte, string, error) {
 	ci := cutil.NewCommandInput([][]byte{args}, inputBuffer)
 	defer ci.Free()
 	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
@@ -54,7 +50,7 @@ func (c *Conn) monCommand(args, inputBuffer []byte) ([]byte, string, error) {
 //                       char **outbuf, size_t *outbuflen,
 //                       char **outs, size_t *outslen);
 func (c *Conn) PGCommand(pgid []byte, args [][]byte) ([]byte, string, error) {
-	return c.pgCommand(pgid, args, nil)
+	return c.PGCommandWithInputBuffer(pgid, args, nil)
 }
 
 // PGCommandWithInputBuffer sends a command to one of the PGs, with an input buffer
@@ -66,10 +62,6 @@ func (c *Conn) PGCommand(pgid []byte, args [][]byte) ([]byte, string, error) {
 //                       char **outbuf, size_t *outbuflen,
 //                       char **outs, size_t *outslen);
 func (c *Conn) PGCommandWithInputBuffer(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
-	return c.pgCommand(pgid, args, inputBuffer)
-}
-
-func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
 	name := C.CString(string(pgid))
 	defer C.free(unsafe.Pointer(name))
 	ci := cutil.NewCommandInput(args, inputBuffer)
@@ -94,21 +86,18 @@ func (c *Conn) pgCommand(pgid []byte, args [][]byte, inputBuffer []byte) ([]byte
 
 // MgrCommand sends a command to a ceph-mgr.
 func (c *Conn) MgrCommand(args [][]byte) ([]byte, string, error) {
-	return c.mgrCommand(args, nil)
+	return c.MgrCommandWithInputBuffer(args, nil)
 }
 
 // MgrCommandWithInputBuffer sends a command, with an input buffer, to a ceph-mgr.
-func (c *Conn) MgrCommandWithInputBuffer(args [][]byte, inputBuffer []byte) ([]byte, string, error) {
-	return c.mgrCommand(args, inputBuffer)
-}
-
+//
 // Implements:
 //  int rados_mgr_command(rados_t cluster, const char **cmd,
 //                         size_t cmdlen, const char *inbuf,
 //                         size_t inbuflen, char **outbuf,
 //                         size_t *outbuflen, char **outs,
 //                          size_t *outslen);
-func (c *Conn) mgrCommand(args [][]byte, inputBuffer []byte) ([]byte, string, error) {
+func (c *Conn) MgrCommandWithInputBuffer(args [][]byte, inputBuffer []byte) ([]byte, string, error) {
 	ci := cutil.NewCommandInput(args, inputBuffer)
 	defer ci.Free()
 	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
