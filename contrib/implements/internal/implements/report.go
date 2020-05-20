@@ -2,6 +2,7 @@ package implements
 
 import (
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 )
@@ -25,11 +26,20 @@ type Reporter interface {
 // TextReport implements a streaming plain-text output report.
 type TextReport struct {
 	o ReportOptions
+	// io destination
+	dest io.Writer
 }
 
 // NewTextReport creates a new TextReport.
-func NewTextReport(o ReportOptions) *TextReport {
-	return &TextReport{o}
+func NewTextReport(o ReportOptions, dest io.Writer) *TextReport {
+	return &TextReport{o, dest}
+}
+
+func (r *TextReport) printf(f string, v ...interface{}) {
+	_, err := fmt.Fprintf(r.dest, f, v...)
+	if err != nil {
+		panic(err.Error())
+	}
 }
 
 // Report on the given code inspector.
@@ -41,20 +51,20 @@ func (r *TextReport) Report(name string, ii *Inspector) error {
 
 	found := len(ii.found)
 	total := len(ii.expected)
-	fmt.Printf(
+	r.printf(
 		"%s functions covered: %d/%d : %v%%\n",
 		packageLabel,
 		found,
 		total,
 		(100*found)/total)
 	missing := total - found - ii.deprecatedMissing
-	fmt.Printf(
+	r.printf(
 		"%s functions missing: %d/%d : %v%%\n",
 		packageLabel,
 		missing,
 		total,
 		(100*missing)/total)
-	fmt.Printf(
+	r.printf(
 		"  (note missing count does not include deprecated functions in ceph)\n")
 
 	if !o.List {
@@ -78,7 +88,7 @@ func (r *TextReport) Report(name string, ii *Inspector) error {
 					tags = " (" + strings.TrimSpace(tags) + ")"
 				}
 			}
-			fmt.Printf("  Found: %s%s\n", cf.Name, tags)
+			r.printf("  Found: %s%s\n", cf.Name, tags)
 		}
 	}
 	for _, cf := range ii.expected {
@@ -89,7 +99,7 @@ func (r *TextReport) Report(name string, ii *Inspector) error {
 		if o.Annotate && cf.isDeprecated() {
 			d = " (deprecated)"
 		}
-		fmt.Printf("  Missing: %s%s\n", cf.Name, d)
+		r.printf("  Missing: %s%s\n", cf.Name, d)
 	}
 	return nil
 }
