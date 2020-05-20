@@ -153,3 +153,41 @@ func (c *Conn) OsdCommandWithInputBuffer(
 	buf, status := co.GoValues()
 	return buf, status, getError(ret)
 }
+
+// MonCommandTarget sends a command to a specified monitor.
+func (c *Conn) MonCommandTarget(name string, args [][]byte) ([]byte, string, error) {
+	return c.MonCommandTargetWithInputBuffer(name, args, nil)
+}
+
+// MonCommandTargetWithInputBuffer sends a command, with an input buffer, to a specified monitor.
+//
+// Implements:
+//  int rados_mon_command_target(rados_t cluster, const char *name,
+//                               const char **cmd, size_t cmdlen,
+//                               const char *inbuf, size_t inbuflen,
+//                               char **outbuf, size_t *outbuflen,
+//                               char **outs, size_t *outslen);
+func (c *Conn) MonCommandTargetWithInputBuffer(
+	name string, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
+
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	ci := cutil.NewCommandInput(args, inputBuffer)
+	defer ci.Free()
+	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
+	defer co.Free()
+
+	ret := C.rados_mon_command_target(
+		c.cluster,
+		cName,
+		(**C.char)(ci.Cmd()),
+		C.size_t(ci.CmdLen()),
+		(*C.char)(ci.InBuf()),
+		C.size_t(ci.InBufLen()),
+		(**C.char)(co.OutBuf()),
+		(*C.size_t)(co.OutBufLen()),
+		(**C.char)(co.Outs()),
+		(*C.size_t)(co.OutsLen()))
+	buf, status := co.GoValues()
+	return buf, status, getError(ret)
+}
