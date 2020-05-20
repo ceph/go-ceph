@@ -8,6 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	osdNumber = 0
+)
+
 func (suite *RadosTestSuite) TestMonCommand() {
 	suite.SetupConnection()
 
@@ -125,6 +129,48 @@ func (suite *RadosTestSuite) TestMgrCommandMalformedCommand() {
 
 	command := []byte("JUNK!")
 	buf, info, err := suite.conn.MgrCommand([][]byte{command})
+	assert.Error(suite.T(), err)
+	assert.NotEqual(suite.T(), info, "")
+	assert.Len(suite.T(), buf, 0)
+}
+
+func (suite *RadosTestSuite) TestOsdCommandDescriptions() {
+	suite.SetupConnection()
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "get_command_descriptions", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.OsdCommand(osdNumber, [][]byte{command})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+
+	var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *RadosTestSuite) TestOsdCommand() {
+	suite.SetupConnection()
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "version", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.OsdCommand(osdNumber, [][]byte{command})
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+
+	var message map[string]interface{}
+	err = json.Unmarshal(buf, &message)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *RadosTestSuite) TestOsdCommandMalformedCommand() {
+	suite.SetupConnection()
+
+	command := []byte("JUNK!")
+	buf, info, err := suite.conn.OsdCommand(osdNumber, [][]byte{command})
 	assert.Error(suite.T(), err)
 	assert.NotEqual(suite.T(), info, "")
 	assert.Len(suite.T(), buf, 0)
