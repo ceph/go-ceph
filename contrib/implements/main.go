@@ -28,6 +28,8 @@ var (
 	verbose    bool
 	list       bool
 	reportJSON bool
+	outputJSON string
+	outputText string
 
 	// verbose logger
 	logger = log.New(os.Stderr, "(implements/verbose) ", log.LstdFlags)
@@ -40,7 +42,11 @@ func abort(msg string) {
 func init() {
 	flag.BoolVar(&verbose, "verbose", false, "be more verbose (for debugging)")
 	flag.BoolVar(&list, "list", false, "list functions")
-	flag.BoolVar(&reportJSON, "json", false, "use JSON output format")
+	flag.BoolVar(&reportJSON, "json", false,
+		"use JSON output format (this is a shortcut for '--report-json -')")
+
+	flag.StringVar(&outputJSON, "report-json", "", "filename for JSON report")
+	flag.StringVar(&outputText, "report-text", "", "filename for plain-text report")
 }
 
 func main() {
@@ -53,7 +59,7 @@ func main() {
 		implements.SetLogger(logger)
 	}
 
-	var r implements.Reporter
+	rpts := []implements.Reporter{}
 	// always annotate for now, leave the option of disabling it someday if it
 	// gets costly
 	o := implements.ReportOptions{
@@ -62,9 +68,31 @@ func main() {
 	}
 	switch {
 	case reportJSON:
-		r = implements.NewJSONReport(o, os.Stdout)
-	default:
-		r = implements.NewTextReport(o)
+		rpts = append(rpts, implements.NewJSONReport(o, os.Stdout))
+	case outputJSON == "-":
+		rpts = append(rpts, implements.NewJSONReport(o, os.Stdout))
+	case outputJSON != "":
+		f, err := os.Create(outputJSON)
+		if err != nil {
+			abort(err.Error())
+		}
+		defer f.Close()
+		rpts = append(rpts, implements.NewJSONReport(o, f))
+	}
+	switch {
+	case outputText == "-":
+		rpts = append(rpts, implements.NewTextReport(o, os.Stdout))
+	case outputText != "":
+		f, err := os.Create(outputText)
+		if err != nil {
+			abort(err.Error())
+		}
+		defer f.Close()
+		rpts = append(rpts, implements.NewTextReport(o, f))
+	}
+	if len(rpts) == 0 {
+		// no report types were explicitly selected. Use text report to stdout.
+		rpts = append(rpts, implements.NewTextReport(o, os.Stdout))
 	}
 
 	for _, pkgref := range args[0:] {
@@ -87,9 +115,13 @@ func main() {
 		if err := implements.CephGoFunctions(source, pkg, ii); err != nil {
 			abort(err.Error())
 		}
-		if err := r.Report(pkg, ii); err != nil {
-			abort(err.Error())
+		for _, r := range rpts {
+			if err := r.Report(pkg, ii); err != nil {
+				abort(err.Error())
+			}
 		}
 	}
-	r.Done()
+	for _, r := range rpts {
+		r.Done()
+	}
 }
