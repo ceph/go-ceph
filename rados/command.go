@@ -116,3 +116,40 @@ func (c *Conn) MgrCommandWithInputBuffer(args [][]byte, inputBuffer []byte) ([]b
 	buf, status := co.GoValues()
 	return buf, status, getError(ret)
 }
+
+// OsdCommand sends a command to the specified ceph OSD.
+func (c *Conn) OsdCommand(osd int, args [][]byte) ([]byte, string, error) {
+	return c.OsdCommandWithInputBuffer(osd, args, nil)
+}
+
+// OsdCommandWithInputBuffer sends a command, with an input buffer, to the
+// specified ceph OSD.
+//
+// Implements:
+//  int rados_osd_command(rados_t cluster, int osdid,
+//                                       const char **cmd, size_t cmdlen,
+//                                       const char *inbuf, size_t inbuflen,
+//                                       char **outbuf, size_t *outbuflen,
+//                                       char **outs, size_t *outslen);
+func (c *Conn) OsdCommandWithInputBuffer(
+	osd int, args [][]byte, inputBuffer []byte) ([]byte, string, error) {
+
+	ci := cutil.NewCommandInput(args, inputBuffer)
+	defer ci.Free()
+	co := cutil.NewCommandOutput().SetFreeFunc(radosBufferFree)
+	defer co.Free()
+
+	ret := C.rados_osd_command(
+		c.cluster,
+		C.int(osd),
+		(**C.char)(ci.Cmd()),
+		C.size_t(ci.CmdLen()),
+		(*C.char)(ci.InBuf()),
+		C.size_t(ci.InBufLen()),
+		(**C.char)(co.OutBuf()),
+		(*C.size_t)(co.OutBufLen()),
+		(**C.char)(co.Outs()),
+		(*C.size_t)(co.OutsLen()))
+	buf, status := co.GoValues()
+	return buf, status, getError(ret)
+}
