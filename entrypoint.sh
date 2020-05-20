@@ -149,6 +149,7 @@ pre_all_tests() {
     # Prepare Go code
     go get -t -v ${BUILD_TAGS} ./...
     diff -u <(echo -n) <(gofmt -d -s .)
+    make implements
 
     # Reset whole-module coverage file
     echo "mode: count" > "cover.out"
@@ -158,6 +159,15 @@ post_all_tests() {
     if [[ ${COVERAGE} = yes ]]; then
         mkdir -p "${RESULTS_DIR}/coverage"
         show go tool cover -html=cover.out -o "${RESULTS_DIR}/coverage/go-ceph.html"
+    fi
+    if [[ ${COVERAGE} = yes ]] && command -v castxml ; then
+        mkdir -p "${RESULTS_DIR}/coverage"
+        show ./implements --list \
+            --report-json "${RESULTS_DIR}/implements.json" \
+            --report-text "${RESULTS_DIR}/implements.txt" \
+            cephfs rados rbd
+        # output the brief summary info onto stdout
+        grep '^[A-Z]' "${RESULTS_DIR}/implements.txt"
     fi
 }
 
