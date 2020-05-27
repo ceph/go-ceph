@@ -38,7 +38,13 @@ jobs:
     - name: Run test container
       run: make test-container "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
     - name: Archive coverage results
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: "go-ceph-coverage-${{ matrix.ceph_version }}"
         path: "_results/coverage/go-ceph.html"
+    - name: Archive implements results
+      if: "matrix.ceph_version == 'octopus'"
+      uses: actions/upload-artifact@v2
+      with:
+        name: "go-ceph-implements-${{ matrix.ceph_version }}"
+        path: "_results/implements.*"
