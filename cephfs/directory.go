@@ -99,12 +99,35 @@ func (d *DirEntry) DType() DType {
 	return d.dtype
 }
 
+// DirEntryPlus is a DirEntry plus additional data (stat) for an entry
+// within a directory.
+type DirEntryPlus struct {
+	DirEntry
+	// statx: the converted statx returned by ceph_readdirplus_r
+	statx *CephStatx
+}
+
+// Statx returns cached stat metadata for the directory entry.
+// This call does not incur an actual file system stat.
+func (d *DirEntryPlus) Statx() *CephStatx {
+	return d.statx
+}
+
 // toDirEntry converts a c struct dirent to our go wrapper.
 func toDirEntry(de *C.struct_dirent) *DirEntry {
 	return &DirEntry{
 		inode: Inode(de.d_ino),
 		name:  C.GoString(&de.d_name[0]),
 		dtype: DType(de.d_type),
+	}
+}
+
+// toDirEntryPlus converts c structs set by ceph_readdirplus_r to our go
+// wrapper.
+func toDirEntryPlus(de *C.struct_dirent, s C.struct_ceph_statx) *DirEntryPlus {
+	return &DirEntryPlus{
+		DirEntry: *toDirEntry(de),
+		statx:    cStructToCephStatx(s),
 	}
 }
 
@@ -124,6 +147,40 @@ func (dir *Directory) ReadDir() (*DirEntry, error) {
 		return nil, nil // End-of-stream
 	}
 	return toDirEntry(&de), nil
+}
+
+// ReadDirPlus reads a single directory entry and stat information from the
+// open Directory.
+// A nil DirEntryPlus pointer will be returned when the Directory stream has
+// been exhausted.
+// See Statx for a description of the wants and flags parameters.
+//
+// Implements:
+//  int ceph_readdirplus_r(struct ceph_mount_info *cmount, struct ceph_dir_result *dirp, struct dirent *de,
+//                         struct ceph_statx *stx, unsigned want, unsigned flags, struct Inode **out);
+func (dir *Directory) ReadDirPlus(
+	want StatxMask, flags AtFlags) (*DirEntryPlus, error) {
+
+	var (
+		de C.struct_dirent
+		s  C.struct_ceph_statx
+	)
+	ret := C.ceph_readdirplus_r(
+		dir.mount.mount,
+		dir.dir,
+		&de,
+		&s,
+		C.uint(want),
+		C.uint(flags),
+		nil, // unused, internal Inode type not needed for high level api
+	)
+	if ret < 0 {
+		return nil, getError(ret)
+	}
+	if ret == 0 {
+		return nil, nil // End-of-stream
+	}
+	return toDirEntryPlus(&de, s), nil
 }
 
 // RewindDir sets the directory stream to the beginning of the directory.
