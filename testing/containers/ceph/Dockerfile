@@ -5,6 +5,7 @@ ENV CEPH_VERSION=${CEPH_VERSION:-nautilus}
 
 RUN true && \
     yum install -y git wget curl libcephfs-devel librados-devel librbd-devel /usr/bin/cc /usr/bin/c++ make && \
+    (yum install -y /usr/bin/castxml || true) && \
     true
 
 ENV GOTAR=go1.12.17.linux-amd64.tar.gz
