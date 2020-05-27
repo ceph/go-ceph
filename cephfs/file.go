@@ -255,3 +255,41 @@ func (f *File) Fallocate(mode FallocFlags, offset, length int64) error {
 	ret := C.ceph_fallocate(f.mount.mount, f.fd, C.int(mode), C.int64_t(offset), C.int64_t(length))
 	return getError(ret)
 }
+
+// LockOp determines operations/type of locks which can be applied on a file.
+type LockOp int
+
+const (
+	// LockSH places a shared lock.
+	// More than one process may hold a shared lock for a given file at a given time.
+	LockSH = LockOp(C.LOCK_SH)
+	// LockEX places an exclusive lock.
+	// Only one process may hold an exclusive lock for a given file at a given time.
+	LockEX = LockOp(C.LOCK_EX)
+	// LockUN removes and existing lock held by this process.
+	LockUN = LockOp(C.LOCK_UN)
+	// LockNB can be ORed with any of the above to make a nonblocking call.
+	LockNB = LockOp(C.LOCK_NB)
+)
+
+// Flock applies or removes an advisory lock on an open file.
+// Param owner is the user-supplied identifier for the owner of the
+// lock, must be an arbitrary integer.
+//
+// Implements:
+//  int ceph_flock(struct ceph_mount_info *cmount, int fd, int operation, uint64_t owner);
+func (f *File) Flock(operation LockOp, owner uint64) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+
+	// validate the operation values before passing it on.
+	switch operation &^ LockNB {
+	case LockSH, LockEX, LockUN:
+	default:
+		return errInvalid
+	}
+
+	ret := C.ceph_flock(f.mount.mount, f.fd, C.int(operation), C.uint64_t(owner))
+	return getError(ret)
+}
