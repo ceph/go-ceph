@@ -1,0 +1,47 @@
+// +build !luminous,!mimic
+//
+// Ceph Nautilus is the first release that includes rbd_pool_metadata_get().
+
+package rbd
+
+// #cgo LDFLAGS: -lrbd
+// #include <rados/librados.h>
+// #include <rbd/librbd.h>
+// #include <stdlib.h>
+import "C"
+
+import (
+	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/retry"
+	"github.com/ceph/go-ceph/rados"
+)
+
+// GetPoolMetadata returns pool metadata associated with the given key.
+//
+// Implements:
+//  int rbd_pool_metadata_get(rados_ioctx_t io_ctx, const char *key, char *value, size_t *val_len);
+func GetPoolMetadata(ioctx *rados.IOContext, key string) (string, error) {
+	cKey := C.CString(key)
+	defer C.free(unsafe.Pointer(cKey))
+
+	var (
+		buf []byte
+		err error
+	)
+	retry.WithSizes(4096, 262144, func(size int) retry.Hint {
+		cSize := C.size_t(size)
+		buf = make([]byte, cSize)
+		ret := C.rbd_pool_metadata_get(cephIoctx(ioctx),
+			cKey,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			&cSize)
+		err = getError(ret)
+		return retry.Size(int(cSize)).If(err == errRange)
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
+}
