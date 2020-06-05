@@ -1,4 +1,4 @@
-DOCKER_CI_IMAGE = go-ceph-ci
+CI_IMAGE_NAME = go-ceph-ci
 CONTAINER_CMD := docker
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disable" || echo "apparmor:unconfined")
 CONTAINER_CONFIG_DIR := testing/containers/ceph
@@ -7,6 +7,12 @@ CEPH_VERSION := nautilus
 RESULTS_DIR :=
 CHECK_GOFMT_FLAGS := -e -s -l
 IMPLEMENTS_OPTS :=
+
+# the full name of the marker file including the ceph version
+BUILDFILE=.build.$(CEPH_VERSION)
+
+# the name of the image plus ceph version as tag
+CI_IMAGE_TAG=$(CI_IMAGE_NAME):$(CEPH_VERSION)
 
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
@@ -26,8 +32,8 @@ test:
 
 .PHONY: test-docker test-container
 test-docker: test-container
-test-container: check-ceph-version .build-docker $(RESULTS_DIR)
-	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(DOCKER_CI_IMAGE)
+test-container: check-ceph-version $(BUILDFILE) $(RESULTS_DIR)
+	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG)
 
 ifdef RESULTS_DIR
 $(RESULTS_DIR):
@@ -35,17 +41,17 @@ $(RESULTS_DIR):
 endif
 
 .PHONY: ci-image
-ci-image: .build-docker
-.build-docker: $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh
-	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(DOCKER_CI_IMAGE) -f $(CONTAINER_CONFIG_DIR)/Dockerfile .
-	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(DOCKER_CI_IMAGE) > .build-docker
-	echo $(CEPH_VERSION) >> .build-docker
+ci-image: $(BUILDFILE)
+$(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh
+	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(CI_IMAGE_TAG) -f $(CONTAINER_CONFIG_DIR)/Dockerfile .
+	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
+	echo $(CEPH_VERSION) >> $(BUILDFILE)
 
 # check-ceph-version checks for the last used Ceph version in the container
 # image and forces a rebuild of the image in case the Ceph version changed
 .PHONY: check-ceph-version
 check-ceph-version:
-	@grep -wq '$(CEPH_VERSION)' .build-docker 2>/dev/null || $(RM) .build-docker
+	@grep -wq '$(CEPH_VERSION)' $(BUILDFILE) 2>/dev/null || $(RM) $(BUILDFILE)
 
 check: check-revive check-format
 
