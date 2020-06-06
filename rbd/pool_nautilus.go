@@ -1,6 +1,7 @@
 // +build !luminous,!mimic
 //
-// Ceph Nautilus is the first release that includes rbd_pool_metadata_get().
+// Ceph Nautilus is the first release that includes rbd_pool_metadata_get(),
+// rbd_pool_metadata_set().
 
 package rbd
 
@@ -44,4 +45,18 @@ func GetPoolMetadata(ioctx *rados.IOContext, key string) (string, error) {
 		return "", err
 	}
 	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
+}
+
+// SetPoolMetadata updates the pool metadata string associated with the given key.
+//
+// Implements:
+//  int rbd_pool_metadata_set(rados_ioctx_t io_ctx, const char *key, const char *value);
+func SetPoolMetadata(ioctx *rados.IOContext, key, value string) error {
+	cKey := C.CString(key)
+	defer C.free(unsafe.Pointer(cKey))
+	cValue := C.CString(value)
+	defer C.free(unsafe.Pointer(cValue))
+
+	ret := C.rbd_pool_metadata_set(cephIoctx(ioctx), cKey, cValue)
+	return getError(ret)
 }
