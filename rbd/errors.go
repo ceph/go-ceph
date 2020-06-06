@@ -66,6 +66,9 @@ var (
 	// ErrNotFound may be returned from an api call when the requested item is
 	// missing.
 	ErrNotFound = errors.New("RBD image not found")
+	// ErrNoNamespaceName maye be returned if an api call requires a namespace
+	// name and it is not provided.
+	ErrNoNamespaceName = errors.New("Namespace value is missing")
 
 	// revive:disable:exported for compatibility with old versions
 	RbdErrorImageNotOpen = ErrImageNotOpen
