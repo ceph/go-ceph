@@ -59,4 +59,25 @@ func TestPoolMetadata(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, keyLen, len(myVal))
 	})
+
+	t.Run("removeNonExistingKey", func(t *testing.T) {
+		err := RemovePoolMetadata(ioctx, "someKey")
+		assert.Error(t, err)
+	})
+
+	t.Run("removeExistingKey", func(t *testing.T) {
+		var (
+			myKey = "myKey"
+			myVal = "myVal"
+		)
+		assert.NoError(t, SetPoolMetadata(ioctx, myKey, myVal))
+		_, err := GetPoolMetadata(ioctx, myKey)
+		assert.NoError(t, err)
+
+		// Remove the key.
+		err = RemovePoolMetadata(ioctx, myKey)
+		assert.NoError(t, err)
+		_, err = GetPoolMetadata(ioctx, myKey)
+		assert.Error(t, err)
+	})
 }
