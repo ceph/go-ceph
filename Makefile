@@ -1,5 +1,5 @@
 CI_IMAGE_NAME = go-ceph-ci
-CONTAINER_CMD := docker
+CONTAINER_CMD ?=
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disable" || echo "apparmor:unconfined")
 CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS := 
@@ -7,6 +7,13 @@ CEPH_VERSION := nautilus
 RESULTS_DIR :=
 CHECK_GOFMT_FLAGS := -e -s -l
 IMPLEMENTS_OPTS :=
+
+ifeq ($(CONTAINER_CMD),)
+	CONTAINER_CMD:=$(shell docker version >/dev/null 2>&1 && echo docker)
+endif
+ifeq ($(CONTAINER_CMD),)
+	CONTAINER_CMD:=$(shell podman version >/dev/null 2>&1 && echo podman)
+endif
 
 # the full name of the marker file including the ceph version
 BUILDFILE=.build.$(CEPH_VERSION)
