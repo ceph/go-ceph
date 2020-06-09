@@ -42,6 +42,10 @@ func TestNamespace(t *testing.T) {
 		assert.Error(t, err)
 		_, err = NamespaceExists(ioctx, "")
 		assert.Error(t, err)
+
+		// NamespaceList.
+		_, err = NamespaceList(nil)
+		assert.Error(t, err)
 	})
 
 	t.Run("CreateNamespace", func(t *testing.T) {
@@ -72,5 +76,33 @@ func TestNamespace(t *testing.T) {
 		val, err := NamespaceExists(ioctx, "someNamespace")
 		assert.NoError(t, err)
 		assert.Equal(t, val, false)
+	})
+
+	t.Run("NamespaceList", func(t *testing.T) {
+		var (
+			name1 = "name1"
+			name2 = "name2"
+			name3 = "name3"
+		)
+		err := NamespaceCreate(ioctx, name1)
+		assert.NoError(t, err)
+		err = NamespaceCreate(ioctx, name2)
+		assert.NoError(t, err)
+		err = NamespaceCreate(ioctx, name3)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, NamespaceRemove(ioctx, name1))
+			assert.NoError(t, NamespaceRemove(ioctx, name2))
+			assert.NoError(t, NamespaceRemove(ioctx, name3))
+		}()
+
+		eval, err := NamespaceExists(ioctx, name1)
+		assert.NoError(t, err)
+		assert.Equal(t, eval, true)
+		nList, err := NamespaceList(ioctx)
+		assert.NoError(t, err)
+		assert.Contains(t, nList, name1)
+		assert.Contains(t, nList, name2)
+		assert.Contains(t, nList, name3)
 	})
 }
