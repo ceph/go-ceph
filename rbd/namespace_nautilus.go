@@ -1,7 +1,7 @@
 // +build !luminous,!mimic
 //
 // Ceph Nautilus is the first release that includes rbd_namespace_create(),
-// rbd_namespace_remove(), rbd_namespace_exists().
+// rbd_namespace_remove(), rbd_namespace_exists() and rbd_namespace_list().
 
 package rbd
 
@@ -13,8 +13,10 @@ package rbd
 import "C"
 
 import (
+	"bytes"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/retry"
 	"github.com/ceph/go-ceph/rados"
 )
 
@@ -71,4 +73,39 @@ func NamespaceExists(ioctx *rados.IOContext, namespaceName string) (bool, error)
 	var exists C.bool
 	ret := C.rbd_namespace_exists(cephIoctx(ioctx), cNamespaceName, &exists)
 	return bool(exists), getErrorIfNegative(ret)
+}
+
+// NamespaceList returns a slice containing the names of existing rbd namespaces.
+//
+// Implements:
+//  int rbd_namespace_list(rados_ioctx_t io, char *namespace_names, size_t *size);
+func NamespaceList(ioctx *rados.IOContext) (names []string, err error) {
+	if ioctx == nil {
+		return nil, ErrNoIOContext
+	}
+	var (
+		buf   []byte
+		cSize C.size_t
+	)
+	retry.WithSizes(4096, 262144, func(size int) retry.Hint {
+		cSize = C.size_t(size)
+		buf = make([]byte, cSize)
+		ret := C.rbd_namespace_list(cephIoctx(ioctx),
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			&cSize)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(cSize)).If(err == errRange)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	tmpList := bytes.Split(buf[:cSize-1], []byte{0})
+	for _, s := range tmpList {
+		if len(s) > 0 {
+			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
+			names = append(names, name)
+		}
+	}
+	return names, nil
 }
