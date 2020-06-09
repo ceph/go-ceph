@@ -35,7 +35,7 @@ build:
 fmt:
 	go fmt ./...
 test:
-	go test -v ./...
+	go test -v -tags $(CEPH_VERSION) ./...
 
 .PHONY: test-docker test-container
 test-docker: test-container
@@ -83,7 +83,7 @@ test-binaries: \
 test-bins: test-binaries
 
 %.test: % force_go_build
-	go test -c ./$<
+	go test -c -tags $(CEPH_VERSION) ./$<
 
 implements:
 	go build -o implements ./contrib/implements
