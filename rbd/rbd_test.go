@@ -1300,6 +1300,12 @@ func TestRemoveImage(t *testing.T) {
 	ioctx, err := conn.OpenIOContext(poolname)
 	require.NoError(t, err)
 
+	// pass invalid parameters
+	err = RemoveImage(nil, "some-name")
+	require.Error(t, err)
+	err = RemoveImage(ioctx, "")
+	require.Error(t, err)
+
 	// trying to remove a non-existent image is an error
 	err = RemoveImage(ioctx, "bananarama")
 	require.Error(t, err)
