@@ -152,10 +152,13 @@ func TestCreateImageWithOptions(t *testing.T) {
 
 	// nil options, causes a panic if not handled correctly
 	name := GetUUID()
+	options := NewRbdImageOptions()
+	err = CreateImage(nil, name, testImageSize, options)
+	assert.Error(t, err)
+	err = CreateImage(ioctx, "", testImageSize, options)
+	assert.Error(t, err)
 	err = CreateImage(ioctx, name, testImageSize, nil)
 	assert.Error(t, err)
-
-	options := NewRbdImageOptions()
 
 	// empty/default options
 	name = GetUUID()
