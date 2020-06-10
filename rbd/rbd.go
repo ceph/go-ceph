@@ -1198,7 +1198,12 @@ func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image,
 //  int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
 //                 rbd_image_options_t opts);
 func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *ImageOptions) error {
-
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+	if name == "" {
+		return ErrNoName
+	}
 	if rio == nil {
 		return RBDError(C.EINVAL)
 	}
