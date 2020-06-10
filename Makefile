@@ -39,7 +39,7 @@ test:
 
 .PHONY: test-docker test-container
 test-docker: test-container
-test-container: check-ceph-version $(BUILDFILE) $(RESULTS_DIR)
+test-container: $(BUILDFILE) $(RESULTS_DIR)
 	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG)
 
 ifdef RESULTS_DIR
@@ -53,12 +53,6 @@ $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh
 	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(CI_IMAGE_TAG) -f $(CONTAINER_CONFIG_DIR)/Dockerfile .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
 	echo $(CEPH_VERSION) >> $(BUILDFILE)
-
-# check-ceph-version checks for the last used Ceph version in the container
-# image and forces a rebuild of the image in case the Ceph version changed
-.PHONY: check-ceph-version
-check-ceph-version:
-	@grep -wq '$(CEPH_VERSION)' $(BUILDFILE) 2>/dev/null || $(RM) $(BUILDFILE)
 
 check: check-revive check-format
 
