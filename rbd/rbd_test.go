@@ -1242,6 +1242,13 @@ func TestOpenImage(t *testing.T) {
 
 	name := GetUUID()
 
+	// pass invalid arguments
+	_, err = OpenImage(nil, "some-image", NoSnapshot)
+	require.Error(t, err)
+	_, err = OpenImage(ioctx, "", NoSnapshot)
+	require.Error(t, err)
+
+	// image does not exist yet
 	_, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.Error(t, err)
 
@@ -1255,6 +1262,12 @@ func TestOpenImage(t *testing.T) {
 	assert.NoError(t, err)
 
 	// open read-only
+	// pass invalid parameters
+	_, err = OpenImageReadOnly(nil, "some-image", NoSnapshot)
+	require.Error(t, err)
+	_, err = OpenImageReadOnly(ioctx, "", NoSnapshot)
+	require.Error(t, err)
+
 	oImage, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
@@ -1495,6 +1508,16 @@ func TestOpenImageById(t *testing.T) {
 	err = workingImage.Close()
 	assert.NoError(t, err)
 
+	t.Run("InvalidArguments", func(t *testing.T) {
+		_, err = OpenImageById(nil, "some-id", NoSnapshot)
+		require.Error(t, err)
+		_, err = OpenImageById(ioctx, "", NoSnapshot)
+		require.Error(t, err)
+		_, err = OpenImageByIdReadOnly(nil, "some-id", NoSnapshot)
+		require.Error(t, err)
+		_, err = OpenImageByIdReadOnly(ioctx, "", NoSnapshot)
+		require.Error(t, err)
+	})
 	t.Run("ReadWriteBadId", func(t *testing.T) {
 		t.Skip("segfaults due to https://tracker.ceph.com/issues/43178")
 		// phony id
