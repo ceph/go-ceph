@@ -1216,6 +1216,13 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *ImageOpt
 // Implements:
 //  int rbd_remove(rados_ioctx_t io, const char *name);
 func RemoveImage(ioctx *rados.IOContext, name string) error {
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+	if name == "" {
+		return ErrNoName
+	}
+
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
 	return getError(C.rbd_remove(cephIoctx(ioctx), c_name))
