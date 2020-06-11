@@ -12,6 +12,8 @@ import (
 	"github.com/ceph/go-ceph/internal/retry"
 )
 
+var argvPlaceholder = "placeholder"
+
 // ClusterStat represents Ceph cluster statistics.
 type ClusterStat struct {
 	Kb          uint64
@@ -190,24 +192,43 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 	}, nil
 }
 
-// ParseCmdLineArgs configures the connection from command line arguments.
-func (c *Conn) ParseCmdLineArgs(args []string) error {
-	// add an empty element 0 -- Ceph treats the array as the actual contents
-	// of argv and skips the first element (the executable name)
-	argc := C.int(len(args) + 1)
-	argv := make([]*C.char, argc)
-
-	// make the first element a string just in case it is ever examined
-	argv[0] = C.CString("placeholder")
-	defer C.free(unsafe.Pointer(argv[0]))
-
-	for i, arg := range args {
-		argv[i+1] = C.CString(arg)
-		defer C.free(unsafe.Pointer(argv[i+1]))
+// ParseConfigArgv configures the connection using a unix style command line
+// argument vector.
+//
+// Implements:
+//  int rados_conf_parse_argv(rados_t cluster, int argc,
+//                            const char **argv);
+func (c *Conn) ParseConfigArgv(argv []string) error {
+	if c.cluster == nil {
+		return ErrNotConnected
+	}
+	if len(argv) == 0 {
+		return ErrEmptyArgument
+	}
+	cargv := make([]*C.char, len(argv))
+	for i := range argv {
+		cargv[i] = C.CString(argv[i])
+		defer C.free(unsafe.Pointer(cargv[i]))
 	}
 
-	ret := C.rados_conf_parse_argv(c.cluster, argc, &argv[0])
+	ret := C.rados_conf_parse_argv(c.cluster, C.int(len(cargv)), &cargv[0])
 	return getError(ret)
+}
+
+// ParseCmdLineArgs configures the connection from command line arguments.
+//
+// This function passes a placeholder value to Ceph as argv[0], see
+// ParseConfigArgv for a version of this function that allows the caller to
+// specify argv[0].
+func (c *Conn) ParseCmdLineArgs(args []string) error {
+	argv := make([]string, len(args)+1)
+	// Ceph expects a proper argv array as the actual contents with the
+	// first element containing the executable name
+	argv[0] = argvPlaceholder
+	for i := range args {
+		argv[i+1] = args[i]
+	}
+	return c.ParseConfigArgv(argv)
 }
 
 // ParseDefaultConfigEnv configures the connection from the default Ceph
