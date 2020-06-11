@@ -299,6 +299,26 @@ func TestParseConfigArgv(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestParseDefaultConfigEnv(t *testing.T) {
+	mount, err := CreateMount()
+	require.NoError(t, err)
+	require.NotNil(t, mount)
+	defer func() { assert.NoError(t, mount.Release()) }()
+
+	origVal, err := mount.GetConfigOption("log_file")
+	assert.NoError(t, err)
+
+	err = os.Setenv("CEPH_ARGS", "--log_file /dev/null")
+	assert.NoError(t, err)
+	err = mount.ParseDefaultConfigEnv()
+	assert.NoError(t, err)
+
+	currVal, err := mount.GetConfigOption("log_file")
+	assert.NoError(t, err)
+	assert.Equal(t, "/dev/null", currVal)
+	assert.NotEqual(t, "/dev/null", origVal)
+}
+
 func TestValidate(t *testing.T) {
 	mount, err := CreateMount()
 	assert.NoError(t, err)
