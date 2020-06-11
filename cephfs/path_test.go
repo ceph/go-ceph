@@ -377,3 +377,25 @@ func TestStatx(t *testing.T) {
 	assert.Nil(t, st)
 	assert.Equal(t, errNoEntry, err)
 }
+
+func TestRename(t *testing.T) {
+	t.Run("invalidMount", func(t *testing.T) {
+		m := &MountInfo{}
+		err := m.Rename("foo", "bar")
+		assert.Error(t, err)
+	})
+
+	t.Run("renameDir", func(t *testing.T) {
+		mount := fsConnect(t)
+		defer fsDisconnect(t, mount)
+
+		n1 := "new_amsterdam"
+		n2 := "new_york"
+		assert.NoError(t, mount.MakeDir(n1, 0755))
+
+		err := mount.Rename(n1, n2)
+		assert.NoError(t, err)
+
+		assert.NoError(t, mount.RemoveDir(n2))
+	})
+}
