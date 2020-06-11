@@ -23,6 +23,10 @@ import (
 // Implements:
 //  int rbd_pool_metadata_get(rados_ioctx_t io_ctx, const char *key, char *value, size_t *val_len);
 func GetPoolMetadata(ioctx *rados.IOContext, key string) (string, error) {
+	if ioctx == nil {
+		return "", ErrNoIOContext
+	}
+
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 
@@ -52,6 +56,10 @@ func GetPoolMetadata(ioctx *rados.IOContext, key string) (string, error) {
 // Implements:
 //  int rbd_pool_metadata_set(rados_ioctx_t io_ctx, const char *key, const char *value);
 func SetPoolMetadata(ioctx *rados.IOContext, key, value string) error {
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 	cValue := C.CString(value)
@@ -66,6 +74,10 @@ func SetPoolMetadata(ioctx *rados.IOContext, key, value string) error {
 // Implements:
 //  int rbd_pool_metadata_remove(rados_ioctx_t io_ctx, const char *key)
 func RemovePoolMetadata(ioctx *rados.IOContext, key string) error {
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+
 	cKey := C.CString(key)
 	defer C.free(unsafe.Pointer(cKey))
 
