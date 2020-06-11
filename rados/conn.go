@@ -239,7 +239,7 @@ func (c *Conn) ParseCmdLineArgs(args []string) error {
 }
 
 // ParseDefaultConfigEnv configures the connection from the default Ceph
-// environment variable(s).
+// environment variable CEPH_ARGS.
 func (c *Conn) ParseDefaultConfigEnv() error {
 	ret := C.rados_conf_parse_env(c.cluster, nil)
 	return getError(ret)
