@@ -156,3 +156,20 @@ func (mount *MountInfo) Statx(path string, want StatxMask, flags AtFlags) (*Ceph
 	}
 	return cStructToCephStatx(stx), nil
 }
+
+// Rename a file or directory.
+//
+// Implements:
+//  int ceph_rename(struct ceph_mount_info *cmount, const char *from, const char *to);
+func (mount *MountInfo) Rename(from, to string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+	cFrom := C.CString(from)
+	defer C.free(unsafe.Pointer(cFrom))
+	cTo := C.CString(to)
+	defer C.free(unsafe.Pointer(cTo))
+
+	ret := C.ceph_rename(mount.mount, cFrom, cTo)
+	return getError(ret)
+}
