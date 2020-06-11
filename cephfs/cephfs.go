@@ -92,6 +92,19 @@ func (mount *MountInfo) ParseConfigArgv(argv []string) error {
 	return getError(ret)
 }
 
+// ParseDefaultConfigEnv configures the mount from the default Ceph
+// environment variable CEPH_ARGS.
+//
+// Implements:
+//  int ceph_conf_parse_env(struct ceph_mount_info *cmount, const char *var);
+func (mount *MountInfo) ParseDefaultConfigEnv() error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+	ret := C.ceph_conf_parse_env(mount.mount, nil)
+	return getError(ret)
+}
+
 // SetConfigOption sets the value of the configuration option identified by
 // the given name.
 //
