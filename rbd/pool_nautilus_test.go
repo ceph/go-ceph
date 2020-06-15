@@ -30,6 +30,24 @@ func TestPoolMetadata(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("NullKey", func(t *testing.T) {
+		_, err := GetPoolMetadata(ioctx, "")
+		assert.Error(t, err)
+		err = SetPoolMetadata(ioctx, "", "")
+		assert.NoError(t, err)
+		err = RemovePoolMetadata(ioctx, "")
+		assert.NoError(t, err)
+	})
+
+	t.Run("NullIOContext", func(t *testing.T) {
+		_, err := GetPoolMetadata(nil, "someKey")
+		assert.Error(t, err)
+		err = SetPoolMetadata(nil, "someKey", "someValue")
+		assert.Error(t, err)
+		err = RemovePoolMetadata(nil, "someKey")
+		assert.Error(t, err)
+	})
+
 	t.Run("SetGetValues", func(t *testing.T) {
 		var (
 			key1 = "key1"
