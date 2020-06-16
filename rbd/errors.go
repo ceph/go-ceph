@@ -52,11 +52,11 @@ func getErrorIfNegative(ret C.int) error {
 var (
 	// ErrNoIOContext may be returned if an api call requires an IOContext and
 	// it is not provided.
-	ErrNoIOContext = errors.New("RBD image does not have an IOContext")
+	ErrNoIOContext = errors.New("IOContext is missing")
 	// ErrNoName may be returned if an api call requires a name and it is
 	// not provided.
 	ErrNoName = errors.New("RBD image does not have a name")
-	// ErrSnapshotNoName may be returned if an aip call requires a snapshot
+	// ErrSnapshotNoName may be returned if an api call requires a snapshot
 	// name and it is not provided.
 	ErrSnapshotNoName = errors.New("RBD snapshot does not have a name")
 	// ErrImageNotOpen may be returned if an api call requires an open image handle and one is not provided.
@@ -66,6 +66,9 @@ var (
 	// ErrNotFound may be returned from an api call when the requested item is
 	// missing.
 	ErrNotFound = errors.New("RBD image not found")
+	// ErrNoNamespaceName maye be returned if an api call requires a namespace
+	// name and it is not provided.
+	ErrNoNamespaceName = errors.New("Namespace value is missing")
 
 	// revive:disable:exported for compatibility with old versions
 	RbdErrorImageNotOpen = ErrImageNotOpen

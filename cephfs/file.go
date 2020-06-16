@@ -25,6 +25,17 @@ const (
 	SeekEnd = int(C.SEEK_END)
 )
 
+// SyncChoice is used to control how metadata and/or data is sync'ed to
+// the file system.
+type SyncChoice int
+
+const (
+	// SyncAll will synchronize both data and metadata.
+	SyncAll = SyncChoice(0)
+	// SyncDataOnly will synchronize only data.
+	SyncDataOnly = SyncChoice(1)
+)
+
 // File represents an open file descriptor in cephfs.
 type File struct {
 	mount *MountInfo
@@ -292,4 +303,32 @@ func (f *File) Flock(operation LockOp, owner uint64) error {
 
 	ret := C.ceph_flock(f.mount.mount, f.fd, C.int(operation), C.uint64_t(owner))
 	return getError(ret)
+}
+
+// Fsync ensures the file content that may be cached is committed to stable
+// storage.
+// Pass SyncAll to have this call behave like standard fsync and synchronize
+// all data and metadata.
+// Pass SyncDataOnly to have this call behave more like fdatasync (on linux).
+//
+// Implements:
+//  int ceph_fsync(struct ceph_mount_info *cmount, int fd, int syncdataonly);
+func (f *File) Fsync(sync SyncChoice) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+
+	ret := C.ceph_fsync(
+		f.mount.mount,
+		f.fd,
+		C.int(sync),
+	)
+	return getError(ret)
+}
+
+// Sync ensures the file content that may be cached is committed to stable
+// storage.
+// Sync behaves like Go's os package File.Sync function.
+func (f *File) Sync() error {
+	return f.Fsync(SyncAll)
 }

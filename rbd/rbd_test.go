@@ -152,10 +152,13 @@ func TestCreateImageWithOptions(t *testing.T) {
 
 	// nil options, causes a panic if not handled correctly
 	name := GetUUID()
+	options := NewRbdImageOptions()
+	err = CreateImage(nil, name, testImageSize, options)
+	assert.Error(t, err)
+	err = CreateImage(ioctx, "", testImageSize, options)
+	assert.Error(t, err)
 	err = CreateImage(ioctx, name, testImageSize, nil)
 	assert.Error(t, err)
-
-	options := NewRbdImageOptions()
 
 	// empty/default options
 	name = GetUUID()
@@ -1242,6 +1245,13 @@ func TestOpenImage(t *testing.T) {
 
 	name := GetUUID()
 
+	// pass invalid arguments
+	_, err = OpenImage(nil, "some-image", NoSnapshot)
+	require.Error(t, err)
+	_, err = OpenImage(ioctx, "", NoSnapshot)
+	require.Error(t, err)
+
+	// image does not exist yet
 	_, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.Error(t, err)
 
@@ -1255,6 +1265,12 @@ func TestOpenImage(t *testing.T) {
 	assert.NoError(t, err)
 
 	// open read-only
+	// pass invalid parameters
+	_, err = OpenImageReadOnly(nil, "some-image", NoSnapshot)
+	require.Error(t, err)
+	_, err = OpenImageReadOnly(ioctx, "", NoSnapshot)
+	require.Error(t, err)
+
 	oImage, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
@@ -1286,6 +1302,12 @@ func TestRemoveImage(t *testing.T) {
 
 	ioctx, err := conn.OpenIOContext(poolname)
 	require.NoError(t, err)
+
+	// pass invalid parameters
+	err = RemoveImage(nil, "some-name")
+	require.Error(t, err)
+	err = RemoveImage(ioctx, "")
+	require.Error(t, err)
 
 	// trying to remove a non-existent image is an error
 	err = RemoveImage(ioctx, "bananarama")
@@ -1495,6 +1517,16 @@ func TestOpenImageById(t *testing.T) {
 	err = workingImage.Close()
 	assert.NoError(t, err)
 
+	t.Run("InvalidArguments", func(t *testing.T) {
+		_, err = OpenImageById(nil, "some-id", NoSnapshot)
+		require.Error(t, err)
+		_, err = OpenImageById(ioctx, "", NoSnapshot)
+		require.Error(t, err)
+		_, err = OpenImageByIdReadOnly(nil, "some-id", NoSnapshot)
+		require.Error(t, err)
+		_, err = OpenImageByIdReadOnly(ioctx, "", NoSnapshot)
+		require.Error(t, err)
+	})
 	t.Run("ReadWriteBadId", func(t *testing.T) {
 		t.Skip("segfaults due to https://tracker.ceph.com/issues/43178")
 		// phony id

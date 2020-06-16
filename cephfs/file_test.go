@@ -711,3 +711,61 @@ func TestFlock(t *testing.T) {
 		})
 	})
 }
+
+func TestFsync(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "test_fsync.txt"
+	defer mount.Unlink(fname)
+
+	// unfortunately there's not much to assert around the the behavior of
+	// fsync in these simple tests so we sort-of have to trust ceph on this :-)
+	t.Run("simpleFsync", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		defer func() { assert.NoError(t, f.Close()) }()
+		assert.NoError(t, err)
+		_, err = f.Write([]byte("batman"))
+		assert.NoError(t, err)
+		err = f.Fsync(SyncAll)
+		assert.NoError(t, err)
+	})
+	t.Run("DataOnly", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		defer func() { assert.NoError(t, f.Close()) }()
+		assert.NoError(t, err)
+		_, err = f.Write([]byte("superman"))
+		assert.NoError(t, err)
+		err = f.Fsync(SyncDataOnly)
+		assert.NoError(t, err)
+	})
+	t.Run("invalid", func(t *testing.T) {
+		f := &File{}
+		err := f.Fsync(SyncAll)
+		assert.Error(t, err)
+	})
+}
+
+func TestSync(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "test_sync.txt"
+	defer mount.Unlink(fname)
+
+	// see fsync
+	t.Run("simple", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0666)
+		defer func() { assert.NoError(t, f.Close()) }()
+		assert.NoError(t, err)
+		_, err = f.Write([]byte("question"))
+		assert.NoError(t, err)
+		err = f.Sync()
+		assert.NoError(t, err)
+	})
+	t.Run("invalid", func(t *testing.T) {
+		f := &File{}
+		err := f.Sync()
+		assert.Error(t, err)
+	})
+}

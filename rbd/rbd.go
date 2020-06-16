@@ -1028,6 +1028,13 @@ func TrashRestore(ioctx *rados.IOContext, id, name string) error {
 //  int rbd_open(rados_ioctx_t io, const char *name,
 //               rbd_image_t *image, const char *snap_name);
 func OpenImage(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
+	if ioctx == nil {
+		return nil, ErrNoIOContext
+	}
+	if name == "" {
+		return nil, ErrNoName
+	}
+
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
@@ -1064,6 +1071,13 @@ func OpenImage(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
 //  int rbd_open_read_only(rados_ioctx_t io, const char *name,
 //                         rbd_image_t *image, const char *snap_name);
 func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, error) {
+	if ioctx == nil {
+		return nil, ErrNoIOContext
+	}
+	if name == "" {
+		return nil, ErrNoName
+	}
+
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
@@ -1101,6 +1115,13 @@ func OpenImageReadOnly(ioctx *rados.IOContext, name, snapName string) (*Image, e
 //  int rbd_open_by_id(rados_ioctx_t io, const char *id,
 //                     rbd_image_t *image, const char *snap_name);
 func OpenImageById(ioctx *rados.IOContext, id, snapName string) (*Image, error) {
+	if ioctx == nil {
+		return nil, ErrNoIOContext
+	}
+	if id == "" {
+		return nil, ErrNoName
+	}
+
 	cid := C.CString(id)
 	defer C.free(unsafe.Pointer(cid))
 
@@ -1138,6 +1159,13 @@ func OpenImageById(ioctx *rados.IOContext, id, snapName string) (*Image, error) 
 //  int rbd_open_by_id_read_only(rados_ioctx_t io, const char *id,
 //                               rbd_image_t *image, const char *snap_name);
 func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image, error) {
+	if ioctx == nil {
+		return nil, ErrNoIOContext
+	}
+	if id == "" {
+		return nil, ErrNoName
+	}
+
 	cid := C.CString(id)
 	defer C.free(unsafe.Pointer(cid))
 
@@ -1170,7 +1198,12 @@ func OpenImageByIdReadOnly(ioctx *rados.IOContext, id, snapName string) (*Image,
 //  int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,
 //                 rbd_image_options_t opts);
 func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *ImageOptions) error {
-
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+	if name == "" {
+		return ErrNoName
+	}
 	if rio == nil {
 		return RBDError(C.EINVAL)
 	}
@@ -1188,6 +1221,13 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *ImageOpt
 // Implements:
 //  int rbd_remove(rados_ioctx_t io, const char *name);
 func RemoveImage(ioctx *rados.IOContext, name string) error {
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+	if name == "" {
+		return ErrNoName
+	}
+
 	c_name := C.CString(name)
 	defer C.free(unsafe.Pointer(c_name))
 	return getError(C.rbd_remove(cephIoctx(ioctx), c_name))
