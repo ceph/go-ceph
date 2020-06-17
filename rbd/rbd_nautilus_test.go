@@ -36,6 +36,9 @@ func TestImagePropertiesNautilus(t *testing.T) {
 
 	_, err = img.GetAccessTimestamp()
 	assert.NoError(t, err)
+
+	_, err = img.GetModifyTimestamp()
+	assert.NoError(t, err)
 }
 
 func TestClosedImageNautilus(t *testing.T) {
@@ -69,5 +72,8 @@ func TestClosedImageNautilus(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = image.GetAccessTimestamp()
+	assert.Error(t, err)
+
+	_, err = image.GetModifyTimestamp()
 	assert.Error(t, err)
 }
