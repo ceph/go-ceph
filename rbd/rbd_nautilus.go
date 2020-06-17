@@ -83,3 +83,21 @@ func (image *Image) GetAccessTimestamp() (Timespec, error) {
 
 	return Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&cts))), nil
 }
+
+// GetModifyTimestamp returns the time the rbd image was last modified.
+//
+// Implements:
+//  int rbd_get_modify_timestamp(rbd_image_t image, struct timespec *timestamp);
+func (image *Image) GetModifyTimestamp() (Timespec, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return Timespec{}, err
+	}
+
+	var cts C.struct_timespec
+
+	if ret := C.rbd_get_modify_timestamp(image.image, &cts); ret < 0 {
+		return Timespec{}, getError(ret)
+	}
+
+	return Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&cts))), nil
+}
