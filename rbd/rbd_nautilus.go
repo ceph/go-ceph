@@ -1,6 +1,7 @@
 // +build !luminous,!mimic
 //
-// Ceph Nautilus is the first release that includes rbd_list2().
+// Ceph Nautilus is the first release that includes rbd_list2() and
+// rbd_get_create_timestamp().
 
 package rbd
 
@@ -14,6 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/retry"
+	ts "github.com/ceph/go-ceph/internal/timespec"
 	"github.com/ceph/go-ceph/rados"
 )
 
@@ -44,4 +46,22 @@ func GetImageNames(ioctx *rados.IOContext) ([]string, error) {
 		names[i] = C.GoString(image.name)
 	}
 	return names, nil
+}
+
+// GetCreateTimestamp returns the time the rbd image was created.
+//
+// Implements:
+//  int rbd_get_create_timestamp(rbd_image_t image, struct timespec *timestamp);
+func (image *Image) GetCreateTimestamp() (Timespec, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return Timespec{}, err
+	}
+
+	var cts C.struct_timespec
+
+	if ret := C.rbd_get_create_timestamp(image.image, &cts); ret < 0 {
+		return Timespec{}, getError(ret)
+	}
+
+	return Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&cts))), nil
 }

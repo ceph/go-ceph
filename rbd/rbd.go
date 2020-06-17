@@ -18,6 +18,7 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/retry"
+	ts "github.com/ceph/go-ceph/internal/timespec"
 	"github.com/ceph/go-ceph/rados"
 )
 
@@ -44,6 +45,9 @@ const (
 	// NoSnapshot indicates that no snapshot name is in use (see OpenImage)
 	NoSnapshot = ""
 )
+
+// Timespec is a public type for the internal C 'struct timespec'
+type Timespec ts.Timespec
 
 // ImageInfo represents the status information for an image.
 type ImageInfo struct {
