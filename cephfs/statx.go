@@ -7,6 +7,13 @@ package cephfs
 */
 import "C"
 
+import (
+	ts "github.com/ceph/go-ceph/internal/timespec"
+)
+
+// Timespec is a public type for the internal C 'struct timespec'
+type Timespec ts.Timespec
+
 // StatxMask values contain bit-flags indicating what data should be
 // populated by a statx-type call.
 type StatxMask uint32
@@ -109,10 +116,10 @@ func cStructToCephStatx(s C.struct_ceph_statx) *CephStatx {
 		Blocks:  uint64(s.stx_blocks),
 		Dev:     uint64(s.stx_dev),
 		Rdev:    uint64(s.stx_rdev),
-		Atime:   cStructToTimespec(s.stx_atime),
-		Ctime:   cStructToTimespec(s.stx_ctime),
-		Mtime:   cStructToTimespec(s.stx_mtime),
-		Btime:   cStructToTimespec(s.stx_btime),
+		Atime:   Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&s.stx_atime))),
+		Ctime:   Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&s.stx_ctime))),
+		Mtime:   Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&s.stx_mtime))),
+		Btime:   Timespec(ts.CStructToTimespec(ts.CTimespecPtr(&s.stx_btime))),
 		Version: uint64(s.stx_version),
 	}
 }
