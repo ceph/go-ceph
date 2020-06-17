@@ -33,6 +33,9 @@ func TestImagePropertiesNautilus(t *testing.T) {
 
 	_, err = img.GetCreateTimestamp()
 	assert.NoError(t, err)
+
+	_, err = img.GetAccessTimestamp()
+	assert.NoError(t, err)
 }
 
 func TestClosedImageNautilus(t *testing.T) {
@@ -63,5 +66,8 @@ func TestClosedImageNautilus(t *testing.T) {
 	// functions should now fail with an RBDError
 
 	_, err = image.GetCreateTimestamp()
+	assert.Error(t, err)
+
+	_, err = image.GetAccessTimestamp()
 	assert.Error(t, err)
 }
