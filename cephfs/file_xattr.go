@@ -34,6 +34,9 @@ const (
 
 // SetXattr sets an extended attribute on the open file.
 //
+// NOTE: Attempting to set an xattr value with an empty value may cause
+// the xattr to be unset. Please refer to https://tracker.ceph.com/issues/46084
+//
 // Implements:
 //  int ceph_fsetxattr(struct ceph_mount_info *cmount, int fd, const char *name,
 //                     const void *value, size_t size, int flags);
