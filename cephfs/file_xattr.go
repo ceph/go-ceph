@@ -12,6 +12,7 @@ package cephfs
 import "C"
 
 import (
+	"bytes"
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/retry"
@@ -96,4 +97,44 @@ func (f *File) GetXattr(name string) ([]byte, error) {
 		return nil, err
 	}
 	return buf[:ret], nil
+}
+
+// ListXattr returns a slice containing strings for the name of each xattr set
+// on the fie.
+//
+// Implements:
+//  int ceph_flistxattr(struct ceph_mount_info *cmount, int fd, char *list, size_t size);
+func (f *File) ListXattr() ([]string, error) {
+	if err := f.validate(); err != nil {
+		return nil, err
+	}
+
+	var (
+		ret C.int
+		err error
+		buf []byte
+	)
+	// range from 1k to 64KiB
+	retry.WithSizes(1024, 1<<16, func(size int) retry.Hint {
+		buf = make([]byte, size)
+		ret = C.ceph_flistxattr(
+			f.mount.mount,
+			f.fd,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			C.size_t(size))
+		err = getErrorIfNegative(ret)
+		return retry.DoubleSize.If(err == errRange)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, 0)
+	for _, s := range bytes.Split(buf[:ret], []byte{0}) {
+		if len(s) > 0 {
+			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
+			names = append(names, name)
+		}
+	}
+	return names, nil
 }

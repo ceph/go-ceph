@@ -74,5 +74,47 @@ func TestGetSetXattr(t *testing.T) {
 		_, err = f1.GetXattr(samples[0].name)
 		assert.Error(t, err)
 	})
+}
 
+func TestListXattr(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+	fname := "TestListXattr.txt"
+
+	f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, f.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	t.Run("listXattrs1", func(t *testing.T) {
+		for _, s := range samples[:1] {
+			err := f.SetXattr(s.name, s.value, XattrDefault)
+			assert.NoError(t, err)
+		}
+		xl, err := f.ListXattr()
+		assert.NoError(t, err)
+		assert.Len(t, xl, 1)
+		assert.Contains(t, xl, samples[0].name)
+	})
+
+	t.Run("listXattrs2", func(t *testing.T) {
+		for _, s := range samples[:3] {
+			err := f.SetXattr(s.name, s.value, XattrDefault)
+			assert.NoError(t, err)
+		}
+		xl, err := f.ListXattr()
+		assert.NoError(t, err)
+		assert.Len(t, xl, 3)
+		assert.Contains(t, xl, samples[0].name)
+		assert.Contains(t, xl, samples[1].name)
+		assert.Contains(t, xl, samples[2].name)
+	})
+
+	t.Run("invalidFile", func(t *testing.T) {
+		f1 := &File{}
+		_, err := f1.ListXattr()
+		assert.Error(t, err)
+	})
 }
