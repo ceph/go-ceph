@@ -118,3 +118,40 @@ func TestListXattr(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestRemoveXattr(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+	fname := "TestRemoveXattr.txt"
+
+	f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, f.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	t.Run("removeXattr", func(t *testing.T) {
+		s := samples[0]
+		err := f.SetXattr(s.name, s.value, XattrDefault)
+		err = f.RemoveXattr(s.name)
+		assert.NoError(t, err)
+	})
+
+	t.Run("removeMissingXattr", func(t *testing.T) {
+		s := samples[1]
+		err := f.RemoveXattr(s.name)
+		assert.Error(t, err)
+	})
+
+	t.Run("emptyName", func(t *testing.T) {
+		err := f.RemoveXattr("")
+		assert.Error(t, err)
+	})
+
+	t.Run("invalidFile", func(t *testing.T) {
+		f1 := &File{}
+		err := f1.RemoveXattr(samples[0].name)
+		assert.Error(t, err)
+	})
+}

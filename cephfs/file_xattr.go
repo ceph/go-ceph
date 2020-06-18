@@ -138,3 +138,24 @@ func (f *File) ListXattr() ([]string, error) {
 	}
 	return names, nil
 }
+
+// RemoveXattr removes the named xattr from the open file.
+//
+// Implements:
+//  int ceph_fremovexattr(struct ceph_mount_info *cmount, int fd, const char *name);
+func (f *File) RemoveXattr(name string) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+	if name == "" {
+		return errInvalid
+	}
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	ret := C.ceph_fremovexattr(
+		f.mount.mount,
+		f.fd,
+		cName)
+	return getError(ret)
+}
