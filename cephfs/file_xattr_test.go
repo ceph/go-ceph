@@ -24,10 +24,15 @@ var samples = []struct {
 		name:  "user.x2kZeros",
 		value: make([]byte, 2048),
 	},
-	{
-		name:  "user.xEmpty",
-		value: []byte(""),
-	},
+	// Ceph's behavior when an empty value is supplied may be considered
+	// to have a bug in some versions. Using an empty value may cause
+	// the xattr to be unset. Please refer to:
+	// https://tracker.ceph.com/issues/46084
+	// So we avoid testing for that case explicitly here.
+	//{
+	//	name:  "user.xEmpty",
+	//	value: []byte(""),
+	//},
 }
 
 func TestGetSetXattr(t *testing.T) {
@@ -42,7 +47,7 @@ func TestGetSetXattr(t *testing.T) {
 		assert.NoError(t, mount.Unlink(fname))
 	}()
 
-	for _, s := range samples[:3] {
+	for _, s := range samples {
 		t.Run("roundTrip-"+s.name, func(t *testing.T) {
 			err := f.SetXattr(s.name, s.value, XattrDefault)
 			assert.NoError(t, err)
@@ -53,7 +58,7 @@ func TestGetSetXattr(t *testing.T) {
 	}
 
 	t.Run("missingXattrOnGet", func(t *testing.T) {
-		_, err := f.GetXattr(samples[3].name)
+		_, err := f.GetXattr("user.never-set")
 		assert.Error(t, err)
 	})
 
@@ -100,7 +105,7 @@ func TestListXattr(t *testing.T) {
 	})
 
 	t.Run("listXattrs2", func(t *testing.T) {
-		for _, s := range samples[:3] {
+		for _, s := range samples {
 			err := f.SetXattr(s.name, s.value, XattrDefault)
 			assert.NoError(t, err)
 		}
