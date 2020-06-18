@@ -67,4 +67,5 @@ const (
 	errInvalid     = cephFSError(-C.EINVAL)
 	errNameTooLong = cephFSError(-C.ENAMETOOLONG)
 	errNoEntry     = cephFSError(-C.ENOENT)
+	errRange       = cephFSError(-C.ERANGE)
 )
