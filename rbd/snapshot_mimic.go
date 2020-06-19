@@ -12,8 +12,9 @@ package rbd
 import "C"
 
 import (
-	"bytes"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 // GetParentInfo looks for the parent of the image and stores the pool, name
@@ -81,21 +82,7 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 		return nil, nil, RBDError(ret)
 	}
 
-	tmp := bytes.Split(pools_buf[:c_pools_len-1], []byte{0})
-	for _, s := range tmp {
-		if len(s) > 0 {
-			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-			pools = append(pools, name)
-		}
-	}
-
-	tmp = bytes.Split(images_buf[:c_images_len-1], []byte{0})
-	for _, s := range tmp {
-		if len(s) > 0 {
-			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-			images = append(images, name)
-		}
-	}
-
+	pools = cutil.SplitSparseBuffer(pools_buf[:c_pools_len])
+	images = cutil.SplitSparseBuffer(images_buf[:c_images_len])
 	return pools, images, nil
 }
