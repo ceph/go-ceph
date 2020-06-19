@@ -11,12 +11,12 @@ package rbd
 import "C"
 
 import (
-	"bytes"
 	"errors"
 	"io"
 	"time"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 	ts "github.com/ceph/go-ceph/internal/timespec"
 	"github.com/ceph/go-ceph/rados"
@@ -93,18 +93,6 @@ type TrashInfo struct {
 	Name             string    // Original name of trashed RBD.
 	DeletionTime     time.Time // Date / time at which the RBD was moved to the trash.
 	DefermentEndTime time.Time // Date / time after which the trashed RBD may be permanently deleted.
-}
-
-//
-func split(buf []byte) (values []string) {
-	tmp := bytes.Split(buf[:len(buf)-1], []byte{0})
-	for _, s := range tmp {
-		if len(s) > 0 {
-			go_s := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-			values = append(values, go_s)
-		}
-	}
-	return values
 }
 
 // cephIoctx returns a ceph rados_ioctx_t given a go-ceph rados IOContext.
@@ -605,9 +593,9 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 		return "", nil, rbdError(c_locker_cnt)
 	}
 
-	clients := split(clients_buf)
-	cookies := split(cookies_buf)
-	addrs := split(addrs_buf)
+	clients := cutil.SplitSparseBuffer(clients_buf)
+	cookies := cutil.SplitSparseBuffer(cookies_buf)
+	addrs := cutil.SplitSparseBuffer(addrs_buf)
 
 	lockers = make([]Locker, c_locker_cnt)
 	for i := 0; i < int(c_locker_cnt); i++ {
