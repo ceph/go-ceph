@@ -284,14 +284,8 @@ func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
 
 // CleanOmap clears the omap `oid`
 func (ioctx *IOContext) CleanOmap(oid string) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
-
-	op := C.rados_create_write_op()
-	C.rados_write_op_omap_clear(op)
-
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
-	C.rados_release_write_op(op)
-
-	return getError(ret)
+	op := CreateWriteOp()
+	defer op.Release()
+	op.CleanOmap()
+	return op.operateCompat(ioctx, oid)
 }
