@@ -221,35 +221,65 @@ func (ioctx *IOContext) GetAllOmapValues(oid string, startAfter string, filterPr
 	return omap, nil
 }
 
-// RmOmapKeys removes the specified `keys` from the omap `oid`
-func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+type omapRmKeysElement struct {
+	// inputs:
+	keys []string
 
+	// arguments:
+	cKeys **C.char
+	cNum  C.size_t
+
+	// tracking vars:
+	strMem []unsafe.Pointer
+}
+
+func newOmapRmKeysElement(keys []string) *omapRmKeysElement {
+	strMem := make([]unsafe.Pointer, 0)
 	var c *C.char
 	ptrSize := unsafe.Sizeof(c)
 
 	c_keys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
-	defer C.free(unsafe.Pointer(c_keys))
 
 	i := 0
 	for _, key := range keys {
 		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
 		*c_key_ptr = C.CString(key)
-		defer C.free(unsafe.Pointer(*c_key_ptr))
+		strMem = append(strMem, unsafe.Pointer(*c_key_ptr))
 		i++
 	}
 
-	op := C.rados_create_write_op()
-	C.rados_write_op_omap_rm_keys(
-		op,
-		(**C.char)(c_keys),
-		C.size_t(len(keys)))
+	oe := &omapRmKeysElement{
+		keys:   keys,
+		cKeys:  (**C.char)(c_keys),
+		cNum:   C.size_t(len(keys)),
+		strMem: strMem,
+	}
+	runtime.SetFinalizer(oe, freeElement)
+	return oe
+}
 
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
-	C.rados_release_write_op(op)
+func (oe *omapRmKeysElement) free() {
+	C.free(unsafe.Pointer(oe.cKeys))
+	oe.cKeys = nil
+	for _, p := range oe.strMem {
+		C.free(p)
+	}
+	oe.strMem = nil
+}
 
-	return getError(ret)
+func (*omapRmKeysElement) reset() {
+}
+
+func (*omapRmKeysElement) update() error {
+	return nil
+}
+
+// RmOmapKeys removes the specified `keys` from the omap `oid`
+func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
+	op := CreateWriteOp()
+	defer op.Release()
+	op.RmOmapKeys(keys)
+	return op.operateCompat(ioctx, oid)
 }
 
 // CleanOmap clears the omap `oid`
