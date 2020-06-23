@@ -85,3 +85,11 @@ func (w *WriteOp) RmOmapKeys(keys []string) {
 func (w *WriteOp) CleanOmap() {
 	C.rados_write_op_omap_clear(w.op)
 }
+
+// AssertExists assures the object targeted by the write op exists.
+//
+// Implements:
+//  void rados_write_op_assert_exists(rados_write_op_t write_op);
+func (w *WriteOp) AssertExists() {
+	C.rados_write_op_assert_exists(w.op)
+}
