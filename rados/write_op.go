@@ -124,3 +124,56 @@ func (w *WriteOp) CleanOmap() {
 func (w *WriteOp) AssertExists() {
 	C.rados_write_op_assert_exists(w.op)
 }
+
+// Write a given byte slice at the supplied offset.
+//
+// Implements:
+//  void rados_write_op_write(rados_write_op_t write_op,
+//                                       const char *buffer,
+//                                       size_t len,
+//                                       uint64_t offset);
+func (w *WriteOp) Write(b []byte, offset uint64) {
+	oe := newWriteStep(b, 0, offset)
+	w.steps = append(w.steps, oe)
+	C.rados_write_op_write(
+		w.op,
+		oe.cBuffer,
+		oe.cDataLen,
+		oe.cOffset)
+}
+
+// WriteFull writes a given byte slice as the whole object,
+// atomically replacing it.
+//
+// Implements:
+//  void rados_write_op_write_full(rados_write_op_t write_op,
+//                                 const char *buffer,
+//                                 size_t len);
+func (w *WriteOp) WriteFull(b []byte) {
+	oe := newWriteStep(b, 0, 0)
+	w.steps = append(w.steps, oe)
+	C.rados_write_op_write_full(
+		w.op,
+		oe.cBuffer,
+		oe.cDataLen)
+}
+
+// WriteSame write a given byte slice to the object multiple times, until
+// writeLen is satisfied.
+//
+// Implements:
+//  void rados_write_op_writesame(rados_write_op_t write_op,
+//                                const char *buffer,
+//                                size_t data_len,
+//                                size_t write_len,
+//                                uint64_t offset);
+func (w *WriteOp) WriteSame(b []byte, writeLen, offset uint64) {
+	oe := newWriteStep(b, writeLen, offset)
+	w.steps = append(w.steps, oe)
+	C.rados_write_op_writesame(
+		w.op,
+		oe.cBuffer,
+		oe.cDataLen,
+		oe.cWriteLen,
+		oe.cOffset)
+}
