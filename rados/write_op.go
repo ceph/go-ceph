@@ -9,7 +9,12 @@ import "C"
 
 import (
 	"unsafe"
+
+	ts "github.com/ceph/go-ceph/internal/timespec"
 )
+
+// Timespec is a public type for the internal C 'struct timespec'
+type Timespec ts.Timespec
 
 // OperationFlags control the behavior of read an write operations.
 type OperationFlags int
@@ -60,18 +65,43 @@ func (w *WriteOp) Release() {
 	w.freeElements()
 }
 
-// Operate will perform the operation(s).
-func (w *WriteOp) Operate(ioctx *IOContext, oid string) error {
+func (w WriteOp) operate2(
+	ioctx *IOContext, oid string, mtime *Timespec, flags OperationFlags) error {
+
+	if err := ioctx.validate(); err != nil {
+		return err
+	}
+
 	cOid := C.CString(oid)
 	defer C.free(unsafe.Pointer(cOid))
+	var cMtime *C.struct_timespec
+	if mtime != nil {
+		cMtime = &C.struct_timespec{}
+		ts.CopyToCStruct(
+			ts.Timespec(*mtime),
+			ts.CTimespecPtr(cMtime))
+	}
 
 	w.reset()
-	ret := C.rados_write_op_operate(w.op, ioctx.ioctx, cOid, nil, 0)
+	ret := C.rados_write_op_operate2(w.op, ioctx.ioctx, cOid, cMtime, C.int(flags))
 	return w.finish("write", ret)
 }
 
+// Operate will perform the operation(s).
+func (w *WriteOp) Operate(ioctx *IOContext, oid string, flags OperationFlags) error {
+	return w.operate2(ioctx, oid, nil, flags)
+}
+
+// OperateWithMtime will perform the operation while setting the modification
+// time stamp to the supplied value.
+func (w *WriteOp) OperateWithMtime(
+	ioctx *IOContext, oid string, mtime Timespec, flags OperationFlags) error {
+
+	return w.operate2(ioctx, oid, &mtime, flags)
+}
+
 func (w *WriteOp) operateCompat(ioctx *IOContext, oid string) error {
-	switch err := w.Operate(ioctx, oid).(type) {
+	switch err := w.Operate(ioctx, oid, OperationNoFlag).(type) {
 	case nil:
 		return nil
 	case OperationError:
