@@ -105,6 +105,104 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	return op.operateCompat(ioctx, oid)
 }
 
+// OmapKeyValue items are returned by the OmapGetElement's Next call.
+type OmapKeyValue struct {
+	Key   string
+	Value []byte
+}
+
+// OmapGetElement values are used to get the results of an GetOmapValues call
+// on a WriteOp. Until the Operate method of the WriteOp is called the Next
+// call will return an error. After Operate is called, the Next call will
+// return valid results.
+// The life cycle of the OmapGetElement is bound to the ReadOp, if the ReadOp
+// Release method is called the element may no longer be used.
+type OmapGetElement struct {
+	// inputs:
+	startAfter   string
+	filterPrefix string
+	maxReturn    uint64
+
+	// arguments:
+	cStartAfter   *C.char
+	cFilterPrefix *C.char
+
+	// C returned data:
+	iter C.rados_omap_iter_t
+	more C.uchar
+	rval C.int
+
+	// internal state:
+
+	// canIterate is only set after the operation is performed and is
+	// intended to prevent premature fetching of data from the element
+	canIterate bool
+}
+
+func newOmapGetElement(startAfter, filterPrefix string, maxReturn uint64) *OmapGetElement {
+	oge := &OmapGetElement{
+		startAfter:    startAfter,
+		filterPrefix:  filterPrefix,
+		maxReturn:     maxReturn,
+		cStartAfter:   C.CString(startAfter),
+		cFilterPrefix: C.CString(filterPrefix),
+	}
+	runtime.SetFinalizer(oge, freeElement)
+	return oge
+}
+
+func (oge *OmapGetElement) free() {
+	oge.reset()
+	C.free(unsafe.Pointer(oge.cStartAfter))
+	oge.cStartAfter = nil
+	C.free(unsafe.Pointer(oge.cFilterPrefix))
+	oge.cFilterPrefix = nil
+}
+
+func (oge *OmapGetElement) reset() {
+	if oge.canIterate {
+		C.rados_omap_get_end(oge.iter)
+	}
+	oge.canIterate = false
+	oge.more = 0
+	oge.rval = 0
+}
+
+func (oge *OmapGetElement) update() error {
+	oge.canIterate = true
+	return getError(oge.rval)
+}
+
+// Next returns the next key value pair or nil if iteration is exhausted.
+func (oge *OmapGetElement) Next() (*OmapKeyValue, error) {
+	if !oge.canIterate {
+		return nil, ErrOperationIncomplete
+	}
+	var (
+		cKey *C.char
+		cVal *C.char
+		cLen C.size_t
+	)
+	ret := C.rados_omap_get_next(oge.iter, &cKey, &cVal, &cLen)
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+	if cKey == nil {
+		return nil, nil
+	}
+	return &OmapKeyValue{
+		Key:   C.GoString(cKey),
+		Value: C.GoBytes(unsafe.Pointer(cVal), C.int(cLen)),
+	}, nil
+}
+
+// More returns true if there are more matching keys available.
+func (oge *OmapGetElement) More() bool {
+	// tad bit hacky, but go can't automatically convert from
+	// unsigned char to bool
+	return oge.more != 0
+}
+
 // OmapListFunc is the type of the function called for each omap key
 // visited by ListOmapValues
 type OmapListFunc func(key string, value []byte)
@@ -116,59 +214,28 @@ type OmapListFunc func(key string, value []byte)
 // `filterPrefix`: iterate only on the keys beginning with this prefix
 // `maxReturn`: iterate no more than `maxReturn` key/value pairs
 // `listFn`: the function called at each iteration
-func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPrefix string, maxReturn int64, listFn OmapListFunc) error {
-	c_oid := C.CString(oid)
-	c_start_after := C.CString(startAfter)
-	c_filter_prefix := C.CString(filterPrefix)
-	c_max_return := C.uint64_t(maxReturn)
+func (ioctx *IOContext) ListOmapValues(
+	oid string, startAfter string, filterPrefix string, maxReturn int64,
+	listFn OmapListFunc) error {
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_start_after))
-	defer C.free(unsafe.Pointer(c_filter_prefix))
-
-	op := C.rados_create_read_op()
-
-	var c_iter C.rados_omap_iter_t
-	var c_prval C.int
-	C.rados_read_op_omap_get_vals2(
-		op,
-		c_start_after,
-		c_filter_prefix,
-		c_max_return,
-		&c_iter,
-		nil,
-		&c_prval,
-	)
-
-	ret := C.rados_read_op_operate(op, ioctx.ioctx, c_oid, 0)
-
-	if int(ret) != 0 {
-		return getError(ret)
-	} else if int(c_prval) != 0 {
-		return getError(c_prval)
+	op := CreateReadOp()
+	defer op.Release()
+	ome := op.GetOmapValues(startAfter, filterPrefix, uint64(maxReturn))
+	err := op.operateCompat(ioctx, oid)
+	if err != nil {
+		return err
 	}
 
 	for {
-		var c_key *C.char
-		var c_val *C.char
-		var c_len C.size_t
-
-		ret = C.rados_omap_get_next(c_iter, &c_key, &c_val, &c_len)
-
-		if int(ret) != 0 {
-			return getError(ret)
+		kv, err := ome.Next()
+		if err != nil {
+			return err
 		}
-
-		if c_key == nil {
+		if kv == nil {
 			break
 		}
-
-		listFn(C.GoString(c_key), C.GoBytes(unsafe.Pointer(c_val), C.int(c_len)))
+		listFn(kv.Key, kv.Value)
 	}
-
-	C.rados_omap_get_end(c_iter)
-	C.rados_release_read_op(op)
-
 	return nil
 }
 
