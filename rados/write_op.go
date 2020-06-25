@@ -58,3 +58,15 @@ func (w *WriteOp) Create(exclusive CreateOption) {
 	// implement it in go-ceph
 	C.rados_write_op_create(w.op, C.int(exclusive), nil)
 }
+
+// SetOmap appends the map `pairs` to the omap `oid`
+func (w *WriteOp) SetOmap(pairs map[string][]byte) {
+	oe := newOmapSetElement(pairs)
+	w.elements = append(w.elements, oe)
+	C.rados_write_op_omap_set(
+		w.op,
+		oe.cKeys,
+		oe.cValues,
+		oe.cLengths,
+		oe.cNum)
+}

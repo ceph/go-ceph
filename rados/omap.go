@@ -7,14 +7,30 @@ package rados
 import "C"
 
 import (
+	"runtime"
 	"unsafe"
 )
 
-// SetOmap appends the map `pairs` to the omap `oid`
-func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+type omapSetElement struct {
+	// inputs:
+	pairs map[string][]byte
 
+	// arguments:
+	cKeys    **C.char
+	cValues  **C.char
+	cLengths *C.size_t
+	cNum     C.size_t
+
+	// tracking vars:
+	// strMem is a little bit hacky but we can no longer use defer
+	// right after calling CString, since the memory needs to be
+	// tied to the lifecycle of the WriteOp. For now just keep
+	// an extra slice pointing to the C memory for easy cleanup
+	// later.
+	strMem []unsafe.Pointer
+}
+
+func newOmapSetElement(pairs map[string][]byte) *omapSetElement {
 	var s C.size_t
 	var c *C.char
 	ptrSize := unsafe.Sizeof(c)
@@ -22,17 +38,14 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	c_keys := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
 	c_values := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
 	c_lengths := C.malloc(C.size_t(len(pairs)) * C.size_t(unsafe.Sizeof(s)))
-
-	defer C.free(unsafe.Pointer(c_keys))
-	defer C.free(unsafe.Pointer(c_values))
-	defer C.free(unsafe.Pointer(c_lengths))
+	strMem := make([]unsafe.Pointer, 0)
 
 	i := 0
 	for key, value := range pairs {
 		// key
 		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
 		*c_key_ptr = C.CString(key)
-		defer C.free(unsafe.Pointer(*c_key_ptr))
+		strMem = append(strMem, unsafe.Pointer(*c_key_ptr))
 
 		// value and its length
 		c_value_ptr := (**C.char)(unsafe.Pointer(uintptr(c_values) + uintptr(i)*ptrSize))
@@ -52,18 +65,44 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 		i++
 	}
 
-	op := C.rados_create_write_op()
-	C.rados_write_op_omap_set(
-		op,
-		(**C.char)(c_keys),
-		(**C.char)(c_values),
-		(*C.size_t)(c_lengths),
-		C.size_t(len(pairs)))
+	oe := &omapSetElement{
+		pairs:    pairs,
+		cKeys:    (**C.char)(c_keys),
+		cValues:  (**C.char)(c_values),
+		cLengths: (*C.size_t)(c_lengths),
+		cNum:     C.size_t(len(pairs)),
+		strMem:   strMem,
+	}
+	runtime.SetFinalizer(oe, freeElement)
+	return oe
+}
 
-	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
-	C.rados_release_write_op(op)
+func (oe *omapSetElement) free() {
+	C.free(unsafe.Pointer(oe.cKeys))
+	oe.cKeys = nil
+	C.free(unsafe.Pointer(oe.cValues))
+	oe.cValues = nil
+	C.free(unsafe.Pointer(oe.cLengths))
+	oe.cLengths = nil
+	for _, p := range oe.strMem {
+		C.free(p)
+	}
+	oe.strMem = nil
+}
 
-	return getError(ret)
+func (*omapSetElement) reset() {
+}
+
+func (*omapSetElement) update() error {
+	return nil
+}
+
+// SetOmap appends the map `pairs` to the omap `oid`
+func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
+	op := CreateWriteOp()
+	defer op.Release()
+	op.SetOmap(pairs)
+	return op.operateCompat(ioctx, oid)
 }
 
 // OmapListFunc is the type of the function called for each omap key
