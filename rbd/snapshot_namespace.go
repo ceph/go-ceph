@@ -8,6 +8,12 @@ package rbd
 // #include <rbd/librbd.h>
 import "C"
 
+import (
+	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/retry"
+)
+
 // SnapNamespaceType indicates the namespace to which the snapshot belongs to.
 type SnapNamespaceType C.rbd_snap_namespace_type_t
 
@@ -39,4 +45,36 @@ func (image *Image) GetSnapNamespaceType(snapID uint64) (SnapNamespaceType, erro
 		C.uint64_t(snapID),
 		(*C.rbd_snap_namespace_type_t)(&nsType))
 	return nsType, getError(ret)
+}
+
+// GetSnapTrashNamespace returns the original name of the snapshot which was
+// moved to the Trash. The caller should make sure that the snapshot ID passed in this
+// function belongs to a snapshot already in the Trash.
+//
+// Implements:
+//  int rbd_snap_get_trash_namespace(rbd_image_t image, uint64_t snap_id, char *original_name, size_t max_length)
+func (image *Image) GetSnapTrashNamespace(snapID uint64) (string, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return "", err
+	}
+
+	var (
+		buf []byte
+		err error
+	)
+	retry.WithSizes(4096, 262144, func(length int) retry.Hint {
+		cLength := C.size_t(length)
+		buf = make([]byte, cLength)
+		ret := C.rbd_snap_get_trash_namespace(image.image,
+			C.uint64_t(snapID),
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			cLength)
+		err = getError(ret)
+		return retry.Size(int(cLength)).If(err == errRange)
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 }
