@@ -56,6 +56,14 @@ func (r *ReadOp) operateCompat(ioctx *IOContext, oid string) error {
 	}
 }
 
+// AssertExists assures the object targeted by the read op exists.
+//
+// Implements:
+//  void rados_read_op_assert_exists(rados_read_op_t read_op);
+func (r *ReadOp) AssertExists() {
+	C.rados_read_op_assert_exists(r.op)
+}
+
 // GetOmapValues is used to iterate over a set, or sub-set, of omap keys
 // as part of a read operation. An GetOmapStep is returned from this
 // function. The GetOmapStep may be used to iterate over the key-value
