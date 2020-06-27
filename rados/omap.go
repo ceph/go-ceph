@@ -11,6 +11,8 @@ import (
 	"unsafe"
 )
 
+// omapSetElement is a write op element used to track state, especially
+// C memory, across the setup and use of a WriteOp.
 type omapSetElement struct {
 	// inputs:
 	pairs map[string][]byte
@@ -195,6 +197,8 @@ func (oge *OmapGetElement) More() bool {
 	return oge.more != 0
 }
 
+// omapRmKeysElement is a write element used to track state, especially
+// C memory, across the setup and use of a WriteOp.
 type omapRmKeysElement struct {
 	// inputs:
 	keys []string
