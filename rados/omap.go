@@ -97,14 +97,6 @@ func (*omapSetElement) update() error {
 	return nil
 }
 
-// SetOmap appends the map `pairs` to the omap `oid`
-func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
-	op := CreateWriteOp()
-	defer op.Release()
-	op.SetOmap(pairs)
-	return op.operateCompat(ioctx, oid)
-}
-
 // OmapKeyValue items are returned by the OmapGetElement's Next call.
 type OmapKeyValue struct {
 	Key   string
@@ -203,6 +195,83 @@ func (oge *OmapGetElement) More() bool {
 	return oge.more != 0
 }
 
+type omapRmKeysElement struct {
+	// inputs:
+	keys []string
+
+	// arguments:
+	cKeys **C.char
+	cNum  C.size_t
+
+	// tracking vars:
+	strMem []unsafe.Pointer
+}
+
+func newOmapRmKeysElement(keys []string) *omapRmKeysElement {
+	strMem := make([]unsafe.Pointer, 0)
+	var c *C.char
+	ptrSize := unsafe.Sizeof(c)
+
+	c_keys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
+
+	i := 0
+	for _, key := range keys {
+		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
+		*c_key_ptr = C.CString(key)
+		strMem = append(strMem, unsafe.Pointer(*c_key_ptr))
+		i++
+	}
+
+	oe := &omapRmKeysElement{
+		keys:   keys,
+		cKeys:  (**C.char)(c_keys),
+		cNum:   C.size_t(len(keys)),
+		strMem: strMem,
+	}
+	runtime.SetFinalizer(oe, freeElement)
+	return oe
+}
+
+func (oe *omapRmKeysElement) free() {
+	C.free(unsafe.Pointer(oe.cKeys))
+	oe.cKeys = nil
+	for _, p := range oe.strMem {
+		C.free(p)
+	}
+	oe.strMem = nil
+}
+
+func (*omapRmKeysElement) reset() {
+}
+
+func (*omapRmKeysElement) update() error {
+	return nil
+}
+
+// SetOmap appends the map `pairs` to the omap `oid`
+func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
+	op := CreateWriteOp()
+	defer op.Release()
+	op.SetOmap(pairs)
+	return op.operateCompat(ioctx, oid)
+}
+
+// RmOmapKeys removes the specified `keys` from the omap `oid`
+func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
+	op := CreateWriteOp()
+	defer op.Release()
+	op.RmOmapKeys(keys)
+	return op.operateCompat(ioctx, oid)
+}
+
+// CleanOmap clears the omap `oid`
+func (ioctx *IOContext) CleanOmap(oid string) error {
+	op := CreateWriteOp()
+	defer op.Release()
+	op.CleanOmap()
+	return op.operateCompat(ioctx, oid)
+}
+
 // OmapListFunc is the type of the function called for each omap key
 // visited by ListOmapValues
 type OmapListFunc func(key string, value []byte)
@@ -286,73 +355,4 @@ func (ioctx *IOContext) GetAllOmapValues(oid string, startAfter string, filterPr
 	}
 
 	return omap, nil
-}
-
-type omapRmKeysElement struct {
-	// inputs:
-	keys []string
-
-	// arguments:
-	cKeys **C.char
-	cNum  C.size_t
-
-	// tracking vars:
-	strMem []unsafe.Pointer
-}
-
-func newOmapRmKeysElement(keys []string) *omapRmKeysElement {
-	strMem := make([]unsafe.Pointer, 0)
-	var c *C.char
-	ptrSize := unsafe.Sizeof(c)
-
-	c_keys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
-
-	i := 0
-	for _, key := range keys {
-		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
-		*c_key_ptr = C.CString(key)
-		strMem = append(strMem, unsafe.Pointer(*c_key_ptr))
-		i++
-	}
-
-	oe := &omapRmKeysElement{
-		keys:   keys,
-		cKeys:  (**C.char)(c_keys),
-		cNum:   C.size_t(len(keys)),
-		strMem: strMem,
-	}
-	runtime.SetFinalizer(oe, freeElement)
-	return oe
-}
-
-func (oe *omapRmKeysElement) free() {
-	C.free(unsafe.Pointer(oe.cKeys))
-	oe.cKeys = nil
-	for _, p := range oe.strMem {
-		C.free(p)
-	}
-	oe.strMem = nil
-}
-
-func (*omapRmKeysElement) reset() {
-}
-
-func (*omapRmKeysElement) update() error {
-	return nil
-}
-
-// RmOmapKeys removes the specified `keys` from the omap `oid`
-func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
-	op := CreateWriteOp()
-	defer op.Release()
-	op.RmOmapKeys(keys)
-	return op.operateCompat(ioctx, oid)
-}
-
-// CleanOmap clears the omap `oid`
-func (ioctx *IOContext) CleanOmap(oid string) error {
-	op := CreateWriteOp()
-	defer op.Release()
-	op.CleanOmap()
-	return op.operateCompat(ioctx, oid)
 }
