@@ -5,6 +5,7 @@
 package rbd
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -199,4 +200,100 @@ func TestWatch(t *testing.T) {
 		err = w.Unwatch()
 		assert.Error(t, err)
 	})
+}
+
+func TestWatchMultiChannels(t *testing.T) {
+	conn := radosConnect(t)
+	require.NotNil(t, conn)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	startSize := uint64(1 << 21)
+	images := map[string]uint64{}
+	for i := 0; i < 4; i++ {
+		name := GetUUID()
+		images[name] = startSize
+		options := NewRbdImageOptions()
+		err = CreateImage(ioctx, name, startSize, options)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, RemoveImage(ioctx, name))
+		}()
+	}
+
+	var wg sync.WaitGroup
+	watchMe := func(n string, mon chan<- string, done <-chan bool) {
+		img, err := OpenImage(ioctx, n, NoSnapshot)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+		w, err := img.UpdateWatch(func(d interface{}) {
+			mon <- n
+		}, nil)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, w.Unwatch())
+		}()
+
+		wg.Done() // our watch is set up and active
+		<-done
+	}
+
+	mon := make(chan string)
+	defer close(mon)
+	done := make(chan bool, len(images))
+	defer close(done)
+	wg.Add(len(images))
+	for n := range images {
+		go watchMe(n, mon, done)
+	}
+	wg.Wait()
+
+	x := make(chan bool)
+	go func() {
+		inames := []string{}
+		for n := range images {
+			inames = append(inames, n)
+		}
+		for i := 0; i < 12; i++ {
+			n := inames[i%len(inames)]
+			images[n] *= uint64(2)
+			i1, err := OpenImage(ioctx, n, NoSnapshot)
+			err = i1.Resize(images[n])
+			assert.NoError(t, err)
+			err = i1.Close()
+			assert.NoError(t, err)
+			time.Sleep(5 * time.Millisecond)
+		}
+		time.Sleep(5 * time.Millisecond)
+		for range inames {
+			done <- true
+		}
+		x <- true
+	}()
+
+	ncount := map[string]int{}
+	for ok := true; ok; {
+		select {
+		case n := <-mon:
+			ncount[n]++
+		case <-x:
+			ok = false
+			break
+		}
+	}
+
+	assert.Len(t, ncount, 4)
+	for _, v := range ncount {
+		assert.Equal(t, 3, v)
+	}
 }
