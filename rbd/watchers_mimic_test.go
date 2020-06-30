@@ -6,6 +6,7 @@ package rbd
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -113,5 +114,89 @@ func TestListWatchers(t *testing.T) {
 		watchers, err = image.ListWatchers()
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(watchers))
+	})
+}
+
+func TestWatch(t *testing.T) {
+	conn := radosConnect(t)
+	require.NotNil(t, conn)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	startSize := uint64(1 << 21)
+	name := GetUUID()
+	options := NewRbdImageOptions()
+	err = CreateImage(ioctx, name, startSize, options)
+	require.NoError(t, err)
+	defer func() { assert.NoError(t, RemoveImage(ioctx, name)) }()
+
+	t.Run("imageNotOpen", func(t *testing.T) {
+		image, err := OpenImageReadOnly(ioctx, name, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, image)
+
+		err = image.Close()
+		require.NoError(t, err)
+
+		_, err = image.UpdateWatch(func(d interface{}) {
+		}, nil)
+		assert.Equal(t, ErrImageNotOpen, err)
+	})
+
+	t.Run("simpleWatch", func(t *testing.T) {
+		image, err := OpenImage(ioctx, name, NoSnapshot)
+		require.NoError(t, err)
+		require.NotNil(t, image)
+
+		defer func() {
+			assert.NoError(t, image.Close())
+		}()
+
+		cc := 0
+		w, err := image.UpdateWatch(func(d interface{}) {
+			cc++
+		}, nil)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, w.Unwatch())
+		}()
+
+		x := make(chan int)
+		defer close(x)
+		go func() {
+			for i := 0; i < 5; i++ {
+				i1, err := OpenImage(ioctx, name, NoSnapshot)
+				err = i1.Resize(startSize * uint64(1+i))
+				assert.NoError(t, err)
+				err = i1.Close()
+				assert.NoError(t, err)
+				time.Sleep(5 * time.Millisecond)
+			}
+			x <- 0
+		}()
+		<-x
+
+		assert.Equal(t, 5, cc)
+	})
+
+	t.Run("badWatch", func(t *testing.T) {
+		w := &Watch{}
+		err := w.Unwatch()
+		assert.Error(t, err)
+
+		i1, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		assert.NoError(t, i1.Close())
+		w.image = i1
+		err = w.Unwatch()
+		assert.Error(t, err)
 	})
 }
