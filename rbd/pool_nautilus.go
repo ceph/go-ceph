@@ -99,3 +99,30 @@ func PoolInit(ioctx *rados.IOContext, force bool) error {
 	ret := C.rbd_pool_init(cephIoctx(ioctx), C.bool(force))
 	return getError(ret)
 }
+
+// poolStats represents RBD pool stats variable.
+type poolStats struct {
+	stats C.rbd_pool_stats_t
+}
+
+// poolStatsCreate creates a new poolStats struct.
+//
+// Implements:
+//  void rbd_pool_stats_create(rbd_pool_stats_t *stats)
+func poolStatsCreate() *poolStats {
+	poolstats := &poolStats{}
+	C.rbd_pool_stats_create(&poolstats.stats)
+	return poolstats
+}
+
+// destroy a poolStats struct and free the associated resources.
+//
+// Implements:
+//  void rbd_pool_stats_destroy(rbd_pool_stats_t stats)
+func (poolstats *poolStats) destroy() {
+	C.rbd_pool_stats_destroy(poolstats.stats)
+
+	if poolstats.stats != nil {
+		poolstats.stats = nil
+	}
+}
