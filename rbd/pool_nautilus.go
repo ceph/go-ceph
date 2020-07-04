@@ -84,3 +84,18 @@ func RemovePoolMetadata(ioctx *rados.IOContext, key string) error {
 	ret := C.rbd_pool_metadata_remove(cephIoctx(ioctx), cKey)
 	return getError(ret)
 }
+
+// PoolInit initializes a pool for use by rbd.
+// This function does not create new pools, rather it prepares the pool
+// to host rbd images.
+//
+// Implements:
+//  int rbd_pool_init(rados_ioctx_t io, bool force)
+func PoolInit(ioctx *rados.IOContext, force bool) error {
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+
+	ret := C.rbd_pool_init(cephIoctx(ioctx), C.bool(force))
+	return getError(ret)
+}
