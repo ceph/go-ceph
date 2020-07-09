@@ -196,9 +196,9 @@ func (dir *Directory) RewindDir() {
 // DirEntry slice.
 type dirEntries []*DirEntry
 
-// list returns all the contents of a directory as a dirEntries slice.
+// List returns all the contents of a directory as a dirEntries slice.
 //
-// list is implemented using ReadDir. If any of the calls to ReadDir returns
+// List is implemented using ReadDir. If any of the calls to ReadDir returns
 // an error List will return an error. However, all previous entries
 // collected will still be returned. Callers of this function may want to check
 // the entries return value even when an error is returned.
@@ -221,7 +221,7 @@ func (dir *Directory) List() (dirEntries, error) {
 	return entries, err
 }
 
-// names returns a slice of only the name fields from dir entries.
+// Names returns a slice of only the name fields from dir entries.
 func (entries dirEntries) Names() []string {
 	names := make([]string, len(entries))
 	for i, v := range entries {
