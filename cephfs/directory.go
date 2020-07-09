@@ -191,11 +191,6 @@ func (dir *Directory) RewindDir() {
 	C.ceph_rewinddir(dir.mount.mount, dir.dir)
 }
 
-// dirEntries provides a convenient wrapper around slices of DirEntry items.
-// For example, use the Names() call to easily get only the names from a
-// DirEntry slice.
-type dirEntries []*DirEntry
-
 // List returns all the contents of a directory as a dirEntries slice.
 //
 // List is implemented using ReadDir. If any of the calls to ReadDir returns
@@ -204,11 +199,11 @@ type dirEntries []*DirEntry
 // the entries return value even when an error is returned.
 // List rewinds the handle every time it is called to get a full
 // listing of directory contents.
-func (dir *Directory) List() (dirEntries, error) {
+func (dir *Directory) List() ([]*DirEntry, error) {
 	var (
 		err     error
 		entry   *DirEntry
-		entries = make(dirEntries, 0)
+		entries = make([]*DirEntry, 0)
 	)
 	dir.RewindDir()
 	for {
@@ -222,7 +217,7 @@ func (dir *Directory) List() (dirEntries, error) {
 }
 
 // Names returns a slice of only the name fields from dir entries.
-func (entries dirEntries) Names() []string {
+func Names(entries []*DirEntry) []string {
 	names := make([]string, len(entries))
 	for i, v := range entries {
 		names[i] = v.Name()
