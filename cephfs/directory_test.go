@@ -124,10 +124,10 @@ func TestDirectoryList(t *testing.T) {
 		assert.NotNil(t, dir)
 		defer func() { assert.NoError(t, dir.Close()) }()
 
-		entries, err := dir.list()
+		entries, err := dir.List()
 		assert.NoError(t, err)
 		assert.Greater(t, len(entries), 1)
-		found := entries.names()
+		found := entries.Names()
 		assert.Contains(t, found, "base")
 	})
 	t.Run("dir1", func(t *testing.T) {
@@ -136,10 +136,10 @@ func TestDirectoryList(t *testing.T) {
 		assert.NotNil(t, dir)
 		defer func() { assert.NoError(t, dir.Close()) }()
 
-		entries, err := dir.list()
+		entries, err := dir.List()
 		assert.NoError(t, err)
 		assert.Greater(t, len(entries), 1)
-		found := entries.names()
+		found := entries.Names()
 		assert.Subset(t, found, subdirs)
 	})
 	t.Run("dir1Twice", func(t *testing.T) {
@@ -148,18 +148,18 @@ func TestDirectoryList(t *testing.T) {
 		assert.NotNil(t, dir)
 		defer func() { assert.NoError(t, dir.Close()) }()
 
-		entries, err := dir.list()
+		entries, err := dir.List()
 		assert.NoError(t, err)
 		assert.Greater(t, len(entries), 1)
-		found := entries.names()
+		found := entries.Names()
 		assert.Subset(t, found, subdirs)
 
 		// verify that calling list gives a complete list
 		// even after being used for the same directory already
-		entries, err = dir.list()
+		entries, err = dir.List()
 		assert.NoError(t, err)
 		assert.Greater(t, len(entries), 1)
-		found = entries.names()
+		found = entries.Names()
 		assert.Subset(t, found, subdirs)
 	})
 }

@@ -204,7 +204,7 @@ type dirEntries []*DirEntry
 // the entries return value even when an error is returned.
 // List rewinds the handle every time it is called to get a full
 // listing of directory contents.
-func (dir *Directory) list() (dirEntries, error) {
+func (dir *Directory) List() (dirEntries, error) {
 	var (
 		err     error
 		entry   *DirEntry
@@ -222,7 +222,7 @@ func (dir *Directory) list() (dirEntries, error) {
 }
 
 // names returns a slice of only the name fields from dir entries.
-func (entries dirEntries) names() []string {
+func (entries dirEntries) Names() []string {
 	names := make([]string, len(entries))
 	for i, v := range entries {
 		names[i] = v.Name()
