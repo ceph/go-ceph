@@ -66,7 +66,7 @@ func TestClosedImageNautilus(t *testing.T) {
 	err = image.Close()
 	assert.NoError(t, err)
 
-	// functions should now fail with an RBDError
+	// functions should now fail with an rbdError
 
 	_, err = image.GetCreateTimestamp()
 	assert.Error(t, err)
