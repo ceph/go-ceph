@@ -589,7 +589,7 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 	}
 
 	if ret < 0 {
-		return nil, RadosError(ret)
+		return nil, radosError(ret)
 	}
 	return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
 }
