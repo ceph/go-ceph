@@ -646,3 +646,16 @@ func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error)
 		return int(ret), getError(ret)
 	}
 }
+
+// GetLastVersion will return the version number of the last object read or
+// written to.
+//
+// Implements:
+//  uint64_t rados_get_last_version(rados_ioctx_t io);
+func (ioctx *IOContext) GetLastVersion() (uint64, error) {
+	if err := ioctx.validate(); err != nil {
+		return 0, err
+	}
+	v := C.rados_get_last_version(ioctx.ioctx)
+	return uint64(v), nil
+}
