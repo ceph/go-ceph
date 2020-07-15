@@ -1158,6 +1158,116 @@ func (suite *RadosTestSuite) TestOpenIOContextInvalidPool() {
 	require.Nil(suite.T(), ioctx)
 }
 
+func (suite *RadosTestSuite) TestGetLastVersion() {
+	suite.SetupConnection()
+	// NOTE: Reusing the ioctx set up by SetupConnection seems to make this
+	// test flakey. This is possibly be due to the value being "global" to the
+	// ioctx. Thus we create a new ioctx for the subtests.
+
+	suite.T().Run("write", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+		oid := suite.GenObjectName()
+		defer suite.ioctx.Delete(oid)
+
+		v1, _ := ioctx.GetLastVersion()
+
+		err = ioctx.Write(oid, []byte("something to write"), 0)
+		assert.NoError(t, err)
+
+		v2, _ := ioctx.GetLastVersion()
+		assert.NotEqual(t, v1, v2)
+
+		v3, _ := ioctx.GetLastVersion()
+		assert.Equal(t, v2, v3)
+
+		err = ioctx.Write(oid, []byte("something completely different"), 0)
+		assert.NoError(t, err)
+
+		v4, _ := ioctx.GetLastVersion()
+		assert.NotEqual(t, v1, v4)
+		assert.NotEqual(t, v2, v4)
+		assert.NotEqual(t, v3, v4)
+	})
+
+	suite.T().Run("writeAndRead", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+		oid := suite.GenObjectName()
+		defer ioctx.Delete(oid)
+
+		v1, _ := ioctx.GetLastVersion()
+
+		err = ioctx.Write(oid, []byte("presto"), 0)
+		assert.NoError(t, err)
+
+		v2, _ := ioctx.GetLastVersion()
+		assert.NotEqual(t, v1, v2)
+
+		bytes := make([]byte, 1024)
+		_, err = ioctx.Read(oid, bytes, 0)
+		assert.NoError(t, err)
+
+		v3, _ := ioctx.GetLastVersion()
+		assert.Equal(t, v2, v3)
+
+		err = ioctx.Write(oid, []byte("abracadabra"), 0)
+		assert.NoError(t, err)
+
+		v4, _ := ioctx.GetLastVersion()
+		assert.NotEqual(t, v1, v4)
+		assert.NotEqual(t, v2, v4)
+		assert.NotEqual(t, v3, v4)
+
+		_, err = ioctx.Read(oid, bytes, 0)
+		assert.NoError(t, err)
+
+		v5, _ := ioctx.GetLastVersion()
+		assert.Equal(t, v4, v5)
+	})
+
+	suite.T().Run("writeAndReadMultiple", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+
+		oids := make([]string, 5)
+		vers := make([]uint64, 5)
+		for i := 0; i < 5; i++ {
+			oid := suite.GenObjectName()
+			defer ioctx.Delete(oid)
+			err = ioctx.Write(oid, []byte(oid), 0)
+			assert.NoError(t, err)
+
+			oids[i] = oid
+			vers[i], _ = ioctx.GetLastVersion()
+		}
+
+		var v uint64
+		bytes := make([]byte, 1024)
+
+		_, err = ioctx.Read(oids[0], bytes, 0)
+		assert.NoError(t, err)
+		v, _ = ioctx.GetLastVersion()
+		assert.Equal(t, vers[0], v)
+
+		_, err = ioctx.Read(oids[4], bytes, 0)
+		assert.NoError(t, err)
+		v, _ = ioctx.GetLastVersion()
+		assert.Equal(t, vers[4], v)
+
+		_, err = ioctx.Read(oids[1], bytes, 0)
+		assert.NoError(t, err)
+		v, _ = ioctx.GetLastVersion()
+		assert.Equal(t, vers[1], v)
+	})
+
+	suite.T().Run("invalidIOContext", func(t *testing.T) {
+		ioctx := &IOContext{}
+		_, err := ioctx.GetLastVersion()
+		assert.Error(t, err)
+	})
+}
+
 func TestRadosTestSuite(t *testing.T) {
 	suite.Run(t, new(RadosTestSuite))
 }
