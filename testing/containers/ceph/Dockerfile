@@ -5,8 +5,11 @@ ENV CEPH_VERSION=${CEPH_VERSION:-nautilus}
 
 RUN true && \
     yum clean all && \
-    ( if [ "${CEPH_VERSION}" = "octopus" ]; then dnf install -y --repo BaseOS 'dnf-command(config-manager)' && dnf config-manager --set-disabled epel && dnf update -y; fi ) && \
-    yum install -y git wget curl libcephfs-devel librados-devel librbd-devel /usr/bin/cc /usr/bin/c++ make && \
+    cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" && \
+    yum install -y \
+        git wget curl make \
+        /usr/bin/cc /usr/bin/c++ \
+        "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
     (yum install -y /usr/bin/castxml || true) && \
     true
 
