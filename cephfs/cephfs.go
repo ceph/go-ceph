@@ -178,3 +178,31 @@ func (mount *MountInfo) IsMounted() bool {
 	ret := C.ceph_is_mounted(mount.mount)
 	return ret == 1
 }
+
+// flag : 0 - CEPH_XATTR_CREATE: create the extended attribute.  Must not exist.
+// 		  1 - CEPH_XATTR_REPLACE: replace the extended attribute, Must already exist.
+func (mount *MountInfo) Setxattr(path string, name string, value string, flag int) error {
+	cPath := C.CString(path)
+	cName := C.CString(name)
+	cValue := C.CString(value)
+	defer C.free(unsafe.Pointer(cPath))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cValue))
+
+	ret := C.ceph_setxattr(mount.mount, cPath, cName, unsafe.Pointer(cValue), C.size_t(len(value)), C.int(flag))
+	return getError(ret)
+}
+
+//
+func (mount *MountInfo) Getxattr(path string, name string) (string, error) {
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	var value string
+	cValue := C.CString(value)
+	defer C.free(unsafe.Pointer(cValue))
+
+	ret := C.ceph_getxattr(mount.mount, cPath, cName, unsafe.Pointer(cValue), C.size_t(len(value)))
+	return value, getError(ret)
+}
