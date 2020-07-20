@@ -341,7 +341,7 @@ func TestSetxattr(t *testing.T) {
 	})
 
 	t.Run("mountGetxattr", func(t *testing.T) {
-		key, err := mount.Getxattr("/tmpTest", "ceph.quota.max_bytes")
+		_, err := mount.Getxattr("/tmpTest", "ceph.quota.max_bytes")
 		assert.NoError(t, err)
 	})
 }
