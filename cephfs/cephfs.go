@@ -179,6 +179,7 @@ func (mount *MountInfo) IsMounted() bool {
 	return ret == 1
 }
 
+// Setxattr
 // flag : 0 - CEPH_XATTR_CREATE: create the extended attribute.  Must not exist.
 // 		  1 - CEPH_XATTR_REPLACE: replace the extended attribute, Must already exist.
 func (mount *MountInfo) Setxattr(path string, name string, value string, flag int) error {
@@ -193,7 +194,7 @@ func (mount *MountInfo) Setxattr(path string, name string, value string, flag in
 	return getError(ret)
 }
 
-//
+// Getxattr
 func (mount *MountInfo) Getxattr(path string, name string) (string, error) {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))

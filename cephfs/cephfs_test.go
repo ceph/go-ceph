@@ -323,3 +323,25 @@ func TestValidate(t *testing.T) {
 		assert.Equal(t, err, ErrNotConnected)
 	})
 }
+
+func TestSetxattr(t *testing.T) {
+	mount, err := CreateMount()
+	assert.NoError(t, err)
+	assert.NotNil(t, mount)
+	defer assert.NoError(t, mount.Release())
+
+	t.Run("mkdir", func(t *testing.T) {
+		err := mount.MakeDir("/tmpTest", 0755)
+		assert.NoError(t, err)
+	})
+
+	t.Run("mountSetxattr", func(t *testing.T) {
+		err := mount.Setxattr("/tmpTest", "ceph.quota.max_bytes", "102400", 0)
+		assert.NoError(t, err)
+	})
+
+	t.Run("mountGetxattr", func(t *testing.T) {
+		key, err := mount.Getxattr("/tmpTest", "ceph.quota.max_bytes")
+		assert.NoError(t, err)
+	})
+}
