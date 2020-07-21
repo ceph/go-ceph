@@ -585,6 +585,17 @@ func (suite *RadosTestSuite) TestGetPoolStats() {
 	suite.T().Error("Pool stats aren't changing")
 }
 
+func (suite *RadosTestSuite) TestGetPoolID() {
+	suite.SetupConnection()
+
+	poolIDByName, err := suite.conn.GetPoolByName(suite.pool)
+	assert.NoError(suite.T(), err)
+	assert.NotEqual(suite.T(), int64(0), poolIDByName)
+
+	poolID := suite.ioctx.GetPoolID()
+	assert.Equal(suite.T(), poolIDByName, poolID)
+}
+
 func (suite *RadosTestSuite) TestGetPoolName() {
 	suite.SetupConnection()
 
