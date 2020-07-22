@@ -8,7 +8,7 @@ package rbd
 #cgo LDFLAGS: -lrbd
 #include <rbd/librbd.h>
 
-extern int callWatchCallback(int index);
+extern void imageWatchCallback(void *);
 
 // cgo has trouble converting the types of the callback and data arg defined in
 // librbd header. It wants the callback function to be a byte pointer and
@@ -18,14 +18,15 @@ extern int callWatchCallback(int index);
 static inline int wrap_rbd_update_watch(
 			rbd_image_t image,
 			uint64_t *handle,
-			void *watch_cb,
-			uintptr_t arg) {
-	return rbd_update_watch(image, handle, watch_cb, (void*)arg);
+			uintptr_t index) {
+	return rbd_update_watch(image, handle, imageWatchCallback, (void*)index);
 }
 */
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/ceph/go-ceph/internal/callbacks"
 	"github.com/ceph/go-ceph/internal/retry"
 )
@@ -120,7 +121,6 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 	ret := C.wrap_rbd_update_watch(
 		image.image,
 		&w.handle,
-		C.callWatchCallback,
 		C.uintptr_t(w.cbIndex))
 	if ret != 0 {
 		return nil, getError(ret)
@@ -145,8 +145,8 @@ func (w *Watch) Unwatch() error {
 }
 
 //export imageWatchCallback
-func imageWatchCallback(index C.int) {
-	v := watchCallbacks.Lookup(int(index))
+func imageWatchCallback(index unsafe.Pointer) {
+	v := watchCallbacks.Lookup(int(uintptr(index)))
 	wi := v.(watchInstance)
 	wi.callback(wi.data)
 }
