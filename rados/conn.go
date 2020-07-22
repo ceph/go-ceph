@@ -294,7 +294,7 @@ func (c *Conn) GetPoolByName(name string) (int64, error) {
 	defer C.free(unsafe.Pointer(c_name))
 	ret := int64(C.rados_pool_lookup(c.cluster, c_name))
 	if ret < 0 {
-		return 0, RadosError(ret)
+		return 0, radosError(ret)
 	}
 	return ret, nil
 }
@@ -308,7 +308,7 @@ func (c *Conn) GetPoolByID(id int64) (string, error) {
 	c_id := C.int64_t(id)
 	ret := int(C.rados_pool_reverse_lookup(c.cluster, c_id, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
 	if ret < 0 {
-		return "", RadosError(ret)
+		return "", radosError(ret)
 	}
 	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 }

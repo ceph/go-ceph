@@ -12,14 +12,10 @@ import (
 	"github.com/ceph/go-ceph/internal/errutil"
 )
 
-// revive:disable:exported Temporarily live with stuttering
+// rbdError represents an error condition returned from the librbd APIs.
+type rbdError int
 
-// RBDError represents an error condition returned from the librbd APIs.
-type RBDError int
-
-// revive:enable:exported
-
-func (e RBDError) Error() string {
+func (e rbdError) Error() string {
 	errno, s := errutil.FormatErrno(int(e))
 	if s == "" {
 		return fmt.Sprintf("rbd: ret=%d", errno)
@@ -27,12 +23,16 @@ func (e RBDError) Error() string {
 	return fmt.Sprintf("rbd: ret=%d, %s", errno, s)
 }
 
+func (e rbdError) Errno() int {
+	return int(e)
+}
+
 func getError(err C.int) error {
 	if err != 0 {
 		if err == -C.ENOENT {
 			return ErrNotFound
 		}
-		return RBDError(err)
+		return rbdError(err)
 	}
 	return nil
 }
@@ -79,5 +79,5 @@ var (
 // Private errors:
 
 const (
-	errRange = RBDError(-C.ERANGE)
+	errRange = rbdError(-C.ERANGE)
 )
