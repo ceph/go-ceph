@@ -41,7 +41,7 @@ func (image *Image) GetParentInfo(p_pool, p_name, p_snapname []byte) error {
 	if ret == 0 {
 		return nil
 	} else {
-		return RBDError(ret)
+		return rbdError(ret)
 	}
 }
 
@@ -67,7 +67,7 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 		return nil, nil, nil
 	}
 	if ret < 0 && ret != -C.ERANGE {
-		return nil, nil, RBDError(ret)
+		return nil, nil, rbdError(ret)
 	}
 
 	pools_buf := make([]byte, c_pools_len)
@@ -79,7 +79,7 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 		(*C.char)(unsafe.Pointer(&images_buf[0])),
 		&c_images_len)
 	if ret < 0 {
-		return nil, nil, RBDError(ret)
+		return nil, nil, rbdError(ret)
 	}
 
 	pools = cutil.SplitSparseBuffer(pools_buf[:c_pools_len])
