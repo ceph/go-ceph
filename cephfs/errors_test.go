@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCephFSError(t *testing.T) {
@@ -13,6 +14,11 @@ func TestCephFSError(t *testing.T) {
 	err = getError(-5) // IO error
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "cephfs: ret=5, Input/output error")
+
+	errno, ok := err.(interface{ Errno() int })
+	assert.True(t, ok)
+	require.NotNil(t, errno)
+	assert.Equal(t, errno.Errno(), -5)
 
 	err = getError(345) // no such errno
 	assert.Error(t, err)

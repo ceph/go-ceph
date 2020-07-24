@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRBDError(t *testing.T) {
@@ -13,6 +14,11 @@ func TestRBDError(t *testing.T) {
 	err = getError(-39) // NOTEMPTY (image still has a snapshot)
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "rbd: ret=39, Directory not empty")
+
+	errno, ok := err.(interface{ Errno() int })
+	assert.True(t, ok)
+	require.NotNil(t, errno)
+	assert.Equal(t, errno.Errno(), -39)
 
 	err = getError(345) // no such errno
 	assert.Error(t, err)
