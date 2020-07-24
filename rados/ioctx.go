@@ -249,6 +249,15 @@ func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
 	}, nil
 }
 
+// GetPoolID returns the pool ID associated with the I/O context.
+//
+// Implements:
+//  int64_t rados_ioctx_get_id(rados_ioctx_t io)
+func (ioctx *IOContext) GetPoolID() int64 {
+	ret := C.rados_ioctx_get_id(ioctx.ioctx)
+	return int64(ret)
+}
+
 // GetPoolName returns the name of the pool associated with the I/O context.
 func (ioctx *IOContext) GetPoolName() (name string, err error) {
 	var (

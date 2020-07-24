@@ -6,6 +6,7 @@ package cephfs
 import "C"
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ceph/go-ceph/internal/errutil"
@@ -35,6 +36,14 @@ func getError(e C.int) error {
 }
 
 // Public go errors:
+
+var (
+	// ErrEmptyArgument may be returned if a function argument is passed
+	// a zero-length slice or map.
+	ErrEmptyArgument = errors.New("Argument must contain at least one item")
+)
+
+// Public CephFSErrors:
 
 const (
 	// ErrNotConnected may be returned when client is not connected

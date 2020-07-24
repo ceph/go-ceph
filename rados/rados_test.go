@@ -167,6 +167,31 @@ func (suite *RadosTestSuite) TestParseDefaultConfigEnv() {
 	assert.Equal(suite.T(), curr_val, "/dev/null")
 }
 
+func (suite *RadosTestSuite) TestParseConfigArgv() {
+	prev_val, err := suite.conn.GetConfigOption("log_file")
+	assert.NoError(suite.T(), err, "Invalid option")
+
+	argv := []string{"rados.test", "--log_file", "/dev/null"}
+	err = suite.conn.ParseConfigArgv(argv)
+	assert.NoError(suite.T(), err)
+
+	curr_val, err := suite.conn.GetConfigOption("log_file")
+	assert.NoError(suite.T(), err, "Invalid option")
+
+	assert.NotEqual(suite.T(), prev_val, "/dev/null")
+	assert.Equal(suite.T(), curr_val, "/dev/null")
+
+	// ensure that an empty slice triggers an error (not a crash)
+	err = suite.conn.ParseConfigArgv([]string{})
+	assert.Error(suite.T(), err)
+
+	// ensure we get an error for an invalid conn value
+	badConn := &Conn{}
+	err = badConn.ParseConfigArgv(
+		[]string{"cephfs.test", "--log_file", "/dev/null"})
+	assert.Error(suite.T(), err)
+}
+
 func (suite *RadosTestSuite) TestParseCmdLineArgs() {
 	prev_val, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
@@ -583,6 +608,17 @@ func (suite *RadosTestSuite) TestGetPoolStats() {
 	}
 
 	suite.T().Error("Pool stats aren't changing")
+}
+
+func (suite *RadosTestSuite) TestGetPoolID() {
+	suite.SetupConnection()
+
+	poolIDByName, err := suite.conn.GetPoolByName(suite.pool)
+	assert.NoError(suite.T(), err)
+	assert.NotEqual(suite.T(), int64(0), poolIDByName)
+
+	poolID := suite.ioctx.GetPoolID()
+	assert.Equal(suite.T(), poolIDByName, poolID)
 }
 
 func (suite *RadosTestSuite) TestGetPoolName() {
