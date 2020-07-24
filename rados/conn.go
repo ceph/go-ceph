@@ -6,9 +6,9 @@ package rados
 import "C"
 
 import (
-	"bytes"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 )
 
@@ -119,14 +119,7 @@ func (c *Conn) ListPools() (names []string, err error) {
 			continue
 		}
 
-		tmp := bytes.SplitAfter(buf[:ret-1], []byte{0})
-		for _, s := range tmp {
-			if len(s) > 0 {
-				name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-				names = append(names, name)
-			}
-		}
-
+		names = cutil.SplitSparseBuffer(buf[:ret])
 		return names, nil
 	}
 }
