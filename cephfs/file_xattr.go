@@ -12,9 +12,9 @@ package cephfs
 import "C"
 
 import (
-	"bytes"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 )
 
@@ -132,13 +132,7 @@ func (f *File) ListXattr() ([]string, error) {
 		return nil, err
 	}
 
-	names := make([]string, 0)
-	for _, s := range bytes.Split(buf[:ret], []byte{0}) {
-		if len(s) > 0 {
-			name := C.GoString((*C.char)(unsafe.Pointer(&s[0])))
-			names = append(names, name)
-		}
-	}
+	names := cutil.SplitSparseBuffer(buf[:ret])
 	return names, nil
 }
 
