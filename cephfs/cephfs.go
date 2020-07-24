@@ -70,6 +70,41 @@ func (mount *MountInfo) ReadDefaultConfigFile() error {
 	return getError(ret)
 }
 
+// ParseConfigArgv configures the mount using a unix style command line
+// argument vector.
+//
+// Implements:
+//  int ceph_conf_parse_argv(struct ceph_mount_info *cmount, int argc, const char **argv);
+func (mount *MountInfo) ParseConfigArgv(argv []string) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+	if len(argv) == 0 {
+		return ErrEmptyArgument
+	}
+	cargv := make([]*C.char, len(argv))
+	for i := range argv {
+		cargv[i] = C.CString(argv[i])
+		defer C.free(unsafe.Pointer(cargv[i]))
+	}
+
+	ret := C.ceph_conf_parse_argv(mount.mount, C.int(len(cargv)), &cargv[0])
+	return getError(ret)
+}
+
+// ParseDefaultConfigEnv configures the mount from the default Ceph
+// environment variable CEPH_ARGS.
+//
+// Implements:
+//  int ceph_conf_parse_env(struct ceph_mount_info *cmount, const char *var);
+func (mount *MountInfo) ParseDefaultConfigEnv() error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+	ret := C.ceph_conf_parse_env(mount.mount, nil)
+	return getError(ret)
+}
+
 // SetConfigOption sets the value of the configuration option identified by
 // the given name.
 //
