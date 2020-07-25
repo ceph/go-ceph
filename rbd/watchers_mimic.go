@@ -85,7 +85,7 @@ var watchCallbacks = callbacks.New()
 // callback.
 type WatchCallback func(interface{})
 
-type watchInstance struct {
+type watchCallbackCtx struct {
 	callback WatchCallback
 	data     interface{}
 }
@@ -93,7 +93,7 @@ type watchInstance struct {
 // Watch represents an ongoing image metadata watch.
 type Watch struct {
 	image   *Image
-	wi      watchInstance
+	wcc     watchCallbackCtx
 	handle  C.uint64_t
 	cbIndex int
 }
@@ -108,14 +108,14 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 	if err := image.validate(imageIsOpen); err != nil {
 		return nil, err
 	}
-	wi := watchInstance{
+	wcc := watchCallbackCtx{
 		callback: cb,
 		data:     data,
 	}
 	w := &Watch{
 		image:   image,
-		wi:      wi,
-		cbIndex: watchCallbacks.Add(wi),
+		wcc:     wcc,
+		cbIndex: watchCallbacks.Add(wcc),
 	}
 
 	ret := C.wrap_rbd_update_watch(
@@ -147,6 +147,6 @@ func (w *Watch) Unwatch() error {
 //export imageWatchCallback
 func imageWatchCallback(index unsafe.Pointer) {
 	v := watchCallbacks.Lookup(int(uintptr(index)))
-	wi := v.(watchInstance)
-	wi.callback(wi.data)
+	wcc := v.(watchCallbackCtx)
+	wcc.callback(wcc.data)
 }
