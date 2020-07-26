@@ -19,7 +19,19 @@ import (
 // to control and validate what "callbacks" get used.
 type Callbacks struct {
 	mutex sync.RWMutex
-	cmap  map[uintptr]interface{}
+	cmap  map[int]interface{}
+	index int
+}
+
+func (cb *Callbacks) nextIndex() int {
+	index := cb.index
+	for {
+		cb.index++
+		if _, found := cb.cmap[cb.index]; !found {
+			break
+		}
+	}
+	return index
 }
 
 // New returns a new callbacks tracker.
@@ -32,19 +44,7 @@ func New() *Callbacks {
 func (cb *Callbacks) Add(v interface{}) uintptr {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
-	// this approach assumes that there are typically very few callbacks
-	// in play at once and can just use the length of the map as our
-	// index. But in case of collisions we fall back to simply incrementing
-	// until we find a free key like in the cgo wiki page.
-	// If this code ever becomes a hot path there's surely plenty of room
-	// for optimization in the future :-)
-	index := uintptr(len(cb.cmap) + 1)
-	for {
-		if _, found := cb.cmap[index]; !found {
-			break
-		}
-		index++
-	}
+	index := cb.nextIndex()
 	cb.cmap[index] = v
 	return index
 }

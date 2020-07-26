@@ -52,6 +52,7 @@ func TestCallbacksIndexing(t *testing.T) {
 	_ = cbks.Add("wibble")
 	_ = cbks.Add("wabble")
 	assert.Len(t, cbks.cmap, 5)
+	assert.Equal(t, cbks.index, 5)
 
 	// generally we assume that the callback data will be mostly LIFO
 	// but can't guarantee it. Thus we check that when we remove the
@@ -61,6 +62,7 @@ func TestCallbacksIndexing(t *testing.T) {
 	_ = cbks.Add("flim")
 	ilast := cbks.Add("flam")
 	assert.Len(t, cbks.cmap, 5)
+	assert.Equal(t, cbks.index, 7)
 
 	x := cbks.Lookup(ilast)
 	assert.NotNil(t, x)
