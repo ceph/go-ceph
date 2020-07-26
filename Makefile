@@ -49,7 +49,7 @@ endif
 
 .PHONY: ci-image
 ci-image: $(BUILDFILE)
-$(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh
+$(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
 	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(CI_IMAGE_TAG) -f $(CONTAINER_CONFIG_DIR)/Dockerfile .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
 	echo $(CEPH_VERSION) >> $(BUILDFILE)
