@@ -19,11 +19,11 @@ import (
 // to control and validate what "callbacks" get used.
 type Callbacks struct {
 	mutex sync.RWMutex
-	cmap  map[int]interface{}
-	index int
+	cmap  map[uintptr]interface{}
+	index uintptr
 }
 
-func (cb *Callbacks) nextIndex() int {
+func (cb *Callbacks) nextIndex() uintptr {
 	index := cb.index
 	for {
 		cb.index++
