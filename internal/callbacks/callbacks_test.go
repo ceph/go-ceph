@@ -56,15 +56,16 @@ func TestCallbacksIndexing(t *testing.T) {
 	assert.Len(t, cbks.cmap, 5)
 	assert.Equal(t, uintptr(cbks.last), uintptr(5))
 
-	// generally we assume that the callback data will be mostly LIFO
-	// but can't guarantee it. Thus we check that when we remove the
-	// first items inserted into the map there are no subsequent issues
+	// Check that when we remove the first items inserted into the map there are
+	// no subsequent issues
 	cbks.Remove(i1)
 	cbks.Remove(i2)
+	assert.Len(t, cbks.free, 2)
 	_ = cbks.Add("flim")
 	ilast := cbks.Add("flam")
 	assert.Len(t, cbks.cmap, 5)
-	assert.Equal(t, uintptr(cbks.last), uintptr(7))
+	assert.Len(t, cbks.free, 0)
+	assert.Equal(t, uintptr(cbks.last), uintptr(5))
 
 	x := cbks.Lookup(ilast)
 	assert.NotNil(t, x)

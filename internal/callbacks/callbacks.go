@@ -21,12 +21,21 @@ import (
 type Callbacks struct {
 	mutex sync.RWMutex
 	cmap  map[unsafe.Pointer]interface{}
+	free  []unsafe.Pointer
 	last  unsafe.Pointer
 }
 
 func (cb *Callbacks) nextPtr() unsafe.Pointer {
-	cb.last = unsafe.Pointer(uintptr(cb.last) + 1)
-	return cb.last
+	var p unsafe.Pointer
+	if len(cb.free) > 0 {
+		n := len(cb.free) - 1
+		p = cb.free[n]
+		cb.free = cb.free[:n]
+	} else {
+		cb.last = unsafe.Pointer(uintptr(cb.last) + 1)
+		p = cb.last
+	}
+	return p
 }
 
 // New returns a new callbacks tracker.
@@ -34,7 +43,7 @@ func New() *Callbacks {
 	return &Callbacks{cmap: make(map[unsafe.Pointer]interface{})}
 }
 
-// Add a callback/object to the tracker and return a new index
+// Add a callback/object to the tracker and return a new fake pointer
 // for the object.
 func (cb *Callbacks) Add(v interface{}) unsafe.Pointer {
 	cb.mutex.Lock()
@@ -44,11 +53,12 @@ func (cb *Callbacks) Add(v interface{}) unsafe.Pointer {
 	return p
 }
 
-// Remove a callback/object given it's index.
+// Remove a callback/object given it's fake pointer.
 func (cb *Callbacks) Remove(p unsafe.Pointer) {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
 	delete(cb.cmap, p)
+	cb.free = append(cb.free, p)
 }
 
 // Lookup returns a mapped callback/object given an index.
