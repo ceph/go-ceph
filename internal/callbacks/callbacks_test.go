@@ -9,12 +9,12 @@ import (
 
 func TestCallbacks(t *testing.T) {
 	cbks := New()
-	assert.Len(t, cbks.cmap, 0)
+	assert.Len(t, cbks.cmap, 1)
 
 	i1 := cbks.Add("foo")
 	i2 := cbks.Add("bar")
 	i3 := cbks.Add("baz")
-	assert.Len(t, cbks.cmap, 3)
+	assert.Len(t, cbks.cmap, 4)
 
 	var x interface{}
 	x = cbks.Lookup(i1)
@@ -41,20 +41,20 @@ func TestCallbacks(t *testing.T) {
 	assert.Nil(t, x)
 
 	cbks.Remove(i1)
-	assert.Len(t, cbks.cmap, 0)
+	assert.Len(t, cbks.cmap, 4)
+	assert.Len(t, cbks.free, 3)
 }
 
 func TestCallbacksIndexing(t *testing.T) {
 	cbks := New()
-	assert.Len(t, cbks.cmap, 0)
+	assert.Len(t, cbks.cmap, 1)
 
 	i1 := cbks.Add("foo")
 	i2 := cbks.Add("bar")
 	_ = cbks.Add("baz")
 	_ = cbks.Add("wibble")
 	_ = cbks.Add("wabble")
-	assert.Len(t, cbks.cmap, 5)
-	assert.Equal(t, uintptr(cbks.last), uintptr(5))
+	assert.Len(t, cbks.cmap, 6)
 
 	// Check that when we remove the first items inserted into the map there are
 	// no subsequent issues
@@ -63,9 +63,8 @@ func TestCallbacksIndexing(t *testing.T) {
 	assert.Len(t, cbks.free, 2)
 	_ = cbks.Add("flim")
 	ilast := cbks.Add("flam")
-	assert.Len(t, cbks.cmap, 5)
+	assert.Len(t, cbks.cmap, 6)
 	assert.Len(t, cbks.free, 0)
-	assert.Equal(t, uintptr(cbks.last), uintptr(5))
 
 	x := cbks.Lookup(ilast)
 	assert.NotNil(t, x)
@@ -76,7 +75,7 @@ func TestCallbacksIndexing(t *testing.T) {
 
 func TestCallbacksData(t *testing.T) {
 	cbks := New()
-	assert.Len(t, cbks.cmap, 0)
+	assert.Len(t, cbks.cmap, 1)
 
 	// insert a plain function
 	i1 := cbks.Add(func(v int) int { return v + 1 })

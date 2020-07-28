@@ -13,34 +13,43 @@ import (
 
 // Callbacks provides a tracker for data that is to be passed between Go
 // and C callback functions. The Go callback/object may not be passed
-// by a pointer to C code and so instead integer indexes into an internal
+// by a pointer to C code and so instead fake pointers into an internal
 // map are used.
 // Typically the item being added will either be a callback function or
 // a data structure containing a callback function. It is up to the caller
 // to control and validate what "callbacks" get used.
 type Callbacks struct {
 	mutex sync.RWMutex
-	cmap  map[unsafe.Pointer]interface{}
-	free  []unsafe.Pointer
-	last  unsafe.Pointer
+	cmap  []interface{}
+	free  []uintptr
 }
 
-func (cb *Callbacks) nextPtr() unsafe.Pointer {
-	var p unsafe.Pointer
+var nullPtr unsafe.Pointer
+
+func getPtr(i uintptr) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(nullPtr) + i)
+}
+
+func (cb *Callbacks) validIndex(i uintptr) bool {
+	return i > 0 && i < uintptr(len(cb.cmap))
+}
+
+func (cb *Callbacks) nextIndex() uintptr {
+	var i uintptr
 	if len(cb.free) > 0 {
 		n := len(cb.free) - 1
-		p = cb.free[n]
+		i = cb.free[n]
 		cb.free = cb.free[:n]
 	} else {
-		cb.last = unsafe.Pointer(uintptr(cb.last) + 1)
-		p = cb.last
+		cb.cmap = append(cb.cmap, nil)
+		i = uintptr(len(cb.cmap) - 1)
 	}
-	return p
+	return i
 }
 
 // New returns a new callbacks tracker.
 func New() *Callbacks {
-	return &Callbacks{cmap: make(map[unsafe.Pointer]interface{})}
+	return &Callbacks{cmap: []interface{}{nil}}
 }
 
 // Add a callback/object to the tracker and return a new fake pointer
@@ -48,22 +57,29 @@ func New() *Callbacks {
 func (cb *Callbacks) Add(v interface{}) unsafe.Pointer {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
-	p := cb.nextPtr()
-	cb.cmap[p] = v
-	return p
+	i := cb.nextIndex()
+	cb.cmap[i] = v
+	return getPtr(i)
 }
 
 // Remove a callback/object given it's fake pointer.
 func (cb *Callbacks) Remove(p unsafe.Pointer) {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
-	delete(cb.cmap, p)
-	cb.free = append(cb.free, p)
+	i := uintptr(p)
+	if cb.validIndex(i) {
+		cb.cmap[i] = nil
+		cb.free = append(cb.free, i)
+	}
 }
 
-// Lookup returns a mapped callback/object given an index.
+// Lookup returns a mapped callback/object given an fake pointer.
 func (cb *Callbacks) Lookup(p unsafe.Pointer) interface{} {
 	cb.mutex.RLock()
 	defer cb.mutex.RUnlock()
-	return cb.cmap[p]
+	i := uintptr(p)
+	if cb.validIndex(i) {
+		return cb.cmap[i]
+	}
+	return nil
 }
