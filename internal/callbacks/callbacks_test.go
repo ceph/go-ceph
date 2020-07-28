@@ -2,6 +2,7 @@ package callbacks
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +23,8 @@ func TestCallbacks(t *testing.T) {
 		assert.EqualValues(t, s, "foo")
 	}
 
-	x = cbks.Lookup(5555)
+	var nullPtr unsafe.Pointer
+	x = cbks.Lookup(unsafe.Pointer(uintptr(nullPtr) + 5555))
 	assert.Nil(t, x)
 
 	x = cbks.Lookup(i3)
@@ -52,7 +54,7 @@ func TestCallbacksIndexing(t *testing.T) {
 	_ = cbks.Add("wibble")
 	_ = cbks.Add("wabble")
 	assert.Len(t, cbks.cmap, 5)
-	assert.Equal(t, cbks.index, 5)
+	assert.Equal(t, uintptr(cbks.last), uintptr(5))
 
 	// generally we assume that the callback data will be mostly LIFO
 	// but can't guarantee it. Thus we check that when we remove the
@@ -62,7 +64,7 @@ func TestCallbacksIndexing(t *testing.T) {
 	_ = cbks.Add("flim")
 	ilast := cbks.Add("flam")
 	assert.Len(t, cbks.cmap, 5)
-	assert.Equal(t, cbks.index, 7)
+	assert.Equal(t, uintptr(cbks.last), uintptr(7))
 
 	x := cbks.Lookup(ilast)
 	assert.NotNil(t, x)

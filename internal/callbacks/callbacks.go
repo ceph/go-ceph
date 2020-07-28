@@ -2,6 +2,7 @@ package callbacks
 
 import (
 	"sync"
+	"unsafe"
 )
 
 // The logic of this file is largely adapted from:
@@ -19,46 +20,40 @@ import (
 // to control and validate what "callbacks" get used.
 type Callbacks struct {
 	mutex sync.RWMutex
-	cmap  map[uintptr]interface{}
-	index uintptr
+	cmap  map[unsafe.Pointer]interface{}
+	last  unsafe.Pointer
 }
 
-func (cb *Callbacks) nextIndex() uintptr {
-	index := cb.index
-	for {
-		cb.index++
-		if _, found := cb.cmap[cb.index]; !found {
-			break
-		}
-	}
-	return index
+func (cb *Callbacks) nextPtr() unsafe.Pointer {
+	cb.last = unsafe.Pointer(uintptr(cb.last) + 1)
+	return cb.last
 }
 
 // New returns a new callbacks tracker.
 func New() *Callbacks {
-	return &Callbacks{cmap: make(map[uintptr]interface{})}
+	return &Callbacks{cmap: make(map[unsafe.Pointer]interface{})}
 }
 
 // Add a callback/object to the tracker and return a new index
 // for the object.
-func (cb *Callbacks) Add(v interface{}) uintptr {
+func (cb *Callbacks) Add(v interface{}) unsafe.Pointer {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
-	index := cb.nextIndex()
-	cb.cmap[index] = v
-	return index
+	p := cb.nextPtr()
+	cb.cmap[p] = v
+	return p
 }
 
 // Remove a callback/object given it's index.
-func (cb *Callbacks) Remove(index uintptr) {
+func (cb *Callbacks) Remove(p unsafe.Pointer) {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
-	delete(cb.cmap, index)
+	delete(cb.cmap, p)
 }
 
 // Lookup returns a mapped callback/object given an index.
-func (cb *Callbacks) Lookup(index uintptr) interface{} {
+func (cb *Callbacks) Lookup(p unsafe.Pointer) interface{} {
 	cb.mutex.RLock()
 	defer cb.mutex.RUnlock()
-	return cb.cmap[index]
+	return cb.cmap[p]
 }
