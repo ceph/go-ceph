@@ -1,4 +1,4 @@
-package callbacks
+package cref
 
 import (
 	"sync"
@@ -11,7 +11,7 @@ import (
 // Also helpful:
 // https://eli.thegreenplace.net/2019/passing-callbacks-and-pointers-to-cgo/
 
-// Callbacks provides a tracker for data that is to be passed between Go
+// Cref provides a tracker for data that is to be passed between Go
 // and C callback functions. The Go callback/object may not be passed
 // by a pointer to C code and so instead fake pointers into an internal
 // map are used.

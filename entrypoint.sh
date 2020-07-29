@@ -184,7 +184,7 @@ test_go_ceph() {
     P=github.com/ceph/go-ceph
     pkgs=(\
         "cephfs" \
-        "internal/callbacks" \
+        "internal/cref" \
         "internal/cutil" \
         "internal/errutil" \
         "internal/retry" \

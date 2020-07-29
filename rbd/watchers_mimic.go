@@ -15,7 +15,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/ceph/go-ceph/internal/callbacks"
+	"github.com/ceph/go-ceph/internal/cref"
 	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 )
@@ -101,7 +101,7 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 	w := &Watch{
 		image:   image,
 		wcc:     wcc,
-		cbIndex: callbacks.Add(wcc),
+		cbIndex: cref.Add(wcc),
 	}
 
 	ret := C.rbd_update_watch(
@@ -127,13 +127,13 @@ func (w *Watch) Unwatch() error {
 		return err
 	}
 	ret := C.rbd_update_unwatch(w.image.image, w.handle)
-	callbacks.Remove(w.cbIndex)
+	cref.Remove(w.cbIndex)
 	return getError(ret)
 }
 
 //export imageWatchCallback
 func imageWatchCallback(index unsafe.Pointer) {
-	v := callbacks.Lookup(index)
+	v := cref.Lookup(index)
 	wcc := v.(watchCallbackCtx)
 	wcc.callback(wcc.data)
 }

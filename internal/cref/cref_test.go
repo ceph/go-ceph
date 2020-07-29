@@ -1,4 +1,4 @@
-package callbacks
+package cref
 
 import (
 	"testing"

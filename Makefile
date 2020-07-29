@@ -68,7 +68,7 @@ check-revive:
 # library code as well.
 test-binaries: \
 	cephfs.test \
-	internal/callbacks.test \
+	internal/cref.test \
 	internal/cutil.test \
 	internal/errutil.test \
 	internal/retry.test \

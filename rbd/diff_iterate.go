@@ -15,7 +15,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/ceph/go-ceph/internal/callbacks"
+	"github.com/ceph/go-ceph/internal/cref"
 	"github.com/ceph/go-ceph/internal/cutil"
 )
 
@@ -96,8 +96,8 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 		defer C.free(unsafe.Pointer(cSnapName))
 	}
 
-	cbIndex := callbacks.Add(config)
-	defer callbacks.Remove(cbIndex)
+	cbIndex := cref.Add(config)
+	defer cref.Remove(cbIndex)
 
 	ret := C.rbd_diff_iterate2(
 		image.image,
@@ -116,7 +116,7 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 func diffIterateCallback(
 	offset C.uint64_t, length C.size_t, exists C.int, index unsafe.Pointer) C.int {
 
-	v := callbacks.Lookup(index)
+	v := cref.Lookup(index)
 	config := v.(DiffIterateConfig)
 	return C.int(config.Callback(
 		uint64(offset), uint64(length), int(exists), config.Data))
