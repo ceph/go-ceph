@@ -67,9 +67,6 @@ func (image *Image) ListWatchers() ([]ImageWatcher, error) {
 	return imageWatchers, nil
 }
 
-// watchCallbacks tracks the active callbacks for rbd watches
-var watchCallbacks = callbacks.New()
-
 // WatchCallback defines the function signature needed for the UpdateWatch
 // callback.
 type WatchCallback func(interface{})
@@ -104,7 +101,7 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 	w := &Watch{
 		image:   image,
 		wcc:     wcc,
-		cbIndex: watchCallbacks.Add(wcc),
+		cbIndex: callbacks.Add(wcc),
 	}
 
 	ret := C.rbd_update_watch(
@@ -130,13 +127,13 @@ func (w *Watch) Unwatch() error {
 		return err
 	}
 	ret := C.rbd_update_unwatch(w.image.image, w.handle)
-	watchCallbacks.Remove(w.cbIndex)
+	callbacks.Remove(w.cbIndex)
 	return getError(ret)
 }
 
 //export imageWatchCallback
 func imageWatchCallback(index unsafe.Pointer) {
-	v := watchCallbacks.Lookup(index)
+	v := callbacks.Lookup(index)
 	wcc := v.(watchCallbackCtx)
 	wcc.callback(wcc.data)
 }

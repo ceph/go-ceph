@@ -8,65 +8,65 @@ import (
 )
 
 func TestCallbacks(t *testing.T) {
-	cbks := New()
-	assert.Len(t, cbks.cmap, 1)
+	defer reset()
+	assert.Len(t, cmap, 1)
 
-	i1 := cbks.Add("foo")
-	i2 := cbks.Add("bar")
-	i3 := cbks.Add("baz")
-	assert.Len(t, cbks.cmap, 4)
+	i1 := Add("foo")
+	i2 := Add("bar")
+	i3 := Add("baz")
+	assert.Len(t, cmap, 4)
 
 	var x interface{}
-	x = cbks.Lookup(i1)
+	x = Lookup(i1)
 	assert.NotNil(t, x)
 	if s, ok := x.(string); ok {
 		assert.EqualValues(t, s, "foo")
 	}
 
 	var nullPtr unsafe.Pointer
-	x = cbks.Lookup(unsafe.Pointer(uintptr(nullPtr) + 5555))
+	x = Lookup(unsafe.Pointer(uintptr(nullPtr) + 5555))
 	assert.Nil(t, x)
 
-	x = cbks.Lookup(i3)
+	x = Lookup(i3)
 	assert.NotNil(t, x)
 	if s, ok := x.(string); ok {
 		assert.EqualValues(t, s, "baz")
 	}
-	cbks.Remove(i3)
-	x = cbks.Lookup(i3)
+	Remove(i3)
+	x = Lookup(i3)
 	assert.Nil(t, x)
 
-	cbks.Remove(i2)
-	x = cbks.Lookup(i2)
+	Remove(i2)
+	x = Lookup(i2)
 	assert.Nil(t, x)
 
-	cbks.Remove(i1)
-	assert.Len(t, cbks.cmap, 4)
-	assert.Len(t, cbks.free, 3)
+	Remove(i1)
+	assert.Len(t, cmap, 4)
+	assert.Len(t, free, 3)
 }
 
 func TestCallbacksIndexing(t *testing.T) {
-	cbks := New()
-	assert.Len(t, cbks.cmap, 1)
+	defer reset()
+	assert.Len(t, cmap, 1)
 
-	i1 := cbks.Add("foo")
-	i2 := cbks.Add("bar")
-	_ = cbks.Add("baz")
-	_ = cbks.Add("wibble")
-	_ = cbks.Add("wabble")
-	assert.Len(t, cbks.cmap, 6)
+	i1 := Add("foo")
+	i2 := Add("bar")
+	_ = Add("baz")
+	_ = Add("wibble")
+	_ = Add("wabble")
+	assert.Len(t, cmap, 6)
 
 	// Check that when we remove the first items inserted into the map there are
 	// no subsequent issues
-	cbks.Remove(i1)
-	cbks.Remove(i2)
-	assert.Len(t, cbks.free, 2)
-	_ = cbks.Add("flim")
-	ilast := cbks.Add("flam")
-	assert.Len(t, cbks.cmap, 6)
-	assert.Len(t, cbks.free, 0)
+	Remove(i1)
+	Remove(i2)
+	assert.Len(t, free, 2)
+	_ = Add("flim")
+	ilast := Add("flam")
+	assert.Len(t, cmap, 6)
+	assert.Len(t, free, 0)
 
-	x := cbks.Lookup(ilast)
+	x := Lookup(ilast)
 	assert.NotNil(t, x)
 	if s, ok := x.(string); ok {
 		assert.EqualValues(t, s, "flam")
@@ -74,11 +74,11 @@ func TestCallbacksIndexing(t *testing.T) {
 }
 
 func TestCallbacksData(t *testing.T) {
-	cbks := New()
-	assert.Len(t, cbks.cmap, 1)
+	defer reset()
+	assert.Len(t, cmap, 1)
 
 	// insert a plain function
-	i1 := cbks.Add(func(v int) int { return v + 1 })
+	i1 := Add(func(v int) int { return v + 1 })
 
 	// insert a type "containing" a function, note that it doesn't
 	// actually have a callable function. Users of the type must
@@ -87,12 +87,12 @@ func TestCallbacksData(t *testing.T) {
 		Stuff int
 		Junk  func(int, int) error
 	}
-	i2 := cbks.Add(flup{
+	i2 := Add(flup{
 		Stuff: 55,
 	})
 
 	// did we get a function back
-	x1 := cbks.Lookup(i1)
+	x1 := Lookup(i1)
 	if assert.NotNil(t, x1) {
 		if f, ok := x1.(func(v int) int); ok {
 			assert.Equal(t, 2, f(1))
@@ -102,7 +102,7 @@ func TestCallbacksData(t *testing.T) {
 	}
 
 	// did we get our data structure back
-	x2 := cbks.Lookup(i2)
+	x2 := Lookup(i2)
 	if assert.NotNil(t, x2) {
 		if d, ok := x2.(flup); ok {
 			assert.Equal(t, 55, d.Stuff)

@@ -18,68 +18,68 @@ import (
 // Typically the item being added will either be a callback function or
 // a data structure containing a callback function. It is up to the caller
 // to control and validate what "callbacks" get used.
-type Callbacks struct {
-	mutex sync.RWMutex
-	cmap  []interface{}
-	free  []uintptr
-}
 
-var nullPtr unsafe.Pointer
+var (
+	mutex   sync.RWMutex
+	cmap    = []interface{}{nil}
+	free    []uintptr
+	nullPtr unsafe.Pointer
+)
+
+func reset() {
+	cmap = cmap[:1]
+	free = nil
+}
 
 func getPtr(i uintptr) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(nullPtr) + i)
 }
 
-func (cb *Callbacks) validIndex(i uintptr) bool {
-	return i > 0 && i < uintptr(len(cb.cmap))
+func validIdx(i uintptr) bool {
+	return i > 0 && i < uintptr(len(cmap))
 }
 
-func (cb *Callbacks) nextIndex() uintptr {
+func nextIdx() uintptr {
 	var i uintptr
-	if len(cb.free) > 0 {
-		n := len(cb.free) - 1
-		i = cb.free[n]
-		cb.free = cb.free[:n]
+	if len(free) > 0 {
+		n := len(free) - 1
+		i = free[n]
+		free = free[:n]
 	} else {
-		cb.cmap = append(cb.cmap, nil)
-		i = uintptr(len(cb.cmap) - 1)
+		cmap = append(cmap, nil)
+		i = uintptr(len(cmap) - 1)
 	}
 	return i
 }
 
-// New returns a new callbacks tracker.
-func New() *Callbacks {
-	return &Callbacks{cmap: []interface{}{nil}}
-}
-
 // Add a callback/object to the tracker and return a new fake pointer
 // for the object.
-func (cb *Callbacks) Add(v interface{}) unsafe.Pointer {
-	cb.mutex.Lock()
-	defer cb.mutex.Unlock()
-	i := cb.nextIndex()
-	cb.cmap[i] = v
+func Add(v interface{}) unsafe.Pointer {
+	mutex.Lock()
+	defer mutex.Unlock()
+	i := nextIdx()
+	cmap[i] = v
 	return getPtr(i)
 }
 
 // Remove a callback/object given it's fake pointer.
-func (cb *Callbacks) Remove(p unsafe.Pointer) {
-	cb.mutex.Lock()
-	defer cb.mutex.Unlock()
+func Remove(p unsafe.Pointer) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	i := uintptr(p)
-	if cb.validIndex(i) {
-		cb.cmap[i] = nil
-		cb.free = append(cb.free, i)
+	if validIdx(i) {
+		cmap[i] = nil
+		free = append(free, i)
 	}
 }
 
 // Lookup returns a mapped callback/object given an fake pointer.
-func (cb *Callbacks) Lookup(p unsafe.Pointer) interface{} {
-	cb.mutex.RLock()
-	defer cb.mutex.RUnlock()
+func Lookup(p unsafe.Pointer) interface{} {
+	mutex.RLock()
+	defer mutex.RUnlock()
 	i := uintptr(p)
-	if cb.validIndex(i) {
-		return cb.cmap[i]
+	if validIdx(i) {
+		return cmap[i]
 	}
 	return nil
 }
