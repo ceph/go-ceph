@@ -11,10 +11,11 @@ import (
 // Also helpful:
 // https://eli.thegreenplace.net/2019/passing-callbacks-and-pointers-to-cgo/
 
-// Cref provides a tracker for data that is to be passed between Go
+// Cref provides a registry for data that is to be passed between Go
 // and C callback functions. The Go callback/object may not be passed
-// by a pointer to C code and so instead fake pointers into an internal
-// map are used.
+// by a pointer to C code and so instead references into an internal
+// map are used. The references can produce types that can be safely passed
+// to and received from C functions, that is void pointers and ints.
 // Typically the item being added will either be a callback function or
 // a data structure containing a callback function. It is up to the caller
 // to control and validate what "callbacks" get used.
@@ -31,8 +32,8 @@ func reset() {
 	free = nil
 }
 
-func getPtr(i uintptr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(nullPtr) + i)
+func idx2Ptr(idx uintptr) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(nullPtr) + idx)
 }
 
 func validIdx(i uintptr) bool {
@@ -52,32 +53,60 @@ func nextIdx() uintptr {
 	return i
 }
 
-// Add a callback/object to the tracker and return a new fake pointer
+// Ref is a reference to a stored object
+type Ref struct {
+	idx uintptr
+}
+
+// Ptr creates a raw pointer from the reference
+func (r Ref) Ptr() unsafe.Pointer {
+	return idx2Ptr(r.idx)
+}
+
+// Uintptr creates a uintptr value from the reference
+func (r Ref) Uintptr() uintptr {
+	return r.idx
+}
+
+// Uintptr restores a reference from an uintptr value
+func Uintptr(idx uintptr) Ref {
+	if validIdx(idx) {
+		return Ref{idx}
+	}
+	return Ref{0}
+}
+
+// Ptr restores a reference from a raw pointer
+func Ptr(p unsafe.Pointer) Ref {
+	return Uintptr(uintptr(p))
+}
+
+// Add a go object to the registry and return a new reference
 // for the object.
-func Add(v interface{}) unsafe.Pointer {
+func Add(v interface{}) Ref {
 	mutex.Lock()
 	defer mutex.Unlock()
 	i := nextIdx()
 	cmap[i] = v
-	return getPtr(i)
+	return Ref{i}
 }
 
-// Remove a callback/object given it's fake pointer.
-func Remove(p unsafe.Pointer) {
+// Remove a object given it's reference.
+func Remove(r Ref) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	i := uintptr(p)
+	i := r.idx
 	if validIdx(i) {
 		cmap[i] = nil
 		free = append(free, i)
 	}
 }
 
-// Lookup returns a mapped callback/object given an fake pointer.
-func Lookup(p unsafe.Pointer) interface{} {
+// Lookup returns a mapped object given an reference.
+func Lookup(r Ref) interface{} {
 	mutex.RLock()
 	defer mutex.RUnlock()
-	i := uintptr(p)
+	i := r.idx
 	if validIdx(i) {
 		return cmap[i]
 	}

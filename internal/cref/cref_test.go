@@ -2,7 +2,6 @@ package cref
 
 import (
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,8 +22,7 @@ func TestCallbacks(t *testing.T) {
 		assert.EqualValues(t, s, "foo")
 	}
 
-	var nullPtr unsafe.Pointer
-	x = Lookup(unsafe.Pointer(uintptr(nullPtr) + 5555))
+	x = Lookup(Ref{5555})
 	assert.Nil(t, x)
 
 	x = Lookup(i3)

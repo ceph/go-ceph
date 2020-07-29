@@ -81,7 +81,7 @@ type Watch struct {
 	image   *Image
 	wcc     watchCallbackCtx
 	handle  C.uint64_t
-	cbIndex unsafe.Pointer
+	cbIndex cref.Ref
 }
 
 // UpdateWatch updates the image object to watch metadata changes to the
@@ -108,7 +108,7 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 		image.image,
 		&w.handle,
 		C.rbd_update_callback_t(C.imageWatchCallback),
-		cutil.VoidPtr(w.cbIndex))
+		w.cbIndex.Ptr())
 	if ret != 0 {
 		return nil, getError(ret)
 	}
@@ -133,7 +133,7 @@ func (w *Watch) Unwatch() error {
 
 //export imageWatchCallback
 func imageWatchCallback(index unsafe.Pointer) {
-	v := cref.Lookup(index)
+	v := cref.Lookup(cref.Ptr(index))
 	wcc := v.(watchCallbackCtx)
 	wcc.callback(wcc.data)
 }

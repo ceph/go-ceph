@@ -107,7 +107,7 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 		C.uint8_t(config.IncludeParent),
 		C.uint8_t(config.WholeObject),
 		C.diff_iterate_callback_t(C.diffIterateCallback),
-		cutil.VoidPtr(cbIndex))
+		cbIndex.Ptr())
 
 	return getError(ret)
 }
@@ -116,7 +116,7 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 func diffIterateCallback(
 	offset C.uint64_t, length C.size_t, exists C.int, index unsafe.Pointer) C.int {
 
-	v := cref.Lookup(index)
+	v := cref.Lookup(cref.Ptr(index))
 	config := v.(DiffIterateConfig)
 	return C.int(config.Callback(
 		uint64(offset), uint64(length), int(exists), config.Data))
