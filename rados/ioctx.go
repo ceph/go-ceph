@@ -92,6 +92,15 @@ type IOContext struct {
 	ioctx C.rados_ioctx_t
 }
 
+// validate returns an error if the ioctx is not ready to be used
+// with ceph C calls.
+func (ioctx *IOContext) validate() error {
+	if ioctx.ioctx == nil {
+		return ErrNotConnected
+	}
+	return nil
+}
+
 // Pointer returns a pointer reference to an internal structure.
 // This function should NOT be used outside of go-ceph itself.
 func (ioctx *IOContext) Pointer() unsafe.Pointer {
