@@ -5,7 +5,12 @@ package rados
 // #include <rados/librados.h>
 import "C"
 
-import "unsafe"
+import (
+	"time"
+	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/retry"
+)
 
 // CreateSnap creates a pool-wide snapshot.
 //
@@ -37,4 +42,78 @@ func (ioctx *IOContext) RemoveSnap(snapName string) error {
 
 	ret := C.rados_ioctx_snap_remove(ioctx.ioctx, cSnapName)
 	return getError(ret)
+}
+
+// SnapID represents the ID of a rados snapshot.
+type SnapID C.rados_snap_t
+
+// LookupSnap returns the ID of a pool snapshot.
+//
+// Implements:
+//  int rados_ioctx_snap_lookup(rados_ioctx_t io, const char *name, rados_snap_t *id)
+func (ioctx *IOContext) LookupSnap(snapName string) (SnapID, error) {
+	var snapID SnapID
+
+	if err := ioctx.validate(); err != nil {
+		return snapID, err
+	}
+
+	cSnapName := C.CString(snapName)
+	defer C.free(unsafe.Pointer(cSnapName))
+
+	ret := C.rados_ioctx_snap_lookup(
+		ioctx.ioctx,
+		cSnapName,
+		(*C.rados_snap_t)(&snapID))
+	return snapID, getError(ret)
+}
+
+// GetSnapName returns the name of a pool snapshot with the given snapshot ID.
+//
+// Implements:
+//  int rados_ioctx_snap_get_name(rados_ioctx_t io, rados_snap_t id, char *name, int maxlen)
+func (ioctx *IOContext) GetSnapName(snapID SnapID) (string, error) {
+	if err := ioctx.validate(); err != nil {
+		return "", err
+	}
+
+	var (
+		buf []byte
+		err error
+	)
+	// range from 1k to 64KiB
+	retry.WithSizes(1024, 1<<16, func(len int) retry.Hint {
+		cLen := C.int(len)
+		buf = make([]byte, cLen)
+		ret := C.rados_ioctx_snap_get_name(
+			ioctx.ioctx,
+			(C.rados_snap_t)(snapID),
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			cLen)
+		err = getError(ret)
+		return retry.Size(int(cLen)).If(err == errRange)
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
+}
+
+// GetSnapStamp returns the time of the pool snapshot creation.
+//
+// Implements:
+//  int rados_ioctx_snap_get_stamp(rados_ioctx_t io, rados_snap_t id, time_t *t)
+func (ioctx *IOContext) GetSnapStamp(snapID SnapID) (time.Time, error) {
+	var cTime C.time_t
+
+	if err := ioctx.validate(); err != nil {
+		return time.Unix(int64(cTime), 0), err
+	}
+
+	ret := C.rados_ioctx_snap_get_stamp(
+		ioctx.ioctx,
+		(C.rados_snap_t)(snapID),
+		&cTime)
+	return time.Unix(int64(cTime), 0), getError(ret)
 }
