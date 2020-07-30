@@ -48,7 +48,8 @@ func getErrorIfNegative(ret C.int) error {
 // Public go errors:
 
 var (
-	// ErrNotConnected is returned when functions are called without a RADOS connection
+	// ErrNotConnected is returned when functions are called
+	// without a RADOS connection.
 	ErrNotConnected = errors.New("RADOS not connected")
 	// ErrEmptyArgument may be returned if a function argument is passed
 	// a zero-length slice or map.
