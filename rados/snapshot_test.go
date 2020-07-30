@@ -64,3 +64,75 @@ func (suite *RadosTestSuite) TestCreateRemoveSnapshot() {
 		assert.NoError(t, err)
 	})
 }
+
+func (suite *RadosTestSuite) TestSnapshotIDFunctions() {
+	suite.SetupConnection()
+
+	suite.T().Run("invalidIOCtx", func(t *testing.T) {
+		ioctx := &IOContext{}
+		_, err := ioctx.LookupSnap("")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInvalidIOContext)
+
+		var snapID SnapID
+		snapID = 22 // some random number
+		_, err = ioctx.GetSnapName(snapID)
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInvalidIOContext)
+
+		_, err = ioctx.GetSnapStamp(snapID)
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInvalidIOContext)
+	})
+
+	// Invalid args
+	suite.T().Run("InvalidArgs", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+
+		err = ioctx.CreateSnap("")
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, ioctx.RemoveSnap(""))
+		}()
+
+		// Again, this works!!
+		_, err = ioctx.LookupSnap("")
+		assert.NoError(t, err)
+
+		// Non-existing Snap
+		_, err = ioctx.LookupSnap("someSnapName")
+		assert.Error(t, err)
+
+		var snapID SnapID
+		snapID = 22 // some random number
+		_, err = ioctx.GetSnapName(snapID)
+		assert.Error(t, err)
+
+		_, err = ioctx.GetSnapStamp(snapID)
+		assert.Error(t, err)
+	})
+
+	// Valid SnapID operations.
+	suite.T().Run("ValidSnapIDOps", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+
+		snapName := "mySnap"
+		err = ioctx.CreateSnap(snapName)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, ioctx.RemoveSnap(snapName))
+		}()
+
+		snapID, err := ioctx.LookupSnap(snapName)
+		assert.NoError(t, err)
+
+		retName, err := ioctx.GetSnapName(snapID)
+		assert.NoError(t, err)
+		assert.Equal(t, snapName, retName)
+
+		_, err = ioctx.GetSnapStamp(snapID)
+		assert.NoError(t, err)
+	})
+}
