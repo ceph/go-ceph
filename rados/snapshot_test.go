@@ -187,3 +187,70 @@ func (suite *RadosTestSuite) TestListSnapshot() {
 		}
 	})
 }
+
+func (suite *RadosTestSuite) TestRollbackSnapshot() {
+	suite.SetupConnection()
+
+	suite.T().Run("InvalidArgs", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+		oid := suite.GenObjectName()
+		defer suite.ioctx.Delete(oid)
+
+		err = ioctx.RollbackSnap(oid, "someName")
+		assert.Error(t, err)
+
+		err = ioctx.CreateSnap("")
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, ioctx.RemoveSnap(""))
+		}()
+		err = ioctx.RollbackSnap("someObj", "")
+		assert.NoError(t, err)
+	})
+
+	suite.T().Run("invalidIOContext", func(t *testing.T) {
+		ioctx := &IOContext{}
+		err := ioctx.RollbackSnap("someObj", "someName")
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInvalidIOContext)
+	})
+
+	suite.T().Run("WriteAndRollback", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+		oid := suite.GenObjectName()
+		defer suite.ioctx.Delete(oid)
+
+		bytesIn := []byte("Harry Potter")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
+		assert.NoError(t, err)
+		// Take snap.
+		err = ioctx.CreateSnap("mySnap")
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, ioctx.RemoveSnap("mySnap"))
+		}()
+		// Overwrite.
+		bytesOver := []byte("Potter Harry")
+		err = suite.ioctx.Write(oid, bytesOver, 0)
+		assert.NoError(t, err)
+
+		// Before rollback.
+		bytesOut := make([]byte, len(bytesOver))
+		nOut, err := suite.ioctx.Read(oid, bytesOut, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, nOut, len(bytesOver))
+		assert.Equal(t, bytesOver, bytesOut)
+
+		// Rollback.
+		err = ioctx.RollbackSnap(oid, "mySnap")
+		assert.NoError(t, err)
+
+		// After Rollback.
+		nOut, err = suite.ioctx.Read(oid, bytesOut, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, nOut, len(bytesIn))
+		assert.Equal(t, bytesOut, bytesIn)
+	})
+}

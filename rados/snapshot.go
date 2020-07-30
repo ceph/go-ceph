@@ -149,3 +149,22 @@ func (ioctx *IOContext) ListSnaps() ([]SnapID, error) {
 	}
 	return snapList[:ret], nil
 }
+
+// RollbackSnap rollbacks the object with key oID to the pool snapshot.
+// The contents of the object will be the same as when the snapshot was taken.
+//
+// Implements:
+//  int rados_ioctx_snap_rollback(rados_ioctx_t io, const char *oid, const char *snapname);
+func (ioctx *IOContext) RollbackSnap(oid, snapName string) error {
+	if err := ioctx.validate(); err != nil {
+		return err
+	}
+
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
+	cSnapName := C.CString(snapName)
+	defer C.free(unsafe.Pointer(cSnapName))
+
+	ret := C.rados_ioctx_snap_rollback(ioctx.ioctx, coid, cSnapName)
+	return getError(ret)
+}
