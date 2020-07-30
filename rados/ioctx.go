@@ -96,7 +96,7 @@ type IOContext struct {
 // with ceph C calls.
 func (ioctx *IOContext) validate() error {
 	if ioctx.ioctx == nil {
-		return ErrNotConnected
+		return ErrInvalidIOContext
 	}
 	return nil
 }
