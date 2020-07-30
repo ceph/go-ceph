@@ -136,3 +136,54 @@ func (suite *RadosTestSuite) TestSnapshotIDFunctions() {
 		assert.NoError(t, err)
 	})
 }
+
+func (suite *RadosTestSuite) TestListSnapshot() {
+	suite.SetupConnection()
+	ioctx, err := suite.conn.OpenIOContext(suite.pool)
+	require.NoError(suite.T(), err)
+
+	snapName := []string{"snap1", "snap2", "snap3"}
+	err = ioctx.CreateSnap(snapName[0])
+	assert.NoError(suite.T(), err)
+	defer func() {
+		assert.NoError(suite.T(), ioctx.RemoveSnap(snapName[0]))
+	}()
+
+	err = ioctx.CreateSnap(snapName[1])
+	assert.NoError(suite.T(), err)
+	defer func() {
+		assert.NoError(suite.T(), ioctx.RemoveSnap(snapName[1]))
+	}()
+
+	err = ioctx.CreateSnap(snapName[2])
+	assert.NoError(suite.T(), err)
+	defer func() {
+		assert.NoError(suite.T(), ioctx.RemoveSnap(snapName[2]))
+	}()
+
+	suite.T().Run("invalidIOContext", func(t *testing.T) {
+		ioctx := &IOContext{}
+		_, err := ioctx.ListSnaps()
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInvalidIOContext)
+	})
+
+	snapList, err := ioctx.ListSnaps()
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), snapList)
+
+	listLen := len(snapList)
+
+	suite.T().Run("NumberOfSnapshots", func(t *testing.T) {
+		assert.Equal(t, 3, listLen)
+	})
+
+	suite.T().Run("MatchSnapNamesWithID", func(t *testing.T) {
+		for _, id := range snapList[0 : listLen-1] {
+			retName, err := ioctx.GetSnapName(id)
+			assert.NoError(t, err)
+			assert.NotNil(t, retName)
+			assert.Contains(t, snapName, retName)
+		}
+	})
+}

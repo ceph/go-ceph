@@ -117,3 +117,35 @@ func (ioctx *IOContext) GetSnapStamp(snapID SnapID) (time.Time, error) {
 		&cTime)
 	return time.Unix(int64(cTime), 0), getError(ret)
 }
+
+// ListSnaps returns a slice containing the SnapIDs of existing pool snapshots.
+//
+// Implements:
+//  int rados_ioctx_snap_list(rados_ioctx_t io, rados_snap_t *snaps, int maxlen)
+func (ioctx *IOContext) ListSnaps() ([]SnapID, error) {
+	if err := ioctx.validate(); err != nil {
+		return nil, err
+	}
+
+	var (
+		snapList []SnapID
+		cLen     C.int
+		err      error
+		ret      C.int
+	)
+	retry.WithSizes(100, 1000, func(maxlen int) retry.Hint {
+		cLen = C.int(maxlen)
+		snapList = make([]SnapID, cLen)
+		ret = C.rados_ioctx_snap_list(
+			ioctx.ioctx,
+			(*C.rados_snap_t)(unsafe.Pointer(&snapList[0])),
+			cLen)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(cLen)).If(err == errRange)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return snapList[:ret], nil
+}
