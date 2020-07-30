@@ -254,3 +254,59 @@ func (suite *RadosTestSuite) TestRollbackSnapshot() {
 		assert.Equal(t, bytesOut, bytesIn)
 	})
 }
+
+func (suite *RadosTestSuite) TestSetReadSnapshot() {
+	suite.SetupConnection()
+	ioctx, err := suite.conn.OpenIOContext(suite.pool)
+	require.NoError(suite.T(), err)
+
+	bytesIn := []byte("The Order of the Phoenix")
+	err = ioctx.Write("obj", bytesIn, 0)
+	assert.NoError(suite.T(), err)
+
+	// Take snap.
+	err = ioctx.CreateSnap("mySnap")
+	assert.NoError(suite.T(), err)
+	defer func() {
+		assert.NoError(suite.T(), ioctx.RemoveSnap("mySnap"))
+	}()
+
+	// Get Snap ID.
+	snapID, err := ioctx.LookupSnap("mySnap")
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), snapID)
+
+	// Overwrite the object.
+	bytesOver := []byte("The Half blood Prince")
+	err = ioctx.Write("obj", bytesOver, 0)
+	assert.NoError(suite.T(), err)
+
+	// Set read to mySnap.
+	err = ioctx.SetReadSnap(snapID)
+	assert.NoError(suite.T(), err)
+
+	// Read the object.
+	bytesOut := make([]byte, len(bytesIn))
+	nOut, err := ioctx.Read("obj", bytesOut, 0)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), nOut, len(bytesIn))
+	assert.Equal(suite.T(), bytesOut, bytesIn)
+
+	// Set read to SnapHead (back to normal).
+	err = ioctx.SetReadSnap(SnapHead)
+	assert.NoError(suite.T(), err)
+
+	// Read the same object.
+	bytesOut = make([]byte, len(bytesOver))
+	nOut, err = ioctx.Read("obj", bytesOut, 0)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), nOut, len(bytesOver))
+	assert.Equal(suite.T(), bytesOut, bytesOver)
+
+	suite.T().Run("invalidIOContext", func(t *testing.T) {
+		ioctx := &IOContext{}
+		err := ioctx.SetReadSnap(SnapHead)
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrInvalidIOContext)
+	})
+}

@@ -168,3 +168,22 @@ func (ioctx *IOContext) RollbackSnap(oid, snapName string) error {
 	ret := C.rados_ioctx_snap_rollback(ioctx.ioctx, coid, cSnapName)
 	return getError(ret)
 }
+
+// SnapHead is the representation of LIBRADOS_SNAP_HEAD from librados.
+// SnapHead can be used to reset the IOContext to stop reading from a snapshot.
+const SnapHead = SnapID(C.LIBRADOS_SNAP_HEAD)
+
+// SetReadSnap sets the snapshot from which reads are performed.
+// Subsequent reads will return data as it was at the time of that snapshot.
+// Pass SnapHead for no snapshot (i.e. normal operation).
+//
+// Implements:
+//  void rados_ioctx_snap_set_read(rados_ioctx_t io, rados_snap_t snap);
+func (ioctx *IOContext) SetReadSnap(snapID SnapID) error {
+	if err := ioctx.validate(); err != nil {
+		return err
+	}
+
+	C.rados_ioctx_snap_set_read(ioctx.ioctx, (C.rados_snap_t)(snapID))
+	return nil
+}
