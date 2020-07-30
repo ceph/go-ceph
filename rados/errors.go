@@ -54,6 +54,9 @@ var (
 	// ErrEmptyArgument may be returned if a function argument is passed
 	// a zero-length slice or map.
 	ErrEmptyArgument = errors.New("Argument must contain at least one item")
+	// ErrInvalidIOContext may be returned if an api call requires an IOContext
+	// but IOContext is not ready for use.
+	ErrInvalidIOContext = errors.New("IOContext is not ready for use")
 )
 
 // Public radosErrors:
