@@ -103,7 +103,7 @@ func (f *File) GetXattr(name string) ([]byte, error) {
 }
 
 // ListXattr returns a slice containing strings for the name of each xattr set
-// on the fie.
+// on the file.
 //
 // Implements:
 //  int ceph_flistxattr(struct ceph_mount_info *cmount, int fd, char *list, size_t size);
