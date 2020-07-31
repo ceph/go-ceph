@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var samples = []struct {
+var xattrSamples = []struct {
 	name  string
 	value []byte
 }{
@@ -47,7 +47,7 @@ func TestGetSetXattr(t *testing.T) {
 		assert.NoError(t, mount.Unlink(fname))
 	}()
 
-	for _, s := range samples {
+	for _, s := range xattrSamples {
 		t.Run("roundTrip-"+s.name, func(t *testing.T) {
 			err := f.SetXattr(s.name, s.value, XattrDefault)
 			assert.NoError(t, err)
@@ -74,9 +74,9 @@ func TestGetSetXattr(t *testing.T) {
 
 	t.Run("invalidFile", func(t *testing.T) {
 		f1 := &File{}
-		err := f1.SetXattr(samples[0].name, samples[0].value, XattrDefault)
+		err := f1.SetXattr(xattrSamples[0].name, xattrSamples[0].value, XattrDefault)
 		assert.Error(t, err)
-		_, err = f1.GetXattr(samples[0].name)
+		_, err = f1.GetXattr(xattrSamples[0].name)
 		assert.Error(t, err)
 	})
 }
@@ -94,27 +94,27 @@ func TestListXattr(t *testing.T) {
 	}()
 
 	t.Run("listXattrs1", func(t *testing.T) {
-		for _, s := range samples[:1] {
+		for _, s := range xattrSamples[:1] {
 			err := f.SetXattr(s.name, s.value, XattrDefault)
 			assert.NoError(t, err)
 		}
 		xl, err := f.ListXattr()
 		assert.NoError(t, err)
 		assert.Len(t, xl, 1)
-		assert.Contains(t, xl, samples[0].name)
+		assert.Contains(t, xl, xattrSamples[0].name)
 	})
 
 	t.Run("listXattrs2", func(t *testing.T) {
-		for _, s := range samples {
+		for _, s := range xattrSamples {
 			err := f.SetXattr(s.name, s.value, XattrDefault)
 			assert.NoError(t, err)
 		}
 		xl, err := f.ListXattr()
 		assert.NoError(t, err)
 		assert.Len(t, xl, 3)
-		assert.Contains(t, xl, samples[0].name)
-		assert.Contains(t, xl, samples[1].name)
-		assert.Contains(t, xl, samples[2].name)
+		assert.Contains(t, xl, xattrSamples[0].name)
+		assert.Contains(t, xl, xattrSamples[1].name)
+		assert.Contains(t, xl, xattrSamples[2].name)
 	})
 
 	t.Run("invalidFile", func(t *testing.T) {
@@ -137,14 +137,14 @@ func TestRemoveXattr(t *testing.T) {
 	}()
 
 	t.Run("removeXattr", func(t *testing.T) {
-		s := samples[0]
+		s := xattrSamples[0]
 		err := f.SetXattr(s.name, s.value, XattrDefault)
 		err = f.RemoveXattr(s.name)
 		assert.NoError(t, err)
 	})
 
 	t.Run("removeMissingXattr", func(t *testing.T) {
-		s := samples[1]
+		s := xattrSamples[1]
 		err := f.RemoveXattr(s.name)
 		assert.Error(t, err)
 	})
@@ -156,7 +156,7 @@ func TestRemoveXattr(t *testing.T) {
 
 	t.Run("invalidFile", func(t *testing.T) {
 		f1 := &File{}
-		err := f1.RemoveXattr(samples[0].name)
+		err := f1.RemoveXattr(xattrSamples[0].name)
 		assert.Error(t, err)
 	})
 }
