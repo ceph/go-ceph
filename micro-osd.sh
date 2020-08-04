@@ -52,6 +52,7 @@ log file = ${LOG_DIR}/mon.log
 chdir = ""
 mon cluster log file = ${LOG_DIR}/mon-cluster.log
 mon data = ${MON_DATA}
+mon data avail crit = 0
 mon addr = 127.0.0.1
 mon allow pool delete = true
 
