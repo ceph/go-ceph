@@ -56,8 +56,6 @@ type ImageInfo struct {
 	Num_objs          uint64
 	Order             int
 	Block_name_prefix string
-	Parent_pool       int64
-	Parent_name       string
 }
 
 // SnapInfo represents the status information for a snapshot.
@@ -408,9 +406,7 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 		Obj_size:          uint64(c_stat.obj_size),
 		Num_objs:          uint64(c_stat.num_objs),
 		Order:             int(c_stat.order),
-		Block_name_prefix: C.GoString((*C.char)(&c_stat.block_name_prefix[0])),
-		Parent_pool:       int64(c_stat.parent_pool),
-		Parent_name:       C.GoString((*C.char)(&c_stat.parent_name[0]))}, nil
+		Block_name_prefix: C.GoString((*C.char)(&c_stat.block_name_prefix[0]))}, nil
 }
 
 // IsOldFormat returns true if the rbd image uses the old format.
