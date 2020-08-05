@@ -1,3 +1,5 @@
+// +build !luminous,!mimic
+
 package admin
 
 import (
