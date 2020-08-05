@@ -1,10 +1,5 @@
 package admin
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 var listVolumesCmd = []byte(`{"prefix":"fs volume ls"}`)
 
 // ListVolumes return a list of volumes in this Ceph cluster.
@@ -13,24 +8,26 @@ func (fsa *FSAdmin) ListVolumes() ([]string, error) {
 	return parseListNames(r, s, err)
 }
 
+// VolumePool reports on the pool status for a CephFS volume.
+type VolumePool struct {
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	Available uint64 `json:"avail"`
+	Used      uint64 `json:"used"`
+}
+
 // VolumeStatus reports various properties of a CephFS volume.
 // TODO: Fill in.
 type VolumeStatus struct {
-	MDSVersion string `json:"mds_version"`
+	MDSVersion string       `json:"mds_version"`
+	Pools      []VolumePool `json:"pools"`
 }
 
 func parseVolumeStatus(res []byte, status string, err error) (*VolumeStatus, error) {
-	if err != nil {
-		return nil, err
-	}
-	if status != "" {
-		return nil, fmt.Errorf("error status: %s", status)
-	}
 	var vs VolumeStatus
-	if err := json.Unmarshal(res, &vs); err != nil {
-		return nil, err
-	}
-	return &vs, nil
+	err = unmarshalResponseJSON(res, status, err, &vs)
+	return &vs, err
 }
 
 // VolumeStatus returns a VolumeStatus object for the given volume name.
