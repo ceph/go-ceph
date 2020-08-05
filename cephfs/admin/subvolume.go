@@ -93,3 +93,45 @@ func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
 	}
 	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
 }
+
+type subVolumeResizeFields struct {
+	Prefix    string `json:"prefix"`
+	Format    string `json:"format"`
+	VolName   string `json:"vol_name"`
+	GroupName string `json:"group_name,omitempty"`
+	SubName   string `json:"sub_name"`
+	NewSize   string `json:"new_size"`
+	NoShrink  bool   `json:"no_shrink"`
+}
+
+// SubVolumeResizeResult reports the size values returned by the
+// ResizeSubVolume function, as reported by Ceph.
+type SubVolumeResizeResult struct {
+	BytesUsed    ByteCount `json:"bytes_used"`
+	BytesQuota   ByteCount `json:"bytes_quota"`
+	BytesPercent string    `json:"bytes_pcent"`
+}
+
+// ResizeSubVolume will resize a CephFS subvolume. The newSize value may be a
+// ByteCount or the special Infinite constant. Setting noShrink to true will
+// prevent reducing the size of the volume below the current used size.
+func (fsa *FSAdmin) ResizeSubVolume(
+	volume, group, name string,
+	newSize NewSize, noShrink bool) (*SubVolumeResizeResult, error) {
+
+	f := &subVolumeResizeFields{
+		Prefix:    "fs subvolume resize",
+		Format:    "json",
+		VolName:   volume,
+		GroupName: group,
+		SubName:   name,
+		NewSize:   newSize.newSizeValue(),
+		NoShrink:  noShrink,
+	}
+	var result []*SubVolumeResizeResult
+	r, s, err := fsa.marshalMgrCommand(f)
+	if err := unmarshalResponseJSON(r, s, err, &result); err != nil {
+		return nil, err
+	}
+	return result[0], nil
+}

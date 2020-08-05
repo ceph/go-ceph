@@ -124,3 +124,10 @@ func modeString(m int, force bool) string {
 	}
 	return ""
 }
+
+// uint64String converts a uint64 to a string. Some of the ceph json commands
+// can take a string or "int" (as a string). This is a common function for
+// doing that conversion.
+func uint64String(v uint64) string {
+	return strconv.FormatUint(uint64(v), 10)
+}
