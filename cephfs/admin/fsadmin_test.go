@@ -2,22 +2,66 @@ package admin
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var cachedFSAdmin *FSAdmin
+var (
+	cachedFSAdmin *FSAdmin
+
+	// set debugTrace to true to use tracing in tests
+	debugTrace = false
+)
+
+func init() {
+	dt := os.Getenv("GO_CEPH_TEST_DEBUG_TRACE")
+	if dt == "yes" || dt == "true" {
+		debugTrace = true
+	}
+}
+
+// tracingCommander serves two purposes: first, it allows one to trace the
+// input and output json when running the tests. It can help with actually
+// debugging the tests. Second, it demonstrates the rationale for using an
+// interface in FSAdmin. You can layer any sort of debugging, error injection,
+// or whatnot between the FSAdmin layer and the RADOS layer.
+type tracingCommander struct {
+	conn RadosCommander
+}
+
+func tracer(c RadosCommander) RadosCommander {
+	return &tracingCommander{c}
+}
+
+func (t *tracingCommander) MgrCommand(buf [][]byte) ([]byte, string, error) {
+	for i := range buf {
+		fmt.Println("IN:", string(buf[i]))
+	}
+	r, s, err := t.conn.MgrCommand(buf)
+	fmt.Println("OUT(result):", string(r))
+	if s != "" {
+		fmt.Println("OUT(status):", s)
+	}
+	if err != nil {
+		fmt.Println("OUT(error):", err.Error())
+	}
+	return r, s, err
+}
 
 func getFSAdmin(t *testing.T) *FSAdmin {
 	if cachedFSAdmin != nil {
 		return cachedFSAdmin
 	}
-	var err error
 	cachedFSAdmin, err := New()
 	require.NoError(t, err)
 	require.NotNil(t, cachedFSAdmin)
+	if debugTrace {
+		cachedFSAdmin = NewFromConn(tracer(cachedFSAdmin.conn))
+	}
 	return cachedFSAdmin
 }
 
