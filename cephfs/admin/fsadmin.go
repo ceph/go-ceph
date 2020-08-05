@@ -79,14 +79,8 @@ type listNamedResult struct {
 }
 
 func parseListNames(res []byte, status string, err error) ([]string, error) {
-	if err != nil {
-		return nil, err
-	}
-	if status != "" {
-		return nil, fmt.Errorf("error status: %s", status)
-	}
 	var r []listNamedResult
-	if err := json.Unmarshal(res, &r); err != nil {
+	if err := unmarshalResponseJSON(res, status, err, &r); err != nil {
 		return nil, err
 	}
 	vl := make([]string, len(r))
@@ -109,6 +103,16 @@ func checkEmptyResponseExpected(res []byte, status string, err error) error {
 		return fmt.Errorf("error status: %s", status)
 	}
 	return nil
+}
+
+func unmarshalResponseJSON(res []byte, status string, err error, v interface{}) error {
+	if err != nil {
+		return err
+	}
+	if status != "" {
+		return fmt.Errorf("error status: %s", status)
+	}
+	return json.Unmarshal(res, v)
 }
 
 // modeString converts a unix-style mode value to a string-ified version in an
