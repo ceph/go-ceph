@@ -1,3 +1,5 @@
+// +build !luminous,!mimic
+
 package admin
 
 var listVolumesCmd = []byte(`{"prefix":"fs volume ls"}`)

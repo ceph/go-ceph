@@ -1,3 +1,5 @@
+// +build !luminous,!mimic
+
 package admin
 
 // ByteCount represents the size of a volume in bytes.
