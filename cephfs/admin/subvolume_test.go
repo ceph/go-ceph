@@ -130,3 +130,44 @@ func TestRemoveSubVolume(t *testing.T) {
 		assert.Equal(t, []string{}, lsv)
 	}
 }
+
+func TestResizeSubVolume(t *testing.T) {
+	fsa := getFSAdmin(t)
+	volume := "cephfs"
+	group := "sizedGroup"
+	subname := "sizeMe1"
+
+	err := fsa.CreateSubVolumeGroup(volume, group, nil)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolumeGroup(volume, group)
+		assert.NoError(t, err)
+	}()
+
+	svopts := &SubVolumeOptions{
+		Mode: 0777,
+		Size: 20 * gibiByte,
+	}
+	err = fsa.CreateSubVolume(volume, group, subname, svopts)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolume(volume, group, subname)
+		assert.NoError(t, err)
+	}()
+
+	lsv, err := fsa.ListSubVolumes(volume, group)
+	assert.NoError(t, err)
+	assert.Contains(t, lsv, subname)
+
+	rr, err := fsa.ResizeSubVolume(volume, group, subname, 30*gibiByte, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, rr)
+
+	rr, err = fsa.ResizeSubVolume(volume, group, subname, 10*gibiByte, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, rr)
+
+	rr, err = fsa.ResizeSubVolume(volume, group, subname, Infinite, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, rr)
+}
