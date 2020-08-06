@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -58,12 +59,19 @@ func getFSAdmin(t *testing.T) *FSAdmin {
 	if cachedFSAdmin != nil {
 		return cachedFSAdmin
 	}
-	cachedFSAdmin, err := New()
+	fsa, err := New()
 	require.NoError(t, err)
-	require.NotNil(t, cachedFSAdmin)
+	require.NotNil(t, fsa)
+	// We steal the connection set up by the New() method and wrap it in an
+	// optional tracer.
+	c := fsa.conn
 	if debugTrace {
-		cachedFSAdmin = NewFromConn(tracer(cachedFSAdmin.conn))
+		c = tracer(c)
 	}
+	cachedFSAdmin = NewFromConn(c)
+	// We sleep briefly before returning in order to ensure we have a mgr map
+	// before we start executing the tests.
+	time.Sleep(50 * time.Millisecond)
 	return cachedFSAdmin
 }
 
