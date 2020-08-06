@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -22,7 +23,7 @@ var (
 
 func init() {
 	dt := os.Getenv("GO_CEPH_TEST_DEBUG_TRACE")
-	if dt == "yes" || dt == "true" {
+	if ok, err := strconv.ParseBool(dt); ok && err == nil {
 		debugTrace = true
 	}
 }
