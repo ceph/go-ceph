@@ -335,8 +335,8 @@ func testDiffIterateEarlyExit(t *testing.T, ioctx *rados.IOContext) {
 			},
 		})
 	assert.Error(t, err)
-	if errno, ok := err.(interface{ Errno() int }); assert.True(t, ok) {
-		assert.EqualValues(t, -5, errno.Errno())
+	if errno, ok := err.(interface{ ErrorCode() int }); assert.True(t, ok) {
+		assert.EqualValues(t, -5, errno.ErrorCode())
 	}
 	if assert.Len(t, calls, 1) {
 		assert.EqualValues(t, 0, calls[0].offset)

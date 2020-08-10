@@ -23,7 +23,7 @@ func (e rbdError) Error() string {
 	return fmt.Sprintf("rbd: ret=%d, %s", errno, s)
 }
 
-func (e rbdError) Errno() int {
+func (e rbdError) ErrorCode() int {
 	return int(e)
 }
 
