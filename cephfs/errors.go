@@ -24,7 +24,7 @@ func (e cephFSError) Error() string {
 	return fmt.Sprintf("cephfs: ret=%d, %s", errno, s)
 }
 
-func (e cephFSError) Errno() int {
+func (e cephFSError) ErrorCode() int {
 	return int(e)
 }
 
