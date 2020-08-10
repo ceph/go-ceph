@@ -20,13 +20,13 @@ func TestFormatError(t *testing.T) {
 	assert.Equal(t, msg, "")
 }
 
-func TestStrError(t *testing.T) {
-	msg := StrError(39)
-	assert.Equal(t, msg, "Directory not empty")
+func TestFormatErrorCode(t *testing.T) {
+	msg := FormatErrorCode("test", -39)
+	assert.Equal(t, msg, "test: ret=-39, Directory not empty")
 
-	msg = StrError(-5)
-	assert.Equal(t, msg, "Input/output error")
+	msg = FormatErrorCode("test", -5)
+	assert.Equal(t, msg, "test: ret=-5, Input/output error")
 
-	msg = StrError(345)
-	assert.Equal(t, msg, "")
+	msg = FormatErrorCode("boop", 345)
+	assert.Equal(t, msg, "boop: ret=345")
 }
