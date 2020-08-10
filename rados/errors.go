@@ -24,7 +24,7 @@ func (e radosError) Error() string {
 	return fmt.Sprintf("rados: ret=%d, %s", errno, s)
 }
 
-func (e radosError) Errno() int {
+func (e radosError) ErrorCode() int {
 	return int(e)
 }
 
