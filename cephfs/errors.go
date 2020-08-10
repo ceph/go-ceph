@@ -7,7 +7,6 @@ import "C"
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/ceph/go-ceph/internal/errutil"
 )
@@ -17,11 +16,7 @@ type cephFSError int
 
 // Error returns the error string for the cephFSError type.
 func (e cephFSError) Error() string {
-	errno, s := errutil.FormatErrno(int(e))
-	if s == "" {
-		return fmt.Sprintf("cephfs: ret=%d", errno)
-	}
-	return fmt.Sprintf("cephfs: ret=%d, %s", errno, s)
+	return errutil.FormatErrorCode("cephfs", int(e))
 }
 
 func (e cephFSError) ErrorCode() int {
