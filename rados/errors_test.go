@@ -13,7 +13,7 @@ func TestRadosError(t *testing.T) {
 
 	err = getError(-5) // IO error
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rados: ret=5, Input/output error")
+	assert.Equal(t, err.Error(), "rados: ret=-5, Input/output error")
 
 	errno, ok := err.(interface{ ErrorCode() int })
 	assert.True(t, ok)
