@@ -53,6 +53,9 @@ const NoGroup = ""
 
 // CreateSubVolume sends a request to create a CephFS subvolume in a volume,
 // belonging to an optional subvolume group.
+//
+// Similar To:
+//  ceph fs subvolume create <volume> --group-name=<group> <name> ...
 func (fsa *FSAdmin) CreateSubVolume(volume, group, name string, o *SubVolumeOptions) error {
 	if o == nil {
 		o = &SubVolumeOptions{}
@@ -61,11 +64,11 @@ func (fsa *FSAdmin) CreateSubVolume(volume, group, name string, o *SubVolumeOpti
 	return checkEmptyResponseExpected(fsa.marshalMgrCommand(f))
 }
 
-// command:
-//   fs subvolume ls <vol_name> <group_name>
-
 // ListSubVolumes returns a list of subvolumes belonging to the volume and
 // optional subvolume group.
+//
+// Similar To:
+//  ceph fs subvolume ls <volume> --group-name=<group>
 func (fsa *FSAdmin) ListSubVolumes(volume, group string) ([]string, error) {
 	m := map[string]string{
 		"prefix":   "fs subvolume ls",
@@ -78,11 +81,11 @@ func (fsa *FSAdmin) ListSubVolumes(volume, group string) ([]string, error) {
 	return parseListNames(fsa.marshalMgrCommand(m))
 }
 
-// command:
-//   fs subvolume rm <vol_name> <sub_name> <group_name> <force>
-
 // RemoveSubVolume will delete a CephFS subvolume in a volume and optional
 // subvolume group.
+//
+// Similar To:
+//  ceph fs subvolume rm <volume> --group-name=<group> <name> ...
 func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
 	m := map[string]string{
 		"prefix":   "fs subvolume rm",
@@ -117,6 +120,9 @@ type SubVolumeResizeResult struct {
 // ResizeSubVolume will resize a CephFS subvolume. The newSize value may be a
 // ByteCount or the special Infinite constant. Setting noShrink to true will
 // prevent reducing the size of the volume below the current used size.
+//
+// Similar To:
+//  ceph fs subvolume resize <volume> --group-name=<group> <name> ...
 func (fsa *FSAdmin) ResizeSubVolume(
 	volume, group, name string,
 	newSize NewSize, noShrink bool) (*SubVolumeResizeResult, error) {

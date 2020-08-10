@@ -40,6 +40,9 @@ func (s *SubVolumeGroupOptions) toFields(v, g string) *subVolumeGroupFields {
 }
 
 // CreateSubVolumeGroup sends a request to create a subvolume group in a volume.
+//
+// Similar To:
+//  ceph fs subvolumegroup create <volume> <group_name>  ...
 func (fsa *FSAdmin) CreateSubVolumeGroup(volume, name string, o *SubVolumeGroupOptions) error {
 	if o == nil {
 		o = &SubVolumeGroupOptions{}
@@ -50,6 +53,9 @@ func (fsa *FSAdmin) CreateSubVolumeGroup(volume, name string, o *SubVolumeGroupO
 
 // ListSubVolumeGroups returns a list of subvolume groups belonging to the
 // specified volume.
+//
+// Similar To:
+//  ceph fs subvolumegroup ls cephfs <volume>
 func (fsa *FSAdmin) ListSubVolumeGroups(volume string) ([]string, error) {
 	r, s, err := fsa.marshalMgrCommand(map[string]string{
 		"prefix":   "fs subvolumegroup ls",
@@ -60,6 +66,8 @@ func (fsa *FSAdmin) ListSubVolumeGroups(volume string) ([]string, error) {
 }
 
 // RemoveSubVolumeGroup will delete a subvolume group in a volume.
+// Similar To:
+//  ceph fs subvolumegroup rm <volume> <group_name>
 func (fsa *FSAdmin) RemoveSubVolumeGroup(volume, name string) error {
 	r, s, err := fsa.marshalMgrCommand(map[string]string{
 		"prefix":     "fs subvolumegroup rm",

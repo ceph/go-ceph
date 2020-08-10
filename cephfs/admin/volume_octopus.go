@@ -25,6 +25,9 @@ func parseVolumeStatus(res []byte, status string, err error) (*VolumeStatus, err
 }
 
 // VolumeStatus returns a VolumeStatus object for the given volume name.
+//
+// Similar To:
+//  ceph fs status cephfs <name>
 func (fsa *FSAdmin) VolumeStatus(name string) (*VolumeStatus, error) {
 	r, s, err := fsa.marshalMgrCommand(map[string]string{
 		"fs":     name,
