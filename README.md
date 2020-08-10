@@ -23,12 +23,13 @@ only be available in recent versions, and others may be deprecated. In order to
 work with non-current versions of Ceph, it is required to pass build-tags to
 the `go` commandline. A tag with the named Ceph release will enable/disable
 certain features of the go-ceph packages, and prevent warnings or compile
-problems. E.g. build against libcephfs/librados/librbd from Mimic, or run `go
-test` against Limunous, use:
+problems. For example, to ensure you select the library features that match
+the "nautilus" release, use:
 ```sh
-go build -tags mimic ....
-go test -tags luminous ....
+go build -tags nautilus ....
+go test -tags nautilus ....
 ```
+
 
 ## Documentation
 
