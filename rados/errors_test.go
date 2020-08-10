@@ -15,10 +15,10 @@ func TestRadosError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "rados: ret=5, Input/output error")
 
-	errno, ok := err.(interface{ Errno() int })
+	errno, ok := err.(interface{ ErrorCode() int })
 	assert.True(t, ok)
 	require.NotNil(t, errno)
-	assert.Equal(t, errno.Errno(), -5)
+	assert.Equal(t, errno.ErrorCode(), -5)
 
 	err = getError(345) // no such errno
 	assert.Error(t, err)
