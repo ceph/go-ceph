@@ -7,7 +7,6 @@ import "C"
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/ceph/go-ceph/internal/errutil"
 )
@@ -17,11 +16,7 @@ type radosError int
 
 // Error returns the error string for the radosError type.
 func (e radosError) Error() string {
-	errno, s := errutil.FormatErrno(int(e))
-	if s == "" {
-		return fmt.Sprintf("rados: ret=%d", errno)
-	}
-	return fmt.Sprintf("rados: ret=%d, %s", errno, s)
+	return errutil.FormatErrorCode("rados", int(e))
 }
 
 func (e radosError) ErrorCode() int {
