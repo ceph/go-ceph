@@ -21,7 +21,7 @@ libcephfs-devel librbd-devel librados-devel
 go-ceph tries to support different Ceph versions. However some functions might
 only be available in recent versions, and others may be deprecated. In order to
 work with non-current versions of Ceph, it is required to pass build-tags to
-the `go` commandline. A tag with the named Ceph release will enable/disable
+the `go` command line. A tag with the named Ceph release will enable/disable
 certain features of the go-ceph packages, and prevent warnings or compile
 problems. For example, to ensure you select the library features that match
 the "nautilus" release, use:
