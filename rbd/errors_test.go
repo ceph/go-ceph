@@ -13,7 +13,7 @@ func TestRBDError(t *testing.T) {
 
 	err = getError(-39) // NOTEMPTY (image still has a snapshot)
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rbd: ret=39, Directory not empty")
+	assert.Equal(t, err.Error(), "rbd: ret=-39, Directory not empty")
 
 	errno, ok := err.(interface{ ErrorCode() int })
 	assert.True(t, ok)

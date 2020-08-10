@@ -7,7 +7,6 @@ import "C"
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/ceph/go-ceph/internal/errutil"
 )
@@ -16,11 +15,7 @@ import (
 type rbdError int
 
 func (e rbdError) Error() string {
-	errno, s := errutil.FormatErrno(int(e))
-	if s == "" {
-		return fmt.Sprintf("rbd: ret=%d", errno)
-	}
-	return fmt.Sprintf("rbd: ret=%d, %s", errno, s)
+	return errutil.FormatErrorCode("rbd", int(e))
 }
 
 func (e rbdError) ErrorCode() int {
