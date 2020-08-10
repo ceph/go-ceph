@@ -30,6 +30,23 @@ go build -tags nautilus ....
 go test -tags nautilus ....
 ```
 
+### Supported Ceph Versions
+
+| go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
+| --------------- | ------------------------| -------------------------|
+| v0.5.0          | nautilus, octopus       | luminous, mimic          |
+| v0.4.0          | luminous, mimic, nautilus, octopus | |
+| v0.3.0          | luminous, mimic, nautilus, octopus | |
+| v0.2.0          | luminous, mimic, nautilus          | |
+| (pre release)   | luminous, mimic  (see note)        | |
+
+These tags affect what is supported at compile time. What version of the Ceph
+cluster the client libraries support, and vice versa, is determined entirely
+by what version of the Ceph C libraries go-ceph is compiled with.
+
+NOTE: Prior to 2020 the project did not make versioned releases. The ability to
+compile with a particular Ceph version before go-ceph v0.2.0 is not guaranteed.
+
 
 ## Documentation
 
