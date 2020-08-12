@@ -10,7 +10,7 @@ RUN true && \
     (yum install -y /usr/bin/castxml || true) && \
     true
 
-ENV GOTAR=go1.12.17.linux-amd64.tar.gz
+ENV GOTAR=go1.14.7.linux-amd64.tar.gz
 RUN true && \
     curl -o /tmp/${GOTAR} https://dl.google.com/go/${GOTAR} && \
     tar -x -C /opt/ -f /tmp/${GOTAR} && \
