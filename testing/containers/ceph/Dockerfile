@@ -10,7 +10,6 @@ RUN true && \
         git wget curl make \
         /usr/bin/cc /usr/bin/c++ \
         "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
-    (yum install -y /usr/bin/castxml || true) && \
     true
 
 ENV GOTAR=go1.12.17.linux-amd64.tar.gz
