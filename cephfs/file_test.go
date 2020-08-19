@@ -769,3 +769,121 @@ func TestSync(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestFilePreadvPwritev(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "TestFilePreadvPwritev.txt"
+	defer mount.Unlink(fname)
+
+	t.Run("simple", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, f.Close()) }()
+
+		b1 := []byte("foobarbaz")
+		b2 := []byte("alphabeta")
+		b3 := []byte("superawseomefuntime")
+		n, err := f.Pwritev([][]byte{b1, b2, b3}, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, 37, n)
+
+		o := [][]byte{
+			make([]byte, 3),
+			make([]byte, 3),
+			make([]byte, 3),
+			make([]byte, 3),
+		}
+		n, err = f.Preadv(o, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, 12, n)
+		assert.Equal(t, "foo", string(o[0]))
+		assert.Equal(t, "bar", string(o[1]))
+		assert.Equal(t, "baz", string(o[2]))
+		assert.Equal(t, "alp", string(o[3]))
+	})
+
+	t.Run("silly", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, f.Close()) }()
+
+		b := []byte("foo")
+		x := make([][]byte, 8)
+		for i := range x {
+			x[i] = b
+		}
+		n, err := f.Pwritev(x, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, 24, n)
+
+		for i := range x {
+			x[i] = make([]byte, 6)
+		}
+		n, err = f.Preadv(x, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 23, n)
+		assert.Equal(t, "oofoof", string(x[0]))
+		assert.Equal(t, "oofoof", string(x[1]))
+		assert.Equal(t, "oofoof", string(x[2]))
+		assert.Equal(t, "oofoo\x00", string(x[3]))
+	})
+
+	t.Run("readEOF", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, f.Close()) }()
+
+		x := make([][]byte, 8)
+		for i := range x {
+			x[i] = make([]byte, 6)
+		}
+		_, err = f.Preadv(x, 16)
+		assert.Error(t, err)
+		assert.Equal(t, io.EOF, err)
+	})
+
+	t.Run("openForWriteOnly", func(t *testing.T) {
+		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, f1.Close()) }()
+
+		x := make([][]byte, 8)
+		for i := range x {
+			x[i] = make([]byte, 6)
+		}
+		_, err = f1.Preadv(x, 0)
+		assert.Error(t, err)
+	})
+
+	t.Run("openForReadOnly", func(t *testing.T) {
+		// "touch" the file
+		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		assert.NoError(t, f1.Close())
+
+		f1, err = mount.Open(fname, os.O_RDONLY, 0644)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, f1.Close()) }()
+
+		x := make([][]byte, 8)
+		for i := range x {
+			x[i] = []byte("robble")
+		}
+		_, err = f1.Pwritev(x, 0)
+		assert.Error(t, err)
+	})
+
+	t.Run("writeInvalidFile", func(t *testing.T) {
+		f := &File{}
+		_, err := f.Pwritev([][]byte{}, 0)
+		assert.Error(t, err)
+	})
+
+	t.Run("readInvalidFile", func(t *testing.T) {
+		f := &File{}
+		_, err := f.Preadv([][]byte{}, 0)
+		assert.Error(t, err)
+	})
+}
