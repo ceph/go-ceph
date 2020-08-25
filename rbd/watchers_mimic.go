@@ -95,7 +95,7 @@ type Watch struct {
 	image   *Image
 	wcc     watchCallbackCtx
 	handle  C.uint64_t
-	cbIndex int
+	cbIndex uintptr
 }
 
 // UpdateWatch updates the image object to watch metadata changes to the
@@ -146,7 +146,7 @@ func (w *Watch) Unwatch() error {
 
 //export imageWatchCallback
 func imageWatchCallback(index unsafe.Pointer) {
-	v := watchCallbacks.Lookup(int(uintptr(index)))
+	v := watchCallbacks.Lookup(uintptr(index))
 	wcc := v.(watchCallbackCtx)
 	wcc.callback(wcc.data)
 }
