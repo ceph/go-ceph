@@ -19,16 +19,34 @@ libcephfs-devel librbd-devel librados-devel
 ```
 
 go-ceph tries to support different Ceph versions. However some functions might
-only be available in recent versions, and others can be deprecated. In order to
-work with non-current versions of Ceph, it is required to pass build-tags to on
-the `go` commandline. A tag with the named Ceph release will enable/disable
+only be available in recent versions, and others may be deprecated. In order to
+work with non-current versions of Ceph, it is required to pass build-tags to
+the `go` command line. A tag with the named Ceph release will enable/disable
 certain features of the go-ceph packages, and prevent warnings or compile
-problems. E.g. build against libcephfs/librados/librbd from Mimic, or run `go
-test` against Limunous, use:
+problems. For example, to ensure you select the library features that match
+the "nautilus" release, use:
 ```sh
-go build -tags mimic ....
-go test -tags luminous ....
+go build -tags nautilus ....
+go test -tags nautilus ....
 ```
+
+### Supported Ceph Versions
+
+| go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
+| --------------- | ------------------------| -------------------------|
+| v0.5.0          | nautilus, octopus       | luminous, mimic          |
+| v0.4.0          | luminous, mimic, nautilus, octopus | |
+| v0.3.0          | luminous, mimic, nautilus, octopus | |
+| v0.2.0          | luminous, mimic, nautilus          | |
+| (pre release)   | luminous, mimic  (see note)        | |
+
+These tags affect what is supported at compile time. What version of the Ceph
+cluster the client libraries support, and vice versa, is determined entirely
+by what version of the Ceph C libraries go-ceph is compiled with.
+
+NOTE: Prior to 2020 the project did not make versioned releases. The ability to
+compile with a particular Ceph version before go-ceph v0.2.0 is not guaranteed.
+
 
 ## Documentation
 
