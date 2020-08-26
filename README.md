@@ -19,18 +19,23 @@ switch away from shelling out to the CLI and to these native function calls.
 
 ## Installation
 
-    go get github.com/ceph/go-ceph
+The code in go-ceph is purely a library module. Typically, one will import
+go-ceph in another Go based project. When building the code the native RADOS,
+RBD, & CephFS library and development headers are expected to be installed.
 
-The native RADOS library and development headers are expected to be installed.
-
-On debian systems (apt):
+On debian based systems (apt) these may be:
 ```sh
 libcephfs-dev librbd-dev librados-dev
 ```
 
-On rpm based systems (dnf, yum, etc):
+On rpm based systems (dnf, yum, etc) these may be:
 ```sh
 libcephfs-devel librbd-devel librados-devel
+```
+
+To quickly test if one can build with go-ceph on your system, run:
+```sh
+go get github.com/ceph/go-ceph
 ```
 
 go-ceph tries to support different Ceph versions. However some functions might
