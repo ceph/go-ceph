@@ -2,6 +2,21 @@
 
 [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ceph/go-ceph) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ceph/go-ceph/master/LICENSE)
 
+## Introduction
+
+The go-ceph project is a collection of API bindings that support the use of
+native Ceph APIs, which are C language functions, in Go. These bindings make
+use of Go's cgo feature.
+There are three main Go sub-packages that make up go-ceph:
+* rados - exports functionality from Ceph's librados
+* rbd - exports functionality from Ceph's librbd
+* cephfs - exports functionality from Ceph's libcephfs
+
+We aim to provide comprehensive support for the Ceph APIs over time. This
+includes both I/O related functions and management functions.  If your project
+makes use of Ceph command line tools and is written in Go, you may be able to
+switch away from shelling out to the CLI and to these native function calls.
+
 ## Installation
 
     go get github.com/ceph/go-ceph
