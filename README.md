@@ -38,6 +38,10 @@ To quickly test if one can build with go-ceph on your system, run:
 go get github.com/ceph/go-ceph
 ```
 
+Once compiled, code using go-ceph is expected to dynamically link to the Ceph
+libraries. These libraries must be available on the system where the go based
+binaries will be run. The use of cgo does not allow for fully static binaries.
+
 go-ceph tries to support different Ceph versions. However some functions might
 only be available in recent versions, and others may be deprecated. In order to
 work with non-current versions of Ceph, it is required to pass build-tags to
