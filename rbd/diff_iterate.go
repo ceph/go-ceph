@@ -126,7 +126,7 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 func diffIterateCallback(
 	offset C.uint64_t, length C.size_t, exists C.int, index unsafe.Pointer) C.int {
 
-	v := diffIterateCallbacks.Lookup(int(uintptr(index)))
+	v := diffIterateCallbacks.Lookup(uintptr(index))
 	config := v.(DiffIterateConfig)
 	return C.int(config.Callback(
 		uint64(offset), uint64(length), int(exists), config.Data))
