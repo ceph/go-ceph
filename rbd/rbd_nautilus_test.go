@@ -77,3 +77,49 @@ func TestClosedImageNautilus(t *testing.T) {
 	_, err = image.GetModifyTimestamp()
 	assert.Error(t, err)
 }
+
+func TestSparsify(t *testing.T) {
+	conn := radosConnect(t)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	name := GetUUID()
+	err = quickCreate(ioctx, name, testImageSize, testImageOrder)
+	require.NoError(t, err)
+	defer func() { assert.NoError(t, RemoveImage(ioctx, name)) }()
+
+	t.Run("valid", func(t *testing.T) {
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, img.Close()) }()
+
+		err = img.Sparsify(4096)
+		assert.NoError(t, err)
+	})
+
+	t.Run("invalidValue", func(t *testing.T) {
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, img.Close()) }()
+
+		err = img.Sparsify(1024)
+		assert.Error(t, err)
+	})
+
+	t.Run("closedImage", func(t *testing.T) {
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		assert.NoError(t, img.Close())
+
+		err = img.Sparsify(1024)
+		assert.Error(t, err)
+	})
+}
