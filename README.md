@@ -40,7 +40,8 @@ go get github.com/ceph/go-ceph
 
 Once compiled, code using go-ceph is expected to dynamically link to the Ceph
 libraries. These libraries must be available on the system where the go based
-binaries will be run. The use of cgo does not allow for fully static binaries.
+binaries will be run. Our use of cgo and ceph libraries does not allow for
+fully static binaries.
 
 go-ceph tries to support different Ceph versions. However some functions might
 only be available in recent versions, and others may be deprecated. In order to
