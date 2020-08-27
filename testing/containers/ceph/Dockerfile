@@ -5,12 +5,14 @@ ENV CEPH_VERSION=${CEPH_VERSION:-nautilus}
 
 RUN true && \
     yum clean all && \
-    ( if [ "${CEPH_VERSION}" = "octopus" ]; then dnf install -y --repo BaseOS 'dnf-command(config-manager)' && dnf config-manager --set-disabled epel && dnf update -y; fi ) && \
-    yum install -y git wget curl libcephfs-devel librados-devel librbd-devel /usr/bin/cc /usr/bin/c++ make && \
-    (yum install -y /usr/bin/castxml || true) && \
+    cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" && \
+    yum install -y \
+        git wget curl make \
+        /usr/bin/cc /usr/bin/c++ \
+        "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
     true
 
-ENV GOTAR=go1.12.17.linux-amd64.tar.gz
+ENV GOTAR=go1.14.7.linux-amd64.tar.gz
 RUN true && \
     curl -o /tmp/${GOTAR} https://dl.google.com/go/${GOTAR} && \
     tar -x -C /opt/ -f /tmp/${GOTAR} && \
