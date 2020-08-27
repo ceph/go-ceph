@@ -839,9 +839,40 @@ func TestFilePreadvPwritev(t *testing.T) {
 		for i := range x {
 			x[i] = make([]byte, 6)
 		}
-		_, err = f.Preadv(x, 16)
+		n, err := f.Preadv(x, 16)
 		assert.Error(t, err)
 		assert.Equal(t, io.EOF, err)
+		assert.Equal(t, 0, n)
+		assert.Equal(t, make([]byte, 6), x[0])
+	})
+
+	t.Run("shortRead", func(t *testing.T) {
+		f, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, f.Close()) }()
+
+		b := []byte("Antidisestablishmentarianism\n")
+		n, err := f.Pwritev([][]byte{b}, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, 29, n)
+
+		// this is an explicit short read test.
+		// some of the buffers in the vector will be left unfilled.
+		x := make([][]byte, 8)
+		for i := range x {
+			x[i] = make([]byte, 6)
+		}
+		n, err = f.Preadv(x, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, 29, n)
+		assert.Equal(t, "Antidi", string(x[0]))
+		assert.Equal(t, "sestab", string(x[1]))
+		assert.Equal(t, "lishme", string(x[2]))
+		assert.Equal(t, "ntaria", string(x[3]))
+		assert.Equal(t, "nism\n\x00", string(x[4]))
+		assert.Equal(t, make([]byte, 6), x[5])
+		assert.Equal(t, make([]byte, 6), x[6])
+		assert.Equal(t, make([]byte, 6), x[7])
 	})
 
 	t.Run("openForWriteOnly", func(t *testing.T) {
