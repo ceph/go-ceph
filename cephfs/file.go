@@ -13,6 +13,8 @@ import "C"
 import (
 	"io"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 const (
@@ -128,6 +130,37 @@ func (f *File) ReadAt(buf []byte, offset int64) (int, error) {
 	return f.read(buf, offset)
 }
 
+// Preadv will read data from the file, starting at the given offset,
+// into the byte-slice data buffers sequentially.
+// The number of bytes read will be returned.
+// When nothing is left to read from the file the return values will be:
+// 0, io.EOF.
+//
+// Implements:
+//  int ceph_preadv(struct ceph_mount_info *cmount, int fd, const struct iovec *iov, int iovcnt,
+//                  int64_t offset);
+func (f *File) Preadv(data [][]byte, offset int64) (int, error) {
+	if err := f.validate(); err != nil {
+		return 0, err
+	}
+	iov := cutil.ByteSlicesToIovec(data)
+	defer iov.Free()
+
+	ret := C.ceph_preadv(
+		f.mount.mount,
+		f.fd,
+		(*C.struct_iovec)(iov.Pointer()),
+		C.int(iov.Len()),
+		C.int64_t(offset))
+	switch {
+	case ret < 0:
+		return 0, getError(ret)
+	case ret == 0:
+		return 0, io.EOF
+	}
+	return int(ret), nil
+}
+
 // write directly wraps the ceph_write call. Because write is such a common
 // operation we deviate from the ceph naming and expose Write and WriteAt
 // wrappers for external callers of the library.
@@ -161,6 +194,32 @@ func (f *File) WriteAt(buf []byte, offset int64) (int, error) {
 		return 0, errInvalid
 	}
 	return f.write(buf, offset)
+}
+
+// Pwritev writes data from the slice of byte-slice buffers to the file at the
+// specified offset.
+// The number of bytes written is returned.
+//
+// Implements:
+//  int ceph_pwritev(struct ceph_mount_info *cmount, int fd, const struct iovec *iov, int iovcnt,
+//                   int64_t offset);
+func (f *File) Pwritev(data [][]byte, offset int64) (int, error) {
+	if err := f.validate(); err != nil {
+		return 0, err
+	}
+	iov := cutil.ByteSlicesToIovec(data)
+	defer iov.Free()
+
+	ret := C.ceph_pwritev(
+		f.mount.mount,
+		f.fd,
+		(*C.struct_iovec)(iov.Pointer()),
+		C.int(iov.Len()),
+		C.int64_t(offset))
+	if ret < 0 {
+		return 0, getError(ret)
+	}
+	return int(ret), nil
 }
 
 // Seek will reposition the file stream based on the given offset.
