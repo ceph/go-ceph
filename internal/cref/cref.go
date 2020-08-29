@@ -1,5 +1,7 @@
 package cref
 
+import "C"
+
 import (
 	"sync"
 	"unsafe"
@@ -21,94 +23,63 @@ import (
 // to control and validate what "callbacks" get used.
 
 var (
-	mutex   sync.RWMutex
-	cmap    = []interface{}{nil}
-	free    []uintptr
-	nullPtr unsafe.Pointer
+	mutex sync.RWMutex
+	cmap  = map[unsafe.Pointer]interface{}{}
+	free  []unsafe.Pointer
 )
 
 func reset() {
-	cmap = cmap[:1]
-	free = nil
-}
-
-func idx2Ptr(idx uintptr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(nullPtr) + idx)
-}
-
-func validIdx(i uintptr) bool {
-	return i > 0 && i < uintptr(len(cmap))
-}
-
-func nextIdx() uintptr {
-	var i uintptr
-	if len(free) > 0 {
-		n := len(free) - 1
-		i = free[n]
-		free = free[:n]
-	} else {
-		cmap = append(cmap, nil)
-		i = uintptr(len(cmap) - 1)
+	for p := range cmap {
+		Remove(p)
 	}
-	return i
 }
 
-// Ref is a reference to a stored object
-type Ref struct {
-	idx uintptr
-}
-
-// Ptr creates a raw pointer from the reference
-func (r Ref) Ptr() unsafe.Pointer {
-	return idx2Ptr(r.idx)
-}
-
-// Uintptr creates a uintptr value from the reference
-func (r Ref) Uintptr() uintptr {
-	return r.idx
-}
-
-// Uintptr restores a reference from an uintptr value
-func Uintptr(idx uintptr) Ref {
-	if validIdx(idx) {
-		return Ref{idx}
+func allocMem() {
+	size := 1024
+	mem := C.malloc(1024)
+	if mem == nil {
+		panic("can't allocate memory for C pointer")
 	}
-	return Ref{0}
+	for i := size - 1; i >= 0; i-- {
+		p := unsafe.Pointer(uintptr(mem) + uintptr(i))
+		free = append(free, p)
+	}
 }
 
-// Ptr restores a reference from a raw pointer
-func Ptr(p unsafe.Pointer) Ref {
-	return Uintptr(uintptr(p))
+func getPtr() unsafe.Pointer {
+	if len(free) == 0 {
+		allocMem()
+	}
+	n := len(free) - 1
+	p := free[n]
+	free = free[:n]
+	return p
 }
 
-// Add a go object to the registry and return a new reference
-// for the object.
-func Add(v interface{}) Ref {
+// Add a go object to the registry and return a C compatible pointer for the
+// object.
+func Add(v interface{}) unsafe.Pointer {
 	mutex.Lock()
 	defer mutex.Unlock()
-	i := nextIdx()
-	cmap[i] = v
-	return Ref{i}
+	p := getPtr()
+	cmap[p] = v
+	return p
 }
 
 // Remove a object given it's reference.
-func Remove(r Ref) {
+func Remove(p unsafe.Pointer) {
 	mutex.Lock()
 	defer mutex.Unlock()
-	i := r.idx
-	if validIdx(i) {
-		cmap[i] = nil
-		free = append(free, i)
+	if _, ok := cmap[p]; ok {
+		cmap[p] = nil
+		delete(cmap, p)
+		free = append(free, p)
 	}
 }
 
 // Lookup returns a mapped object given an reference.
-func Lookup(r Ref) interface{} {
+func Lookup(p unsafe.Pointer) interface{} {
 	mutex.RLock()
 	defer mutex.RUnlock()
-	i := r.idx
-	if validIdx(i) {
-		return cmap[i]
-	}
-	return nil
+	return cmap[p]
 }

@@ -2,18 +2,18 @@ package cref
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCallbacks(t *testing.T) {
 	defer reset()
-	assert.Len(t, cmap, 1)
-
+	assert.Len(t, cmap, 0)
 	i1 := Add("foo")
 	i2 := Add("bar")
 	i3 := Add("baz")
-	assert.Len(t, cmap, 4)
+	assert.Len(t, cmap, 3)
 
 	var x interface{}
 	x = Lookup(i1)
@@ -22,7 +22,7 @@ func TestCallbacks(t *testing.T) {
 		assert.EqualValues(t, s, "foo")
 	}
 
-	x = Lookup(Ref{5555})
+	x = Lookup(unsafe.Pointer(&x))
 	assert.Nil(t, x)
 
 	x = Lookup(i3)
@@ -39,30 +39,30 @@ func TestCallbacks(t *testing.T) {
 	assert.Nil(t, x)
 
 	Remove(i1)
-	assert.Len(t, cmap, 4)
-	assert.Len(t, free, 3)
+	x = Lookup(i1)
+	assert.Nil(t, x)
+
+	assert.Len(t, cmap, 0)
+	assert.GreaterOrEqual(t, len(free), 3)
 }
 
 func TestCallbacksIndexing(t *testing.T) {
 	defer reset()
-	assert.Len(t, cmap, 1)
-
+	assert.Len(t, cmap, 0)
 	i1 := Add("foo")
 	i2 := Add("bar")
 	_ = Add("baz")
 	_ = Add("wibble")
 	_ = Add("wabble")
-	assert.Len(t, cmap, 6)
+	assert.Len(t, cmap, 5)
 
 	// Check that when we remove the first items inserted into the map there are
 	// no subsequent issues
 	Remove(i1)
 	Remove(i2)
-	assert.Len(t, free, 2)
 	_ = Add("flim")
 	ilast := Add("flam")
-	assert.Len(t, cmap, 6)
-	assert.Len(t, free, 0)
+	assert.Len(t, cmap, 5)
 
 	x := Lookup(ilast)
 	assert.NotNil(t, x)
@@ -73,7 +73,7 @@ func TestCallbacksIndexing(t *testing.T) {
 
 func TestCallbacksData(t *testing.T) {
 	defer reset()
-	assert.Len(t, cmap, 1)
+	assert.Len(t, cmap, 0)
 
 	// insert a plain function
 	i1 := Add(func(v int) int { return v + 1 })

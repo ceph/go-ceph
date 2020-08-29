@@ -16,7 +16,6 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/cref"
-	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 )
 
@@ -81,7 +80,7 @@ type Watch struct {
 	image   *Image
 	wcc     watchCallbackCtx
 	handle  C.uint64_t
-	cbIndex cref.Ref
+	cbIndex unsafe.Pointer
 }
 
 // UpdateWatch updates the image object to watch metadata changes to the
@@ -108,7 +107,7 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 		image.image,
 		&w.handle,
 		C.rbd_update_callback_t(C.imageWatchCallback),
-		w.cbIndex.Ptr())
+		w.cbIndex)
 	if ret != 0 {
 		return nil, getError(ret)
 	}
@@ -132,8 +131,8 @@ func (w *Watch) Unwatch() error {
 }
 
 //export imageWatchCallback
-func imageWatchCallback(index unsafe.Pointer) {
-	v := cref.Lookup(cref.Ptr(index))
+func imageWatchCallback(p unsafe.Pointer) {
+	v := cref.Lookup(p)
 	wcc := v.(watchCallbackCtx)
 	wcc.callback(wcc.data)
 }

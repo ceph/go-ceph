@@ -16,7 +16,6 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/cref"
-	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 // DiffIncludeParent values control if the difference should include the parent
@@ -107,16 +106,16 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 		C.uint8_t(config.IncludeParent),
 		C.uint8_t(config.WholeObject),
 		C.diff_iterate_callback_t(C.diffIterateCallback),
-		cbIndex.Ptr())
+		cbIndex)
 
 	return getError(ret)
 }
 
 //export diffIterateCallback
 func diffIterateCallback(
-	offset C.uint64_t, length C.size_t, exists C.int, index unsafe.Pointer) C.int {
+	offset C.uint64_t, length C.size_t, exists C.int, p unsafe.Pointer) C.int {
 
-	v := cref.Lookup(cref.Ptr(index))
+	v := cref.Lookup(p)
 	config := v.(DiffIterateConfig)
 	return C.int(config.Callback(
 		uint64(offset), uint64(length), int(exists), config.Data))
