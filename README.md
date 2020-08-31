@@ -1,22 +1,47 @@
 # go-ceph - Go bindings for Ceph APIs
 
-[![Build Status](https://travis-ci.org/ceph/go-ceph.svg)](https://travis-ci.org/ceph/go-ceph) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ceph/go-ceph) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ceph/go-ceph/master/LICENSE)
+[![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ceph/go-ceph) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ceph/go-ceph/master/LICENSE)
+
+## Introduction
+
+The go-ceph project is a collection of API bindings that support the use of
+native Ceph APIs, which are C language functions, in Go. These bindings make
+use of Go's cgo feature.
+There are three main Go sub-packages that make up go-ceph:
+* rados - exports functionality from Ceph's librados
+* rbd - exports functionality from Ceph's librbd
+* cephfs - exports functionality from Ceph's libcephfs
+
+We aim to provide comprehensive support for the Ceph APIs over time. This
+includes both I/O related functions and management functions.  If your project
+makes use of Ceph command line tools and is written in Go, you may be able to
+switch away from shelling out to the CLI and to these native function calls.
 
 ## Installation
 
-    go get github.com/ceph/go-ceph
+The code in go-ceph is purely a library module. Typically, one will import
+go-ceph in another Go based project. When building the code the native RADOS,
+RBD, & CephFS library and development headers are expected to be installed.
 
-The native RADOS library and development headers are expected to be installed.
-
-On debian systems (apt):
+On debian based systems (apt) these may be:
 ```sh
 libcephfs-dev librbd-dev librados-dev
 ```
 
-On rpm based systems (dnf, yum, etc):
+On rpm based systems (dnf, yum, etc) these may be:
 ```sh
 libcephfs-devel librbd-devel librados-devel
 ```
+
+To quickly test if one can build with go-ceph on your system, run:
+```sh
+go get github.com/ceph/go-ceph
+```
+
+Once compiled, code using go-ceph is expected to dynamically link to the Ceph
+libraries. These libraries must be available on the system where the go based
+binaries will be run. Our use of cgo and ceph libraries does not allow for
+fully static binaries.
 
 go-ceph tries to support different Ceph versions. However some functions might
 only be available in recent versions, and others may be deprecated. In order to
@@ -50,86 +75,14 @@ compile with a particular Ceph version before go-ceph v0.2.0 is not guaranteed.
 
 ## Documentation
 
-Detailed documentation is available at
+Detailed API documentation is available at
 <https://pkg.go.dev/github.com/ceph/go-ceph>.
 
-### Connecting to a cluster
+Some [API Hints and How-Tos](./docs/hints.md) are also available to quickly
+introduce how some of API calls work together.
 
-Connect to a Ceph cluster using a configuration file located in the default
-search paths.
 
-```go
-conn, _ := rados.NewConn()
-conn.ReadDefaultConfigFile()
-conn.Connect()
-```
-
-A connection can be shutdown by calling the `Shutdown` method on the
-connection object (e.g. `conn.Shutdown()`). There are also other methods for
-configuring the connection. Specific configuration options can be set:
-
-```go
-conn.SetConfigOption("log_file", "/dev/null")
-```
-
-and command line options can also be used using the `ParseCmdLineArgs` method.
-
-```go
-args := []string{ "--mon-host", "1.1.1.1" }
-err := conn.ParseCmdLineArgs(args)
-```
-
-For other configuration options see the full documentation.
-
-### Object I/O
-
-Object in RADOS can be written to and read from with through an interface very
-similar to a standard file I/O interface:
-
-```go
-// open a pool handle
-ioctx, err := conn.OpenIOContext("mypool")
-
-// write some data
-bytesIn := []byte("input data")
-err = ioctx.Write("obj", bytesIn, 0)
-
-// read the data back out
-bytesOut := make([]byte, len(bytesIn))
-_, err := ioctx.Read("obj", bytesOut, 0)
-
-if !bytes.Equal(bytesIn, bytesOut) {
-    fmt.Println("Output is not input!")
-}
-```
-
-### Pool maintenance
-
-The list of pools in a cluster can be retreived using the `ListPools` method
-on the connection object. On a new cluster the following code snippet:
-
-```go
-pools, _ := conn.ListPools()
-fmt.Println(pools)
-```
-
-will produce the output `[data metadata rbd]`, along with any other pools that
-might exist in your cluster. Pools can also be created and destroyed. The
-following creates a new, empty pool with default settings.
-
-```go
-conn.MakePool("new_pool")
-```
-
-Deleting a pool is also easy. Call `DeletePool(name string)` on a connection object to
-delete a pool with the given name. The following will delete the pool named
-`new_pool` and remove all of the pool's data.
-
-```go
-conn.DeletePool("new_pool")
-```
-
-# Development
+## Development
 
 ```
 docker run --rm -it --net=host \
