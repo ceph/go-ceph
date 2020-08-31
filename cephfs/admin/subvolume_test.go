@@ -173,3 +173,35 @@ func TestResizeSubVolume(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rr)
 }
+
+func TestSubVolumePath(t *testing.T) {
+	fsa := getFSAdmin(t)
+	volume := "cephfs"
+	group := "svpGroup"
+	subname := "svp1"
+
+	err := fsa.CreateSubVolumeGroup(volume, group, nil)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolumeGroup(volume, group)
+		assert.NoError(t, err)
+	}()
+
+	err = fsa.CreateSubVolume(volume, group, subname, nil)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolume(volume, group, subname)
+		assert.NoError(t, err)
+	}()
+
+	path, err := fsa.SubVolumePath(volume, group, subname)
+	assert.NoError(t, err)
+	assert.Contains(t, path, group)
+	assert.Contains(t, path, subname)
+	assert.NotContains(t, path, "\n")
+
+	// invalid subname
+	path, err = fsa.SubVolumePath(volume, group, "oops")
+	assert.Error(t, err)
+	assert.Equal(t, "", path)
+}

@@ -143,3 +143,20 @@ func (fsa *FSAdmin) ResizeSubVolume(
 	}
 	return result[0], nil
 }
+
+// SubVolumePath returns the path to the subvolume from the root of the file system.
+//
+// Similar To:
+//  ceph fs subvolume getpath <volume> --group-name=<group> <name>
+func (fsa *FSAdmin) SubVolumePath(volume, group, name string) (string, error) {
+	m := map[string]string{
+		"prefix":   "fs subvolume getpath",
+		"vol_name": volume,
+		"sub_name": name,
+		// ceph doesn't respond in json for this cmd (even if you ask)
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return extractPathResponse(fsa.marshalMgrCommand(m))
+}
