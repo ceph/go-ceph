@@ -137,6 +137,24 @@ func unmarshalResponseJSON(res []byte, status string, err error, v interface{}) 
 	return json.Unmarshal(res, v)
 }
 
+// extractPathResponse returns a cleaned up path from requests that get a path
+// unless an error is encountered, then an error is returned.
+func extractPathResponse(res []byte, status string, err error) (string, error) {
+	if err != nil {
+		return "", err
+	}
+	if status != "" {
+		return "", fmt.Errorf("error status: %s", status)
+	}
+	// if there's a trailing newline in the buffer strip it.
+	// ceph assumes a CLI wants the output of the buffer and there's
+	// no format=json mode available currently.
+	for len(res) >= 1 && res[len(res)-1] == '\n' {
+		res = res[:len(res)-1]
+	}
+	return string(res), nil
+}
+
 // modeString converts a unix-style mode value to a string-ified version in an
 // octal representation (e.g. "777", "700", etc). This format is expected by
 // some of the ceph JSON command inputs.
