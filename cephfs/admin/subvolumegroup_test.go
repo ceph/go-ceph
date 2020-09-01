@@ -87,3 +87,26 @@ func TestRemoveSubVolumeGroup(t *testing.T) {
 	nowCount := len(lsvg)
 	assert.Equal(t, beforeCount, nowCount)
 }
+
+func TestSubVolumeGroupPath(t *testing.T) {
+	fsa := getFSAdmin(t)
+	volume := "cephfs"
+	group := "grewp"
+
+	err := fsa.CreateSubVolumeGroup(volume, group, nil)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolumeGroup(volume, group)
+		assert.NoError(t, err)
+	}()
+
+	path, err := fsa.SubVolumeGroupPath(volume, group)
+	assert.NoError(t, err)
+	assert.Contains(t, path, "/volumes/"+group)
+	assert.NotContains(t, path, "\n")
+
+	// invalid group name
+	path, err = fsa.SubVolumeGroupPath(volume, "oops")
+	assert.Error(t, err)
+	assert.Equal(t, "", path)
+}

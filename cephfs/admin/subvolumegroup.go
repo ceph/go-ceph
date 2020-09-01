@@ -77,3 +77,18 @@ func (fsa *FSAdmin) RemoveSubVolumeGroup(volume, name string) error {
 	})
 	return checkEmptyResponseExpected(r, s, err)
 }
+
+// SubVolumeGroupPath returns the path to the subvolume from the root of the
+// file system.
+//
+// Similar To:
+//  ceph fs subvolumegroup getpath <volume> <group_name>
+func (fsa *FSAdmin) SubVolumeGroupPath(volume, name string) (string, error) {
+	m := map[string]string{
+		"prefix":     "fs subvolumegroup getpath",
+		"vol_name":   volume,
+		"group_name": name,
+		// ceph doesn't respond in json for this cmd (even if you ask)
+	}
+	return extractPathResponse(fsa.marshalMgrCommand(m))
+}
