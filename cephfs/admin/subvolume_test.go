@@ -3,6 +3,7 @@
 package admin
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -204,4 +205,145 @@ func TestSubVolumePath(t *testing.T) {
 	path, err = fsa.SubVolumePath(volume, group, "oops")
 	assert.Error(t, err)
 	assert.Equal(t, "", path)
+}
+
+var sampleSubVolumeInfo1 = []byte(`
+{
+    "atime": "2020-08-31 19:53:43",
+    "bytes_pcent": "undefined",
+    "bytes_quota": "infinite",
+    "bytes_used": 0,
+    "created_at": "2020-08-31 19:53:43",
+    "ctime": "2020-08-31 19:57:15",
+    "data_pool": "cephfs_data",
+    "gid": 0,
+    "mode": 16877,
+    "mon_addrs": [
+        "127.0.0.1:6789"
+    ],
+    "mtime": "2020-08-31 19:53:43",
+    "path": "/volumes/_nogroup/nibbles/df11be81-a648-4a7b-8549-f28306e3ad93",
+    "pool_namespace": "",
+    "type": "subvolume",
+    "uid": 0
+}
+`)
+
+var sampleSubVolumeInfo2 = []byte(`
+{
+    "atime": "2020-09-01 17:49:25",
+    "bytes_pcent": "0.00",
+    "bytes_quota": 444444,
+    "bytes_used": 0,
+    "created_at": "2020-09-01 17:49:25",
+    "ctime": "2020-09-01 23:49:22",
+    "data_pool": "cephfs_data",
+    "gid": 0,
+    "mode": 16877,
+    "mon_addrs": [
+        "127.0.0.1:6789"
+    ],
+    "mtime": "2020-09-01 17:49:25",
+    "path": "/volumes/_nogroup/nibbles/d6e062df-7fa0-46ca-872a-9adf728e0e00",
+    "pool_namespace": "",
+    "type": "subvolume",
+    "uid": 0
+}
+`)
+
+var badSampleSubVolumeInfo1 = []byte(`
+{
+    "bytes_quota": "fishy",
+    "uid": 0
+}
+`)
+
+var badSampleSubVolumeInfo2 = []byte(`
+{
+    "bytes_quota": true,
+    "uid": 0
+}
+`)
+
+func TestParseSubVolumeInfo(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		_, err := parseSubVolumeInfo(nil, "", errors.New("gleep glop"))
+		assert.Error(t, err)
+		assert.Equal(t, "gleep glop", err.Error())
+	})
+	t.Run("statusSet", func(t *testing.T) {
+		_, err := parseSubVolumeInfo(nil, "unexpected!", nil)
+		assert.Error(t, err)
+	})
+	t.Run("ok", func(t *testing.T) {
+		info, err := parseSubVolumeInfo(sampleSubVolumeInfo1, "", nil)
+		assert.NoError(t, err)
+		if assert.NotNil(t, info) {
+			assert.Equal(t,
+				"/volumes/_nogroup/nibbles/df11be81-a648-4a7b-8549-f28306e3ad93",
+				info.Path)
+			assert.Equal(t, 0, info.Uid)
+			assert.Equal(t, Infinite, info.BytesQuota)
+			assert.Equal(t, 040755, info.Mode)
+			assert.Equal(t, 2020, info.Ctime.Year())
+			assert.Equal(t, "2020-08-31 19:57:15", info.Ctime.String())
+		}
+	})
+	t.Run("ok2", func(t *testing.T) {
+		info, err := parseSubVolumeInfo(sampleSubVolumeInfo2, "", nil)
+		assert.NoError(t, err)
+		if assert.NotNil(t, info) {
+			assert.Equal(t,
+				"/volumes/_nogroup/nibbles/d6e062df-7fa0-46ca-872a-9adf728e0e00",
+				info.Path)
+			assert.Equal(t, 0, info.Uid)
+			assert.Equal(t, ByteCount(444444), info.BytesQuota)
+			assert.Equal(t, 040755, info.Mode)
+			assert.Equal(t, 2020, info.Ctime.Year())
+			assert.Equal(t, "2020-09-01 23:49:22", info.Ctime.String())
+		}
+	})
+	t.Run("invalidBytesQuotaValue", func(t *testing.T) {
+		info, err := parseSubVolumeInfo(badSampleSubVolumeInfo1, "", nil)
+		assert.Error(t, err)
+		assert.Nil(t, info)
+	})
+	t.Run("invalidBytesQuotaType", func(t *testing.T) {
+		info, err := parseSubVolumeInfo(badSampleSubVolumeInfo2, "", nil)
+		assert.Error(t, err)
+		assert.Nil(t, info)
+	})
+}
+
+func TestSubVolumeInfo(t *testing.T) {
+	fsa := getFSAdmin(t)
+	volume := "cephfs"
+	group := "hoagie"
+	subname := "grinder"
+
+	err := fsa.CreateSubVolumeGroup(volume, group, nil)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolumeGroup(volume, group)
+		assert.NoError(t, err)
+	}()
+
+	svopts := &SubVolumeOptions{
+		Mode: 0750,
+		Size: 20 * gibiByte,
+	}
+	err = fsa.CreateSubVolume(volume, group, subname, svopts)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolume(volume, group, subname)
+		assert.NoError(t, err)
+	}()
+
+	vinfo, err := fsa.SubVolumeInfo(volume, group, subname)
+	assert.NoError(t, err)
+	assert.NotNil(t, vinfo)
+	assert.Equal(t, 0, vinfo.Uid)
+	assert.Equal(t, 20*gibiByte, vinfo.BytesQuota)
+	assert.Equal(t, 040750, vinfo.Mode)
+	assert.GreaterOrEqual(t, 2020, vinfo.Ctime.Year())
 }
