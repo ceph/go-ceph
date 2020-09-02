@@ -16,10 +16,7 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/callbacks"
-	"github.com/ceph/go-ceph/internal/cutil"
 )
-
-var diffIterateCallbacks = callbacks.New()
 
 // DiffIncludeParent values control if the difference should include the parent
 // image.
@@ -98,8 +95,8 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 		defer C.free(unsafe.Pointer(cSnapName))
 	}
 
-	cbIndex := diffIterateCallbacks.Add(config)
-	defer diffIterateCallbacks.Remove(cbIndex)
+	cbKey := callbacks.Add(config)
+	defer callbacks.Remove(cbKey)
 
 	ret := C.rbd_diff_iterate2(
 		image.image,
@@ -109,16 +106,16 @@ func (image *Image) DiffIterate(config DiffIterateConfig) error {
 		C.uint8_t(config.IncludeParent),
 		C.uint8_t(config.WholeObject),
 		C.diff_iterate_callback_t(C.diffIterateCallback),
-		cutil.VoidPtr(cbIndex))
+		cbKey)
 
 	return getError(ret)
 }
 
 //export diffIterateCallback
 func diffIterateCallback(
-	offset C.uint64_t, length C.size_t, exists C.int, index unsafe.Pointer) C.int {
+	offset C.uint64_t, length C.size_t, exists C.int, key unsafe.Pointer) C.int {
 
-	v := diffIterateCallbacks.Lookup(uintptr(index))
+	v := callbacks.Lookup(key)
 	config := v.(DiffIterateConfig)
 	return C.int(config.Callback(
 		uint64(offset), uint64(length), int(exists), config.Data))

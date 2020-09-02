@@ -16,7 +16,6 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/callbacks"
-	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 )
 
@@ -67,9 +66,6 @@ func (image *Image) ListWatchers() ([]ImageWatcher, error) {
 	return imageWatchers, nil
 }
 
-// watchCallbacks tracks the active callbacks for rbd watches
-var watchCallbacks = callbacks.New()
-
 // WatchCallback defines the function signature needed for the UpdateWatch
 // callback.
 type WatchCallback func(interface{})
@@ -81,10 +77,10 @@ type watchCallbackCtx struct {
 
 // Watch represents an ongoing image metadata watch.
 type Watch struct {
-	image   *Image
-	wcc     watchCallbackCtx
-	handle  C.uint64_t
-	cbIndex uintptr
+	image  *Image
+	wcc    watchCallbackCtx
+	handle C.uint64_t
+	cbKey  unsafe.Pointer
 }
 
 // UpdateWatch updates the image object to watch metadata changes to the
@@ -102,16 +98,16 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 		data:     data,
 	}
 	w := &Watch{
-		image:   image,
-		wcc:     wcc,
-		cbIndex: watchCallbacks.Add(wcc),
+		image: image,
+		wcc:   wcc,
+		cbKey: callbacks.Add(wcc),
 	}
 
 	ret := C.rbd_update_watch(
 		image.image,
 		&w.handle,
 		C.rbd_update_callback_t(C.imageWatchCallback),
-		cutil.VoidPtr(w.cbIndex))
+		w.cbKey)
 	if ret != 0 {
 		return nil, getError(ret)
 	}
@@ -130,13 +126,13 @@ func (w *Watch) Unwatch() error {
 		return err
 	}
 	ret := C.rbd_update_unwatch(w.image.image, w.handle)
-	watchCallbacks.Remove(w.cbIndex)
+	callbacks.Remove(w.cbKey)
 	return getError(ret)
 }
 
 //export imageWatchCallback
-func imageWatchCallback(index unsafe.Pointer) {
-	v := watchCallbacks.Lookup(uintptr(index))
+func imageWatchCallback(key unsafe.Pointer) {
+	v := callbacks.Lookup(key)
 	wcc := v.(watchCallbackCtx)
 	wcc.callback(wcc.data)
 }
