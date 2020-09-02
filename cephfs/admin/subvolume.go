@@ -160,3 +160,54 @@ func (fsa *FSAdmin) SubVolumePath(volume, group, name string) (string, error) {
 	}
 	return extractPathResponse(fsa.marshalMgrCommand(m))
 }
+
+// SubVolumeInfo reports various informational values about a subvolume.
+type SubVolumeInfo struct {
+	Type          string    `json:"type"`
+	Path          string    `json:"path"`
+	Uid           int       `json:"uid"`
+	Gid           int       `json:"gid"`
+	Mode          int       `json:"mode"`
+	BytesPercent  string    `json:"bytes_pcent"`
+	BytesUsed     ByteCount `json:"bytes_used"`
+	BytesQuota    QuotaSize `json:"-"`
+	DataPool      string    `json:"data_pool"`
+	PoolNamespace string    `json:"pool_namespace"`
+	Atime         TimeStamp `json:"atime"`
+	Mtime         TimeStamp `json:"mtime"`
+	Ctime         TimeStamp `json:"ctime"`
+	CreatedAt     TimeStamp `json:"created_at"`
+}
+
+type subVolumeInfoWrapper struct {
+	SubVolumeInfo
+	VBytesQuota *quotaSizePlaceholder `json:"bytes_quota"`
+}
+
+func parseSubVolumeInfo(r []byte, s string, err error) (*SubVolumeInfo, error) {
+	var info subVolumeInfoWrapper
+	if err := unmarshalResponseJSON(r, s, err, &info); err != nil {
+		return nil, err
+	}
+	if info.VBytesQuota != nil {
+		info.BytesQuota = info.VBytesQuota.Value
+	}
+	return &info.SubVolumeInfo, nil
+}
+
+// SubVolumeInfo returns information about the specified subvolume.
+//
+// Similar To:
+//  ceph fs subvolume info <volume> --group-name=<group> <name>
+func (fsa *FSAdmin) SubVolumeInfo(volume, group, name string) (*SubVolumeInfo, error) {
+	m := map[string]string{
+		"prefix":   "fs subvolume info",
+		"vol_name": volume,
+		"sub_name": name,
+		"format":   "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return parseSubVolumeInfo(fsa.marshalMgrCommand(m))
+}
