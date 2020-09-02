@@ -2,6 +2,11 @@
 
 package admin
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // ByteCount represents the size of a volume in bytes.
 type ByteCount uint64
 
@@ -35,3 +40,29 @@ func (s specialSize) resizeValue() string {
 // Infinite is a special QuotaSize value that can be used to clear size limits
 // on a subvolume.
 const Infinite = specialSize("infinite")
+
+// quotaSizePlaceholder types are helpful to extract QuotaSize typed values
+// from JSON responses.
+type quotaSizePlaceholder struct {
+	Value QuotaSize
+}
+
+func (p *quotaSizePlaceholder) UnmarshalJSON(b []byte) error {
+	var val interface{}
+	if err := json.Unmarshal(b, &val); err != nil {
+		return err
+	}
+	switch v := val.(type) {
+	case string:
+		if v == string(Infinite) {
+			p.Value = Infinite
+		} else {
+			return fmt.Errorf("quota size: invalid string value: %q", v)
+		}
+	case float64:
+		p.Value = ByteCount(v)
+	default:
+		return fmt.Errorf("quota size: invalid type, string or number required: %v (%T)", val, val)
+	}
+	return nil
+}
