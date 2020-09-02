@@ -200,3 +200,103 @@ func TestGetParent(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestSetSnapByID(t *testing.T) {
+	conn := radosConnect(t)
+	poolName := GetUUID()
+	err := conn.MakePool(poolName)
+	assert.NoError(t, err)
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+
+	defer func() {
+		ioctx.Destroy()
+		assert.NoError(t, conn.DeletePool(poolName))
+		conn.Shutdown()
+	}()
+
+	t.Run("happyPath", func(t *testing.T) {
+		imgName := "Hogwarts"
+		img, err := Create(ioctx, imgName, testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Remove())
+		}()
+
+		img, err = OpenImage(ioctx, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+		bytesIn := []byte("Gryffindor")
+		in, err := img.Write(bytesIn)
+		assert.NoError(t, err)
+		assert.Equal(t, in, len(bytesIn))
+
+		snapName := "myPensieve"
+		snapshot, err := img.CreateSnapshot(snapName)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, snapshot.Remove())
+		}()
+
+		// overwrite
+		_, err = img.Seek(0, SeekSet)
+		assert.NoError(t, err)
+		bytesOver := []byte("Slytherin")
+		over, err := img.Write(bytesOver)
+		assert.NoError(t, err)
+		assert.Equal(t, over, len(bytesOver))
+
+		snapInfo, err := img.GetSnapshotNames()
+		assert.NoError(t, err)
+		snapID := snapInfo[0].Id
+		assert.Equal(t, snapName, snapInfo[0].Name)
+
+		err = img.SetSnapByID(snapID)
+		assert.NoError(t, err)
+
+		// read
+		_, err = img.Seek(0, SeekSet)
+		assert.NoError(t, err)
+		bytesOut := make([]byte, len(bytesIn))
+		out, err := img.Read(bytesOut)
+		assert.NoError(t, err)
+		assert.Equal(t, out, len(bytesOut))
+		assert.Equal(t, bytesIn, bytesOut)
+	})
+
+	t.Run("ClosedImage", func(t *testing.T) {
+		closedImg, err := Create(ioctx, "someImage", testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, closedImg.Remove())
+		}()
+
+		var snapID uint64
+		snapID = 22
+		err = closedImg.SetSnapByID(snapID)
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrImageNotOpen)
+	})
+
+	t.Run("invalidSnapID", func(t *testing.T) {
+		imgName := "someImage"
+		img, err := Create(ioctx, imgName, testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Remove())
+		}()
+
+		img, err = OpenImage(ioctx, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		var snapID uint64
+		snapID = 22
+		err = img.SetSnapByID(snapID)
+		assert.Error(t, err)
+	})
+}
