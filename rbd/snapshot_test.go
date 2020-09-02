@@ -105,3 +105,82 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestGetSnapTimestamp(t *testing.T) {
+	conn := radosConnect(t)
+	poolName := GetUUID()
+	err := conn.MakePool(poolName)
+	assert.NoError(t, err)
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+
+	defer func() {
+		ioctx.Destroy()
+		assert.NoError(t, conn.DeletePool(poolName))
+		conn.Shutdown()
+	}()
+
+	t.Run("ClosedImage", func(t *testing.T) {
+		imgName := "someImage"
+		img, err := Create(ioctx, imgName, testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Remove())
+		}()
+		var snapID uint64
+		snapID = 22
+		_, err = img.GetSnapTimestamp(snapID)
+		assert.Error(t, err)
+		assert.Equal(t, err, ErrImageNotOpen)
+	})
+
+	t.Run("invalidSnapID", func(t *testing.T) {
+		t.Skip("hits assert due to https://tracker.ceph.com/issues/47287")
+		imgName := "someImage"
+		img, err := Create(ioctx, imgName, testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Remove())
+		}()
+
+		img, err = OpenImage(ioctx, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		var snapID uint64
+		snapID = 22
+		_, err = img.GetSnapTimestamp(snapID)
+		assert.Error(t, err)
+	})
+
+	t.Run("happyPath", func(t *testing.T) {
+		imgName := "someImage"
+		img, err := Create(ioctx, imgName, testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Remove())
+		}()
+
+		img, err = OpenImage(ioctx, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		snapName := "mysnap"
+		snapshot, err := img.CreateSnapshot(snapName)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, snapshot.Remove())
+		}()
+
+		snapInfo, err := img.GetSnapshotNames()
+		assert.NoError(t, err)
+		assert.Equal(t, snapName, snapInfo[0].Name)
+		snapID := snapInfo[0].Id
+		_, err = img.GetSnapTimestamp(snapID)
+		assert.NoError(t, err)
+	})
+}
