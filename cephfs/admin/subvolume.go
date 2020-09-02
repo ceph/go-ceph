@@ -125,7 +125,7 @@ type SubVolumeResizeResult struct {
 //  ceph fs subvolume resize <volume> --group-name=<group> <name> ...
 func (fsa *FSAdmin) ResizeSubVolume(
 	volume, group, name string,
-	newSize NewSize, noShrink bool) (*SubVolumeResizeResult, error) {
+	newSize QuotaSize, noShrink bool) (*SubVolumeResizeResult, error) {
 
 	f := &subVolumeResizeFields{
 		Prefix:    "fs subvolume resize",
@@ -133,7 +133,7 @@ func (fsa *FSAdmin) ResizeSubVolume(
 		VolName:   volume,
 		GroupName: group,
 		SubName:   name,
-		NewSize:   newSize.newSizeValue(),
+		NewSize:   newSize.resizeValue(),
 		NoShrink:  noShrink,
 	}
 	var result []*SubVolumeResizeResult

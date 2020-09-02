@@ -13,25 +13,25 @@ const (
 	tebiByte           = 1024 * gibiByte
 )
 
-// newSizeValue returns a size value as a string, as needed by the subvolume
+// resizeValue returns a size value as a string, as needed by the subvolume
 // resize command json.
-func (bc ByteCount) newSizeValue() string {
+func (bc ByteCount) resizeValue() string {
 	return uint64String(uint64(bc))
 }
 
-// NewSize interface values can be used to change the size of a volume.
-type NewSize interface {
-	newSizeValue() string
+// QuotaSize interface values can be used to change the size of a volume.
+type QuotaSize interface {
+	resizeValue() string
 }
 
-// specialSize is a custom non-numeric new size value.
+// specialSize is a custom non-numeric quota size value.
 type specialSize string
 
-// newSizeValue for a specialSize returns the literal string.
-func (s specialSize) newSizeValue() string {
+// resizeValue for a specialSize returns the original string value.
+func (s specialSize) resizeValue() string {
 	return string(s)
 }
 
-// Infinite is a special NewSize value that can be used to clear size limits on
-// a subvolume.
+// Infinite is a special QuotaSize value that can be used to clear size limits
+// on a subvolume.
 const Infinite = specialSize("infinite")
