@@ -347,3 +347,72 @@ func TestSubVolumeInfo(t *testing.T) {
 	assert.Equal(t, 040750, vinfo.Mode)
 	assert.GreaterOrEqual(t, 2020, vinfo.Ctime.Year())
 }
+
+func TestSubVolumeSnapshots(t *testing.T) {
+	fsa := getFSAdmin(t)
+	volume := "cephfs"
+	group := "20000leagues"
+	subname := "nautilus"
+	snapname1 := "ne1"
+	snapname2 := "mo2"
+
+	err := fsa.CreateSubVolumeGroup(volume, group, nil)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolumeGroup(volume, group)
+		assert.NoError(t, err)
+	}()
+
+	svopts := &SubVolumeOptions{
+		Mode: 0750,
+		Size: 20 * gibiByte,
+	}
+	err = fsa.CreateSubVolume(volume, group, subname, svopts)
+	assert.NoError(t, err)
+	defer func() {
+		err := fsa.RemoveSubVolume(volume, group, subname)
+		assert.NoError(t, err)
+	}()
+
+	t.Run("createAndRemove", func(t *testing.T) {
+		err = fsa.CreateSubVolumeSnapshot(volume, group, subname, snapname1)
+		assert.NoError(t, err)
+		err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname1)
+		assert.NoError(t, err)
+	})
+
+	t.Run("listOne", func(t *testing.T) {
+		err = fsa.CreateSubVolumeSnapshot(volume, group, subname, snapname1)
+		assert.NoError(t, err)
+		defer func() {
+			err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname1)
+			assert.NoError(t, err)
+		}()
+
+		snaps, err := fsa.ListSubVolumeSnapshots(volume, group, subname)
+		assert.NoError(t, err)
+		assert.Len(t, snaps, 1)
+		assert.Contains(t, snaps, snapname1)
+	})
+
+	t.Run("listTwo", func(t *testing.T) {
+		err = fsa.CreateSubVolumeSnapshot(volume, group, subname, snapname1)
+		assert.NoError(t, err)
+		defer func() {
+			err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname1)
+			assert.NoError(t, err)
+		}()
+		err = fsa.CreateSubVolumeSnapshot(volume, group, subname, snapname2)
+		assert.NoError(t, err)
+		defer func() {
+			err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname2)
+			assert.NoError(t, err)
+		}()
+
+		snaps, err := fsa.ListSubVolumeSnapshots(volume, group, subname)
+		assert.NoError(t, err)
+		assert.Len(t, snaps, 2)
+		assert.Contains(t, snaps, snapname1)
+		assert.Contains(t, snaps, snapname2)
+	})
+}
