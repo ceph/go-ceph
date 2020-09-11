@@ -211,3 +211,56 @@ func (fsa *FSAdmin) SubVolumeInfo(volume, group, name string) (*SubVolumeInfo, e
 	}
 	return parseSubVolumeInfo(fsa.marshalMgrCommand(m))
 }
+
+// CreateSubVolumeSnapshot creates a new snapshot from the source subvolume.
+//
+// Similar To:
+//  ceph fs subvolume snapshot create <volume> --group-name=<group> <source> <name>
+func (fsa *FSAdmin) CreateSubVolumeSnapshot(volume, group, source, name string) error {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot create",
+		"vol_name":  volume,
+		"sub_name":  source,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// RemoveSubVolumeSnapshot removes the specified snapshot from the subvolume.
+//
+// Similar To:
+//  ceph fs subvolume snapshot rm <volume> --group-name=<group> <subvolume> <name>
+func (fsa *FSAdmin) RemoveSubVolumeSnapshot(volume, group, subvolume, name string) error {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot rm",
+		"vol_name":  volume,
+		"sub_name":  subvolume,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// ListSubVolumeSnapshots returns a listing of snapshots for a given subvolume.
+//
+// Similar To:
+//  ceph fs subvolume snapshot ls <volume> --group-name=<group> <name>
+func (fsa *FSAdmin) ListSubVolumeSnapshots(volume, group, name string) ([]string, error) {
+	m := map[string]string{
+		"prefix":   "fs subvolume snapshot ls",
+		"vol_name": volume,
+		"sub_name": name,
+		"format":   "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return parseListNames(fsa.marshalMgrCommand(m))
+}
