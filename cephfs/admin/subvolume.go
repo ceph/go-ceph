@@ -264,3 +264,39 @@ func (fsa *FSAdmin) ListSubVolumeSnapshots(volume, group, name string) ([]string
 	}
 	return parseListNames(fsa.marshalMgrCommand(m))
 }
+
+// ProtectSubVolumeSnapshot protects the specified snapshot.
+//
+// Similar To:
+//  ceph fs subvolume snapshot protect <volume> --group-name=<group> <subvolume> <name>
+func (fsa *FSAdmin) ProtectSubVolumeSnapshot(volume, group, subvolume, name string) error {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot protect",
+		"vol_name":  volume,
+		"sub_name":  subvolume,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// UnprotectSubVolumeSnapshot removes protection from the specified snapshot.
+//
+// Similar To:
+//  ceph fs subvolume snapshot unprotect <volume> --group-name=<group> <subvolume> <name>
+func (fsa *FSAdmin) UnprotectSubVolumeSnapshot(volume, group, subvolume, name string) error {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot unprotect",
+		"vol_name":  volume,
+		"sub_name":  subvolume,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
