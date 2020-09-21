@@ -4,7 +4,6 @@ package admin
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/ceph/go-ceph/rados"
@@ -60,38 +59,38 @@ func (fsa *FSAdmin) validate() error {
 
 // rawMgrCommand takes a byte buffer and sends it to the MGR as a command.
 // The buffer is expected to contain preformatted JSON.
-func (fsa *FSAdmin) rawMgrCommand(buf []byte) ([]byte, string, error) {
+func (fsa *FSAdmin) rawMgrCommand(buf []byte) response {
 	if err := fsa.validate(); err != nil {
-		return nil, "", err
+		return response{err: err}
 	}
-	return fsa.conn.MgrCommand([][]byte{buf})
+	return newResponse(fsa.conn.MgrCommand([][]byte{buf}))
 }
 
 // marshalMgrCommand takes an generic interface{} value, converts it to JSON and
 // sends the json to the MGR as a command.
-func (fsa *FSAdmin) marshalMgrCommand(v interface{}) ([]byte, string, error) {
+func (fsa *FSAdmin) marshalMgrCommand(v interface{}) response {
 	b, err := json.Marshal(v)
 	if err != nil {
-		return nil, "", err
+		return response{err: err}
 	}
 	return fsa.rawMgrCommand(b)
 }
 
 // rawMonCommand takes a byte buffer and sends it to the MON as a command.
 // The buffer is expected to contain preformatted JSON.
-func (fsa *FSAdmin) rawMonCommand(buf []byte) ([]byte, string, error) {
+func (fsa *FSAdmin) rawMonCommand(buf []byte) response {
 	if err := fsa.validate(); err != nil {
-		return nil, "", err
+		return response{err: err}
 	}
-	return fsa.conn.MonCommand(buf)
+	return newResponse(fsa.conn.MonCommand(buf))
 }
 
 // marshalMonCommand takes an generic interface{} value, converts it to JSON and
 // sends the json to the MGR as a command.
-func (fsa *FSAdmin) marshalMonCommand(v interface{}) ([]byte, string, error) {
+func (fsa *FSAdmin) marshalMonCommand(v interface{}) response {
 	b, err := json.Marshal(v)
 	if err != nil {
-		return nil, "", err
+		return response{err: err}
 	}
 	return fsa.rawMonCommand(b)
 }
@@ -100,9 +99,9 @@ type listNamedResult struct {
 	Name string `json:"name"`
 }
 
-func parseListNames(res []byte, status string, err error) ([]string, error) {
+func parseListNames(res response) ([]string, error) {
 	var r []listNamedResult
-	if err := unmarshalResponseJSON(res, status, err, &r); err != nil {
+	if err := res.noStatus().unmarshal(&r).End(); err != nil {
 		return nil, err
 	}
 	vl := make([]string, len(r))
@@ -112,47 +111,20 @@ func parseListNames(res []byte, status string, err error) ([]string, error) {
 	return vl, nil
 }
 
-// checkEmptyResponseExpected returns an error if the result or status
-// are non-empty.
-func checkEmptyResponseExpected(res []byte, status string, err error) error {
-	if err != nil {
-		return err
-	}
-	if len(res) != 0 {
-		return fmt.Errorf("unexpected response: %s", string(res))
-	}
-	if status != "" {
-		return fmt.Errorf("error status: %s", status)
-	}
-	return nil
-}
-
-func unmarshalResponseJSON(res []byte, status string, err error, v interface{}) error {
-	if err != nil {
-		return err
-	}
-	if status != "" {
-		return fmt.Errorf("error status: %s", status)
-	}
-	return json.Unmarshal(res, v)
-}
-
-// extractPathResponse returns a cleaned up path from requests that get a path
+// parsePathResponse returns a cleaned up path from requests that get a path
 // unless an error is encountered, then an error is returned.
-func extractPathResponse(res []byte, status string, err error) (string, error) {
-	if err != nil {
-		return "", err
+func parsePathResponse(res response) (string, error) {
+	if res2 := res.noStatus(); !res2.Ok() {
+		return "", res.End()
 	}
-	if status != "" {
-		return "", fmt.Errorf("error status: %s", status)
-	}
+	b := res.body
 	// if there's a trailing newline in the buffer strip it.
 	// ceph assumes a CLI wants the output of the buffer and there's
 	// no format=json mode available currently.
-	for len(res) >= 1 && res[len(res)-1] == '\n' {
-		res = res[:len(res)-1]
+	for len(b) >= 1 && b[len(b)-1] == '\n' {
+		b = b[:len(b)-1]
 	}
-	return string(res), nil
+	return string(b), nil
 }
 
 // modeString converts a unix-style mode value to a string-ified version in an

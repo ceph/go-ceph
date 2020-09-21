@@ -12,8 +12,8 @@ var (
 // Similar To:
 //  ceph fs volume ls
 func (fsa *FSAdmin) ListVolumes() ([]string, error) {
-	r, s, err := fsa.rawMgrCommand(listVolumesCmd)
-	return parseListNames(r, s, err)
+	res := fsa.rawMgrCommand(listVolumesCmd)
+	return parseListNames(res)
 }
 
 // VolumeIdent contains a pair of file system identifying values: the volume
@@ -39,14 +39,17 @@ const (
 	dumpOkLen    = len(dumpOkPrefix)
 )
 
-func parseDumpToIdents(r []byte, s string, err error) ([]VolumeIdent, error) {
-	if len(s) >= dumpOkLen && s[:dumpOkLen] == dumpOkPrefix {
+func parseDumpToIdents(res response) ([]VolumeIdent, error) {
+	if !res.Ok() {
+		return nil, res.End()
+	}
+	if len(res.status) >= dumpOkLen && res.status[:dumpOkLen] == dumpOkPrefix {
 		// Unhelpfully, ceph drops a status string on success responses for this
 		// call. this hacks around that by ignoring its typical prefix
-		s = ""
+		res.status = ""
 	}
 	var dump fsDump
-	if err := unmarshalResponseJSON(r, s, err, &dump); err != nil {
+	if err := res.noStatus().unmarshal(&dump).End(); err != nil {
 		return nil, err
 	}
 	// copy the dump json into the simpler enumeration list
@@ -64,6 +67,5 @@ func (fsa *FSAdmin) EnumerateVolumes() ([]VolumeIdent, error) {
 	// only way to do it, but it's the only one I know of currently. Because of
 	// this and to keep our initial implementation simple, we expose our own
 	// simplified type only, rather do a partial implementation of dump.
-	r, s, err := fsa.rawMonCommand(dumpVolumesCmd)
-	return parseDumpToIdents(r, s, err)
+	return parseDumpToIdents(fsa.rawMonCommand(dumpVolumesCmd))
 }

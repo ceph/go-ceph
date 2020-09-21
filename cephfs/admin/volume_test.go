@@ -140,19 +140,20 @@ var sampleDump2 = []byte(`
 `)
 
 func TestParseDumpToIdents(t *testing.T) {
+	R := newResponse
 	fakePrefix := dumpOkPrefix + " 5"
 	t.Run("error", func(t *testing.T) {
-		idents, err := parseDumpToIdents(nil, "", errors.New("boop"))
+		idents, err := parseDumpToIdents(R(nil, "", errors.New("boop")))
 		assert.Error(t, err)
 		assert.Equal(t, "boop", err.Error())
 		assert.Nil(t, idents)
 	})
 	t.Run("badStatus", func(t *testing.T) {
-		_, err := parseDumpToIdents(sampleDump1, "unexpected!", nil)
+		_, err := parseDumpToIdents(R(sampleDump1, "unexpected!", nil))
 		assert.Error(t, err)
 	})
 	t.Run("oneVolOk", func(t *testing.T) {
-		idents, err := parseDumpToIdents(sampleDump1, fakePrefix, nil)
+		idents, err := parseDumpToIdents(R(sampleDump1, fakePrefix, nil))
 		assert.NoError(t, err)
 		if assert.Len(t, idents, 1) {
 			assert.Equal(t, "cephfs", idents[0].Name)
@@ -160,7 +161,7 @@ func TestParseDumpToIdents(t *testing.T) {
 		}
 	})
 	t.Run("twoVolOk", func(t *testing.T) {
-		idents, err := parseDumpToIdents(sampleDump2, fakePrefix, nil)
+		idents, err := parseDumpToIdents(R(sampleDump2, fakePrefix, nil))
 		assert.NoError(t, err)
 		if assert.Len(t, idents, 2) {
 			assert.Equal(t, "wiffleball", idents[0].Name)
@@ -170,7 +171,7 @@ func TestParseDumpToIdents(t *testing.T) {
 		}
 	})
 	t.Run("unexpectedStatus", func(t *testing.T) {
-		idents, err := parseDumpToIdents(sampleDump1, "slip-up", nil)
+		idents, err := parseDumpToIdents(R(sampleDump1, "slip-up", nil))
 		assert.Error(t, err)
 		assert.Nil(t, idents)
 	})

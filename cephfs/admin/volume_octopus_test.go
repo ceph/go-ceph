@@ -27,21 +27,22 @@ var sampleVolumeStatus1 = []byte(`
 `)
 
 func TestParseVolumeStatus(t *testing.T) {
+	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		_, err := parseVolumeStatus(nil, "", errors.New("bonk"))
+		_, err := parseVolumeStatus(R(nil, "", errors.New("bonk")))
 		assert.Error(t, err)
 		assert.Equal(t, "bonk", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		_, err := parseVolumeStatus(nil, "unexpected!", nil)
+		_, err := parseVolumeStatus(R(nil, "unexpected!", nil))
 		assert.Error(t, err)
 	})
 	t.Run("badJSON", func(t *testing.T) {
-		_, err := parseVolumeStatus([]byte("_XxXxX"), "", nil)
+		_, err := parseVolumeStatus(R([]byte("_XxXxX"), "", nil))
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		s, err := parseVolumeStatus(sampleVolumeStatus1, "", nil)
+		s, err := parseVolumeStatus(R(sampleVolumeStatus1, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, s) {
 			assert.Contains(t, s.MDSVersion, "ceph version 15.2.4")

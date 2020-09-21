@@ -34,21 +34,22 @@ var sampleCloneStatusInProg = []byte(`{
 }`)
 
 func TestParseCloneStatus(t *testing.T) {
+	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		_, err := parseCloneStatus(nil, "", errors.New("flub"))
+		_, err := parseCloneStatus(R(nil, "", errors.New("flub")))
 		assert.Error(t, err)
 		assert.Equal(t, "flub", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		_, err := parseCloneStatus(nil, "unexpected!", nil)
+		_, err := parseCloneStatus(R(nil, "unexpected!", nil))
 		assert.Error(t, err)
 	})
 	t.Run("badJSON", func(t *testing.T) {
-		_, err := parseCloneStatus([]byte("_XxXxX"), "", nil)
+		_, err := parseCloneStatus(R([]byte("_XxXxX"), "", nil))
 		assert.Error(t, err)
 	})
 	t.Run("okPending", func(t *testing.T) {
-		status, err := parseCloneStatus(sampleCloneStatusPending, "", nil)
+		status, err := parseCloneStatus(R(sampleCloneStatusPending, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, status) {
 			assert.EqualValues(t, ClonePending, status.State)
@@ -59,7 +60,7 @@ func TestParseCloneStatus(t *testing.T) {
 		}
 	})
 	t.Run("okInProg", func(t *testing.T) {
-		status, err := parseCloneStatus(sampleCloneStatusInProg, "", nil)
+		status, err := parseCloneStatus(R(sampleCloneStatusInProg, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, status) {
 			assert.EqualValues(t, CloneInProgress, status.State)

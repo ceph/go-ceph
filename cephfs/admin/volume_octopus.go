@@ -18,9 +18,9 @@ type VolumeStatus struct {
 	Pools      []VolumePool `json:"pools"`
 }
 
-func parseVolumeStatus(res []byte, status string, err error) (*VolumeStatus, error) {
+func parseVolumeStatus(res response) (*VolumeStatus, error) {
 	var vs VolumeStatus
-	err = unmarshalResponseJSON(res, status, err, &vs)
+	err := res.noStatus().unmarshal(&vs).End()
 	return &vs, err
 }
 
@@ -29,10 +29,10 @@ func parseVolumeStatus(res []byte, status string, err error) (*VolumeStatus, err
 // Similar To:
 //  ceph fs status cephfs <name>
 func (fsa *FSAdmin) VolumeStatus(name string) (*VolumeStatus, error) {
-	r, s, err := fsa.marshalMgrCommand(map[string]string{
+	res := fsa.marshalMgrCommand(map[string]string{
 		"fs":     name,
 		"prefix": "fs status",
 		"format": "json",
 	})
-	return parseVolumeStatus(r, s, err)
+	return parseVolumeStatus(res)
 }

@@ -61,7 +61,7 @@ func (fsa *FSAdmin) CreateSubVolume(volume, group, name string, o *SubVolumeOpti
 		o = &SubVolumeOptions{}
 	}
 	f := o.toFields(volume, group, name)
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(f))
+	return fsa.marshalMgrCommand(f).noData().End()
 }
 
 // ListSubVolumes returns a list of subvolumes belonging to the volume and
@@ -96,7 +96,7 @@ func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 type subVolumeResizeFields struct {
@@ -137,8 +137,8 @@ func (fsa *FSAdmin) ResizeSubVolume(
 		NoShrink:  noShrink,
 	}
 	var result []*SubVolumeResizeResult
-	r, s, err := fsa.marshalMgrCommand(f)
-	if err := unmarshalResponseJSON(r, s, err, &result); err != nil {
+	res := fsa.marshalMgrCommand(f)
+	if err := res.noStatus().unmarshal(&result).End(); err != nil {
 		return nil, err
 	}
 	return result[0], nil
@@ -158,7 +158,7 @@ func (fsa *FSAdmin) SubVolumePath(volume, group, name string) (string, error) {
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return extractPathResponse(fsa.marshalMgrCommand(m))
+	return parsePathResponse(fsa.marshalMgrCommand(m))
 }
 
 // SubVolumeInfo reports various informational values about a subvolume.
@@ -184,9 +184,9 @@ type subVolumeInfoWrapper struct {
 	VBytesQuota *quotaSizePlaceholder `json:"bytes_quota"`
 }
 
-func parseSubVolumeInfo(r []byte, s string, err error) (*SubVolumeInfo, error) {
+func parseSubVolumeInfo(res response) (*SubVolumeInfo, error) {
 	var info subVolumeInfoWrapper
-	if err := unmarshalResponseJSON(r, s, err, &info); err != nil {
+	if err := res.noStatus().unmarshal(&info).End(); err != nil {
 		return nil, err
 	}
 	if info.VBytesQuota != nil {
@@ -227,7 +227,7 @@ func (fsa *FSAdmin) CreateSubVolumeSnapshot(volume, group, source, name string) 
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 // RemoveSubVolumeSnapshot removes the specified snapshot from the subvolume.
@@ -245,7 +245,7 @@ func (fsa *FSAdmin) RemoveSubVolumeSnapshot(volume, group, subvolume, name strin
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 // ListSubVolumeSnapshots returns a listing of snapshots for a given subvolume.
@@ -280,7 +280,7 @@ func (fsa *FSAdmin) ProtectSubVolumeSnapshot(volume, group, subvolume, name stri
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 // UnprotectSubVolumeSnapshot removes protection from the specified snapshot.
@@ -298,5 +298,5 @@ func (fsa *FSAdmin) UnprotectSubVolumeSnapshot(volume, group, subvolume, name st
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
