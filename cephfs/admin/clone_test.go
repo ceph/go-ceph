@@ -105,16 +105,22 @@ func TestCloneSubVolumeSnapshot(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 
-	err = fsa.ProtectSubVolumeSnapshot(volume, group, subname, snapname)
-	assert.NoError(t, err)
-	defer func() {
-		err := fsa.UnprotectSubVolumeSnapshot(volume, group, subname, snapname)
-		assert.NoError(t, err)
-	}()
-
 	err = fsa.CloneSubVolumeSnapshot(
 		volume, group, subname, snapname, clonename,
 		&CloneOptions{TargetGroup: group})
+	var x NotProtectedError
+	if errors.As(err, &x) {
+		err = fsa.ProtectSubVolumeSnapshot(volume, group, subname, snapname)
+		assert.NoError(t, err)
+		defer func() {
+			err := fsa.UnprotectSubVolumeSnapshot(volume, group, subname, snapname)
+			assert.NoError(t, err)
+		}()
+
+		err = fsa.CloneSubVolumeSnapshot(
+			volume, group, subname, snapname, clonename,
+			&CloneOptions{TargetGroup: group})
+	}
 	assert.NoError(t, err)
 	defer func() {
 		err := fsa.RemoveSubVolume(volume, group, clonename)
