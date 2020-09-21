@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -15,6 +16,10 @@ var (
 	// ErrBodyNotEmpty may be returned if a call should have an empty body but
 	// a body value is present.
 	ErrBodyNotEmpty = errors.New("response body not empty")
+)
+
+const (
+	deprecatedSuffix = "call is deprecated and will be removed in a future release"
 )
 
 // response encapsulates the data returned by ceph and supports easy processing
@@ -82,6 +87,19 @@ func (r response) noBody() response {
 // noData asserts that the input response has no status or body values.
 func (r response) noData() response {
 	return r.noStatus().noBody()
+}
+
+// filterDeprecated removes deprecation warnings from the response status.
+// Use it when checking the response from calls that may be deprecated in ceph
+// if you want those calls to continue working if the warning is present.
+func (r response) filterDeprecated() response {
+	if !r.Ok() {
+		return r
+	}
+	if strings.HasSuffix(r.status, deprecatedSuffix) {
+		return response{r.body, "", r.err}
+	}
+	return r
 }
 
 // unmarshal data from the response body into v.

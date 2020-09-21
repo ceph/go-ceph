@@ -280,7 +280,7 @@ func (fsa *FSAdmin) ProtectSubVolumeSnapshot(volume, group, subvolume, name stri
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return fsa.marshalMgrCommand(m).noData().End()
+	return fsa.marshalMgrCommand(m).filterDeprecated().noData().End()
 }
 
 // UnprotectSubVolumeSnapshot removes protection from the specified snapshot.
@@ -298,5 +298,5 @@ func (fsa *FSAdmin) UnprotectSubVolumeSnapshot(volume, group, subvolume, name st
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return fsa.marshalMgrCommand(m).noData().End()
+	return fsa.marshalMgrCommand(m).filterDeprecated().noData().End()
 }
