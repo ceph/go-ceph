@@ -2,6 +2,20 @@
 
 package admin
 
+import (
+	"strings"
+)
+
+const notProtectedSuffix = "is not protected"
+
+// NotProtectedError error values will be returned by CloneSubVolumeSnapshot in
+// the case that the source snapshot needs to be protected but is not.  The
+// requirement for a snapshot to be protected prior to cloning varies by Ceph
+// version.
+type NotProtectedError struct {
+	response
+}
+
 // CloneOptions are used to specify optional values to be used when creating a
 // new subvolume clone.
 type CloneOptions struct {
@@ -31,7 +45,14 @@ func (fsa *FSAdmin) CloneSubVolumeSnapshot(volume, group, subvolume, snapshot, n
 	if o != nil && o.PoolLayout != "" {
 		m["pool_layout"] = o.PoolLayout
 	}
-	return fsa.marshalMgrCommand(m).noData().End()
+	return checkCloneResponse(fsa.marshalMgrCommand(m))
+}
+
+func checkCloneResponse(res response) error {
+	if strings.HasSuffix(res.status, notProtectedSuffix) {
+		return NotProtectedError{response: res}
+	}
+	return res.noData().End()
 }
 
 // CloneState is used to define constant values used to determine the state of
