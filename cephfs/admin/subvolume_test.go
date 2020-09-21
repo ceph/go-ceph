@@ -266,17 +266,18 @@ var badSampleSubVolumeInfo2 = []byte(`
 `)
 
 func TestParseSubVolumeInfo(t *testing.T) {
+	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		_, err := parseSubVolumeInfo(nil, "", errors.New("gleep glop"))
+		_, err := parseSubVolumeInfo(R(nil, "", errors.New("gleep glop")))
 		assert.Error(t, err)
 		assert.Equal(t, "gleep glop", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		_, err := parseSubVolumeInfo(nil, "unexpected!", nil)
+		_, err := parseSubVolumeInfo(R(nil, "unexpected!", nil))
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		info, err := parseSubVolumeInfo(sampleSubVolumeInfo1, "", nil)
+		info, err := parseSubVolumeInfo(R(sampleSubVolumeInfo1, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, info) {
 			assert.Equal(t,
@@ -290,7 +291,7 @@ func TestParseSubVolumeInfo(t *testing.T) {
 		}
 	})
 	t.Run("ok2", func(t *testing.T) {
-		info, err := parseSubVolumeInfo(sampleSubVolumeInfo2, "", nil)
+		info, err := parseSubVolumeInfo(R(sampleSubVolumeInfo2, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, info) {
 			assert.Equal(t,
@@ -304,12 +305,12 @@ func TestParseSubVolumeInfo(t *testing.T) {
 		}
 	})
 	t.Run("invalidBytesQuotaValue", func(t *testing.T) {
-		info, err := parseSubVolumeInfo(badSampleSubVolumeInfo1, "", nil)
+		info, err := parseSubVolumeInfo(R(badSampleSubVolumeInfo1, "", nil))
 		assert.Error(t, err)
 		assert.Nil(t, info)
 	})
 	t.Run("invalidBytesQuotaType", func(t *testing.T) {
-		info, err := parseSubVolumeInfo(badSampleSubVolumeInfo2, "", nil)
+		info, err := parseSubVolumeInfo(R(badSampleSubVolumeInfo2, "", nil))
 		assert.Error(t, err)
 		assert.Nil(t, info)
 	})

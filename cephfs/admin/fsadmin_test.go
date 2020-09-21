@@ -93,8 +93,8 @@ func getFSAdmin(t *testing.T) *FSAdmin {
 
 func TestInvalidFSAdmin(t *testing.T) {
 	fsa := &FSAdmin{}
-	_, _, err := fsa.rawMgrCommand([]byte("FOOBAR!"))
-	assert.Error(t, err)
+	res := fsa.rawMgrCommand([]byte("FOOBAR!"))
+	assert.Error(t, res.Unwrap())
 }
 
 type badMarshalType bool
@@ -107,26 +107,27 @@ func TestBadMarshal(t *testing.T) {
 	fsa := getFSAdmin(t)
 
 	var bad badMarshalType
-	_, _, err := fsa.marshalMgrCommand(bad)
-	assert.Error(t, err)
+	res := fsa.marshalMgrCommand(bad)
+	assert.Error(t, res.Unwrap())
 }
 
 func TestParseListNames(t *testing.T) {
+	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		_, err := parseListNames(nil, "", errors.New("bonk"))
+		_, err := parseListNames(R(nil, "", errors.New("bonk")))
 		assert.Error(t, err)
 		assert.Equal(t, "bonk", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		_, err := parseListNames(nil, "unexpected!", nil)
+		_, err := parseListNames(R(nil, "unexpected!", nil))
 		assert.Error(t, err)
 	})
 	t.Run("badJSON", func(t *testing.T) {
-		_, err := parseListNames([]byte("Foo[[["), "", nil)
+		_, err := parseListNames(R([]byte("Foo[[["), "", nil))
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		l, err := parseListNames([]byte(`[{"name":"bob"}]`), "", nil)
+		l, err := parseListNames(R([]byte(`[{"name":"bob"}]`), "", nil))
 		assert.NoError(t, err)
 		if assert.Len(t, l, 1) {
 			assert.Equal(t, "bob", l[0])
@@ -135,21 +136,22 @@ func TestParseListNames(t *testing.T) {
 }
 
 func TestCheckEmptyResponseExpected(t *testing.T) {
+	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		err := checkEmptyResponseExpected(nil, "", errors.New("bonk"))
+		err := R(nil, "", errors.New("bonk")).noData().End()
 		assert.Error(t, err)
 		assert.Equal(t, "bonk", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		err := checkEmptyResponseExpected(nil, "unexpected!", nil)
+		err := R(nil, "unexpected!", nil).noData().End()
 		assert.Error(t, err)
 	})
 	t.Run("someJSON", func(t *testing.T) {
-		err := checkEmptyResponseExpected([]byte(`{"trouble": true}`), "", nil)
+		err := R([]byte(`{"trouble": true}`), "", nil).noData().End()
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		err := checkEmptyResponseExpected([]byte{}, "", nil)
+		err := R([]byte{}, "", nil).noData().End()
 		assert.NoError(t, err)
 	})
 }

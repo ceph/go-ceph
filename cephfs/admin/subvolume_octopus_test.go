@@ -20,21 +20,22 @@ var sampleSubVolumeSnapshoInfo1 = []byte(`
 `)
 
 func TestParseSubVolumeSnapshotInfo(t *testing.T) {
+	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		_, err := parseSubVolumeSnapshotInfo(nil, "", errors.New("flub"))
+		_, err := parseSubVolumeSnapshotInfo(R(nil, "", errors.New("flub")))
 		assert.Error(t, err)
 		assert.Equal(t, "flub", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		_, err := parseSubVolumeSnapshotInfo(nil, "unexpected!", nil)
+		_, err := parseSubVolumeSnapshotInfo(R(nil, "unexpected!", nil))
 		assert.Error(t, err)
 	})
 	t.Run("badJSON", func(t *testing.T) {
-		_, err := parseSubVolumeSnapshotInfo([]byte("_XxXxX"), "", nil)
+		_, err := parseSubVolumeSnapshotInfo(R([]byte("_XxXxX"), "", nil))
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		info, err := parseSubVolumeSnapshotInfo(sampleSubVolumeSnapshoInfo1, "", nil)
+		info, err := parseSubVolumeSnapshotInfo(R(sampleSubVolumeSnapshoInfo1, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, info) {
 			assert.Equal(t, "cephfs_data", info.DataPool)

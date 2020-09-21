@@ -47,8 +47,8 @@ func (fsa *FSAdmin) CreateSubVolumeGroup(volume, name string, o *SubVolumeGroupO
 	if o == nil {
 		o = &SubVolumeGroupOptions{}
 	}
-	r, s, err := fsa.marshalMgrCommand(o.toFields(volume, name))
-	return checkEmptyResponseExpected(r, s, err)
+	res := fsa.marshalMgrCommand(o.toFields(volume, name))
+	return res.noData().End()
 }
 
 // ListSubVolumeGroups returns a list of subvolume groups belonging to the
@@ -57,25 +57,25 @@ func (fsa *FSAdmin) CreateSubVolumeGroup(volume, name string, o *SubVolumeGroupO
 // Similar To:
 //  ceph fs subvolumegroup ls cephfs <volume>
 func (fsa *FSAdmin) ListSubVolumeGroups(volume string) ([]string, error) {
-	r, s, err := fsa.marshalMgrCommand(map[string]string{
+	res := fsa.marshalMgrCommand(map[string]string{
 		"prefix":   "fs subvolumegroup ls",
 		"vol_name": volume,
 		"format":   "json",
 	})
-	return parseListNames(r, s, err)
+	return parseListNames(res)
 }
 
 // RemoveSubVolumeGroup will delete a subvolume group in a volume.
 // Similar To:
 //  ceph fs subvolumegroup rm <volume> <group_name>
 func (fsa *FSAdmin) RemoveSubVolumeGroup(volume, name string) error {
-	r, s, err := fsa.marshalMgrCommand(map[string]string{
+	res := fsa.marshalMgrCommand(map[string]string{
 		"prefix":     "fs subvolumegroup rm",
 		"vol_name":   volume,
 		"group_name": name,
 		"format":     "json",
 	})
-	return checkEmptyResponseExpected(r, s, err)
+	return res.noData().End()
 }
 
 // SubVolumeGroupPath returns the path to the subvolume from the root of the
@@ -90,7 +90,7 @@ func (fsa *FSAdmin) SubVolumeGroupPath(volume, name string) (string, error) {
 		"group_name": name,
 		// ceph doesn't respond in json for this cmd (even if you ask)
 	}
-	return extractPathResponse(fsa.marshalMgrCommand(m))
+	return parsePathResponse(fsa.marshalMgrCommand(m))
 }
 
 // CreateSubVolumeGroupSnapshot creates a new snapshot from the source subvolume group.
@@ -105,7 +105,7 @@ func (fsa *FSAdmin) CreateSubVolumeGroupSnapshot(volume, group, name string) err
 		"snap_name":  name,
 		"format":     "json",
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 // RemoveSubVolumeGroupSnapshot removes the specified snapshot from the subvolume group.
@@ -120,7 +120,7 @@ func (fsa *FSAdmin) RemoveSubVolumeGroupSnapshot(volume, group, name string) err
 		"snap_name":  name,
 		"format":     "json",
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 // ListSubVolumeGroupSnapshots returns a listing of snapshots for a given subvolume group.

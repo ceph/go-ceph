@@ -31,7 +31,7 @@ func (fsa *FSAdmin) CloneSubVolumeSnapshot(volume, group, subvolume, snapshot, n
 	if o != nil && o.PoolLayout != "" {
 		m["pool_layout"] = o.PoolLayout
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }
 
 // CloneState is used to define constant values used to determine the state of
@@ -67,9 +67,9 @@ type cloneStatusWrapper struct {
 	Status CloneStatus `json:"status"`
 }
 
-func parseCloneStatus(r []byte, s string, err error) (*CloneStatus, error) {
+func parseCloneStatus(res response) (*CloneStatus, error) {
 	var status cloneStatusWrapper
-	if err := unmarshalResponseJSON(r, s, err, &status); err != nil {
+	if err := res.noStatus().unmarshal(&status).End(); err != nil {
 		return nil, err
 	}
 	return &status.Status, nil
@@ -107,5 +107,5 @@ func (fsa *FSAdmin) CancelClone(volume, group, clone string) error {
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+	return fsa.marshalMgrCommand(m).noData().End()
 }

@@ -11,9 +11,9 @@ type SubVolumeSnapshotInfo struct {
 	Size             ByteCount `json:"size"`
 }
 
-func parseSubVolumeSnapshotInfo(r []byte, s string, err error) (*SubVolumeSnapshotInfo, error) {
+func parseSubVolumeSnapshotInfo(res response) (*SubVolumeSnapshotInfo, error) {
 	var info SubVolumeSnapshotInfo
-	if err := unmarshalResponseJSON(r, s, err, &info); err != nil {
+	if err := res.noStatus().unmarshal(&info).End(); err != nil {
 		return nil, err
 	}
 	return &info, nil
