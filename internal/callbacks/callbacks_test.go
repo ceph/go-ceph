@@ -1,6 +1,7 @@
 package callbacks
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -107,4 +108,43 @@ func TestCallbacksData(t *testing.T) {
 			t.Fatalf("conversion failed")
 		}
 	}
+}
+
+func BenchmarkCallbacks(t *testing.B) {
+	cbks := New()
+	workers := 1000
+	var wg sync.WaitGroup
+	f := func() {
+		defer wg.Done()
+		var x interface{}
+		var i1, i2, i3 uintptr
+		for i := 0; i < t.N/workers; i++ {
+			i1 = cbks.Add("foo")
+			i2 = cbks.Add("bar")
+			i3 = cbks.Add("baz")
+			x = cbks.Lookup(i1)
+			assert.NotNil(t, x)
+			if s, ok := x.(string); ok {
+				assert.Equal(t, "foo", s)
+			} else {
+				t.Fail()
+			}
+			x = cbks.Lookup(i3)
+			assert.NotNil(t, x)
+			if s, ok := x.(string); ok {
+				assert.Equal(t, "baz", s)
+			} else {
+				t.Fail()
+			}
+			cbks.Remove(i3)
+			cbks.Remove(i2)
+			cbks.Remove(i1)
+		}
+	}
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go f()
+	}
+	wg.Wait()
+	assert.Len(t, cbks.cmap, 0)
 }
