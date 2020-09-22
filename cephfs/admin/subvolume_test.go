@@ -113,25 +113,34 @@ func TestRemoveSubVolume(t *testing.T) {
 	assert.NoError(t, err)
 	beforeCount := len(lsv)
 
-	err = fsa.CreateSubVolume(volume, NoGroup, "deletemev1", nil)
-	assert.NoError(t, err)
+	removeTest := func(t *testing.T, rm func(string, string, string) error) {
+		err = fsa.CreateSubVolume(volume, NoGroup, "deletemev1", nil)
+		assert.NoError(t, err)
 
-	lsv, err = fsa.ListSubVolumes(volume, NoGroup)
-	assert.NoError(t, err)
-	afterCount := len(lsv)
-	assert.Equal(t, beforeCount, afterCount-1)
+		lsv, err = fsa.ListSubVolumes(volume, NoGroup)
+		assert.NoError(t, err)
+		afterCount := len(lsv)
+		assert.Equal(t, beforeCount, afterCount-1)
 
-	err = fsa.RemoveSubVolume(volume, NoGroup, "deletemev1")
-	assert.NoError(t, err)
+		err = rm(volume, NoGroup, "deletemev1")
+		assert.NoError(t, err)
 
-	delay()
-	lsv, err = fsa.ListSubVolumes(volume, NoGroup)
-	assert.NoError(t, err)
-	nowCount := len(lsv)
-	if !assert.Equal(t, beforeCount, nowCount) {
-		// this is a hack for debugging a flapping test
-		assert.Equal(t, []string{}, lsv)
+		delay()
+		lsv, err = fsa.ListSubVolumes(volume, NoGroup)
+		assert.NoError(t, err)
+		nowCount := len(lsv)
+		if !assert.Equal(t, beforeCount, nowCount) {
+			// this is a hack for debugging a flapping test
+			assert.Equal(t, []string{}, lsv)
+		}
 	}
+
+	t.Run("standard", func(t *testing.T) {
+		removeTest(t, fsa.RemoveSubVolume)
+	})
+	t.Run("force", func(t *testing.T) {
+		removeTest(t, fsa.ForceRemoveSubVolume)
+	})
 }
 
 func TestResizeSubVolume(t *testing.T) {

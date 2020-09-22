@@ -85,8 +85,21 @@ func (fsa *FSAdmin) ListSubVolumes(volume, group string) ([]string, error) {
 // subvolume group.
 //
 // Similar To:
-//  ceph fs subvolume rm <volume> --group-name=<group> <name> ...
+//  ceph fs subvolume rm <volume> --group-name=<group> <name>
 func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
+	return fsa.rmSubVolume(volume, group, name, rmFlags{})
+}
+
+// ForceRemoveSubVolume will delete a CephFS subvolume in a volume and optional
+// subvolume group.
+//
+// Similar To:
+//  ceph fs subvolume rm <volume> --group-name=<group> <name> --force
+func (fsa *FSAdmin) ForceRemoveSubVolume(volume, group, name string) error {
+	return fsa.rmSubVolume(volume, group, name, rmFlags{force: true})
+}
+
+func (fsa *FSAdmin) rmSubVolume(volume, group, name string, o rmFlags) error {
 	m := map[string]string{
 		"prefix":   "fs subvolume rm",
 		"vol_name": volume,
@@ -96,7 +109,7 @@ func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return fsa.marshalMgrCommand(m).noData().End()
+	return fsa.marshalMgrCommand(o.Update(m)).noData().End()
 }
 
 type subVolumeResizeFields struct {

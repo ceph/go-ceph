@@ -71,21 +71,30 @@ func TestRemoveSubVolumeGroup(t *testing.T) {
 	assert.NoError(t, err)
 	beforeCount := len(lsvg)
 
-	err = fsa.CreateSubVolumeGroup(volume, "deleteme1", nil)
-	assert.NoError(t, err)
+	removeTest := func(t *testing.T, rm func(string, string) error) {
+		err = fsa.CreateSubVolumeGroup(volume, "deleteme1", nil)
+		assert.NoError(t, err)
 
-	lsvg, err = fsa.ListSubVolumeGroups(volume)
-	assert.NoError(t, err)
-	afterCount := len(lsvg)
-	assert.Equal(t, beforeCount, afterCount-1)
+		lsvg, err = fsa.ListSubVolumeGroups(volume)
+		assert.NoError(t, err)
+		afterCount := len(lsvg)
+		assert.Equal(t, beforeCount, afterCount-1)
 
-	err = fsa.RemoveSubVolumeGroup(volume, "deleteme1")
-	assert.NoError(t, err)
+		err = rm(volume, "deleteme1")
+		assert.NoError(t, err)
 
-	lsvg, err = fsa.ListSubVolumeGroups(volume)
-	assert.NoError(t, err)
-	nowCount := len(lsvg)
-	assert.Equal(t, beforeCount, nowCount)
+		lsvg, err = fsa.ListSubVolumeGroups(volume)
+		assert.NoError(t, err)
+		nowCount := len(lsvg)
+		assert.Equal(t, beforeCount, nowCount)
+	}
+
+	t.Run("standard", func(t *testing.T) {
+		removeTest(t, fsa.RemoveSubVolumeGroup)
+	})
+	t.Run("force", func(t *testing.T) {
+		removeTest(t, fsa.ForceRemoveSubVolumeGroup)
+	})
 }
 
 func TestSubVolumeGroupPath(t *testing.T) {
