@@ -69,12 +69,23 @@ func (fsa *FSAdmin) ListSubVolumeGroups(volume string) ([]string, error) {
 // Similar To:
 //  ceph fs subvolumegroup rm <volume> <group_name>
 func (fsa *FSAdmin) RemoveSubVolumeGroup(volume, name string) error {
-	res := fsa.marshalMgrCommand(map[string]string{
+	return fsa.rmSubVolumeGroup(volume, name, rmFlags{})
+}
+
+// ForceRemoveSubVolumeGroup will delete a subvolume group in a volume.
+// Similar To:
+//  ceph fs subvolumegroup rm <volume> <group_name> --force
+func (fsa *FSAdmin) ForceRemoveSubVolumeGroup(volume, name string) error {
+	return fsa.rmSubVolumeGroup(volume, name, rmFlags{force: true})
+}
+
+func (fsa *FSAdmin) rmSubVolumeGroup(volume, name string, o rmFlags) error {
+	res := fsa.marshalMgrCommand(o.Update(map[string]string{
 		"prefix":     "fs subvolumegroup rm",
 		"vol_name":   volume,
 		"group_name": name,
 		"format":     "json",
-	})
+	}))
 	return res.noData().End()
 }
 
