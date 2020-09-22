@@ -153,6 +153,13 @@ func TestSubVolumeGroupSnapshots(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("createAndForceRemove", func(t *testing.T) {
+		err = fsa.CreateSubVolumeGroupSnapshot(volume, group, snapname1)
+		assert.NoError(t, err)
+		err := fsa.ForceRemoveSubVolumeGroupSnapshot(volume, group, snapname1)
+		assert.NoError(t, err)
+	})
+
 	t.Run("listOne", func(t *testing.T) {
 		err = fsa.CreateSubVolumeGroupSnapshot(volume, group, snapname1)
 		assert.NoError(t, err)
