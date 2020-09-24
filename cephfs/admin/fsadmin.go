@@ -14,6 +14,7 @@ import (
 // allow the cephfs administrative functions to interact with the Ceph cluster.
 type RadosCommander interface {
 	MgrCommand(buf [][]byte) ([]byte, string, error)
+	MonCommand(buf []byte) ([]byte, string, error)
 }
 
 // FSAdmin is used to administrate CephFS within a ceph cluster.
@@ -74,6 +75,25 @@ func (fsa *FSAdmin) marshalMgrCommand(v interface{}) ([]byte, string, error) {
 		return nil, "", err
 	}
 	return fsa.rawMgrCommand(b)
+}
+
+// rawMonCommand takes a byte buffer and sends it to the MON as a command.
+// The buffer is expected to contain preformatted JSON.
+func (fsa *FSAdmin) rawMonCommand(buf []byte) ([]byte, string, error) {
+	if err := fsa.validate(); err != nil {
+		return nil, "", err
+	}
+	return fsa.conn.MonCommand(buf)
+}
+
+// marshalMonCommand takes an generic interface{} value, converts it to JSON and
+// sends the json to the MGR as a command.
+func (fsa *FSAdmin) marshalMonCommand(v interface{}) ([]byte, string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil, "", err
+	}
+	return fsa.rawMonCommand(b)
 }
 
 type listNamedResult struct {

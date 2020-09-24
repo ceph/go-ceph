@@ -158,3 +158,17 @@ func (image *Image) ListChildren() (pools []string, images []string, err error) 
 	}
 	return pools, images, nil
 }
+
+// SetSnapByID updates the rbd image (not the Snapshot) such that the snapshot
+// is the source of readable data.
+//
+// Implements:
+//  int rbd_snap_set_by_id(rbd_image_t image, uint64_t snap_id);
+func (image *Image) SetSnapByID(snapID uint64) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
+	ret := C.rbd_snap_set_by_id(image.image, C.uint64_t(snapID))
+	return getError(ret)
+}
