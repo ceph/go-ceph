@@ -176,3 +176,89 @@ func TestParseDumpToIdents(t *testing.T) {
 		assert.Nil(t, idents)
 	})
 }
+
+func TestVolumeStatus(t *testing.T) {
+	if !serverIsOctopus {
+		t.Skipf("can only execute on octopus servers")
+	}
+	fsa := getFSAdmin(t)
+
+	vs, err := fsa.VolumeStatus("cephfs")
+	assert.NoError(t, err)
+	assert.Contains(t, vs.MDSVersion, "version")
+}
+
+func TestVolumeStatusInvalid(t *testing.T) {
+	if !serverIsNautilus {
+		t.Skipf("can only excecute on nautilus servers")
+	}
+	fsa := getFSAdmin(t)
+
+	vs, err := fsa.VolumeStatus("cephfs")
+	assert.Error(t, err)
+	assert.Nil(t, vs)
+	var notImpl NotImplementedError
+	assert.True(t, errors.As(err, &notImpl))
+}
+
+var sampleVolumeStatus1 = []byte(`
+{
+"clients": [{"clients": 1, "fs": "cephfs"}],
+"mds_version": "ceph version 15.2.4 (7447c15c6ff58d7fce91843b705a268a1917325c) octopus (stable)",
+"mdsmap": [{"dns": 76, "inos": 19, "name": "Z", "rank": 0, "rate": 0.0, "state": "active"}],
+"pools": [{"avail": 1017799872, "id": 2, "name": "cephfs_metadata", "type": "metadata", "used": 2204126}, {"avail": 1017799872, "id": 1, "name": "cephfs_data", "type": "data", "used": 0}]
+}
+`)
+
+var sampleVolumeStatusTextJunk = []byte(`cephfs - 2 clients
+======
++------+--------+-----+---------------+-------+-------+
+| Rank | State  | MDS |    Activity   |  dns  |  inos |
++------+--------+-----+---------------+-------+-------+
+|  0   | active |  Z  | Reqs:   98 /s |  254  |  192  |
++------+--------+-----+---------------+-------+-------+
++-----------------+----------+-------+-------+
+|       Pool      |   type   |  used | avail |
++-----------------+----------+-------+-------+
+| cephfs_metadata | metadata | 62.1M |  910M |
+|   cephfs_data   |   data   |    0  |  910M |
++-----------------+----------+-------+-------+
++-------------+
+| Standby MDS |
++-------------+
++-------------+
+MDS version: ceph version 14.2.11 (f7fdb2f52131f54b891a2ec99d8205561242cdaf) nautilus (stable)
+`)
+
+func TestParseVolumeStatus(t *testing.T) {
+	R := newResponse
+	t.Run("error", func(t *testing.T) {
+		_, err := parseVolumeStatus(R(nil, "", errors.New("bonk")))
+		assert.Error(t, err)
+		assert.Equal(t, "bonk", err.Error())
+	})
+	t.Run("statusSet", func(t *testing.T) {
+		_, err := parseVolumeStatus(R(nil, "unexpected!", nil))
+		assert.Error(t, err)
+	})
+	t.Run("badJSON", func(t *testing.T) {
+		_, err := parseVolumeStatus(R([]byte("_XxXxX"), "", nil))
+		assert.Error(t, err)
+	})
+	t.Run("ok", func(t *testing.T) {
+		s, err := parseVolumeStatus(R(sampleVolumeStatus1, "", nil))
+		assert.NoError(t, err)
+		if assert.NotNil(t, s) {
+			assert.Contains(t, s.MDSVersion, "ceph version 15.2.4")
+			assert.Contains(t, s.MDSVersion, "octopus")
+		}
+	})
+	t.Run("notJSONfromServer", func(t *testing.T) {
+		_, err := parseVolumeStatus(R(sampleVolumeStatusTextJunk, "", nil))
+		if assert.Error(t, err) {
+			var notImpl NotImplementedError
+			assert.True(t, errors.As(err, &notImpl))
+		}
+	})
+
+}
