@@ -291,6 +291,41 @@ func (fsa *FSAdmin) ListSubVolumeSnapshots(volume, group, name string) ([]string
 	return parseListNames(fsa.marshalMgrCommand(m))
 }
 
+// SubVolumeSnapshotInfo reports various informational values about a subvolume.
+type SubVolumeSnapshotInfo struct {
+	CreatedAt        TimeStamp `json:"created_at"`
+	DataPool         string    `json:"data_pool"`
+	HasPendingClones string    `json:"has_pending_clones"`
+	Protected        string    `json:"protected"`
+	Size             ByteCount `json:"size"`
+}
+
+func parseSubVolumeSnapshotInfo(res response) (*SubVolumeSnapshotInfo, error) {
+	var info SubVolumeSnapshotInfo
+	if err := res.noStatus().unmarshal(&info).End(); err != nil {
+		return nil, err
+	}
+	return &info, nil
+}
+
+// SubVolumeSnapshotInfo returns information about the specified subvolume snapshot.
+//
+// Similar To:
+//  ceph fs subvolume snapshot info <volume> --group-name=<group> <subvolume> <name>
+func (fsa *FSAdmin) SubVolumeSnapshotInfo(volume, group, subvolume, name string) (*SubVolumeSnapshotInfo, error) {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot info",
+		"vol_name":  volume,
+		"sub_name":  subvolume,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return parseSubVolumeSnapshotInfo(fsa.marshalMgrCommand(m))
+}
+
 // ProtectSubVolumeSnapshot protects the specified snapshot.
 //
 // Similar To:
