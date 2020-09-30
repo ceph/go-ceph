@@ -19,12 +19,37 @@ var (
 
 	// set debugTrace to true to use tracing in tests
 	debugTrace = false
+
+	// some tests are sensitive to the server version
+	serverIsNautilus = false
+	serverIsOctopus  = false
 )
 
 func init() {
 	dt := os.Getenv("GO_CEPH_TEST_DEBUG_TRACE")
 	if ok, err := strconv.ParseBool(dt); ok && err == nil {
 		debugTrace = true
+	}
+	switch os.Getenv("CEPH_VERSION") {
+	case "nautilus":
+		serverIsNautilus = true
+	case "octopus":
+		serverIsOctopus = true
+	}
+}
+
+func TestServerSentinel(t *testing.T) {
+	// there probably *is* a better way to do this but I'm doing what's easy
+	// and expedient at the moment. That's tying the tests to the environment
+	// var to tell us what version of the *server* we are testing against. The
+	// build tags control what version of the *client libs* we use.  These
+	// happen to be the same for our CI tests today, but its a lousy way to
+	// organize things IMO.
+	// This check is intended to fail the test suite if you don't tell it a
+	// server version it expects and force us to update the tests if a new
+	// version of ceph is added.
+	if !serverIsNautilus && !serverIsOctopus {
+		t.Fatalf("server must be nautilus or octopus (do the tests need updating?)")
 	}
 }
 
