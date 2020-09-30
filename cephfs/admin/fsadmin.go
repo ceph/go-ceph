@@ -14,6 +14,7 @@ import (
 // allow the cephfs administrative functions to interact with the Ceph cluster.
 type RadosCommander interface {
 	MgrCommand(buf [][]byte) ([]byte, string, error)
+	MonCommand(buf []byte) ([]byte, string, error)
 }
 
 // FSAdmin is used to administrate CephFS within a ceph cluster.
@@ -76,6 +77,25 @@ func (fsa *FSAdmin) marshalMgrCommand(v interface{}) ([]byte, string, error) {
 	return fsa.rawMgrCommand(b)
 }
 
+// rawMonCommand takes a byte buffer and sends it to the MON as a command.
+// The buffer is expected to contain preformatted JSON.
+func (fsa *FSAdmin) rawMonCommand(buf []byte) ([]byte, string, error) {
+	if err := fsa.validate(); err != nil {
+		return nil, "", err
+	}
+	return fsa.conn.MonCommand(buf)
+}
+
+// marshalMonCommand takes an generic interface{} value, converts it to JSON and
+// sends the json to the MGR as a command.
+func (fsa *FSAdmin) marshalMonCommand(v interface{}) ([]byte, string, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil, "", err
+	}
+	return fsa.rawMonCommand(b)
+}
+
 type listNamedResult struct {
 	Name string `json:"name"`
 }
@@ -115,6 +135,24 @@ func unmarshalResponseJSON(res []byte, status string, err error, v interface{}) 
 		return fmt.Errorf("error status: %s", status)
 	}
 	return json.Unmarshal(res, v)
+}
+
+// extractPathResponse returns a cleaned up path from requests that get a path
+// unless an error is encountered, then an error is returned.
+func extractPathResponse(res []byte, status string, err error) (string, error) {
+	if err != nil {
+		return "", err
+	}
+	if status != "" {
+		return "", fmt.Errorf("error status: %s", status)
+	}
+	// if there's a trailing newline in the buffer strip it.
+	// ceph assumes a CLI wants the output of the buffer and there's
+	// no format=json mode available currently.
+	for len(res) >= 1 && res[len(res)-1] == '\n' {
+		res = res[:len(res)-1]
+	}
+	return string(res), nil
 }
 
 // modeString converts a unix-style mode value to a string-ified version in an

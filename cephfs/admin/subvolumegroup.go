@@ -77,3 +77,62 @@ func (fsa *FSAdmin) RemoveSubVolumeGroup(volume, name string) error {
 	})
 	return checkEmptyResponseExpected(r, s, err)
 }
+
+// SubVolumeGroupPath returns the path to the subvolume from the root of the
+// file system.
+//
+// Similar To:
+//  ceph fs subvolumegroup getpath <volume> <group_name>
+func (fsa *FSAdmin) SubVolumeGroupPath(volume, name string) (string, error) {
+	m := map[string]string{
+		"prefix":     "fs subvolumegroup getpath",
+		"vol_name":   volume,
+		"group_name": name,
+		// ceph doesn't respond in json for this cmd (even if you ask)
+	}
+	return extractPathResponse(fsa.marshalMgrCommand(m))
+}
+
+// CreateSubVolumeGroupSnapshot creates a new snapshot from the source subvolume group.
+//
+// Similar To:
+//  ceph fs subvolumegroup snapshot create <volume> <group> <name>
+func (fsa *FSAdmin) CreateSubVolumeGroupSnapshot(volume, group, name string) error {
+	m := map[string]string{
+		"prefix":     "fs subvolumegroup snapshot create",
+		"vol_name":   volume,
+		"group_name": group,
+		"snap_name":  name,
+		"format":     "json",
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// RemoveSubVolumeGroupSnapshot removes the specified snapshot from the subvolume group.
+//
+// Similar To:
+//  ceph fs subvolumegroup snapshot rm <volume> <group> <name>
+func (fsa *FSAdmin) RemoveSubVolumeGroupSnapshot(volume, group, name string) error {
+	m := map[string]string{
+		"prefix":     "fs subvolumegroup snapshot rm",
+		"vol_name":   volume,
+		"group_name": group,
+		"snap_name":  name,
+		"format":     "json",
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// ListSubVolumeGroupSnapshots returns a listing of snapshots for a given subvolume group.
+//
+// Similar To:
+//  ceph fs subvolumegroup snapshot ls <volume> <group>
+func (fsa *FSAdmin) ListSubVolumeGroupSnapshots(volume, group string) ([]string, error) {
+	m := map[string]string{
+		"prefix":     "fs subvolumegroup snapshot ls",
+		"vol_name":   volume,
+		"group_name": group,
+		"format":     "json",
+	}
+	return parseListNames(fsa.marshalMgrCommand(m))
+}

@@ -42,10 +42,25 @@ func tracer(c RadosCommander) RadosCommander {
 }
 
 func (t *tracingCommander) MgrCommand(buf [][]byte) ([]byte, string, error) {
+	fmt.Println("(MGR Command)")
 	for i := range buf {
 		fmt.Println("IN:", string(buf[i]))
 	}
 	r, s, err := t.conn.MgrCommand(buf)
+	fmt.Println("OUT(result):", string(r))
+	if s != "" {
+		fmt.Println("OUT(status):", s)
+	}
+	if err != nil {
+		fmt.Println("OUT(error):", err.Error())
+	}
+	return r, s, err
+}
+
+func (t *tracingCommander) MonCommand(buf []byte) ([]byte, string, error) {
+	fmt.Println("(MON Command)")
+	fmt.Println("IN:", string(buf))
+	r, s, err := t.conn.MonCommand(buf)
 	fmt.Println("OUT(result):", string(r))
 	if s != "" {
 		fmt.Println("OUT(status):", s)

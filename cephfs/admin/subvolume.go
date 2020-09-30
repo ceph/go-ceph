@@ -125,7 +125,7 @@ type SubVolumeResizeResult struct {
 //  ceph fs subvolume resize <volume> --group-name=<group> <name> ...
 func (fsa *FSAdmin) ResizeSubVolume(
 	volume, group, name string,
-	newSize NewSize, noShrink bool) (*SubVolumeResizeResult, error) {
+	newSize QuotaSize, noShrink bool) (*SubVolumeResizeResult, error) {
 
 	f := &subVolumeResizeFields{
 		Prefix:    "fs subvolume resize",
@@ -133,7 +133,7 @@ func (fsa *FSAdmin) ResizeSubVolume(
 		VolName:   volume,
 		GroupName: group,
 		SubName:   name,
-		NewSize:   newSize.newSizeValue(),
+		NewSize:   newSize.resizeValue(),
 		NoShrink:  noShrink,
 	}
 	var result []*SubVolumeResizeResult
@@ -142,4 +142,125 @@ func (fsa *FSAdmin) ResizeSubVolume(
 		return nil, err
 	}
 	return result[0], nil
+}
+
+// SubVolumePath returns the path to the subvolume from the root of the file system.
+//
+// Similar To:
+//  ceph fs subvolume getpath <volume> --group-name=<group> <name>
+func (fsa *FSAdmin) SubVolumePath(volume, group, name string) (string, error) {
+	m := map[string]string{
+		"prefix":   "fs subvolume getpath",
+		"vol_name": volume,
+		"sub_name": name,
+		// ceph doesn't respond in json for this cmd (even if you ask)
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return extractPathResponse(fsa.marshalMgrCommand(m))
+}
+
+// SubVolumeInfo reports various informational values about a subvolume.
+type SubVolumeInfo struct {
+	Type          string    `json:"type"`
+	Path          string    `json:"path"`
+	Uid           int       `json:"uid"`
+	Gid           int       `json:"gid"`
+	Mode          int       `json:"mode"`
+	BytesPercent  string    `json:"bytes_pcent"`
+	BytesUsed     ByteCount `json:"bytes_used"`
+	BytesQuota    QuotaSize `json:"-"`
+	DataPool      string    `json:"data_pool"`
+	PoolNamespace string    `json:"pool_namespace"`
+	Atime         TimeStamp `json:"atime"`
+	Mtime         TimeStamp `json:"mtime"`
+	Ctime         TimeStamp `json:"ctime"`
+	CreatedAt     TimeStamp `json:"created_at"`
+}
+
+type subVolumeInfoWrapper struct {
+	SubVolumeInfo
+	VBytesQuota *quotaSizePlaceholder `json:"bytes_quota"`
+}
+
+func parseSubVolumeInfo(r []byte, s string, err error) (*SubVolumeInfo, error) {
+	var info subVolumeInfoWrapper
+	if err := unmarshalResponseJSON(r, s, err, &info); err != nil {
+		return nil, err
+	}
+	if info.VBytesQuota != nil {
+		info.BytesQuota = info.VBytesQuota.Value
+	}
+	return &info.SubVolumeInfo, nil
+}
+
+// SubVolumeInfo returns information about the specified subvolume.
+//
+// Similar To:
+//  ceph fs subvolume info <volume> --group-name=<group> <name>
+func (fsa *FSAdmin) SubVolumeInfo(volume, group, name string) (*SubVolumeInfo, error) {
+	m := map[string]string{
+		"prefix":   "fs subvolume info",
+		"vol_name": volume,
+		"sub_name": name,
+		"format":   "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return parseSubVolumeInfo(fsa.marshalMgrCommand(m))
+}
+
+// CreateSubVolumeSnapshot creates a new snapshot from the source subvolume.
+//
+// Similar To:
+//  ceph fs subvolume snapshot create <volume> --group-name=<group> <source> <name>
+func (fsa *FSAdmin) CreateSubVolumeSnapshot(volume, group, source, name string) error {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot create",
+		"vol_name":  volume,
+		"sub_name":  source,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// RemoveSubVolumeSnapshot removes the specified snapshot from the subvolume.
+//
+// Similar To:
+//  ceph fs subvolume snapshot rm <volume> --group-name=<group> <subvolume> <name>
+func (fsa *FSAdmin) RemoveSubVolumeSnapshot(volume, group, subvolume, name string) error {
+	m := map[string]string{
+		"prefix":    "fs subvolume snapshot rm",
+		"vol_name":  volume,
+		"sub_name":  subvolume,
+		"snap_name": name,
+		"format":    "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return checkEmptyResponseExpected(fsa.marshalMgrCommand(m))
+}
+
+// ListSubVolumeSnapshots returns a listing of snapshots for a given subvolume.
+//
+// Similar To:
+//  ceph fs subvolume snapshot ls <volume> --group-name=<group> <name>
+func (fsa *FSAdmin) ListSubVolumeSnapshots(volume, group, name string) ([]string, error) {
+	m := map[string]string{
+		"prefix":   "fs subvolume snapshot ls",
+		"vol_name": volume,
+		"sub_name": name,
+		"format":   "json",
+	}
+	if group != NoGroup {
+		m["group_name"] = group
+	}
+	return parseListNames(fsa.marshalMgrCommand(m))
 }
