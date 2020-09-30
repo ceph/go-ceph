@@ -20,7 +20,25 @@ var (
 
 const (
 	deprecatedSuffix = "call is deprecated and will be removed in a future release"
+	missingPrefix    = "No handler found"
+	einval           = -22
 )
+
+type cephError interface {
+	ErrorCode() int
+}
+
+// NotImplementedError error values will be returned in the case that an API
+// call is not available in the version of Ceph that is running in the target
+// cluster.
+type NotImplementedError struct {
+	response
+}
+
+// Error implements the error interface.
+func (e NotImplementedError) Error() string {
+	return fmt.Sprintf("API call not implemented server-side: %s", e.status)
+}
 
 // response encapsulates the data returned by ceph and supports easy processing
 // pipelines.
@@ -57,6 +75,11 @@ func (r response) Status() string {
 // that response is no longer needed for processing.
 func (r response) End() error {
 	if !r.Ok() {
+		if ce, ok := r.err.(cephError); ok {
+			if ce.ErrorCode() == einval && strings.HasPrefix(r.status, missingPrefix) {
+				return NotImplementedError{response: r}
+			}
+		}
 		return r
 	}
 	return nil

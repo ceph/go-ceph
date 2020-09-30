@@ -125,4 +125,28 @@ func TestResponse(t *testing.T) {
 		assert.False(t, rtemp.Ok())
 		assert.Equal(t, "x", rtemp.Status())
 	})
+
+	t.Run("notImplemented", func(t *testing.T) {
+		rtemp := response{
+			status: "No handler found for this function",
+			err:    myCephError(-22),
+		}
+		if assert.False(t, rtemp.Ok()) {
+			err := rtemp.End()
+			assert.Error(t, err)
+			var n NotImplementedError
+			assert.True(t, errors.As(err, &n))
+			assert.Contains(t, err.Error(), "not implemented")
+		}
+	})
+}
+
+type myCephError int
+
+func (myCephError) Error() string {
+	return "oops"
+}
+
+func (e myCephError) ErrorCode() int {
+	return int(e)
 }
