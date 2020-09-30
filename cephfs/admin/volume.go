@@ -2,6 +2,10 @@
 
 package admin
 
+import (
+	"bytes"
+)
+
 var (
 	listVolumesCmd = []byte(`{"prefix":"fs volume ls"}`)
 	dumpVolumesCmd = []byte(`{"prefix":"fs dump","format":"json"}`)
@@ -37,6 +41,8 @@ type fsDump struct {
 const (
 	dumpOkPrefix = "dumped fsmap epoch"
 	dumpOkLen    = len(dumpOkPrefix)
+
+	invalidTextualResponse = "this ceph version returns a non-parsable volume status response"
 )
 
 func parseDumpToIdents(res response) ([]VolumeIdent, error) {
@@ -88,8 +94,19 @@ type VolumeStatus struct {
 
 func parseVolumeStatus(res response) (*VolumeStatus, error) {
 	var vs VolumeStatus
-	err := res.noStatus().unmarshal(&vs).End()
-	return &vs, err
+	res = res.noStatus()
+	if !res.Ok() {
+		return nil, res.End()
+	}
+	res = res.unmarshal(&vs)
+	if !res.Ok() {
+		if bytes.HasPrefix(res.body, []byte("ceph")) {
+			res.status = invalidTextualResponse
+			return nil, NotImplementedError{response: res}
+		}
+		return nil, res.End()
+	}
+	return &vs, nil
 }
 
 // VolumeStatus returns a VolumeStatus object for the given volume name.
