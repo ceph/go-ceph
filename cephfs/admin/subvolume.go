@@ -174,6 +174,21 @@ func (fsa *FSAdmin) SubVolumePath(volume, group, name string) (string, error) {
 	return parsePathResponse(fsa.marshalMgrCommand(m))
 }
 
+// Feature is used to define constant values for optional features on
+// subvolumes.
+type Feature string
+
+const (
+	// SnapshotCloneFeature indicates a subvolume supports cloning.
+	SnapshotCloneFeature = Feature("snapshot-clone")
+	// SnapshotAutoprotectFeature indicates a subvolume does not require
+	// manually protecting a subvolume before cloning.
+	SnapshotAutoprotectFeature = Feature("snapshot-autoprotect")
+	// SnapshotRetentionFeature indicates a subvolume supports retaining
+	// snapshots on subvolume removal.
+	SnapshotRetentionFeature = Feature("snapshot-retention")
+)
+
 // SubVolumeInfo reports various informational values about a subvolume.
 type SubVolumeInfo struct {
 	Type          string    `json:"type"`
@@ -190,6 +205,7 @@ type SubVolumeInfo struct {
 	Mtime         TimeStamp `json:"mtime"`
 	Ctime         TimeStamp `json:"ctime"`
 	CreatedAt     TimeStamp `json:"created_at"`
+	Features      []Feature `json:"features"`
 }
 
 type subVolumeInfoWrapper struct {
