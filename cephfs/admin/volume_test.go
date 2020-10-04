@@ -262,3 +262,115 @@ func TestParseVolumeStatus(t *testing.T) {
 	})
 
 }
+
+var sampleFsLs1 = []byte(`
+[
+  {
+    "name": "cephfs",
+    "metadata_pool": "cephfs_metadata",
+    "metadata_pool_id": 2,
+    "data_pool_ids": [
+      1
+    ],
+    "data_pools": [
+      "cephfs_data"
+    ]
+  }
+]
+`)
+
+var sampleFsLs2 = []byte(`
+[
+  {
+    "name": "cephfs",
+    "metadata_pool": "cephfs_metadata",
+    "metadata_pool_id": 2,
+    "data_pool_ids": [
+      1
+    ],
+    "data_pools": [
+      "cephfs_data"
+    ]
+  },
+  {
+    "name": "archivefs",
+    "metadata_pool": "archivefs_metadata",
+    "metadata_pool_id": 6,
+    "data_pool_ids": [
+      4,
+      5
+    ],
+    "data_pools": [
+      "archivefs_data1",
+      "archivefs_data2"
+    ]
+  }
+]
+`)
+
+func TestParseFsList(t *testing.T) {
+	t.Run("error", func(t *testing.T) {
+		_, err := parseFsList(response{err: errors.New("eek")})
+		assert.Error(t, err)
+		assert.Equal(t, "eek", err.Error())
+	})
+	t.Run("statusSet", func(t *testing.T) {
+		_, err := parseFsList(response{status: "oof"})
+		assert.Error(t, err)
+	})
+	t.Run("badJSON", func(t *testing.T) {
+		_, err := parseFsList(response{body: []byte("______")})
+		assert.Error(t, err)
+	})
+	t.Run("ok1", func(t *testing.T) {
+		l, err := parseFsList(response{body: sampleFsLs1})
+		assert.NoError(t, err)
+		if assert.NotNil(t, l) && assert.Len(t, l, 1) {
+			fs := l[0]
+			assert.Equal(t, "cephfs", fs.Name)
+			assert.Equal(t, "cephfs_metadata", fs.MetadataPool)
+			assert.Equal(t, 2, fs.MetadataPoolID)
+			assert.Len(t, fs.DataPools, 1)
+			assert.Contains(t, fs.DataPools, "cephfs_data")
+			assert.Len(t, fs.DataPoolIDs, 1)
+			assert.Contains(t, fs.DataPoolIDs, 1)
+		}
+	})
+	t.Run("ok2", func(t *testing.T) {
+		l, err := parseFsList(response{body: sampleFsLs2})
+		assert.NoError(t, err)
+		if assert.NotNil(t, l) && assert.Len(t, l, 2) {
+			fs := l[0]
+			assert.Equal(t, "cephfs", fs.Name)
+			assert.Equal(t, "cephfs_metadata", fs.MetadataPool)
+			assert.Equal(t, 2, fs.MetadataPoolID)
+			assert.Len(t, fs.DataPools, 1)
+			assert.Contains(t, fs.DataPools, "cephfs_data")
+			assert.Len(t, fs.DataPoolIDs, 1)
+			assert.Contains(t, fs.DataPoolIDs, 1)
+			fs = l[1]
+			assert.Equal(t, "archivefs", fs.Name)
+			assert.Equal(t, "archivefs_metadata", fs.MetadataPool)
+			assert.Equal(t, 6, fs.MetadataPoolID)
+			assert.Len(t, fs.DataPools, 2)
+			assert.Contains(t, fs.DataPools, "archivefs_data1")
+			assert.Contains(t, fs.DataPools, "archivefs_data2")
+			assert.Len(t, fs.DataPoolIDs, 2)
+			assert.Contains(t, fs.DataPoolIDs, 4)
+			assert.Contains(t, fs.DataPoolIDs, 5)
+		}
+	})
+}
+
+func TestListFileSystems(t *testing.T) {
+	fsa := getFSAdmin(t)
+
+	l, err := fsa.ListFileSystems()
+	assert.NoError(t, err)
+	if assert.Len(t, l, 1) {
+		assert.Equal(t, "cephfs", l[0].Name)
+		assert.Equal(t, "cephfs_metadata", l[0].MetadataPool)
+		assert.Len(t, l[0].DataPools, 1)
+		assert.Contains(t, l[0].DataPools, "cephfs_data")
+	}
+}
