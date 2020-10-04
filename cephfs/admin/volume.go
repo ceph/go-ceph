@@ -9,6 +9,7 @@ import (
 var (
 	listVolumesCmd = []byte(`{"prefix":"fs volume ls"}`)
 	dumpVolumesCmd = []byte(`{"prefix":"fs dump","format":"json"}`)
+	listFsCmd      = []byte(`{"prefix":"fs ls","format":"json"}`)
 )
 
 // ListVolumes return a list of volumes in this Ceph cluster.
@@ -18,6 +19,34 @@ var (
 func (fsa *FSAdmin) ListVolumes() ([]string, error) {
 	res := fsa.rawMgrCommand(listVolumesCmd)
 	return parseListNames(res)
+}
+
+// FSPoolInfo contains the name of a file system as well as the metadata and
+// data pools. Pool information is available by ID or by name.
+type FSPoolInfo struct {
+	Name           string   `json:"name"`
+	MetadataPool   string   `json:"metadata_pool"`
+	MetadataPoolID int      `json:"metadata_pool_id"`
+	DataPools      []string `json:"data_pools"`
+	DataPoolIDs    []int    `json:"data_pool_ids"`
+}
+
+// ListFileSystems lists file systems along with the pools occupied by those
+// file systems.
+//
+// Similar To:
+//  ceph fs ls
+func (fsa *FSAdmin) ListFileSystems() ([]FSPoolInfo, error) {
+	res := fsa.rawMonCommand(listFsCmd)
+	return parseFsList(res)
+}
+
+func parseFsList(res response) ([]FSPoolInfo, error) {
+	var listing []FSPoolInfo
+	if err := res.noStatus().unmarshal(&listing).End(); err != nil {
+		return nil, err
+	}
+	return listing, nil
 }
 
 // VolumeIdent contains a pair of file system identifying values: the volume
