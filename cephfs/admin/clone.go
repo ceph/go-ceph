@@ -23,10 +23,14 @@ type CloneOptions struct {
 	PoolLayout  string
 }
 
-// CloneSubVolumeSnapshot Clones the specified snapshot from the subvolume.
+// CloneSubVolumeSnapshot clones the specified snapshot from the subvolume.
+// The group, subvolume, and snapshot parameters specify the source for the
+// clone, and only the source.  Additional properties of the clone, such as the
+// subvolume group that the clone will be created in and the pool layout may be
+// specified using the clone options parameter.
 //
 // Similar To:
-//  ceph fs subvolume snapshot clone <volume> <subvolume> <snapshot> <name>
+//  ceph fs subvolume snapshot clone <volume> --group_name=<group> <subvolume> <snapshot> <name> [...]
 func (fsa *FSAdmin) CloneSubVolumeSnapshot(volume, group, subvolume, snapshot, name string, o *CloneOptions) error {
 	m := map[string]string{
 		"prefix":          "fs subvolume snapshot clone",
