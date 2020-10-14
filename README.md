@@ -59,6 +59,7 @@ go test -tags nautilus ....
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.6.0          | nautilus, octopus       | mimic                    |
 | v0.5.0          | nautilus, octopus       | luminous, mimic          |
 | v0.4.0          | luminous, mimic, nautilus, octopus | |
 | v0.3.0          | luminous, mimic, nautilus, octopus | |
