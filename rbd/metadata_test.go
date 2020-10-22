@@ -39,6 +39,9 @@ func TestImageMetadata(t *testing.T) {
 	value, err = image.GetMetadata(metadataKey)
 	assert.Equal(t, "", value)
 	assert.Equal(t, err, ErrImageNotOpen)
+	// check ListMetadata for unopened image
+	_, err = image.ListMetadata()
+	assert.Equal(t, err, ErrImageNotOpen)
 
 	image, err = OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
@@ -50,6 +53,13 @@ func TestImageMetadata(t *testing.T) {
 	value, err = image.GetMetadata(metadataKey)
 	assert.NoError(t, err)
 	assert.Equal(t, metadataValue, value)
+	// List metadata
+	mm, err := image.ListMetadata()
+	assert.NoError(t, err)
+	assert.Len(t, mm, 1)
+	if assert.Contains(t, mm, metadataKey) {
+		assert.Equal(t, mm[metadataKey], metadataValue)
+	}
 	// Remove the metadata key
 	err = image.RemoveMetadata(metadataKey)
 	assert.NoError(t, err)
@@ -57,6 +67,27 @@ func TestImageMetadata(t *testing.T) {
 	value, err = image.GetMetadata(metadataKey)
 	assert.Equal(t, "", value)
 	assert.Error(t, err)
+
+	// Set some additional metadata values
+	m1 := map[string]string{
+		metadataKey:  metadataValue,
+		"k2":         "himalayas",
+		"matterhorn": "alps",
+		"aconcagua":  "andes",
+	}
+	for k, v := range m1 {
+		err = image.SetMetadata(k, v)
+		assert.NoError(t, err)
+	}
+	// Get the metadata value
+	value, err = image.GetMetadata(metadataKey)
+	assert.NoError(t, err)
+	assert.Equal(t, metadataValue, value)
+	// List metadata
+	mm, err = image.ListMetadata()
+	assert.NoError(t, err)
+	assert.Len(t, mm, 4)
+	assert.Equal(t, m1, mm)
 
 	err = image.Close()
 	assert.NoError(t, err)
