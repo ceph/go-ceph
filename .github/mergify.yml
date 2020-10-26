@@ -1,0 +1,31 @@
+---
+pull_request_rules:
+  - name: remove outdated approvals
+    conditions:
+      - base=master
+    actions:
+      dismiss_reviews:
+        approved: true
+        changes_requested: false
+  - name: automatic merge
+    conditions:
+      - label!=do-not-merge
+      - base=master
+      - "#approved-reviews-by>=2"
+      - "#changes-requested-reviews-by=0"
+      - status-success=check
+      - status-success=test-suite
+    actions:
+      merge:
+        method: rebase
+        rebase_fallback: merge
+      dismiss_reviews: {}
+      delete_head_branch: {}
+  - name: ask to resolve conflict
+    conditions:
+      - conflict
+    actions:
+      comment:
+        message: "This pull request now has conflicts with the target branch.
+        Could you please resolve conflicts and force push the corrected
+        changes? 🙏"
