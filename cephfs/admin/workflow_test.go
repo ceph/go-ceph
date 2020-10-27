@@ -66,7 +66,7 @@ func getSnapPath(t *testing.T, mount *cephfs.MountInfo, subvol, snapname string)
 	if err == nil {
 		return snapPath
 	}
-	snapPath = path.Join(path.Dir(subvol), snapDir, snapname)
+	snapPath = path.Join(path.Dir(subvol), snapDir, snapname, path.Base(subvol))
 	_, err = mount.Statx(snapPath, cephfs.StatxBasicStats, 0)
 	if err == nil {
 		return snapPath
@@ -157,6 +157,8 @@ func TestWorkflow(t *testing.T) {
 	sinfo, err := fsa.SubVolumeSnapshotInfo(volume, group, subname, snapname1)
 	require.NoError(t, err)
 	require.NotNil(t, sinfo)
+
+	time.Sleep(500 * time.Millisecond) // is there a race?
 
 	// examine the snapshot
 	snapPath := getSnapPath(t, mount, subPath, snapname1)
