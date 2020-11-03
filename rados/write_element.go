@@ -8,6 +8,10 @@ import (
 )
 
 type writeElement struct {
+	withoutReset
+	withoutUpdate
+	withoutFree
+
 	// inputs:
 	b []byte
 
@@ -27,7 +31,3 @@ func newWriteElement(b []byte, writeLen, offset uint64) *writeElement {
 		cOffset:   C.uint64_t(offset),
 	}
 }
-
-func (*writeElement) reset()        {}
-func (*writeElement) update() error { return nil }
-func (*writeElement) free()         {}

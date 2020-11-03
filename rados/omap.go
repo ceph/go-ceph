@@ -14,6 +14,9 @@ import (
 // omapSetElement is a write op element used to track state, especially
 // C memory, across the setup and use of a WriteOp.
 type omapSetElement struct {
+	withoutReset
+	withoutUpdate
+
 	// inputs:
 	pairs map[string][]byte
 
@@ -90,13 +93,6 @@ func (oe *omapSetElement) free() {
 		C.free(p)
 	}
 	oe.refs = nil
-}
-
-func (*omapSetElement) reset() {
-}
-
-func (*omapSetElement) update() error {
-	return nil
 }
 
 // OmapKeyValue items are returned by the OmapGetElement's Next call.
@@ -200,6 +196,9 @@ func (oge *OmapGetElement) More() bool {
 // omapRmKeysElement is a write element used to track state, especially
 // C memory, across the setup and use of a WriteOp.
 type omapRmKeysElement struct {
+	withoutReset
+	withoutUpdate
+
 	// inputs:
 	keys []string
 
@@ -243,13 +242,6 @@ func (oe *omapRmKeysElement) free() {
 		C.free(p)
 	}
 	oe.refs = nil
-}
-
-func (*omapRmKeysElement) reset() {
-}
-
-func (*omapRmKeysElement) update() error {
-	return nil
 }
 
 // SetOmap appends the map `pairs` to the omap `oid`
