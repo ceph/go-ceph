@@ -14,7 +14,11 @@ pull_request_rules:
       - "#approved-reviews-by>=2"
       - "#changes-requested-reviews-by=0"
       - status-success=check
-      - status-success=test-suite
+      # each test should be listed separately, do not use regular expressions:
+      # https://docs.mergify.io/conditions.html#validating-all-status-check
+      - status-success=test-suite (mimic)
+      - status-success=test-suite (nautilus)
+      - status-success=test-suite (octopus)
     actions:
       merge:
         method: rebase
