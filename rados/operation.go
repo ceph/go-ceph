@@ -132,3 +132,24 @@ func (o *operation) freeElements() {
 		freeElement(o.elements[i])
 	}
 }
+
+// withoutReset can be embedded in a struct to help indicate
+// the type implements the opElement interface but has a no-op
+// update function.
+type withoutReset struct{}
+
+func (*withoutReset) reset() {}
+
+// withoutUpdate can be embedded in a struct to help indicate
+// the type implements the opElement interface but has a no-op
+// update function.
+type withoutUpdate struct{}
+
+func (*withoutUpdate) update() error { return nil }
+
+// withoutFree can be embedded in a struct to help indicate
+// the type implements the opElement interface but has a no-op
+// free function.
+type withoutFree struct{}
+
+func (*withoutFree) free() {}
