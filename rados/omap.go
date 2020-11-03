@@ -208,11 +208,11 @@ type omapRmKeysElement struct {
 	cNum  C.size_t
 
 	// tracking vars:
-	strMem []unsafe.Pointer
+	refs []unsafe.Pointer
 }
 
 func newOmapRmKeysElement(keys []string) *omapRmKeysElement {
-	strMem := make([]unsafe.Pointer, 0)
+	refs := make([]unsafe.Pointer, 0)
 	var c *C.char
 	ptrSize := unsafe.Sizeof(c)
 
@@ -222,15 +222,15 @@ func newOmapRmKeysElement(keys []string) *omapRmKeysElement {
 	for _, key := range keys {
 		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
 		*c_key_ptr = C.CString(key)
-		strMem = append(strMem, unsafe.Pointer(*c_key_ptr))
+		refs = append(refs, unsafe.Pointer(*c_key_ptr))
 		i++
 	}
 
 	oe := &omapRmKeysElement{
-		keys:   keys,
-		cKeys:  (**C.char)(c_keys),
-		cNum:   C.size_t(len(keys)),
-		strMem: strMem,
+		keys:  keys,
+		cKeys: (**C.char)(c_keys),
+		cNum:  C.size_t(len(keys)),
+		refs:  refs,
 	}
 	runtime.SetFinalizer(oe, freeElement)
 	return oe
@@ -239,10 +239,10 @@ func newOmapRmKeysElement(keys []string) *omapRmKeysElement {
 func (oe *omapRmKeysElement) free() {
 	C.free(unsafe.Pointer(oe.cKeys))
 	oe.cKeys = nil
-	for _, p := range oe.strMem {
+	for _, p := range oe.refs {
 		C.free(p)
 	}
-	oe.strMem = nil
+	oe.refs = nil
 }
 
 func (*omapRmKeysElement) reset() {
