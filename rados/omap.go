@@ -24,12 +24,12 @@ type omapSetElement struct {
 	cNum     C.size_t
 
 	// tracking vars:
-	// strMem is a little bit hacky but we can no longer use defer
+	// refs is a little bit hacky but we can no longer use defer
 	// right after calling CString, since the memory needs to be
 	// tied to the lifecycle of the WriteOp. For now just keep
 	// an extra slice pointing to the C memory for easy cleanup
 	// later.
-	strMem []unsafe.Pointer
+	refs []unsafe.Pointer
 }
 
 func newOmapSetElement(pairs map[string][]byte) *omapSetElement {
@@ -40,14 +40,14 @@ func newOmapSetElement(pairs map[string][]byte) *omapSetElement {
 	c_keys := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
 	c_values := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
 	c_lengths := C.malloc(C.size_t(len(pairs)) * C.size_t(unsafe.Sizeof(s)))
-	strMem := make([]unsafe.Pointer, 0)
+	refs := make([]unsafe.Pointer, 0)
 
 	i := 0
 	for key, value := range pairs {
 		// key
 		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
 		*c_key_ptr = C.CString(key)
-		strMem = append(strMem, unsafe.Pointer(*c_key_ptr))
+		refs = append(refs, unsafe.Pointer(*c_key_ptr))
 
 		// value and its length
 		c_value_ptr := (**C.char)(unsafe.Pointer(uintptr(c_values) + uintptr(i)*ptrSize))
@@ -73,7 +73,7 @@ func newOmapSetElement(pairs map[string][]byte) *omapSetElement {
 		cValues:  (**C.char)(c_values),
 		cLengths: (*C.size_t)(c_lengths),
 		cNum:     C.size_t(len(pairs)),
-		strMem:   strMem,
+		refs:     refs,
 	}
 	runtime.SetFinalizer(oe, freeElement)
 	return oe
@@ -86,10 +86,10 @@ func (oe *omapSetElement) free() {
 	oe.cValues = nil
 	C.free(unsafe.Pointer(oe.cLengths))
 	oe.cLengths = nil
-	for _, p := range oe.strMem {
+	for _, p := range oe.refs {
 		C.free(p)
 	}
-	oe.strMem = nil
+	oe.refs = nil
 }
 
 func (*omapSetElement) reset() {
