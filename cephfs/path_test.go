@@ -399,3 +399,52 @@ func TestRename(t *testing.T) {
 		assert.NoError(t, mount.RemoveDir(n2))
 	})
 }
+
+func TestTruncate(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "TestTruncate.txt"
+	defer mount.Unlink(fname)
+
+	// "touch" the file
+	f, err := mount.Open(fname, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	assert.NoError(t, err)
+	assert.NoError(t, f.Close())
+
+	t.Run("invalidMount", func(t *testing.T) {
+		m := &MountInfo{}
+		err := m.Truncate(fname, 0)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalidSize", func(t *testing.T) {
+		err := mount.Truncate(fname, -1)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalidPath", func(t *testing.T) {
+		err := mount.Truncate(".Non~Existant~", 0)
+		assert.Error(t, err)
+	})
+
+	t.Run("valid", func(t *testing.T) {
+		err := mount.Truncate(fname, 1024)
+		assert.NoError(t, err)
+
+		st, err := mount.Statx(fname, StatxBasicStats, 0)
+		if assert.NoError(t, err) {
+			assert.NotNil(t, st)
+			assert.EqualValues(t, 1024, st.Size)
+		}
+
+		err = mount.Truncate(fname, 0)
+		assert.NoError(t, err)
+
+		st, err = mount.Statx(fname, StatxBasicStats, 0)
+		if assert.NoError(t, err) {
+			assert.NotNil(t, st)
+			assert.EqualValues(t, 0, st.Size)
+		}
+	})
+}
