@@ -173,3 +173,22 @@ func (mount *MountInfo) Rename(from, to string) error {
 	ret := C.ceph_rename(mount.mount, cFrom, cTo)
 	return getError(ret)
 }
+
+// Truncate sets the size of the specified file.
+//
+// Implements:
+//  int ceph_truncate(struct ceph_mount_info *cmount, const char *path, int64_t size);
+func (mount *MountInfo) Truncate(path string, size int64) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	ret := C.ceph_truncate(
+		mount.mount,
+		cPath,
+		C.int64_t(size),
+	)
+	return getError(ret)
+}
