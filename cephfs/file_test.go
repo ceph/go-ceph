@@ -918,3 +918,54 @@ func TestFilePreadvPwritev(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestFileTruncate(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "TestFileTruncate.txt"
+	defer mount.Unlink(fname)
+
+	t.Run("invalidSize", func(t *testing.T) {
+		// "touch" the file
+		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, f1.Close())
+		}()
+
+		err = f1.Truncate(-1)
+		assert.Error(t, err)
+
+		st, err := f1.Fstatx(StatxBasicStats, 0)
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 0, st.Size)
+		}
+	})
+
+	t.Run("closedFile", func(t *testing.T) {
+		t.Skip("test fails because of a bug(?) in ceph")
+		// "touch" the file
+		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		assert.NoError(t, err)
+		assert.NoError(t, f1.Close())
+
+		f2, err := mount.Open(fname, os.O_RDONLY, 0644)
+		assert.NoError(t, err)
+		assert.NoError(t, f2.Close())
+
+		err = f2.Truncate(1024)
+		assert.Error(t, err)
+
+		// I wanted to do the stat check here too but it is a pain to implement
+		// because we close the file.
+		// The original version of this test, using a read-only file, failed
+		// due to a bug in libcephfs (see Truncate doc comment).
+	})
+
+	t.Run("invalidFile", func(t *testing.T) {
+		f := &File{}
+		err := f.Truncate(0)
+		assert.Error(t, err)
+	})
+}

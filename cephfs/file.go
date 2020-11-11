@@ -391,3 +391,25 @@ func (f *File) Fsync(sync SyncChoice) error {
 func (f *File) Sync() error {
 	return f.Fsync(SyncAll)
 }
+
+// Truncate sets the size of the open file.
+// NOTE: In some versions of ceph a bug exists where calling ftruncate on a
+// file open for read-only is permitted. The go-ceph wrapper does no additional
+// checking and will inherit the issue on affected versions of ceph.  Please
+// refer to the following issue for details:
+// https://tracker.ceph.com/issues/48202
+//
+// Implements:
+//  int ceph_ftruncate(struct ceph_mount_info *cmount, int fd, int64_t size);
+func (f *File) Truncate(size int64) error {
+	if err := f.validate(); err != nil {
+		return err
+	}
+
+	ret := C.ceph_ftruncate(
+		f.mount.mount,
+		f.fd,
+		C.int64_t(size),
+	)
+	return getError(ret)
+}
