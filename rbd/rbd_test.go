@@ -521,6 +521,86 @@ func TestImageDiscard(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestWriteSame(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	name := GetUUID()
+	options := NewRbdImageOptions()
+	defer options.Destroy()
+	err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
+	assert.NoError(t, err)
+	err = CreateImage(ioctx, name, testImageSize, options)
+	require.NoError(t, err)
+
+	img, err := OpenImage(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+
+	data_out := []byte("this is a string of 28 bytes")
+
+	t.Run("writeAndRead", func(t *testing.T) {
+		// write some bytes at the start of the image
+		n_out, err := img.WriteSame(0, uint64(4*len(data_out)), data_out, rados.OpFlagNone)
+		assert.Equal(t, int64(4*len(data_out)), n_out)
+		assert.NoError(t, err)
+
+		// the same string should be read from byte 0
+		data_in := make([]byte, len(data_out))
+		n_in, err := img.ReadAt(data_in, 0)
+		assert.Equal(t, len(data_out), n_in)
+		assert.Equal(t, data_out, data_in)
+		assert.NoError(t, err)
+
+		// the same string should be read from byte 28
+		data_in = make([]byte, len(data_out))
+		n_in, err = img.ReadAt(data_in, 28)
+		assert.Equal(t, len(data_out), n_in)
+		assert.Equal(t, data_out, data_in)
+		assert.NoError(t, err)
+	})
+
+	t.Run("writePartialData", func(t *testing.T) {
+		// writing a non-multiple of data_out len will fail
+		_, err = img.WriteSame(0, 64, data_out, rados.OpFlagNone)
+		assert.Error(t, err)
+	})
+
+	t.Run("writeNoData", func(t *testing.T) {
+		// writing empty data should succeed
+		n_in, err := img.WriteSame(0, 64, []byte(""), rados.OpFlagNone)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(0), n_in)
+	})
+
+	err = img.Close()
+	assert.NoError(t, err)
+
+	t.Run("writeSameReadOnly", func(t *testing.T) {
+		// writing to a read-only image should fail
+		img, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+
+		_, err = img.WriteSame(96, 32, data_out, rados.OpFlagNone)
+		assert.Error(t, err)
+
+		err = img.Close()
+		assert.NoError(t, err)
+	})
+
+	err = img.Remove()
+	assert.NoError(t, err)
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
 func TestIOReaderWriter(t *testing.T) {
 	conn := radosConnect(t)
 
@@ -1014,6 +1094,9 @@ func TestErrorImageNotOpen(t *testing.T) {
 	assert.Equal(t, err, ErrImageNotOpen)
 
 	_, err = image.WriteAt(nil, 0)
+	assert.Equal(t, err, ErrImageNotOpen)
+
+	_, err = image.WriteSame(64, 128, []byte("not opened"), rados.OpFlagNone)
 	assert.Equal(t, err, ErrImageNotOpen)
 
 	err = image.Flush()

@@ -808,6 +808,36 @@ func (image *Image) WriteAt(data []byte, off int64) (n int, err error) {
 	return ret, err
 }
 
+// WriteSame repeats writing data from starting point ofs until n bytes have
+// been written.
+//
+// Implements:
+//  ssize_t rbd_writesame(rbd_image_t image, uint64_t ofs, size_t len,
+//                        const char *buf, size_t data_len, int op_flags);
+func (image *Image) WriteSame(ofs, n uint64, data []byte, flags rados.OpFlags) (int64, error) {
+	var err error
+
+	if err = image.validate(imageIsOpen); err != nil {
+		return 0, err
+	}
+
+	if len(data) == 0 {
+		return 0, nil
+	}
+
+	ret := C.rbd_writesame(image.image,
+		C.uint64_t(ofs),
+		C.uint64_t(n),
+		(*C.char)(unsafe.Pointer(&data[0])),
+		C.size_t(len(data)),
+		C.int(flags))
+	if ret < 0 {
+		err = getError(C.int(ret))
+	}
+
+	return int64(ret), err
+}
+
 // Flush all cached writes to storage.
 //
 // Implements:
