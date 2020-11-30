@@ -87,7 +87,7 @@ func (fsa *FSAdmin) ListSubVolumes(volume, group string) ([]string, error) {
 // Similar To:
 //  ceph fs subvolume rm <volume> --group-name=<group> <name>
 func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
-	return fsa.rmSubVolume(volume, group, name, commonRmFlags{})
+	return fsa.RemoveSubVolumeWithFlags(volume, group, name, SubVolRmFlags{})
 }
 
 // ForceRemoveSubVolume will delete a CephFS subvolume in a volume and optional
@@ -96,10 +96,18 @@ func (fsa *FSAdmin) RemoveSubVolume(volume, group, name string) error {
 // Similar To:
 //  ceph fs subvolume rm <volume> --group-name=<group> <name> --force
 func (fsa *FSAdmin) ForceRemoveSubVolume(volume, group, name string) error {
-	return fsa.rmSubVolume(volume, group, name, commonRmFlags{force: true})
+	return fsa.RemoveSubVolumeWithFlags(volume, group, name, SubVolRmFlags{Force: true})
 }
 
-func (fsa *FSAdmin) rmSubVolume(volume, group, name string, o commonRmFlags) error {
+// RemoveSubVolumeWithFlags will delete a CephFS subvolume in a volume and
+// optional subvolume group. This function accepts a SubVolRmFlags type that
+// can be used to specify flags that modify the operations behavior.
+// Equivalent to RemoveSubVolume with no flags set.
+// Equivalent to ForceRemoveSubVolume if only the "Force" flag is set.
+//
+// Similar To:
+//  ceph fs subvolume rm <volume> --group-name=<group> <name> [...flags...]
+func (fsa *FSAdmin) RemoveSubVolumeWithFlags(volume, group, name string, o SubVolRmFlags) error {
 	m := map[string]string{
 		"prefix":   "fs subvolume rm",
 		"vol_name": volume,

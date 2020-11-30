@@ -24,6 +24,28 @@ func (f commonRmFlags) flags() map[string]bool {
 	return o
 }
 
+// SubVolRmFlags does not embed other types to simplify and keep the
+// interface with the type flat and simple. At the cost of some code
+// duplication we get a nicer UX for those using the library.
+
+// SubVolRmFlags may be used to specify behavior modifying flags when
+// removing sub volumes.
+type SubVolRmFlags struct {
+	Force           bool
+	RetainSnapshots bool
+}
+
+func (f SubVolRmFlags) flags() map[string]bool {
+	o := make(map[string]bool)
+	if f.Force {
+		o["force"] = true
+	}
+	if f.RetainSnapshots {
+		o["retain-snapshots"] = true
+	}
+	return o
+}
+
 // mergeFlags combines a set of key-value settings with any type implementing
 // the flagSet interface.
 func mergeFlags(m map[string]string, f flagSet) map[string]interface{} {
