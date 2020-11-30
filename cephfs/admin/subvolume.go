@@ -109,7 +109,7 @@ func (fsa *FSAdmin) rmSubVolume(volume, group, name string, o commonRmFlags) err
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return fsa.marshalMgrCommand(o.Update(m)).noData().End()
+	return fsa.marshalMgrCommand(mergeFlags(m, o)).noData().End()
 }
 
 type subVolumeResizeFields struct {
@@ -287,7 +287,7 @@ func (fsa *FSAdmin) rmSubVolumeSnapshot(volume, group, subvolume, name string, o
 	if group != NoGroup {
 		m["group_name"] = group
 	}
-	return fsa.marshalMgrCommand(o.Update(m)).noData().End()
+	return fsa.marshalMgrCommand(mergeFlags(m, o)).noData().End()
 }
 
 // ListSubVolumeSnapshots returns a listing of snapshots for a given subvolume.
