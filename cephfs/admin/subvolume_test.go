@@ -141,6 +141,21 @@ func TestRemoveSubVolume(t *testing.T) {
 	t.Run("force", func(t *testing.T) {
 		removeTest(t, fsa.ForceRemoveSubVolume)
 	})
+	t.Run("withFlagsEmpty", func(t *testing.T) {
+		removeTest(t, func(v, g, n string) error {
+			return fsa.RemoveSubVolumeWithFlags(v, g, n, SubVolRmFlags{})
+		})
+	})
+	t.Run("withFlagsForce", func(t *testing.T) {
+		removeTest(t, func(v, g, n string) error {
+			return fsa.RemoveSubVolumeWithFlags(v, g, n, SubVolRmFlags{Force: true})
+		})
+	})
+	t.Run("withFlagsRetainSnaps", func(t *testing.T) {
+		removeTest(t, func(v, g, n string) error {
+			return fsa.RemoveSubVolumeWithFlags(v, g, n, SubVolRmFlags{RetainSnapshots: true})
+		})
+	})
 }
 
 func TestResizeSubVolume(t *testing.T) {
