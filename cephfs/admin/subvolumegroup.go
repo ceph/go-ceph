@@ -80,12 +80,12 @@ func (fsa *FSAdmin) ForceRemoveSubVolumeGroup(volume, name string) error {
 }
 
 func (fsa *FSAdmin) rmSubVolumeGroup(volume, name string, o commonRmFlags) error {
-	res := fsa.marshalMgrCommand(o.Update(map[string]string{
+	res := fsa.marshalMgrCommand(mergeFlags(map[string]string{
 		"prefix":     "fs subvolumegroup rm",
 		"vol_name":   volume,
 		"group_name": name,
 		"format":     "json",
-	}))
+	}, o))
 	return res.noData().End()
 }
 
