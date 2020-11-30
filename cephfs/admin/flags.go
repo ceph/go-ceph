@@ -2,11 +2,11 @@
 
 package admin
 
-type rmFlags struct {
+type commonRmFlags struct {
 	force bool
 }
 
-func (f rmFlags) Update(m map[string]string) map[string]interface{} {
+func (f commonRmFlags) Update(m map[string]string) map[string]interface{} {
 	o := make(map[string]interface{})
 	for k, v := range m {
 		o[k] = v
