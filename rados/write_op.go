@@ -111,3 +111,8 @@ func (w *WriteOp) RmOmapKeys(keys []string) {
 		roks.cKeys,
 		roks.cNum)
 }
+
+// CleanOmap clears the omap `oid`.
+func (w *WriteOp) CleanOmap() {
+	C.rados_write_op_omap_clear(w.op)
+}
