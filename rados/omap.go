@@ -85,6 +85,104 @@ func (sos *setOmapStep) free() {
 	sos.withRefs.free()
 }
 
+// OmapKeyValue items are returned by the GetOmapStep's Next call.
+type OmapKeyValue struct {
+	Key   string
+	Value []byte
+}
+
+// GetOmapStep values are used to get the results of an GetOmapValues call
+// on a WriteOp. Until the Operate method of the WriteOp is called the Next
+// call will return an error. After Operate is called, the Next call will
+// return valid results.
+//
+// The life cycle of the GetOmapStep is bound to the ReadOp, if the ReadOp
+// Release method is called the public methods of the step must no longer be
+// used and may return errors.
+type GetOmapStep struct {
+	// inputs:
+	startAfter   string
+	filterPrefix string
+	maxReturn    uint64
+
+	// arguments:
+	cStartAfter   *C.char
+	cFilterPrefix *C.char
+
+	// C returned data:
+	iter C.rados_omap_iter_t
+	more C.uchar
+	rval C.int
+
+	// internal state:
+
+	// canIterate is only set after the operation is performed and is
+	// intended to prevent premature fetching of data
+	canIterate bool
+}
+
+func newGetOmapStep(startAfter, filterPrefix string, maxReturn uint64) *GetOmapStep {
+	gos := &GetOmapStep{
+		startAfter:    startAfter,
+		filterPrefix:  filterPrefix,
+		maxReturn:     maxReturn,
+		cStartAfter:   C.CString(startAfter),
+		cFilterPrefix: C.CString(filterPrefix),
+	}
+	runtime.SetFinalizer(gos, opStepFinalizer)
+	return gos
+}
+
+func (gos *GetOmapStep) free() {
+	gos.canIterate = false
+	if gos.iter != nil {
+		C.rados_omap_get_end(gos.iter)
+	}
+	gos.iter = nil
+	gos.more = 0
+	gos.rval = 0
+	C.free(unsafe.Pointer(gos.cStartAfter))
+	gos.cStartAfter = nil
+	C.free(unsafe.Pointer(gos.cFilterPrefix))
+	gos.cFilterPrefix = nil
+}
+
+func (gos *GetOmapStep) update() error {
+	err := getError(gos.rval)
+	gos.canIterate = (err == nil)
+	return err
+}
+
+// Next returns the next key value pair or nil if iteration is exhausted.
+func (gos *GetOmapStep) Next() (*OmapKeyValue, error) {
+	if !gos.canIterate {
+		return nil, ErrOperationIncomplete
+	}
+	var (
+		cKey *C.char
+		cVal *C.char
+		cLen C.size_t
+	)
+	ret := C.rados_omap_get_next(gos.iter, &cKey, &cVal, &cLen)
+	if ret != 0 {
+		return nil, getError(ret)
+	}
+	if cKey == nil {
+		return nil, nil
+	}
+	return &OmapKeyValue{
+		Key:   C.GoString(cKey),
+		Value: C.GoBytes(unsafe.Pointer(cVal), C.int(cLen)),
+	}, nil
+}
+
+// More returns true if there are more matching keys available.
+func (gos *GetOmapStep) More() bool {
+	// tad bit hacky, but go can't automatically convert from
+	// unsigned char to bool
+	return gos.more != 0
+}
+
 // SetOmap appends the map `pairs` to the omap `oid`
 func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	op := CreateWriteOp()
@@ -105,58 +203,25 @@ type OmapListFunc func(key string, value []byte)
 // `maxReturn`: iterate no more than `maxReturn` key/value pairs
 // `listFn`: the function called at each iteration
 func (ioctx *IOContext) ListOmapValues(oid string, startAfter string, filterPrefix string, maxReturn int64, listFn OmapListFunc) error {
-	c_oid := C.CString(oid)
-	c_start_after := C.CString(startAfter)
-	c_filter_prefix := C.CString(filterPrefix)
-	c_max_return := C.uint64_t(maxReturn)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_start_after))
-	defer C.free(unsafe.Pointer(c_filter_prefix))
-
-	op := C.rados_create_read_op()
-
-	var c_iter C.rados_omap_iter_t
-	var c_prval C.int
-	C.rados_read_op_omap_get_vals2(
-		op,
-		c_start_after,
-		c_filter_prefix,
-		c_max_return,
-		&c_iter,
-		nil,
-		&c_prval,
-	)
-
-	ret := C.rados_read_op_operate(op, ioctx.ioctx, c_oid, 0)
-
-	if int(ret) != 0 {
-		return getError(ret)
-	} else if int(c_prval) != 0 {
-		return getError(c_prval)
+	op := CreateReadOp()
+	defer op.Release()
+	gos := op.GetOmapValues(startAfter, filterPrefix, uint64(maxReturn))
+	err := op.operateCompat(ioctx, oid)
+	if err != nil {
+		return err
 	}
 
 	for {
-		var c_key *C.char
-		var c_val *C.char
-		var c_len C.size_t
-
-		ret = C.rados_omap_get_next(c_iter, &c_key, &c_val, &c_len)
-
-		if int(ret) != 0 {
-			return getError(ret)
+		kv, err := gos.Next()
+		if err != nil {
+			return err
 		}
-
-		if c_key == nil {
+		if kv == nil {
 			break
 		}
-
-		listFn(C.GoString(c_key), C.GoBytes(unsafe.Pointer(c_val), C.int(c_len)))
+		listFn(kv.Key, kv.Value)
 	}
-
-	C.rados_omap_get_end(c_iter)
-	C.rados_release_read_op(op)
-
 	return nil
 }
 

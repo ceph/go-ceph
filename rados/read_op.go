@@ -55,3 +55,22 @@ func (r *ReadOp) operateCompat(ioctx *IOContext, oid string) error {
 		return err
 	}
 }
+
+// GetOmapValues is used to iterate over a set, or sub-set, of omap keys
+// as part of a read operation. An GetOmapStep is returned from this
+// function. The GetOmapStep may be used to iterate over the key-value
+// pairs after the Operate call has been performed.
+func (r *ReadOp) GetOmapValues(startAfter, filterPrefix string, maxReturn uint64) *GetOmapStep {
+	gos := newGetOmapStep(startAfter, filterPrefix, maxReturn)
+	r.steps = append(r.steps, gos)
+	C.rados_read_op_omap_get_vals2(
+		r.op,
+		gos.cStartAfter,
+		gos.cFilterPrefix,
+		C.uint64_t(gos.maxReturn),
+		&gos.iter,
+		&gos.more,
+		&gos.rval,
+	)
+	return gos
+}
