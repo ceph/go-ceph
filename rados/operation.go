@@ -112,6 +112,12 @@ func (o *operation) update(kind opKind, ret C.int) error {
 	}
 }
 
+func opStepFinalizer(s opStep) {
+	if s != nil {
+		s.free()
+	}
+}
+
 // withoutUpdate can be embedded in a struct to help indicate
 // the type implements the opStep interface but has a no-op
 // update function.
