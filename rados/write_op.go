@@ -101,3 +101,13 @@ func (w *WriteOp) SetOmap(pairs map[string][]byte) {
 		sos.cLengths,
 		sos.cNum)
 }
+
+// RmOmapKeys removes the specified `keys` from the omap `oid`.
+func (w *WriteOp) RmOmapKeys(keys []string) {
+	roks := newRemoveOmapKeysStep(keys)
+	w.steps = append(w.steps, roks)
+	C.rados_write_op_omap_rm_keys(
+		w.op,
+		roks.cKeys,
+		roks.cNum)
+}
