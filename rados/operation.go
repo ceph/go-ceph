@@ -1,10 +1,12 @@
 package rados
 
+// #include <stdlib.h>
 import "C"
 
 import (
 	"fmt"
 	"strings"
+	"unsafe"
 )
 
 // The file operation.go exists to support both read op and write op types that
@@ -131,3 +133,19 @@ func (*withoutUpdate) update() error { return nil }
 type withoutFree struct{}
 
 func (*withoutFree) free() {}
+
+// withRefs is a embeddable type to help track and free C memory.
+type withRefs struct {
+	refs []unsafe.Pointer
+}
+
+func (w *withRefs) free() {
+	for i := range w.refs {
+		C.free(w.refs[i])
+	}
+	w.refs = nil
+}
+
+func (w *withRefs) add(ptr unsafe.Pointer) {
+	w.refs = append(w.refs, ptr)
+}
