@@ -31,7 +31,6 @@ jobs:
     strategy:
       matrix:
         ceph_version:
-        - "mimic"
         - "nautilus"
         - "octopus"
     steps:
