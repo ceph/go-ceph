@@ -23,6 +23,7 @@ ENV PATH="${PATH}:/opt/go/bin"
 ENV GOROOT=/opt/go
 ENV GO111MODULE=on
 ENV GOPATH /go
+ENV GODEBUG=cgocheck=2
 WORKDIR /go/src/github.com/ceph/go-ceph
 VOLUME /go/src/github.com/ceph/go-ceph
 
