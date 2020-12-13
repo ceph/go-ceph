@@ -883,6 +883,7 @@ func (suite *RadosTestSuite) TestRmXattr() {
 }
 
 func (suite *RadosTestSuite) TestReadWriteOmap() {
+	suite.T().Skipf("ccocheck=2")
 	suite.SetupConnection()
 
 	// set some key/value pairs on an object
@@ -947,6 +948,7 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 }
 
 func (suite *RadosTestSuite) TestReadFilterOmap() {
+	suite.T().Skipf("ccocheck=2")
 	suite.SetupConnection()
 
 	orig := map[string][]byte{

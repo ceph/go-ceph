@@ -771,6 +771,7 @@ func TestSync(t *testing.T) {
 }
 
 func TestFilePreadvPwritev(t *testing.T) {
+	t.Skipf("ccocheck=2")
 	mount := fsConnect(t)
 	defer fsDisconnect(t, mount)
 
