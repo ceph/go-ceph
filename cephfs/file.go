@@ -5,16 +5,63 @@ package cephfs
 #cgo CPPFLAGS: -D_FILE_OFFSET_BITS=64
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <cephfs/libcephfs.h>
+
+// hide the use of struct iovec from the go code
+static inline int wrap_ceph_preadv(struct ceph_mount_info *cmount, int fd, int count, int64_t offset, size_t lengths[], char *b0, char *b1, char *b2, char *b3, char *b4, char *b5, char *b6, char *b7) {
+	int i;
+	struct iovec *iov = malloc(count * sizeof(struct iovec));
+	for (i=0; i<count; i++) {
+		switch (i) {
+		case 0: iov[i].iov_base = b0; break;
+		case 1: iov[i].iov_base = b1; break;
+		case 2: iov[i].iov_base = b2; break;
+		case 3: iov[i].iov_base = b3; break;
+		case 4: iov[i].iov_base = b4; break;
+		case 5: iov[i].iov_base = b5; break;
+		case 6: iov[i].iov_base = b6; break;
+		case 7: iov[i].iov_base = b7; break;
+		default: return -ERANGE;
+		}
+		iov[i].iov_len = lengths[i];
+	}
+	int ret = ceph_preadv(cmount, fd, iov, count, offset);
+	free(iov);
+	return ret;
+};
+
+// hide the use of struct iovec from the go code
+static inline int wrap_ceph_pwritev(struct ceph_mount_info *cmount, int fd, int count, int64_t offset, size_t lengths[], char *b0, char *b1, char *b2, char *b3, char *b4, char *b5, char *b6, char *b7) {
+	int i;
+	struct iovec *iov = malloc(count * sizeof(struct iovec));
+	for (i=0; i<count; i++) {
+		switch (i) {
+		case 0: iov[i].iov_base = b0; break;
+		case 1: iov[i].iov_base = b1; break;
+		case 2: iov[i].iov_base = b2; break;
+		case 3: iov[i].iov_base = b3; break;
+		case 4: iov[i].iov_base = b4; break;
+		case 5: iov[i].iov_base = b5; break;
+		case 6: iov[i].iov_base = b6; break;
+		case 7: iov[i].iov_base = b7; break;
+		default: return -ERANGE;
+		}
+		iov[i].iov_len = lengths[i];
+	}
+	int ret = ceph_pwritev(cmount, fd, iov, count, offset);
+	free(iov);
+	return ret;
+};
+
 */
 import "C"
 
 import (
+	"fmt"
 	"io"
 	"unsafe"
-
-	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 const (
@@ -143,15 +190,34 @@ func (f *File) Preadv(data [][]byte, offset int64) (int, error) {
 	if err := f.validate(); err != nil {
 		return 0, err
 	}
-	iov := cutil.ByteSlicesToIovec(data)
-	defer iov.Free()
 
-	ret := C.ceph_preadv(
+	argc := 8
+	if len(data) > argc {
+		return 0, fmt.Errorf("Barf")
+	}
+	vlen := C.int(len(data))
+	bufs := make([]*C.char, argc)
+	lens := make([]C.size_t, vlen)
+	for i := range data {
+		d := data[i]
+		bufs[i] = (*C.char)(unsafe.Pointer(&d[0]))
+		lens[i] = C.size_t(len(d))
+	}
+
+	ret := C.wrap_ceph_preadv(
 		f.mount.mount,
 		f.fd,
-		(*C.struct_iovec)(iov.Pointer()),
-		C.int(iov.Len()),
-		C.int64_t(offset))
+		vlen,
+		C.int64_t(offset),
+		(*C.size_t)(unsafe.Pointer(&lens[0])),
+		bufs[0],
+		bufs[1],
+		bufs[2],
+		bufs[3],
+		bufs[4],
+		bufs[5],
+		bufs[6],
+		bufs[7])
 	switch {
 	case ret < 0:
 		return 0, getError(ret)
@@ -207,15 +273,34 @@ func (f *File) Pwritev(data [][]byte, offset int64) (int, error) {
 	if err := f.validate(); err != nil {
 		return 0, err
 	}
-	iov := cutil.ByteSlicesToIovec(data)
-	defer iov.Free()
 
-	ret := C.ceph_pwritev(
+	argc := 8
+	if len(data) > argc {
+		return 0, fmt.Errorf("Barf")
+	}
+	vlen := C.int(len(data))
+	bufs := make([]*C.char, argc)
+	lens := make([]C.size_t, vlen)
+	for i := range data {
+		d := data[i]
+		bufs[i] = (*C.char)(unsafe.Pointer(&d[0]))
+		lens[i] = C.size_t(len(d))
+	}
+
+	ret := C.wrap_ceph_pwritev(
 		f.mount.mount,
 		f.fd,
-		(*C.struct_iovec)(iov.Pointer()),
-		C.int(iov.Len()),
-		C.int64_t(offset))
+		vlen,
+		C.int64_t(offset),
+		(*C.size_t)(unsafe.Pointer(&lens[0])),
+		bufs[0],
+		bufs[1],
+		bufs[2],
+		bufs[3],
+		bufs[4],
+		bufs[5],
+		bufs[6],
+		bufs[7])
 	if ret < 0 {
 		return 0, getError(ret)
 	}
