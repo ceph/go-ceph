@@ -158,7 +158,6 @@ func (f *File) Preadv(data [][]byte, offset int64) (int, error) {
 	case ret == 0:
 		return 0, io.EOF
 	}
-	iov.SyncToData()
 	return int(ret), nil
 }
 

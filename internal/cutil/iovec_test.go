@@ -14,31 +14,36 @@ func TestIovec(t *testing.T) {
 		"barbar",
 		"bazbazbaz",
 	}
-	var data [][]byte
-	for _, s := range strs {
-		data = append(data, []byte(s))
-	}
+	data := make([][]byte, len(strs))
 	iovec := ByteSlicesToIovec(data)
-	assert.Equal(t, iovec.data, data)
-	assert.Equal(t, iovec.Pointer(), unsafe.Pointer(&iovec.iovec[0]))
+	// filling data should also work after construction
+	for i, s := range strs {
+		data[i] = []byte(s)
+	}
+	p := iovec.Pointer()
+	assert.NotNil(t, p)
 	assert.Equal(t, iovec.Len(), len(data))
+	assert.Equal(t, p, unsafe.Pointer(&iovec.iovec[0]))
 	for i, iov := range iovec.iovec {
 		require.NotNil(t, iov.iov_base)
 		assert.Equal(t, int(iov.iov_len), len(data[i]))
-		assert.Equal(t, data[i], (*[999]byte)(iov.iov_base)[:int(iov.iov_len):int(iov.iov_len)])
-		for j := range data[i] {
-			data[i][j] = 0
-		}
+		assert.Equal(t, unsafe.Pointer(&data[i][0]), iov.iov_base)
 	}
-	for i, b := range data {
-		assert.NotEqual(t, string(b), strs[i])
-	}
-	iovec.SyncToData()
+	// data didn't change
 	for i, b := range data {
 		assert.Equal(t, string(b), strs[i])
 	}
 	data[0] = []byte("changed")
-	assert.Panics(t, func() { iovec.SyncToData() })
+	// changed data is picked up
+	p = iovec.Pointer()
+	assert.NotNil(t, p)
+	assert.Equal(t, iovec.Len(), len(data))
+	assert.Equal(t, p, unsafe.Pointer(&iovec.iovec[0]))
+	for i, iov := range iovec.iovec {
+		require.NotNil(t, iov.iov_base)
+		assert.Equal(t, int(iov.iov_len), len(data[i]))
+		assert.Equal(t, unsafe.Pointer(&data[i][0]), iov.iov_base)
+	}
 	iovec.Free()
 	for _, iov := range iovec.iovec {
 		assert.Equal(t, iov.iov_base, unsafe.Pointer(nil))
