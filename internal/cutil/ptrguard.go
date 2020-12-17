@@ -1,6 +1,8 @@
 package cutil
 
 /*
+#include <stdlib.h>
+
 extern void release_wait(void*);
 extern void stored_signal(void*);
 
@@ -80,4 +82,13 @@ func release_wait(p unsafe.Pointer) {
 func stored_signal(p unsafe.Pointer) {
 	v := (*PtrGuard)(p)
 	v.stored.signal()
+}
+
+// for tests
+func cMalloc(n uintptr) unsafe.Pointer {
+	return C.malloc(C.size_t(n))
+}
+
+func cFree(p unsafe.Pointer) {
+	C.free(p)
 }
