@@ -32,6 +32,7 @@ type setOmapStep struct {
 	cValues  cutil.CPtrCSlice
 	cLengths cutil.SizeTCSlice
 	cNum     C.size_t
+	pgs      []*cutil.PtrGuard
 }
 
 func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
@@ -58,9 +59,8 @@ func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
 		// value and its length
 		vlen := cutil.SizeT(len(value))
 		if vlen > 0 {
-			cv := C.CBytes(value)
-			sos.add(cv)
-			cValues[i] = cutil.CPtr(cv)
+			pg := cutil.NewPtrGuard((*unsafe.Pointer)(&cValues[i]), unsafe.Pointer(&value[0]))
+			sos.pgs = append(sos.pgs, pg)
 		} else {
 			cValues[i] = nil
 		}
@@ -75,6 +75,9 @@ func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
 }
 
 func (sos *setOmapStep) free() {
+	for _, pg := range sos.pgs {
+		pg.Release()
+	}
 	sos.cKeys.Free()
 	sos.cValues.Free()
 	sos.cLengths.Free()
