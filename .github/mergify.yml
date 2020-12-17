@@ -10,6 +10,7 @@ pull_request_rules:
   - name: automatic merge
     conditions:
       - label!=do-not-merge
+      - label!=extended-review
       - base=master
       - "#approved-reviews-by>=2"
       - "#changes-requested-reviews-by=0"
