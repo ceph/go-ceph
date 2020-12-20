@@ -1,6 +1,6 @@
 CI_IMAGE_NAME = go-ceph-ci
 CONTAINER_CMD ?=
-CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm && echo "label=disable" || echo "apparmor:unconfined")
+CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
 CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS :=
 CEPH_VERSION := nautilus
