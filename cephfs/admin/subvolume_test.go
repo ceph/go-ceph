@@ -412,7 +412,7 @@ func TestSubVolumeInfo(t *testing.T) {
 	assert.Equal(t, 0, vinfo.Uid)
 	assert.Equal(t, 20*gibiByte, vinfo.BytesQuota)
 	assert.Equal(t, 040750, vinfo.Mode)
-	assert.GreaterOrEqual(t, 2020, vinfo.Ctime.Year())
+	assert.Equal(t, time.Now().Year(), vinfo.Ctime.Year())
 }
 
 func TestSubVolumeSnapshots(t *testing.T) {
@@ -567,7 +567,7 @@ func TestSubVolumeSnapshotInfo(t *testing.T) {
 	assert.NotNil(t, sinfo)
 	assert.EqualValues(t, 0, sinfo.Size)
 	assert.Equal(t, "cephfs_data", sinfo.DataPool)
-	assert.GreaterOrEqual(t, 2020, sinfo.CreatedAt.Year())
+	assert.Equal(t, time.Now().Year(), sinfo.CreatedAt.Year())
 
 	sinfo, err = fsa.SubVolumeSnapshotInfo(volume, group, subname, snapname2)
 	assert.Error(t, err)
