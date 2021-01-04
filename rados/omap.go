@@ -3,11 +3,12 @@ package rados
 // #cgo LDFLAGS: -lrados
 // #include <stdlib.h>
 // #include <rados/librados.h>
-//
 import "C"
 
 import (
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 // SetOmap appends the map `pairs` to the omap `oid`
@@ -15,50 +16,40 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
 
-	var s C.size_t
-	var c *C.char
-	ptrSize := unsafe.Sizeof(c)
+	numOfPairs := len(pairs)
 
-	c_keys := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
-	c_values := C.malloc(C.size_t(len(pairs)) * C.size_t(ptrSize))
-	c_lengths := C.malloc(C.size_t(len(pairs)) * C.size_t(unsafe.Sizeof(s)))
-
-	defer C.free(unsafe.Pointer(c_keys))
-	defer C.free(unsafe.Pointer(c_values))
-	defer C.free(unsafe.Pointer(c_lengths))
+	cKeys := cutil.NewCPtrSlice(numOfPairs)
+	cValues := cutil.NewCPtrSlice(numOfPairs)
+	cLengths := cutil.NewCSizeSlice(numOfPairs)
+	defer cKeys.Free()
+	defer cValues.Free()
+	defer cLengths.Free()
 
 	i := 0
 	for key, value := range pairs {
 		// key
-		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
-		*c_key_ptr = C.CString(key)
-		defer C.free(unsafe.Pointer(*c_key_ptr))
+		cKeys[i] = cutil.CPtr(C.CString(key))
+		defer C.free(unsafe.Pointer(cKeys[i]))
 
 		// value and its length
-		c_value_ptr := (**C.char)(unsafe.Pointer(uintptr(c_values) + uintptr(i)*ptrSize))
-
-		var c_length C.size_t
 		if len(value) > 0 {
-			*c_value_ptr = (*C.char)(unsafe.Pointer(&value[0]))
-			c_length = C.size_t(len(value))
+			cValues[i] = cutil.CPtr(C.CBytes(value))
+			defer C.free(unsafe.Pointer(cValues[i]))
+			cLengths[i] = cutil.CSize(len(value))
 		} else {
-			*c_value_ptr = nil
-			c_length = C.size_t(0)
+			cValues[i] = nil
+			cLengths[i] = 0
 		}
-
-		c_length_ptr := (*C.size_t)(unsafe.Pointer(uintptr(c_lengths) + uintptr(i)*ptrSize))
-		*c_length_ptr = c_length
-
 		i++
 	}
 
 	op := C.rados_create_write_op()
 	C.rados_write_op_omap_set(
 		op,
-		(**C.char)(c_keys),
-		(**C.char)(c_values),
-		(*C.size_t)(c_lengths),
-		C.size_t(len(pairs)))
+		(**C.char)(cKeys.Ptr()),
+		(**C.char)(cValues.Ptr()),
+		(*C.size_t)(cLengths.Ptr()),
+		C.size_t(numOfPairs))
 
 	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
 	C.rados_release_write_op(op)
@@ -187,25 +178,21 @@ func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
 	c_oid := C.CString(oid)
 	defer C.free(unsafe.Pointer(c_oid))
 
-	var c *C.char
-	ptrSize := unsafe.Sizeof(c)
+	numOfKeys := len(keys)
 
-	c_keys := C.malloc(C.size_t(len(keys)) * C.size_t(ptrSize))
-	defer C.free(unsafe.Pointer(c_keys))
+	cKeys := cutil.NewCPtrSlice(numOfKeys)
+	defer cKeys.Free()
 
-	i := 0
-	for _, key := range keys {
-		c_key_ptr := (**C.char)(unsafe.Pointer(uintptr(c_keys) + uintptr(i)*ptrSize))
-		*c_key_ptr = C.CString(key)
-		defer C.free(unsafe.Pointer(*c_key_ptr))
-		i++
+	for i, key := range keys {
+		cKeys[i] = cutil.CPtr(C.CString(key))
+		defer C.free(unsafe.Pointer(cKeys[i]))
 	}
 
 	op := C.rados_create_write_op()
 	C.rados_write_op_omap_rm_keys(
 		op,
-		(**C.char)(c_keys),
-		C.size_t(len(keys)))
+		(**C.char)(cKeys.Ptr()),
+		C.size_t(numOfKeys))
 
 	ret := C.rados_write_op_operate(op, ioctx.ioctx, c_oid, nil, 0)
 	C.rados_release_write_op(op)
