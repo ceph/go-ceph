@@ -14,9 +14,9 @@ import "C"
 
 import (
 	"fmt"
-	"math"
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/cutil"
 	"github.com/ceph/go-ceph/internal/retry"
 	"github.com/ceph/go-ceph/rados"
 )
@@ -364,7 +364,7 @@ func (gmis GlobalMirrorImageStatus) LocalStatus() (SiteMirrorImageStatus, error)
 	return ss, err
 }
 
-type siteArray [math.MaxInt32]C.rbd_mirror_image_site_status_t
+type siteArray [cutil.MaxIdx]C.rbd_mirror_image_site_status_t
 
 // GetGlobalMirrorStatus returns status information pertaining to the state
 // of the images's mirroring.
