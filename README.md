@@ -11,6 +11,7 @@ There are three main Go sub-packages that make up go-ceph:
 * rados - exports functionality from Ceph's librados
 * rbd - exports functionality from Ceph's librbd
 * cephfs - exports functionality from Ceph's libcephfs
+* rgw = exports functionality from Ceph's librgw
 
 We aim to provide comprehensive support for the Ceph APIs over time. This
 includes both I/O related functions and management functions.  If your project
@@ -21,16 +22,16 @@ switch away from shelling out to the CLI and to these native function calls.
 
 The code in go-ceph is purely a library module. Typically, one will import
 go-ceph in another Go based project. When building the code the native RADOS,
-RBD, & CephFS library and development headers are expected to be installed.
+RBD, RGW, & CephFS library and development headers are expected to be installed.
 
 On debian based systems (apt) these may be:
 ```sh
-libcephfs-dev librbd-dev librados-dev
+libcephfs-dev librbd-dev librados-dev librgw-dev
 ```
 
 On rpm based systems (dnf, yum, etc) these may be:
 ```sh
-libcephfs-devel librbd-devel librados-devel
+libcephfs-devel librbd-devel librados-devel librgw-devel
 ```
 
 To quickly test if one can build with go-ceph on your system, run:
