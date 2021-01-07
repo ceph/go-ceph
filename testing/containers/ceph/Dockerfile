@@ -9,7 +9,7 @@ RUN true && \
     yum install -y \
         git wget curl make \
         /usr/bin/cc /usr/bin/c++ \
-        "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
+        "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" "librgw-devel-${cv}" && \
     true
 
 ENV GOTAR=go1.14.7.linux-amd64.tar.gz

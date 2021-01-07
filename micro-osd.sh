@@ -32,6 +32,10 @@ mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA} ${MDS_DATA} ${MOUNTPT}
 MDS_NAME="Z"
 MON_NAME="a"
 MGR_NAME="x"
+RGW_NAME="R"
+S3_USER="test"
+AK="ak"
+SK="sk"
 
 # cluster wide parameters
 cat >> ${DIR}/ceph.conf <<EOF
@@ -80,6 +84,9 @@ ceph osd crush add osd.${OSD_ID} 1 root=default host=localhost
 ceph-osd --id ${OSD_ID} --mkjournal --mkfs
 ceph-osd --id ${OSD_ID}
 
+# start a rgw
+radosgw --name client.rgw.${RGW_NAME}
+
 # start an mds for cephfs
 ceph auth get-or-create mds.${MDS_NAME} mon 'profile mds' mgr 'profile mds' mds 'allow *' osd 'allow *' > ${MDS_DATA}/keyring
 ceph osd pool create cephfs_data 8
@@ -108,3 +115,6 @@ rados --pool ${test_pool} get group ${temp_file}
 diff /etc/group ${temp_file}
 ceph osd pool delete ${test_pool} ${test_pool} --yes-i-really-really-mean-it
 rm ${temp_file}
+
+# prepare s3 user
+radosgw-admin user create --uid ${S3_USER} --display-name ${S3_USER} --access-key=${AK}  --secret-key=${SK}

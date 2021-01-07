@@ -14,7 +14,7 @@ RUN wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add -
 RUN true && \
   apt-add-repository "deb ${CEPH_REPO_URL} xenial main" && \
   apt-get update && \
-  apt-get install -y ceph libcephfs-dev librados-dev librbd-dev curl gcc g++
+  apt-get install -y ceph libcephfs-dev librados-dev librbd-dev librgw-dev curl gcc g++
 
 ENV GOTAR=go1.12.16.linux-amd64.tar.gz
 RUN true && \

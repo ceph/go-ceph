@@ -11,6 +11,10 @@ MICRO_OSD_PATH="/micro-osd.sh"
 BUILD_TAGS=""
 RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
+RGW_TEST_CLIENT_NAME="client.rgw.R"
+RGW_TEST_S3_USER="test"
+RGW_TEST_S3_AK="ak"
+RGW_TEST_S3_SK="sk"
 
 # env vars consumed by go code directly.
 # set defaults if they are currently unset in the environment
@@ -175,6 +179,7 @@ test_go_ceph() {
     mkdir -p /tmp/ceph
     show "${MICRO_OSD_PATH}" /tmp/ceph
     export CEPH_CONF GO_CEPH_TEST_REQUIRE_MOUNT
+    export RGW_TEST_CLIENT_NAME RGW_TEST_S3_USER RGW_TEST_S3_AK RGW_TEST_S3_SK
 
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"
@@ -183,6 +188,7 @@ test_go_ceph() {
 
     P=github.com/ceph/go-ceph
     pkgs=(\
+        "rgw" \
         "cephfs" \
         "cephfs/admin" \
         "internal/callbacks" \
