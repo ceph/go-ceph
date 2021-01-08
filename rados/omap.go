@@ -18,9 +18,9 @@ func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 
 	numOfPairs := len(pairs)
 
-	cKeys := cutil.NewCPtrSlice(numOfPairs)
-	cValues := cutil.NewCPtrSlice(numOfPairs)
-	cLengths := cutil.NewCSizeSlice(numOfPairs)
+	cKeys := cutil.NewCPtrCSlice(numOfPairs)
+	cValues := cutil.NewCPtrCSlice(numOfPairs)
+	cLengths := cutil.NewCSizeCSlice(numOfPairs)
 	defer cKeys.Free()
 	defer cValues.Free()
 	defer cLengths.Free()
@@ -180,7 +180,7 @@ func (ioctx *IOContext) RmOmapKeys(oid string, keys []string) error {
 
 	numOfKeys := len(keys)
 
-	cKeys := cutil.NewCPtrSlice(numOfKeys)
+	cKeys := cutil.NewCPtrCSlice(numOfKeys)
 	defer cKeys.Free()
 
 	for i, key := range keys {

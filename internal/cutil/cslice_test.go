@@ -8,42 +8,40 @@ import (
 )
 
 func TestCSlice(t *testing.T) {
-	t.Run("CPtrSlice", func(t *testing.T) {
+	t.Run("Size", func(t *testing.T) {
 		const size = 256
-		slice := NewCPtrSlice(size)
-		for i := range slice {
-			slice[i] = CPtr(&slice[i])
-		}
-		for i := 0; i < size; i++ {
-			p := (*CPtr)(unsafe.Pointer(uintptr(slice.Ptr()) + uintptr(i)*uintptr(ptrSize)))
-			assert.Equal(t, CPtr(p), *p)
-		}
-		assert.Panics(t, func() { slice[size] = nil })
-		slice.Free()
-		assert.Len(t, slice, 0)
-		assert.Nil(t, slice)
-		empty := NewCPtrSlice(0)
-		assert.Len(t, empty, 0)
-		assert.Nil(t, empty)
-		empty.Free()
+		slice := NewElementTypeCSlice(size)
+		defer slice.Free()
+		assert.Len(t, slice, size)
 	})
-	t.Run("CSizeSlice", func(t *testing.T) {
+	t.Run("Fill", func(t *testing.T) {
 		const size = 256
-		slice := NewCSizeSlice(size)
+		slice := NewElementTypeCSlice(size)
+		defer slice.Free()
 		for i := range slice {
-			slice[i] = CSize(i)
+			slice[i] = ElementType(i)
 		}
 		for i := 0; i < size; i++ {
-			p := (*CSize)(unsafe.Pointer(uintptr(slice.Ptr()) + uintptr(i)*unsafe.Sizeof(CSize(0))))
-			assert.Equal(t, CSize(i), *p)
+			p := (*ElementType)(unsafe.Pointer(uintptr(slice.Ptr()) + uintptr(i)*uintptr(ElementTypeSize)))
+			assert.Equal(t, slice[i], *p)
 		}
-		assert.Panics(t, func() { slice[size] = 0 })
+	})
+	t.Run("OutOfBound", func(t *testing.T) {
+		const size = 1
+		slice := NewElementTypeCSlice(size)
+		defer slice.Free()
+		assert.Panics(t, func() { slice[size] = nil })
+	})
+	t.Run("FreeSetsNil", func(t *testing.T) {
+		const size = 1
+		slice := NewElementTypeCSlice(size)
 		slice.Free()
-		assert.Len(t, slice, 0)
 		assert.Nil(t, slice)
-		empty := NewCSizeSlice(0)
+	})
+	t.Run("EmptySlice", func(t *testing.T) {
+		empty := NewElementTypeCSlice(0)
 		assert.Len(t, empty, 0)
 		assert.Nil(t, empty)
-		empty.Free()
+		assert.NotPanics(t, func() { empty.Free() })
 	})
 }

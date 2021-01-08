@@ -1,8 +1,12 @@
 package cutil
 
-// #include <stdlib.h>
-import "C"
-import "unsafe"
+//go:generate genny -in=$GOFILE -out=gen-$GOFILE gen "ElementType=CPtr,CSize"
+
+import (
+	"unsafe"
+
+	"github.com/cheekybits/genny/generic"
+)
 
 // The following code needs some explanation:
 // This creates slices on top of the C memory buffers allocated before in
@@ -19,74 +23,36 @@ import "unsafe"
 // doesn't reflect reality in this case. This results in definitions like:
 // cSlice := (*[maxIdx]myItem)(myCMemPtr)[:numOfItems:numOfItems]
 
-const maxIdx = 1<<31 - 1 // 2GB, max int32 value, should be safe
-const ptrSize = C.size_t(unsafe.Sizeof(unsafe.Pointer(nil)))
+// ElementType is the type of the array elements
+type ElementType generic.Type
 
-// CPtr is a pointer to C memory.
-// Not required, but makes it more obvious, when only pointers to C memory and
-// no pointers to Go memory are allowed to be stored.
-type CPtr unsafe.Pointer
+// ElementTypeSize is the size of ElementType
+const ElementTypeSize = CSize(unsafe.Sizeof(*(*ElementType)(nil)))
 
-// CSize is a C.size_t
-// (required, because C.size_t is different for every package)
-type CSize C.size_t
+// ElementTypeCSlice is a C allocated slice of pointers.
+type ElementTypeCSlice []ElementType
 
-////////// CPtr //////////
-
-// CPtrSlice is a C allocated slice of pointers.
-type CPtrSlice []CPtr
-
-// NewCPtrSlice returns a CPtrSlice.
+// NewElementTypeCSlice returns a ElementTypeCSlice.
 // Similar to CString it must be freed with Free(slice)
-func NewCPtrSlice(size int) CPtrSlice {
+func NewElementTypeCSlice(size int) ElementTypeCSlice {
 	if size == 0 {
 		return nil
 	}
-	cMem := C.malloc(C.size_t(size) * ptrSize)
-	cSlice := (*[maxIdx]CPtr)(cMem)[:size:size]
+	cMem := cMalloc(CSize(size) * ElementTypeSize)
+	cSlice := (*[maxIdx]ElementType)(cMem)[:size:size]
 	return cSlice
 }
 
-// Ptr returns a pointer to CPtrSlice
-func (v *CPtrSlice) Ptr() CPtr {
+// Ptr returns a pointer to ElementTypeCSlice
+func (v *ElementTypeCSlice) Ptr() CPtr {
 	if len(*v) == 0 {
 		return nil
 	}
 	return CPtr(&(*v)[0])
 }
 
-// Free frees a CPtrSlice
-func (v *CPtrSlice) Free() {
-	C.free(unsafe.Pointer(v.Ptr()))
-	*v = nil
-}
-
-////////// CSize //////////
-
-// CSizeSlice is a C allocated slice of C.size_t.
-type CSizeSlice []CSize
-
-// NewCSizeSlice returns a CSizeSlice.
-// Similar to CString it must be freed with Free(slice)
-func NewCSizeSlice(size int) CSizeSlice {
-	if size == 0 {
-		return nil
-	}
-	cMem := C.malloc(C.size_t(size) * ptrSize)
-	cSlice := (*[maxIdx]CSize)(cMem)[:size:size]
-	return cSlice
-}
-
-// Ptr returns a pointer to CSizeSlice
-func (v *CSizeSlice) Ptr() CPtr {
-	if len(*v) == 0 {
-		return nil
-	}
-	return CPtr(&(*v)[0])
-}
-
-// Free frees a CSizeSlice
-func (v *CSizeSlice) Free() {
-	C.free(unsafe.Pointer(v.Ptr()))
+// Free frees a ElementTypeCSlice
+func (v *ElementTypeCSlice) Free() {
+	cFree(unsafe.Pointer(v.Ptr()))
 	*v = nil
 }
