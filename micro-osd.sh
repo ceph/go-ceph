@@ -77,7 +77,8 @@ ceph-mon --id ${MON_NAME}
 # start an osd
 OSD_ID=$(ceph osd create)
 ceph osd crush add osd.${OSD_ID} 1 root=default host=localhost
-ceph-osd --id ${OSD_ID} --mkjournal --mkfs
+ceph-osd --id ${OSD_ID} --mkjournal --mkfs --foreground
+sync # this is an attempt to fix CI issue #423, remove if it has no effect
 ceph-osd --id ${OSD_ID}
 
 # start an mds for cephfs
