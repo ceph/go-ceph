@@ -2,77 +2,60 @@ package cutil
 
 /*
 #include <stdlib.h>
+#include <string.h>
 #include <sys/uio.h>
 */
 import "C"
-
 import (
 	"unsafe"
 )
 
-var iovecSize uintptr
-
-// StructIovecPtr is an unsafe pointer wrapping C's `*struct iovec`.
-type StructIovecPtr unsafe.Pointer
-
-// Iovec helps manage struct iovec arrays needed by some C functions.
+// Iovec is a slice of iovec structs. Might have allocated C memory, so it must
+// be freed with the Free() method.
 type Iovec struct {
-	// cvec represents an array of struct iovec C memory
-	cvec unsafe.Pointer
-	// length of the array (in elements)
-	length int
+	iovec []C.struct_iovec
+	data  [][]byte
 }
 
-// NewIovec creates an Iovec, and underlying C memory, of the specified size.
-func NewIovec(l int) *Iovec {
-	r := &Iovec{
-		cvec:   C.malloc(C.size_t(l) * C.size_t(iovecSize)),
-		length: l,
+// ByteSlicesToIovec creates an Iovec and links it to Go buffers in data.
+func ByteSlicesToIovec(data [][]byte) (v Iovec) {
+	v.iovec = make([]C.struct_iovec, len(data))
+	v.data = data
+	for i, b := range v.data {
+		v.iovec[i].iov_base = C.CBytes(b)
+		v.iovec[i].iov_len = C.size_t(len(b))
 	}
-	return r
+	return
 }
 
-// ByteSlicesToIovec takes a slice of byte slices and returns a new iovec that
-// maps the slice data to struct iovec entries.
-func ByteSlicesToIovec(data [][]byte) *Iovec {
-	iov := NewIovec(len(data))
-	for i := range data {
-		iov.Set(i, data[i])
+// SyncToData writes the iovec buffers into the linked Go buffers
+func (v Iovec) SyncToData() {
+	for i, b := range v.iovec {
+		if len(v.data[i]) != int(b.iov_len) {
+			panic("buffers have been modified")
+		}
+		C.memcpy(unsafe.Pointer(&v.data[i][0]), b.iov_base, b.iov_len)
 	}
-	return iov
 }
 
-// Pointer returns a StructIovecPtr that represents the C memory of the
-// underlying array.
-func (v *Iovec) Pointer() StructIovecPtr {
-	return StructIovecPtr(unsafe.Pointer(v.cvec))
+// Pointer returns a pointer to the iovec
+func (v Iovec) Pointer() unsafe.Pointer {
+	if len(v.iovec) == 0 {
+		return nil
+	}
+	return unsafe.Pointer(&v.iovec[0])
 }
 
-// Len returns the number of entries in the Iovec.
-func (v *Iovec) Len() int {
-	return v.length
+// Len returns a pointer to the iovec
+func (v Iovec) Len() int {
+	return len(v.iovec)
 }
 
 // Free the C memory in the Iovec.
-func (v *Iovec) Free() {
-	if v.cvec != nil {
-		C.free(v.cvec)
-		v.cvec = nil
-		v.length = 0
+func (v Iovec) Free() {
+	for i := range v.iovec {
+		C.free(v.iovec[i].iov_base)
+		v.iovec[i].iov_base = nil
+		v.iovec[i].iov_len = 0
 	}
-}
-
-// Set will map the memory of the given byte slice to the iovec at the
-// specified position.
-func (v *Iovec) Set(i int, buf []byte) {
-	offset := uintptr(i) * iovecSize
-	iov := (*C.struct_iovec)(unsafe.Pointer(
-		uintptr(unsafe.Pointer(v.cvec)) + offset))
-	iov.iov_base = unsafe.Pointer(&buf[0])
-	iov.iov_len = C.size_t(len(buf))
-}
-
-func init() {
-	var iovec C.struct_iovec
-	iovecSize = unsafe.Sizeof(iovec)
 }
