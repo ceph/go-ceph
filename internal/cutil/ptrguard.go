@@ -53,11 +53,11 @@ type PtrGuard struct {
 
 // NewPtrGuard writes the goPtr (pointing to Go memory) into C memory at the
 // position cPtr, and returns a PtrGuard object.
-func NewPtrGuard(cPtr *unsafe.Pointer, goPtr unsafe.Pointer) *PtrGuard {
+func NewPtrGuard(cPtr CPtr, goPtr unsafe.Pointer) *PtrGuard {
 	var v PtrGuard
 	v.release.init()
 	v.stored.init()
-	go C.storeAndWait(cPtr, goPtr, unsafe.Pointer(&v))
+	go C.storeAndWait((*unsafe.Pointer)(cPtr), goPtr, unsafe.Pointer(&v))
 	v.stored.wait()
 	return &v
 }
@@ -82,13 +82,4 @@ func release_wait(p unsafe.Pointer) {
 func stored_signal(p unsafe.Pointer) {
 	v := (*PtrGuard)(p)
 	v.stored.signal()
-}
-
-// for tests
-func cMalloc(n uintptr) unsafe.Pointer {
-	return C.malloc(C.size_t(n))
-}
-
-func cFree(p unsafe.Pointer) {
-	C.free(p)
 }

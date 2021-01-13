@@ -32,7 +32,7 @@ func (v *Iovec) Pointer() unsafe.Pointer {
 	iovecMem := C.malloc(iovecSize * C.size_t(n))
 	v.iovec = (*[maxIdx]C.struct_iovec)(iovecMem)[:n:n]
 	for i, b := range v.data {
-		pg := NewPtrGuard(&v.iovec[i].iov_base, unsafe.Pointer(&b[0]))
+		pg := NewPtrGuard(CPtr(&v.iovec[i].iov_base), unsafe.Pointer(&b[0]))
 		v.pgs = append(v.pgs, pg)
 		v.iovec[i].iov_len = C.size_t(len(b))
 	}

@@ -59,7 +59,7 @@ func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
 		// value and its length
 		vlen := cutil.SizeT(len(value))
 		if vlen > 0 {
-			pg := cutil.NewPtrGuard((*unsafe.Pointer)(&cValues[i]), unsafe.Pointer(&value[0]))
+			pg := cutil.NewPtrGuard(cutil.CPtr(&cValues[i]), unsafe.Pointer(&value[0]))
 			sos.pgs = append(sos.pgs, pg)
 		} else {
 			cValues[i] = nil
