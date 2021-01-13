@@ -52,7 +52,8 @@ type PtrGuard struct {
 // cgo rule, and would require the use of a Go object registry.
 
 // NewPtrGuard writes the goPtr (pointing to Go memory) into C memory at the
-// position cPtr, and returns a PtrGuard object.
+// position cPtr, and returns a PtrGuard object. Must be freed with the Free()
+// method.
 func NewPtrGuard(cPtr CPtr, goPtr unsafe.Pointer) *PtrGuard {
 	var v PtrGuard
 	v.release.init()
@@ -62,9 +63,9 @@ func NewPtrGuard(cPtr CPtr, goPtr unsafe.Pointer) *PtrGuard {
 	return &v
 }
 
-// Release removes the guarded Go pointer from the C memory by overwriting it
+// Free removes the guarded Go pointer from the C memory by overwriting it
 // with NULL.
-func (v *PtrGuard) Release() {
+func (v *PtrGuard) Free() {
 	if !v.released {
 		v.released = true
 		v.release.signal() // send release signal

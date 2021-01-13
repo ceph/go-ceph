@@ -47,7 +47,7 @@ func (v *Iovec) Len() int {
 // Free the C memory in the Iovec.
 func (v *Iovec) Free() {
 	for _, pg := range v.pgs {
-		pg.Release()
+		pg.Free()
 	}
 	if len(v.iovec) != 0 {
 		C.free(unsafe.Pointer(&v.iovec[0]))

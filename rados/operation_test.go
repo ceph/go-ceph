@@ -117,3 +117,21 @@ func TestOperationType(t *testing.T) {
 		assert.Equal(t, 2, x)
 	})
 }
+
+type refMock struct {
+	s   string
+	out *string
+}
+
+func (v refMock) Free() {
+	*v.out += v.s
+}
+
+func TestOperationRefFreeOrder(t *testing.T) {
+	r := withRefs{}
+	var out string
+	r.add(refMock{"bar", &out})
+	r.add(refMock{"foo", &out})
+	r.free()
+	assert.Equal(t, out, "foobar")
+}

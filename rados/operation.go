@@ -6,7 +6,8 @@ import "C"
 import (
 	"fmt"
 	"strings"
-	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/cutil"
 )
 
 // The file operation.go exists to support both read op and write op types that
@@ -134,18 +135,38 @@ type withoutFree struct{}
 
 func (*withoutFree) free() {}
 
+type freeable interface {
+	Free()
+}
+
 // withRefs is a embeddable type to help track and free C memory.
 type withRefs struct {
-	refs []unsafe.Pointer
+	refs []freeable
 }
 
 func (w *withRefs) free() {
+	max := len(w.refs) - 1
 	for i := range w.refs {
-		C.free(w.refs[i])
+		// freeing in backwards order
+		w.refs[max-i].Free()
 	}
 	w.refs = nil
 }
 
-func (w *withRefs) add(ptr unsafe.Pointer) {
-	w.refs = append(w.refs, ptr)
+func (w *withRefs) add(v freeable) {
+	w.refs = append(w.refs, v)
+}
+
+// helper container to add raw CPtr to refs
+
+type freeablePtr struct{ p cutil.CPtr }
+
+func (v freeablePtr) Free() {
+	cutil.Free(v.p)
+	v.p = nil
+}
+
+func ptrReleaser(p cutil.CPtr) freeable {
+	v := freeablePtr{p}
+	return v
 }

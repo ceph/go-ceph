@@ -16,7 +16,7 @@ func TestPtrGuard(t *testing.T) {
 		defer Free(cPtr)
 		pg := NewPtrGuard(cPtr, goPtr)
 		assert.Equal(t, *(*unsafe.Pointer)(cPtr), goPtr)
-		pg.Release()
+		pg.Free()
 		assert.Zero(t, *(*unsafe.Pointer)(cPtr))
 	})
 
@@ -27,10 +27,10 @@ func TestPtrGuard(t *testing.T) {
 		defer Free(cPtr)
 		pg := NewPtrGuard(cPtr, goPtr)
 		assert.Equal(t, *(*unsafe.Pointer)(cPtr), goPtr)
-		pg.Release()
-		pg.Release()
-		pg.Release()
-		pg.Release()
+		pg.Free()
+		pg.Free()
+		pg.Free()
+		pg.Free()
 		assert.Zero(t, *(*unsafe.Pointer)(cPtr))
 	})
 
@@ -48,14 +48,14 @@ func TestPtrGuard(t *testing.T) {
 				ptrGuards[i] = NewPtrGuard(cPtrPtr, goPtr)
 				assert.Equal(t, (unsafe.Pointer)(cPtrArr[i]), goPtr)
 			} else {
-				ptrGuards[i].Release()
+				ptrGuards[i].Free()
 				ptrGuards[i] = nil
 				assert.Zero(t, cPtrArr[i])
 			}
 		}
 		for i := range ptrGuards {
 			if ptrGuards[i] != nil {
-				ptrGuards[i].Release()
+				ptrGuards[i].Free()
 				ptrGuards[i] = nil
 			}
 		}

@@ -32,7 +32,6 @@ type setOmapStep struct {
 	cValues  cutil.CPtrCSlice
 	cLengths cutil.SizeTCSlice
 	cNum     C.size_t
-	pgs      []*cutil.PtrGuard
 }
 
 func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
@@ -49,18 +48,22 @@ func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
 		cNum:     C.size_t(maplen),
 	}
 
+	sos.add(&cKeys)
+	sos.add(&cValues)
+	sos.add(&cLengths)
+
 	var i uintptr
 	for key, value := range pairs {
 		// key
-		ck := C.CString(key)
-		sos.add(unsafe.Pointer(ck))
+		ck := cutil.CPtr(C.CString(key))
+		sos.add(ptrReleaser(ck))
 		cKeys[i] = cutil.CPtr(ck)
 
 		// value and its length
 		vlen := cutil.SizeT(len(value))
 		if vlen > 0 {
 			pg := cutil.NewPtrGuard(cutil.CPtr(&cValues[i]), unsafe.Pointer(&value[0]))
-			sos.pgs = append(sos.pgs, pg)
+			sos.add(pg)
 		} else {
 			cValues[i] = nil
 		}
@@ -75,12 +78,6 @@ func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
 }
 
 func (sos *setOmapStep) free() {
-	for _, pg := range sos.pgs {
-		pg.Release()
-	}
-	sos.cKeys.Free()
-	sos.cValues.Free()
-	sos.cLengths.Free()
 	sos.withRefs.free()
 }
 
@@ -199,11 +196,12 @@ func newRemoveOmapKeysStep(keys []string) *removeOmapKeysStep {
 		cKeys: cKeys,
 		cNum:  C.size_t(len(keys)),
 	}
+	roks.add(&cKeys)
 
 	i := 0
 	for _, key := range keys {
 		cKeys[i] = cutil.CPtr(C.CString(key))
-		roks.add(unsafe.Pointer(cKeys[i]))
+		roks.add(freeablePtr{cKeys[i]})
 		i++
 	}
 
@@ -212,7 +210,6 @@ func newRemoveOmapKeysStep(keys []string) *removeOmapKeysStep {
 }
 
 func (roks *removeOmapKeysStep) free() {
-	roks.cKeys.Free()
 	roks.withRefs.free()
 }
 
