@@ -5,53 +5,54 @@ import (
 	"unsafe"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIovec(t *testing.T) {
-	t.Run("newAndFree", func(t *testing.T) {
-		iov := NewIovec(3)
-		iov.Free()
-	})
-	t.Run("setBufs", func(t *testing.T) {
-		b1 := []byte("foo")
-		b2 := []byte("barbar")
-		b3 := []byte("bazbazbaz")
-		iov := NewIovec(3)
-		iov.Set(0, b1)
-		iov.Set(1, b2)
-		iov.Set(2, b3)
-		iov.Free()
-		// free also unsets internal values
-		assert.Equal(t, unsafe.Pointer(nil), iov.cvec)
-		assert.Equal(t, 0, iov.length)
-	})
-	t.Run("testGetters", func(t *testing.T) {
-		b1 := []byte("foo")
-		b2 := []byte("barbar")
-		b3 := []byte("bazbazbaz")
-		b4 := []byte("zonk")
-		iov := NewIovec(4)
-		defer iov.Free()
-		iov.Set(0, b1)
-		iov.Set(1, b2)
-		iov.Set(2, b3)
-		iov.Set(3, b4)
-
-		assert.NotNil(t, iov.Pointer())
-		assert.Equal(t, 4, iov.Len())
-	})
-}
-
-func TestByteSlicesToIovec(t *testing.T) {
-	d := [][]byte{
-		[]byte("ramekin"),
-		[]byte("shuffleboard"),
-		[]byte("tranche"),
-		[]byte("phycobilisomes"),
+	strs := []string{
+		"foo",
+		"barbar",
+		"bazbazbaz",
 	}
-	iov := ByteSlicesToIovec(d)
-	defer iov.Free()
-
-	assert.NotNil(t, iov.Pointer())
-	assert.Equal(t, 4, iov.Len())
+	var data [][]byte
+	for _, s := range strs {
+		data = append(data, []byte(s))
+	}
+	iovec := ByteSlicesToIovec(data)
+	p := iovec.Pointer()
+	assert.NotNil(t, p)
+	assert.Equal(t, iovec.Len(), len(data))
+	assert.Equal(t, p, unsafe.Pointer(&iovec.iovec[0]))
+	for i, iov := range iovec.iovec {
+		require.NotNil(t, iov.iov_base)
+		assert.Equal(t, int(iov.iov_len), len(data[i]))
+		assert.Equal(t, data[i], (*[MaxIdx]byte)(iov.iov_base)[:iov.iov_len:iov.iov_len])
+	}
+	// data didn't change
+	for i, b := range data {
+		assert.Equal(t, string(b), strs[i])
+	}
+	// clear iovec buffers
+	for _, iov := range iovec.iovec {
+		b := (*[MaxIdx]byte)(iov.iov_base)[:iov.iov_len:iov.iov_len]
+		for i := range b {
+			b[i] = 0
+		}
+	}
+	iovec.Sync()
+	// data must be cleared
+	for _, b := range data {
+		for i := range b {
+			assert.Zero(t, b[i])
+		}
+	}
+	iovec.Free()
+	for _, iov := range iovec.iovec {
+		assert.Equal(t, iov.iov_base, unsafe.Pointer(nil))
+		assert.Zero(t, iov.iov_len)
+	}
+	iovec.Free()
+	iovec.Sync()
+	iovec.Sync()
+	iovec.Free()
 }
