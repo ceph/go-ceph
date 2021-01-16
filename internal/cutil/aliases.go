@@ -2,6 +2,7 @@ package cutil
 
 /*
 #include <stdlib.h>
+#include <string.h>
 typedef void* voidptr;
 */
 import "C"
@@ -10,11 +11,16 @@ import (
 	"unsafe"
 )
 
-// PtrSize is the size of a pointer
-const PtrSize = C.sizeof_voidptr
+const (
+	// MaxIdx is the maximum index on 32 bit systems
+	MaxIdx = 1<<31 - 1 // 2GB, max int32 value, should be safe
 
-// SizeTSize is the size of C.size_t
-const SizeTSize = C.sizeof_size_t
+	// PtrSize is the size of a pointer
+	PtrSize = C.sizeof_voidptr
+
+	// SizeTSize is the size of C.size_t
+	SizeTSize = C.sizeof_size_t
+)
 
 // SizeT wraps size_t from C.
 type SizeT C.size_t
@@ -43,3 +49,14 @@ func Malloc(s SizeT) CPtr { return CPtr(C.malloc(C.size_t(s))) }
 
 // Free is C.free
 func Free(p CPtr) { C.free(unsafe.Pointer(p)) }
+
+// CString is C.CString
+func CString(s string) CharPtr { return CharPtr((C.CString(s))) }
+
+// CBytes is C.CBytes
+func CBytes(b []byte) CPtr { return CPtr(C.CBytes(b)) }
+
+// Memcpy is C.memcpy
+func Memcpy(dst, src CPtr, n SizeT) {
+	C.memcpy(unsafe.Pointer(dst), unsafe.Pointer(src), C.size_t(n))
+}
