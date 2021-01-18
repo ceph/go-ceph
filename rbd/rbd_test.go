@@ -1550,14 +1550,12 @@ func TestOpenImageById(t *testing.T) {
 		require.Error(t, err)
 	})
 	t.Run("ReadWriteBadId", func(t *testing.T) {
-		t.Skip("segfaults due to https://tracker.ceph.com/issues/43178")
 		// phony id
 		img, err := OpenImageById(ioctx, "102f00aaabbbccd", NoSnapshot)
 		require.Error(t, err)
 		require.Nil(t, img)
 	})
 	t.Run("ReadOnlyBadId", func(t *testing.T) {
-		t.Skip("segfaults due to https://tracker.ceph.com/issues/43178")
 		// phony id
 		img, err := OpenImageByIdReadOnly(ioctx, "blubb", NoSnapshot)
 		require.Error(t, err)
