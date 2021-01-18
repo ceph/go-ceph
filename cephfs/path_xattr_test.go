@@ -84,10 +84,11 @@ func TestListXattrPath(t *testing.T) {
 		}
 		xl, err := mount.ListXattr(fname)
 		assert.NoError(t, err)
-		assert.Len(t, xl, 3)
+		assert.Len(t, xl, 4)
 		assert.Contains(t, xl, xattrSamples[0].name)
 		assert.Contains(t, xl, xattrSamples[1].name)
 		assert.Contains(t, xl, xattrSamples[2].name)
+		assert.Contains(t, xl, xattrSamples[3].name)
 	})
 
 	t.Run("invalidMount", func(t *testing.T) {
@@ -237,10 +238,11 @@ func TestListXattrLinkPath(t *testing.T) {
 		}
 		xl, err := mount.LlistXattr(lname)
 		assert.NoError(t, err)
-		assert.Len(t, xl, 3)
+		assert.Len(t, xl, 4)
 		assert.Contains(t, xl, xattrSamples[0].name)
 		assert.Contains(t, xl, xattrSamples[1].name)
 		assert.Contains(t, xl, xattrSamples[2].name)
+		assert.Contains(t, xl, xattrSamples[3].name)
 	})
 
 	t.Run("invalidMount", func(t *testing.T) {
