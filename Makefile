@@ -7,6 +7,7 @@ CEPH_VERSION := nautilus
 RESULTS_DIR :=
 CHECK_GOFMT_FLAGS := -e -s -l
 IMPLEMENTS_OPTS :=
+BUILD_TAGS := $(CEPH_VERSION)
 
 ifeq ($(CONTAINER_CMD),)
 	CONTAINER_CMD:=$(shell docker version >/dev/null 2>&1 && echo docker)
@@ -21,6 +22,11 @@ BUILDFILE=.build.$(CEPH_VERSION)
 # the name of the image plus ceph version as tag
 CI_IMAGE_TAG=$(CI_IMAGE_NAME):$(CEPH_VERSION)
 
+ifneq ($(USE_PTRGUARD),)
+	CONTAINER_OPTS += -e USE_PTRGUARD=true
+	BUILD_TAGS := $(BUILD_TAGS),ptrguard
+endif
+
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
 	VOLUME_FLAGS = :z
@@ -31,11 +37,11 @@ ifdef RESULTS_DIR
 endif
 
 build:
-	go build -v -tags $(CEPH_VERSION) $(shell go list ./... | grep -v /contrib)
+	go build -v -tags $(BUILD_TAGS) $(shell go list ./... | grep -v /contrib)
 fmt:
 	go fmt ./...
 test:
-	go test -v -tags $(CEPH_VERSION) ./...
+	go test -v -tags $(BUILD_TAGS) ./...
 
 .PHONY: test-docker test-container
 test-docker: test-container
@@ -78,7 +84,7 @@ test-binaries: \
 test-bins: test-binaries
 
 %.test: % force_go_build
-	go test -c -tags $(CEPH_VERSION) ./$<
+	go test -c -tags $(BUILD_TAGS) ./$<
 
 implements:
 	go build -o implements ./contrib/implements

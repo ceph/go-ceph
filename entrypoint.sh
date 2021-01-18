@@ -94,7 +94,15 @@ while true ; do
 done
 
 if [ -n "${CEPH_VERSION}" ]; then
-    BUILD_TAGS="-tags ${CEPH_VERSION}"
+    BUILD_TAGS="${CEPH_VERSION}"
+fi
+
+if [ -n "${USE_PTRGUARD}" ]; then
+    BUILD_TAGS+=",ptrguard"
+fi
+
+if [ -n "${BUILD_TAGS}" ]; then
+    BUILD_TAGS="-tags ${BUILD_TAGS}"
 fi
 
 show() {
