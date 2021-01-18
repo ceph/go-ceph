@@ -24,15 +24,12 @@ var xattrSamples = []struct {
 		name:  "user.x2kZeros",
 		value: make([]byte, 2048),
 	},
-	// Ceph's behavior when an empty value is supplied may be considered
-	// to have a bug in some versions. Using an empty value may cause
-	// the xattr to be unset. Please refer to:
-	// https://tracker.ceph.com/issues/46084
-	// So we avoid testing for that case explicitly here.
-	//{
-	//	name:  "user.xEmpty",
-	//	value: []byte(""),
-	//},
+	// Older versions of ceph had a bug where using an empty value caused the
+	// xattr to be unset. This has been fixed for nautilus and octopus.
+	{
+		name:  "user.xEmpty",
+		value: []byte(""),
+	},
 }
 
 func TestGetSetXattr(t *testing.T) {
@@ -111,10 +108,11 @@ func TestListXattr(t *testing.T) {
 		}
 		xl, err := f.ListXattr()
 		assert.NoError(t, err)
-		assert.Len(t, xl, 3)
+		assert.Len(t, xl, 4)
 		assert.Contains(t, xl, xattrSamples[0].name)
 		assert.Contains(t, xl, xattrSamples[1].name)
 		assert.Contains(t, xl, xattrSamples[2].name)
+		assert.Contains(t, xl, xattrSamples[3].name)
 	})
 
 	t.Run("invalidFile", func(t *testing.T) {
