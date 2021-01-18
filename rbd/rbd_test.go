@@ -1652,3 +1652,16 @@ func TestOpenImageById(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestRadosIoctxInvalid(t *testing.T) {
+	// ensure cephIoctx panics if passed a nil pointer
+	assert.Panics(t, func() {
+		_ = cephIoctx(nil)
+	})
+	// test that an invalid/incomplete (no actual backing C ioctx) will
+	// trigger a panic in cephIoctx when called.
+	ioctx := &rados.IOContext{}
+	assert.Panics(t, func() {
+		_ = cephIoctx(ioctx)
+	})
+}
