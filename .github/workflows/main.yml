@@ -37,6 +37,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run test container
       run: make test-container "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
+    - name: Run ptrguard test container
+      run: make test-container "USE_PTRGUARD=true" "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
     - name: Archive coverage results
       uses: actions/upload-artifact@v2
       with:
