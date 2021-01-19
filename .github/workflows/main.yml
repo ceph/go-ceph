@@ -7,7 +7,10 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      # run the CI also on PRs that are based on branches starting with pr/...
+      - 'pr/**'
   schedule:
     - cron: 1 1 * * *
 
