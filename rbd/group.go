@@ -84,3 +84,75 @@ func GroupList(ioctx *rados.IOContext) ([]string, error) {
 	groups := cutil.SplitBuffer(buf[:ret])
 	return groups, nil
 }
+
+// GroupImageAdd will add the specified image to the named group.
+// An io context must be supplied for both the group and image.
+//
+// Implements:
+//  int rbd_group_image_add(rados_ioctx_t group_p,
+//                          const char *group_name,
+//                          rados_ioctx_t image_p,
+//                          const char *image_name);
+func GroupImageAdd(groupIoctx *rados.IOContext, groupName string,
+	imageIoctx *rados.IOContext, imageName string) error {
+
+	cGroupName := C.CString(groupName)
+	defer C.free(unsafe.Pointer(cGroupName))
+	cImageName := C.CString(imageName)
+	defer C.free(unsafe.Pointer(cImageName))
+
+	ret := C.rbd_group_image_add(
+		cephIoctx(groupIoctx),
+		cGroupName,
+		cephIoctx(imageIoctx),
+		cImageName)
+	return getError(ret)
+}
+
+// GroupImageRemove will remove the specified image from the named group.
+// An io context must be supplied for both the group and image.
+//
+// Implements:
+//  int rbd_group_image_remove(rados_ioctx_t group_p,
+//                             const char *group_name,
+//                             rados_ioctx_t image_p,
+//                             const char *image_name);
+func GroupImageRemove(groupIoctx *rados.IOContext, groupName string,
+	imageIoctx *rados.IOContext, imageName string) error {
+
+	cGroupName := C.CString(groupName)
+	defer C.free(unsafe.Pointer(cGroupName))
+	cImageName := C.CString(imageName)
+	defer C.free(unsafe.Pointer(cImageName))
+
+	ret := C.rbd_group_image_remove(
+		cephIoctx(groupIoctx),
+		cGroupName,
+		cephIoctx(imageIoctx),
+		cImageName)
+	return getError(ret)
+}
+
+// GroupImageRemoveByID will remove the specified image from the named group.
+// An io context must be supplied for both the group and image.
+//
+// Implements:
+//  CEPH_RBD_API int rbd_group_image_remove_by_id(rados_ioctx_t group_p,
+//                                               const char *group_name,
+//                                               rados_ioctx_t image_p,
+//                                               const char *image_id);
+func GroupImageRemoveByID(groupIoctx *rados.IOContext, groupName string,
+	imageIoctx *rados.IOContext, imageID string) error {
+
+	cGroupName := C.CString(groupName)
+	defer C.free(unsafe.Pointer(cGroupName))
+	cid := C.CString(imageID)
+	defer C.free(unsafe.Pointer(cid))
+
+	ret := C.rbd_group_image_remove_by_id(
+		cephIoctx(groupIoctx),
+		cGroupName,
+		cephIoctx(imageIoctx),
+		cid)
+	return getError(ret)
+}
