@@ -240,3 +240,75 @@ func TestGroupImageRemoveByID(t *testing.T) {
 		GroupImageRemoveByID(ioctx, "invalid", nil, "foobar")
 	})
 }
+
+func TestGroupImageList(t *testing.T) {
+	conn := radosConnect(t)
+	require.NotNil(t, conn)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	options := NewRbdImageOptions()
+	assert.NoError(t,
+		options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+
+	name1 := GetUUID()
+	err = CreateImage(ioctx, name1, testImageSize, options)
+	require.NoError(t, err)
+
+	name2 := GetUUID()
+	err = CreateImage(ioctx, name2, testImageSize, options)
+	require.NoError(t, err)
+
+	err = GroupCreate(ioctx, "grone")
+	assert.NoError(t, err)
+
+	err = GroupImageAdd(ioctx, "grone", ioctx, name1)
+	assert.NoError(t, err)
+
+	gimgs, err := GroupImageList(ioctx, "grone")
+	assert.NoError(t, err)
+	assert.NotNil(t, gimgs)
+	if assert.Len(t, gimgs, 1) {
+		assert.Equal(t, name1, gimgs[0].Name)
+		assert.Equal(t, GroupImageStateAttached, gimgs[0].State)
+	}
+
+	err = GroupImageAdd(ioctx, "grone", ioctx, name2)
+	assert.NoError(t, err)
+
+	gimgs, err = GroupImageList(ioctx, "grone")
+	assert.NoError(t, err)
+	assert.NotNil(t, gimgs)
+	if assert.Len(t, gimgs, 2) {
+		// order is not assured!
+		names := []string{}
+		for _, gimg := range gimgs {
+			names = append(names, gimg.Name)
+		}
+		assert.Contains(t, names, name1)
+		assert.Contains(t, names, name2)
+	}
+
+	err = GroupImageRemove(ioctx, "grone", ioctx, name1)
+	assert.NoError(t, err)
+
+	gimgs, err = GroupImageList(ioctx, "grone")
+	assert.NoError(t, err)
+	assert.NotNil(t, gimgs)
+	if assert.Len(t, gimgs, 1) {
+		assert.Equal(t, name2, gimgs[0].Name)
+		assert.Equal(t, GroupImageStateAttached, gimgs[0].State)
+	}
+
+	assert.Panics(t, func() {
+		GroupImageList(nil, "foo")
+	})
+}
