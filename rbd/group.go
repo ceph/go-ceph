@@ -156,3 +156,70 @@ func GroupImageRemoveByID(groupIoctx *rados.IOContext, groupName string,
 		cid)
 	return getError(ret)
 }
+
+// GroupImageState indicates an image's state in a group.
+type GroupImageState int
+
+const (
+	// GroupImageStateAttached is equivalent to RBD_GROUP_IMAGE_STATE_ATTACHED
+	GroupImageStateAttached = GroupImageState(C.RBD_GROUP_IMAGE_STATE_ATTACHED)
+	// GroupImageStateIncomplete is equivalent to RBD_GROUP_IMAGE_STATE_INCOMPLETE
+	GroupImageStateIncomplete = GroupImageState(C.RBD_GROUP_IMAGE_STATE_INCOMPLETE)
+)
+
+// GroupImageInfo reports on images within a group.
+type GroupImageInfo struct {
+	Name   string
+	PoolID int64
+	State  GroupImageState
+}
+
+// GroupImageList returns a slice of GroupImageInfo types based on the
+// images that are part of the named group.
+//
+// Implements:
+//  int rbd_group_image_list(rados_ioctx_t group_p,
+//                           const char *group_name,
+//                           rbd_group_image_info_t *images,
+//                           size_t group_image_info_size,
+//                           size_t *num_entries);
+func GroupImageList(ioctx *rados.IOContext, name string) ([]GroupImageInfo, error) {
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	var (
+		cImages []C.rbd_group_image_info_t
+		cSize   C.size_t
+		err     error
+	)
+	retry.WithSizes(1024, 262144, func(size int) retry.Hint {
+		cSize = C.size_t(size)
+		cImages = make([]C.rbd_group_image_info_t, cSize)
+		ret := C.rbd_group_image_list(
+			cephIoctx(ioctx),
+			cName,
+			(*C.rbd_group_image_info_t)(unsafe.Pointer(&cImages[0])),
+			C.sizeof_rbd_group_image_info_t,
+			&cSize)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(cSize)).If(err == errRange)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	images := make([]GroupImageInfo, cSize)
+	for i := range images {
+		images[i].Name = C.GoString(cImages[i].name)
+		images[i].PoolID = int64(cImages[i].pool)
+		images[i].State = GroupImageState(cImages[i].state)
+	}
+
+	// free C memory allocated by C.rbd_group_image_list call
+	ret := C.rbd_group_image_list_cleanup(
+		(*C.rbd_group_image_info_t)(unsafe.Pointer(&cImages[0])),
+		C.sizeof_rbd_group_image_info_t,
+		cSize)
+	return images, getError(ret)
+}
