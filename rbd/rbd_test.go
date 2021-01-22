@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os/exec"
 	"sort"
 	"testing"
 	"time"
@@ -539,6 +540,12 @@ func TestWriteSame(t *testing.T) {
 	err = CreateImage(ioctx, name, testImageSize, options)
 	require.NoError(t, err)
 
+	// WriteSame() by default calls discard when writing only zeros. This
+	// can be unexpected when trying to allocate a whole RBD image. To
+	// disable this behaviour, and actually write zeros, the option
+	// `rbd_discard_on_zeroed_write_same` needs to be disabled.
+	conn.SetConfigOption("rbd_discard_on_zeroed_write_same", "false")
+
 	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
@@ -576,6 +583,31 @@ func TestWriteSame(t *testing.T) {
 		n_in, err := img.WriteSame(0, 64, []byte(""), rados.OpFlagNone)
 		assert.NoError(t, err)
 		assert.Equal(t, int64(0), n_in)
+	})
+
+	t.Run("zerofill", func(t *testing.T) {
+		// implement allocating an image by writing zeros to it
+		sc, err := img.GetStripeCount()
+		assert.NoError(t, err)
+
+		// fetch the actual size of the image as available in the pool, can be
+		// margially different from the requested image size
+		st, err := img.Stat()
+		assert.NoError(t, err)
+		size := st.Size
+
+		// zeroBlock is the stripe-period: size of the object-size multiplied
+		// by the stripe-count
+		order := uint(st.Order) // signed shifting requires newer golang?!
+		zeroBlock := make([]byte, sc*(1<<order))
+		n_in, err := img.WriteSame(0, size, zeroBlock, rados.OpFlagNone)
+		assert.NoError(t, err)
+		assert.Equal(t, size, uint64(n_in))
+
+		cmd := exec.Command("rbd", "diff", "--pool", poolname, name)
+		out, err := cmd.Output()
+		assert.NoError(t, err)
+		assert.NotEqual(t, "", string(out))
 	})
 
 	err = img.Close()
