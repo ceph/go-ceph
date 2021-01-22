@@ -312,3 +312,66 @@ func TestGroupImageList(t *testing.T) {
 		GroupImageList(nil, "foo")
 	})
 }
+
+func TestGroupImageGetGroup(t *testing.T) {
+	conn := radosConnect(t)
+	require.NotNil(t, conn)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	options := NewRbdImageOptions()
+	assert.NoError(t,
+		options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+
+	name1 := GetUUID()
+	err = CreateImage(ioctx, name1, testImageSize, options)
+	require.NoError(t, err)
+
+	name2 := GetUUID()
+	err = CreateImage(ioctx, name2, testImageSize, options)
+	require.NoError(t, err)
+
+	err = GroupCreate(ioctx, "grone")
+	assert.NoError(t, err)
+
+	err = GroupImageAdd(ioctx, "grone", ioctx, name1)
+	assert.NoError(t, err)
+
+	img1, err := OpenImage(ioctx, name1, NoSnapshot)
+	assert.NoError(t, err)
+	defer func() {
+		assert.NoError(t, img1.Close())
+	}()
+
+	gi1, err := img1.GetGroup()
+	assert.NoError(t, err)
+	assert.Equal(t, "grone", gi1.Name)
+
+	img2, err := OpenImage(ioctx, name2, NoSnapshot)
+	assert.NoError(t, err)
+	defer func() {
+		assert.NoError(t, img2.Close())
+	}()
+
+	gi2, err := img2.GetGroup()
+	assert.NoError(t, err)
+	assert.Equal(t, "", gi2.Name)
+
+	t.Run("invalidImage", func(t *testing.T) {
+		x := &Image{}
+		_, err := x.GetGroup()
+		assert.Error(t, err)
+		assert.Panics(t, func() {
+			var x *Image
+			x.GetGroup()
+		})
+	})
+}
