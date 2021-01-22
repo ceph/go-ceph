@@ -38,8 +38,8 @@ const (
 	// ImageMirrorModeJournal uses journaling to propagate RBD images between
 	// ceph clusters.
 	ImageMirrorModeJournal = ImageMirrorMode(C.RBD_MIRROR_IMAGE_MODE_JOURNAL)
-	// ImageMirrorModeSnapshot uses snapshot RDB images to propagate images
-	// between ceph clusters.
+	// ImageMirrorModeSnapshot uses snapshots to propagate RBD images between
+	// ceph clusters.
 	ImageMirrorModeSnapshot = ImageMirrorMode(C.RBD_MIRROR_IMAGE_MODE_SNAPSHOT)
 )
 
