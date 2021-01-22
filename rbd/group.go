@@ -223,3 +223,36 @@ func GroupImageList(ioctx *rados.IOContext, name string) ([]GroupImageInfo, erro
 		cSize)
 	return images, getError(ret)
 }
+
+// GroupInfo contains the name and pool id of a RBD group.
+type GroupInfo struct {
+	Name   string
+	PoolID int64
+}
+
+// GetGroup returns group info for the group this image is part of.
+//
+// Implements:
+//  int rbd_get_group(rbd_image_t image, rbd_group_info_t *group_info,
+//                    size_t group_info_size);
+func (image *Image) GetGroup() (GroupInfo, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return GroupInfo{}, err
+	}
+
+	var cgi C.rbd_group_info_t
+	ret := C.rbd_get_group(
+		image.image,
+		&cgi,
+		C.sizeof_rbd_group_info_t)
+	if err := getErrorIfNegative(ret); err != nil {
+		return GroupInfo{}, err
+	}
+
+	gi := GroupInfo{
+		Name:   C.GoString(cgi.name),
+		PoolID: int64(cgi.pool),
+	}
+	ret = C.rbd_group_info_cleanup(&cgi, C.sizeof_rbd_group_info_t)
+	return gi, getError(ret)
+}
