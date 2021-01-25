@@ -25,7 +25,9 @@ pull_request_rules:
         rebase_fallback: merge
         strict: smart
         strict_method: rebase
-      dismiss_reviews: {}
+      dismiss_reviews:
+        approved: false
+        changes_requested: false
       delete_head_branch: {}
   - name: ask to resolve conflict
     conditions:
