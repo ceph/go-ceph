@@ -182,3 +182,53 @@ func TestMirroring(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func TestGetMirrorImageInfo(t *testing.T) {
+	conn := radosConnect(t)
+	poolName := GetUUID()
+	err := conn.MakePool(poolName)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, conn.DeletePool(poolName))
+		conn.Shutdown()
+	}()
+
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx.Destroy()
+	}()
+
+	// enable per-image mirroring for this pool
+	err = SetMirrorMode(ioctx, MirrorModeImage)
+	require.NoError(t, err)
+
+	imgName := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t, options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+	err = CreateImage(ioctx, imgName, testImageSize, options)
+	require.NoError(t, err)
+
+	t.Run("closedImage", func(t *testing.T) {
+		img := GetImage(ioctx, imgName)
+		_, err = img.GetMirrorImageInfo()
+		assert.Error(t, err)
+	})
+
+	t.Run("getInfo", func(t *testing.T) {
+		// open image, enable, mirroring.
+		img, err := OpenImage(ioctx, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		err = img.MirrorEnable(ImageMirrorModeSnapshot)
+		assert.NoError(t, err)
+		mii, err := img.GetMirrorImageInfo()
+		assert.NoError(t, err)
+		assert.NotNil(t, mii.GlobalID)
+		assert.Equal(t, mii.State, MirrorImageEnabled)
+		assert.Equal(t, mii.Primary, true)
+	})
+}
