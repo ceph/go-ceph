@@ -2,14 +2,26 @@ package rbd
 
 /*
 #cgo LDFLAGS: -lrbd
+#include <errno.h>
 #include <stdlib.h>
 #include <rbd/librbd.h>
+
+extern int snapRollbackCallback(uint64_t, uint64_t, uintptr_t);
+
+// inline wrapper to cast uintptr_t to void*
+static inline int wrap_rbd_group_snap_rollback_with_progress(
+		rados_ioctx_t group_p, const char *group_name,
+		const char *snap_name, uintptr_t arg) {
+	return rbd_group_snap_rollback_with_progress(
+		group_p, group_name, snap_name, (librbd_progress_fn_t)snapRollbackCallback, (void*)arg);
+};
 */
 import "C"
 
 import (
 	"unsafe"
 
+	"github.com/ceph/go-ceph/internal/callbacks"
 	"github.com/ceph/go-ceph/internal/retry"
 	"github.com/ceph/go-ceph/rados"
 )
@@ -146,4 +158,66 @@ func GroupSnapRollback(ioctx *rados.IOContext, group, snap string) error {
 
 	ret := C.rbd_group_snap_rollback(cephIoctx(ioctx), cGroupName, cSnapName)
 	return getError(ret)
+}
+
+// GroupSnapRollbackCallback defines the function signature needed for the
+// GroupSnapRollbackWithProgress callback.
+//
+// This callback will be called by GroupSnapRollbackWithProgress when it
+// wishes to report progress rolling back a group snapshot.
+type GroupSnapRollbackCallback func(uint64, uint64, interface{}) int
+
+var groupSnapRollbackCallbacks = callbacks.New()
+
+// GroupSnapRollbackWithProgress will roll back the images in the group
+// to that of given snapshot. The given progress callback will be called
+// to report on the progress of the snapshot rollback.
+//
+// Implements:
+//  int rbd_group_snap_rollback_with_progress(rados_ioctx_t group_p,
+//                                            const char *group_name,
+//                                            const char *snap_name,
+//                                            librbd_progress_fn_t cb,
+//                                            void *cbdata);
+func GroupSnapRollbackWithProgress(
+	ioctx *rados.IOContext, group, snap string,
+	cb GroupSnapRollbackCallback, data interface{}) error {
+	// the provided callback must be a real function
+	if cb == nil {
+		return rbdError(C.EINVAL)
+	}
+
+	cGroupName := C.CString(group)
+	defer C.free(unsafe.Pointer(cGroupName))
+	cSnapName := C.CString(snap)
+	defer C.free(unsafe.Pointer(cSnapName))
+
+	ctx := gsnapRollbackCallbackCtx{
+		callback: cb,
+		data:     data,
+	}
+	cbIndex := groupSnapRollbackCallbacks.Add(ctx)
+	defer diffIterateCallbacks.Remove(cbIndex)
+
+	ret := C.wrap_rbd_group_snap_rollback_with_progress(
+		cephIoctx(ioctx),
+		cGroupName,
+		cSnapName,
+		C.uintptr_t(cbIndex))
+
+	return getError(ret)
+}
+
+type gsnapRollbackCallbackCtx struct {
+	callback GroupSnapRollbackCallback
+	data     interface{}
+}
+
+//export snapRollbackCallback
+func snapRollbackCallback(
+	offset, total C.uint64_t, index uintptr) C.int {
+
+	v := groupSnapRollbackCallbacks.Lookup(index)
+	ctx := v.(gsnapRollbackCallbackCtx)
+	return C.int(ctx.callback(uint64(offset), uint64(total), ctx.data))
 }
