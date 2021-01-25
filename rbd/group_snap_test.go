@@ -63,6 +63,47 @@ func TestGroupSnapshots(t *testing.T) {
 		err = GroupSnapRemove(ioctx, gname, "snap2b")
 		assert.NoError(t, err, "remove of current name: expect success")
 	})
+	t.Run("groupSnappList", func(t *testing.T) {
+		err := GroupSnapCreate(ioctx, gname, "snap1")
+		assert.NoError(t, err)
+		err = GroupSnapCreate(ioctx, gname, "snap2")
+		assert.NoError(t, err)
+		err = GroupSnapCreate(ioctx, gname, "snap3")
+		assert.NoError(t, err)
+
+		gsl, err := GroupSnapList(ioctx, gname)
+		assert.NoError(t, err)
+		if assert.Len(t, gsl, 3) {
+			names := []string{}
+			for _, gsi := range gsl {
+				assert.Equal(t, GroupSnapStateComplete, gsi.State)
+				names = append(names, gsi.Name)
+			}
+			assert.Contains(t, names, "snap1")
+			assert.Contains(t, names, "snap2")
+			assert.Contains(t, names, "snap3")
+		}
+
+		err = GroupSnapRemove(ioctx, gname, "snap3")
+		assert.NoError(t, err)
+		err = GroupSnapRemove(ioctx, gname, "snap2")
+		assert.NoError(t, err)
+		err = GroupSnapRename(ioctx, gname, "snap1", "snap1a")
+
+		gsl, err = GroupSnapList(ioctx, gname)
+		assert.NoError(t, err)
+		if assert.Len(t, gsl, 1) {
+			assert.Equal(t, GroupSnapStateComplete, gsl[0].State)
+			assert.Equal(t, "snap1a", gsl[0].Name)
+		}
+
+		err = GroupSnapRemove(ioctx, gname, "snap1a")
+		assert.NoError(t, err)
+
+		gsl, err = GroupSnapList(ioctx, gname)
+		assert.NoError(t, err)
+		assert.Len(t, gsl, 0)
+	})
 	t.Run("invalidIOContext", func(t *testing.T) {
 		assert.Panics(t, func() {
 			GroupSnapCreate(nil, gname, "foo")
@@ -72,6 +113,9 @@ func TestGroupSnapshots(t *testing.T) {
 		})
 		assert.Panics(t, func() {
 			GroupSnapRename(nil, gname, "foo", "bar")
+		})
+		assert.Panics(t, func() {
+			GroupSnapList(nil, gname)
 		})
 	})
 }
