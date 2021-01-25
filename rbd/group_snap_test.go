@@ -104,6 +104,56 @@ func TestGroupSnapshots(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, gsl, 0)
 	})
+	t.Run("groupSnapRollback", func(t *testing.T) {
+		img, err := OpenImage(ioctx, name1, NoSnapshot)
+		assert.NoError(t, err)
+		_, err = img.WriteAt([]byte("HELLO WORLD"), 0)
+		assert.NoError(t, err)
+		err = img.Close()
+		assert.NoError(t, err)
+
+		snapname := "snap1"
+		err = GroupSnapCreate(ioctx, gname, snapname)
+		assert.NoError(t, err)
+
+		img, err = OpenImage(ioctx, name1, NoSnapshot)
+		assert.NoError(t, err)
+		_, err = img.WriteAt([]byte("GOODBYE WORLD"), 0)
+		assert.NoError(t, err)
+		err = img.Close()
+		assert.NoError(t, err)
+
+		img, err = OpenImage(ioctx, name2, NoSnapshot)
+		assert.NoError(t, err)
+		_, err = img.WriteAt([]byte("2222222222222"), 0)
+		assert.NoError(t, err)
+		err = img.Close()
+		assert.NoError(t, err)
+
+		err = GroupSnapRollback(ioctx, gname, snapname)
+		assert.NoError(t, err)
+
+		b := make([]byte, 8)
+		img, err = OpenImage(ioctx, name1, NoSnapshot)
+		assert.NoError(t, err)
+		_, err = img.ReadAt(b, 0)
+		assert.NoError(t, err)
+		err = img.Close()
+		assert.NoError(t, err)
+		assert.Equal(t, []byte("HELLO WO"), b)
+
+		img, err = OpenImage(ioctx, name2, NoSnapshot)
+		assert.NoError(t, err)
+		_, err = img.ReadAt(b, 0)
+		assert.NoError(t, err)
+		err = img.Close()
+		assert.NoError(t, err)
+		assert.Equal(t, []byte("\x00\x00\x00\x00\x00\x00\x00\x00"), b)
+
+		err = GroupSnapRemove(ioctx, gname, snapname)
+		assert.NoError(t, err)
+	})
+	})
 	t.Run("invalidIOContext", func(t *testing.T) {
 		assert.Panics(t, func() {
 			GroupSnapCreate(nil, gname, "foo")
@@ -116,6 +166,9 @@ func TestGroupSnapshots(t *testing.T) {
 		})
 		assert.Panics(t, func() {
 			GroupSnapList(nil, gname)
+		})
+		assert.Panics(t, func() {
+			GroupSnapRollback(nil, gname, "foo")
 		})
 	})
 }
