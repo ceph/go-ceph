@@ -91,6 +91,11 @@ func TestMirroring(t *testing.T) {
 
 		err = img.MirrorEnable(ImageMirrorModeSnapshot)
 		assert.NoError(t, err)
+
+		mode, err := img.GetImageMirrorMode()
+		assert.NoError(t, err)
+		assert.Equal(t, mode, ImageMirrorModeSnapshot)
+
 		err = img.MirrorDisable(false)
 		assert.NoError(t, err)
 	})
@@ -102,6 +107,8 @@ func TestMirroring(t *testing.T) {
 		err = img.MirrorEnable(ImageMirrorModeSnapshot)
 		assert.Error(t, err)
 		err = img.MirrorDisable(false)
+		assert.Error(t, err)
+		_, err = img.GetImageMirrorMode()
 		assert.Error(t, err)
 	})
 	t.Run("promoteDemote", func(t *testing.T) {

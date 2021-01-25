@@ -219,3 +219,17 @@ func (image *Image) GetMirrorImageInfo() (*MirrorImageInfo, error) {
 	C.rbd_mirror_image_get_info_cleanup(&cInfo)
 	return &mii, nil
 }
+
+// GetImageMirrorMode fetches the mirroring approach for an RBD image.
+//
+// Implements:
+//  int rbd_mirror_image_get_mode(rbd_image_t image, rbd_mirror_image_mode_t *mode);
+func (image *Image) GetImageMirrorMode() (ImageMirrorMode, error) {
+	var mode C.rbd_mirror_image_mode_t
+	if err := image.validate(imageIsOpen); err != nil {
+		return ImageMirrorMode(mode), err
+	}
+
+	ret := C.rbd_mirror_image_get_mode(image.image, &mode)
+	return ImageMirrorMode(mode), getError(ret)
+}
