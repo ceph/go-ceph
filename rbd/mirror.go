@@ -165,3 +165,57 @@ func (image *Image) MirrorInstanceID() (string, error) {
 	}
 	return string(buf[:cSize]), nil
 }
+
+// MirrorImageState represents the mirroring state of a RBD image.
+type MirrorImageState C.rbd_mirror_image_state_t
+
+const (
+	// MirrorImageDisabling is the representation of
+	// RBD_MIRROR_IMAGE_DISABLING from librbd.
+	MirrorImageDisabling = MirrorImageState(C.RBD_MIRROR_IMAGE_DISABLING)
+	// MirrorImageEnabled is the representation of
+	// RBD_MIRROR_IMAGE_ENABLED from librbd.
+	MirrorImageEnabled = MirrorImageState(C.RBD_MIRROR_IMAGE_ENABLED)
+	// MirrorImageDisabled is the representation of
+	// RBD_MIRROR_IMAGE_DISABLED from librbd.
+	MirrorImageDisabled = MirrorImageState(C.RBD_MIRROR_IMAGE_DISABLED)
+)
+
+// MirrorImageInfo represents the mirroring status information of a RBD image.
+type MirrorImageInfo struct {
+	GlobalID string
+	State    MirrorImageState
+	Primary  bool
+}
+
+// GetMirrorImageInfo fetches the mirroring status information of a RBD image.
+//
+// Implements:
+//  int rbd_mirror_image_get_info(rbd_image_t image,
+//                                rbd_mirror_image_info_t *mirror_image_info,
+//                                size_t info_size)
+func (image *Image) GetMirrorImageInfo() (*MirrorImageInfo, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return nil, err
+	}
+
+	var cInfo C.rbd_mirror_image_info_t
+
+	ret := C.rbd_mirror_image_get_info(
+		image.image,
+		&cInfo,
+		C.sizeof_rbd_mirror_image_info_t)
+	if ret < 0 {
+		return nil, getError(ret)
+	}
+
+	mii := MirrorImageInfo{
+		GlobalID: C.GoString(cInfo.global_id),
+		State:    MirrorImageState(cInfo.state),
+		Primary:  bool(cInfo.primary),
+	}
+
+	// free C memory allocated by C.rbd_mirror_image_get_info call
+	C.rbd_mirror_image_get_info_cleanup(&cInfo)
+	return &mii, nil
+}
