@@ -130,3 +130,20 @@ func GroupSnapList(ioctx *rados.IOContext, group string) ([]GroupSnapInfo, error
 		cSize)
 	return snaps, getError(ret)
 }
+
+// GroupSnapRollback will roll back the images in the group to that of the
+// given snapshot.
+//
+// Implements:
+//  int rbd_group_snap_rollback(rados_ioctx_t group_p,
+//                              const char *group_name,
+//                              const char *snap_name);
+func GroupSnapRollback(ioctx *rados.IOContext, group, snap string) error {
+	cGroupName := C.CString(group)
+	defer C.free(unsafe.Pointer(cGroupName))
+	cSnapName := C.CString(snap)
+	defer C.free(unsafe.Pointer(cSnapName))
+
+	ret := C.rbd_group_snap_rollback(cephIoctx(ioctx), cGroupName, cSnapName)
+	return getError(ret)
+}
