@@ -156,6 +156,66 @@ func TestRemoveSubVolume(t *testing.T) {
 			return fsa.RemoveSubVolumeWithFlags(v, g, n, SubVolRmFlags{RetainSnapshots: true})
 		})
 	})
+	t.Run("retainedSnapshotsTest", func(t *testing.T) {
+		subname := "retsnap1"
+		snapname := "s1"
+		err = fsa.CreateSubVolume(volume, NoGroup, subname, nil)
+		assert.NoError(t, err)
+		vinfo, err := fsa.SubVolumeInfo(volume, NoGroup, subname)
+		assert.NoError(t, err)
+
+		canRetain := false
+		for _, f := range vinfo.Features {
+			if f == SnapshotRetentionFeature {
+				canRetain = true
+			}
+		}
+		if !canRetain {
+			err = fsa.RemoveSubVolumeWithFlags(
+				volume, NoGroup, subname, SubVolRmFlags{Force: true})
+			assert.NoError(t, err)
+			t.Skipf("this rest of this test requires snapshot retention on the server side")
+		}
+
+		lsv, err = fsa.ListSubVolumes(volume, NoGroup)
+		assert.NoError(t, err)
+		afterCount := len(lsv)
+		assert.Equal(t, beforeCount, afterCount-1)
+		err = fsa.CreateSubVolumeSnapshot(volume, NoGroup, subname, snapname)
+
+		err = fsa.RemoveSubVolumeWithFlags(
+			volume, NoGroup, subname, SubVolRmFlags{Force: true})
+		assert.Error(t, err)
+
+		err = fsa.RemoveSubVolumeWithFlags(
+			volume, NoGroup, subname, SubVolRmFlags{RetainSnapshots: true})
+		assert.NoError(t, err)
+
+		delay()
+		_, err = fsa.SubVolumeInfo(volume, NoGroup, subname)
+		assert.NoError(t, err)
+
+		err = fsa.RemoveSubVolumeSnapshot(volume, NoGroup, subname, snapname)
+		assert.NoError(t, err)
+		err = fsa.RemoveSubVolumeWithFlags(
+			volume, NoGroup, subname, SubVolRmFlags{Force: true})
+		assert.NoError(t, err)
+
+		// this seems to take longer than other removals. Try a few times to
+		// verify the subvolume is gone before asserting that the test failed
+		removed := false
+		for i := 0; i < 100; i++ {
+			delay()
+			lsv, err = fsa.ListSubVolumes(volume, NoGroup)
+			assert.NoError(t, err)
+			nowCount := len(lsv)
+			if nowCount == beforeCount {
+				removed = true
+				break
+			}
+		}
+		assert.True(t, removed, "volume count did not return to previous value")
+	})
 }
 
 func TestResizeSubVolume(t *testing.T) {
