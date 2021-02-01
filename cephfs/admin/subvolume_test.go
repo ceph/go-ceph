@@ -192,8 +192,11 @@ func TestRemoveSubVolume(t *testing.T) {
 		assert.NoError(t, err)
 
 		delay()
-		_, err = fsa.SubVolumeInfo(volume, NoGroup, subname)
+		subInfo, err := fsa.SubVolumeInfo(volume, NoGroup, subname)
 		assert.NoError(t, err)
+		// If the subvolume is deleted with snapshots retained, then
+		// it must have snapshot-retained state.
+		assert.Equal(t, subInfo.State, StateSnapRetained)
 
 		err = fsa.RemoveSubVolumeSnapshot(volume, NoGroup, subname, snapname)
 		assert.NoError(t, err)
@@ -361,6 +364,34 @@ var sampleSubVolumeInfo3 = []byte(`
 }
 `)
 
+var sampleSubVolumeInfo4 = []byte(`
+{
+	"atime": "2020-10-02 13:48:17",
+	"bytes_pcent": "undefined",
+	"bytes_quota": "infinite",
+	"bytes_used": 0,
+	"created_at": "2020-10-02 13:48:17",
+	"ctime": "2020-10-02 13:48:17",
+	"data_pool": "cephfs_data",
+	"features": [
+		"snapshot-clone",
+		"snapshot-autoprotect",
+		"snapshot-retention"
+	],
+	"gid": 0,
+	"mode": 16877,
+	"mon_addrs": [
+		"127.0.0.1:6789"
+	],
+	"mtime": "2020-10-02 13:48:17",
+	"path": "/volumes/igotta/boogie/0302e067-e7fb-4d9b-8388-aae46164d8b0",
+	"pool_namespace": "",
+	"state": "complete",
+	"type": "subvolume",
+	"uid": 0
+}
+`)
+
 var badSampleSubVolumeInfo1 = []byte(`
 {
     "bytes_quota": "fishy",
@@ -430,6 +461,18 @@ func TestParseSubVolumeInfo(t *testing.T) {
 			assert.Contains(t, info.Features, SnapshotAutoprotectFeature)
 		}
 	})
+	t.Run("ok4", func(t *testing.T) {
+		info, err := parseSubVolumeInfo(R(sampleSubVolumeInfo4, "", nil))
+		assert.NoError(t, err)
+		if assert.NotNil(t, info) {
+			assert.Equal(t,
+				"/volumes/igotta/boogie/0302e067-e7fb-4d9b-8388-aae46164d8b0",
+				info.Path)
+			assert.Equal(t, 0, info.Uid)
+			assert.Contains(t, info.Features, SnapshotRetentionFeature)
+			assert.Equal(t, info.State, StateComplete)
+		}
+	})
 	t.Run("invalidBytesQuotaValue", func(t *testing.T) {
 		info, err := parseSubVolumeInfo(R(badSampleSubVolumeInfo1, "", nil))
 		assert.Error(t, err)
@@ -473,6 +516,16 @@ func TestSubVolumeInfo(t *testing.T) {
 	assert.Equal(t, 20*gibiByte, vinfo.BytesQuota)
 	assert.Equal(t, 040750, vinfo.Mode)
 	assert.Equal(t, time.Now().Year(), vinfo.Ctime.Year())
+	// state field was added with snapshot retention feature.
+	canRetain := false
+	for _, f := range vinfo.Features {
+		if f == SnapshotRetentionFeature {
+			canRetain = true
+		}
+	}
+	if canRetain {
+		assert.Equal(t, vinfo.State, StateComplete)
+	}
 }
 
 func TestSubVolumeSnapshots(t *testing.T) {
