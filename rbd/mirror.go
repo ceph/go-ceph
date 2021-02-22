@@ -13,6 +13,8 @@ package rbd
 import "C"
 
 import (
+	"fmt"
+	"math"
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/retry"
@@ -228,6 +230,14 @@ type MirrorImageInfo struct {
 	Primary  bool
 }
 
+func convertMirrorImageInfo(cInfo *C.rbd_mirror_image_info_t) MirrorImageInfo {
+	return MirrorImageInfo{
+		GlobalID: C.GoString(cInfo.global_id),
+		State:    MirrorImageState(cInfo.state),
+		Primary:  bool(cInfo.primary),
+	}
+}
+
 // GetMirrorImageInfo fetches the mirroring status information of a RBD image.
 //
 // Implements:
@@ -249,11 +259,7 @@ func (image *Image) GetMirrorImageInfo() (*MirrorImageInfo, error) {
 		return nil, getError(ret)
 	}
 
-	mii := MirrorImageInfo{
-		GlobalID: C.GoString(cInfo.global_id),
-		State:    MirrorImageState(cInfo.state),
-		Primary:  bool(cInfo.primary),
-	}
+	mii := convertMirrorImageInfo(&cInfo)
 
 	// free C memory allocated by C.rbd_mirror_image_get_info call
 	C.rbd_mirror_image_get_info_cleanup(&cInfo)
@@ -272,4 +278,133 @@ func (image *Image) GetImageMirrorMode() (ImageMirrorMode, error) {
 
 	ret := C.rbd_mirror_image_get_mode(image.image, &mode)
 	return ImageMirrorMode(mode), getError(ret)
+}
+
+// MirrorImageStatusState is used to indicate the state of a mirrored image
+// within the site status info.
+type MirrorImageStatusState int64
+
+const (
+	// MirrorImageStatusStateUnknown is equivalent to MIRROR_IMAGE_STATUS_STATE_UNKNOWN
+	MirrorImageStatusStateUnknown = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_UNKNOWN)
+	// MirrorImageStatusStateError is equivalent to MIRROR_IMAGE_STATUS_STATE_ERROR
+	MirrorImageStatusStateError = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_ERROR)
+	// MirrorImageStatusStateSyncing is equivalent to MIRROR_IMAGE_STATUS_STATE_SYNCING
+	MirrorImageStatusStateSyncing = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_SYNCING)
+	// MirrorImageStatusStateStartingReplay is equivalent to MIRROR_IMAGE_STATUS_STATE_STARTING_REPLAY
+	MirrorImageStatusStateStartingReplay = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_STARTING_REPLAY)
+	// MirrorImageStatusStateReplaying is equivalent to MIRROR_IMAGE_STATUS_STATE_REPLAYING
+	MirrorImageStatusStateReplaying = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_REPLAYING)
+	// MirrorImageStatusStateStoppingReplay is equivalent to MIRROR_IMAGE_STATUS_STATE_STOPPING_REPLAY
+	MirrorImageStatusStateStoppingReplay = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_STOPPING_REPLAY)
+	// MirrorImageStatusStateStopped is equivalent to MIRROR_IMAGE_STATUS_STATE_STOPPED
+	MirrorImageStatusStateStopped = MirrorImageStatusState(C.MIRROR_IMAGE_STATUS_STATE_STOPPED)
+)
+
+// String represents the MirrorImageStatusState as a short string.
+func (state MirrorImageStatusState) String() (s string) {
+	switch state {
+	case MirrorImageStatusStateUnknown:
+		s = "unknown"
+	case MirrorImageStatusStateError:
+		s = "error"
+	case MirrorImageStatusStateSyncing:
+		s = "syncing"
+	case MirrorImageStatusStateStartingReplay:
+		s = "starting_replay"
+	case MirrorImageStatusStateReplaying:
+		s = "replaying"
+	case MirrorImageStatusStateStoppingReplay:
+		s = "stopping_replay"
+	case MirrorImageStatusStateStopped:
+		s = "stopped"
+	default:
+		s = fmt.Sprintf("unknown(%d)", state)
+	}
+	return s
+}
+
+// SiteMirrorImageStatus contains information pertaining to the status of
+// a mirrored image within a site.
+type SiteMirrorImageStatus struct {
+	MirrorUUID  string
+	State       MirrorImageStatusState
+	Description string
+	LastUpdate  int64
+	Up          bool
+}
+
+// GlobalMirrorImageStatus contains information pertaining to the global
+// status of a mirrored image. It contains general information as well
+// as per-site information stored in the SiteStatuses slice.
+type GlobalMirrorImageStatus struct {
+	Name         string
+	Info         MirrorImageInfo
+	SiteStatuses []SiteMirrorImageStatus
+}
+
+// LocalStatus returns one SiteMirrorImageStatus item from the SiteStatuses
+// slice that corresponds to the local site's status. If the local status
+// is not found than the error ErrNotExist will be returned.
+func (gmis GlobalMirrorImageStatus) LocalStatus() (SiteMirrorImageStatus, error) {
+	var (
+		ss  SiteMirrorImageStatus
+		err error = ErrNotExist
+	)
+	for i := range gmis.SiteStatuses {
+		// I couldn't find it explicitly documented, but a site mirror uuid
+		// of an empty string indicates that this is the local site.
+		// This pattern occurs in both the pybind code and ceph c++.
+		if gmis.SiteStatuses[i].MirrorUUID == "" {
+			ss = gmis.SiteStatuses[i]
+			err = nil
+			break
+		}
+	}
+	return ss, err
+}
+
+type siteArray [math.MaxInt32]C.rbd_mirror_image_site_status_t
+
+// GetGlobalMirrorStatus returns status information pertaining to the state
+// of the images's mirroring.
+//
+// Implements:
+//   int rbd_mirror_image_get_global_status(
+//     rbd_image_t image,
+//     rbd_mirror_image_global_status_t *mirror_image_global_status,
+//     size_t status_size);
+func (image *Image) GetGlobalMirrorStatus() (GlobalMirrorImageStatus, error) {
+	if err := image.validate(imageIsOpen); err != nil {
+		return GlobalMirrorImageStatus{}, err
+	}
+
+	s := C.rbd_mirror_image_global_status_t{}
+	ret := C.rbd_mirror_image_get_global_status(
+		image.image,
+		&s,
+		C.sizeof_rbd_mirror_image_global_status_t)
+	if err := getError(ret); err != nil {
+		return GlobalMirrorImageStatus{}, err
+	}
+	defer C.rbd_mirror_image_global_status_cleanup(&s)
+
+	status := GlobalMirrorImageStatus{
+		Name:         C.GoString(s.name),
+		Info:         convertMirrorImageInfo(&s.info),
+		SiteStatuses: make([]SiteMirrorImageStatus, s.site_statuses_count),
+	}
+	// use the "Sven Technique" to treat the C pointer as a go slice temporarily
+	sscs := (*siteArray)(unsafe.Pointer(s.site_statuses))[:s.site_statuses_count:s.site_statuses_count]
+	for i := C.uint32_t(0); i < s.site_statuses_count; i++ {
+		ss := sscs[i]
+		status.SiteStatuses[i] = SiteMirrorImageStatus{
+			MirrorUUID:  C.GoString(ss.mirror_uuid),
+			State:       MirrorImageStatusState(ss.state),
+			Description: C.GoString(ss.description),
+			LastUpdate:  int64(ss.last_update),
+			Up:          bool(ss.up),
+		}
+	}
+	return status, nil
 }
