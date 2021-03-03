@@ -101,7 +101,7 @@ type listNamedResult struct {
 
 func parseListNames(res response) ([]string, error) {
 	var r []listNamedResult
-	if err := res.noStatus().unmarshal(&r).End(); err != nil {
+	if err := res.NoStatus().Unmarshal(&r).End(); err != nil {
 		return nil, err
 	}
 	vl := make([]string, len(r))
@@ -114,10 +114,10 @@ func parseListNames(res response) ([]string, error) {
 // parsePathResponse returns a cleaned up path from requests that get a path
 // unless an error is encountered, then an error is returned.
 func parsePathResponse(res response) (string, error) {
-	if res2 := res.noStatus(); !res2.Ok() {
+	if res2 := res.NoStatus(); !res2.Ok() {
 		return "", res.End()
 	}
-	b := res.body
+	b := res.Body()
 	// if there's a trailing newline in the buffer strip it.
 	// ceph assumes a CLI wants the output of the buffer and there's
 	// no format=json mode available currently.

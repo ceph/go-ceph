@@ -310,20 +310,24 @@ var sampleFsLs2 = []byte(`
 
 func TestParseFsList(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
-		_, err := parseFsList(response{err: errors.New("eek")})
+		_, err := parseFsList(
+			newResponse(nil, "", errors.New("eek")))
 		assert.Error(t, err)
 		assert.Equal(t, "eek", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		_, err := parseFsList(response{status: "oof"})
+		_, err := parseFsList(
+			newResponse(nil, "oof", nil))
 		assert.Error(t, err)
 	})
 	t.Run("badJSON", func(t *testing.T) {
-		_, err := parseFsList(response{body: []byte("______")})
+		_, err := parseFsList(
+			newResponse([]byte("______"), "", nil))
 		assert.Error(t, err)
 	})
 	t.Run("ok1", func(t *testing.T) {
-		l, err := parseFsList(response{body: sampleFsLs1})
+		l, err := parseFsList(
+			newResponse(sampleFsLs1, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, l) && assert.Len(t, l, 1) {
 			fs := l[0]
@@ -337,7 +341,8 @@ func TestParseFsList(t *testing.T) {
 		}
 	})
 	t.Run("ok2", func(t *testing.T) {
-		l, err := parseFsList(response{body: sampleFsLs2})
+		l, err := parseFsList(
+			newResponse(sampleFsLs2, "", nil))
 		assert.NoError(t, err)
 		if assert.NotNil(t, l) && assert.Len(t, l, 2) {
 			fs := l[0]
