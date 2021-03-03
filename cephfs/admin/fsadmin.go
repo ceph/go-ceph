@@ -3,18 +3,15 @@
 package admin
 
 import (
-	"encoding/json"
 	"strconv"
 
+	"github.com/ceph/go-ceph/internal/commands"
 	"github.com/ceph/go-ceph/rados"
 )
 
 // RadosCommander provides an interface to execute JSON-formatted commands that
 // allow the cephfs administrative functions to interact with the Ceph cluster.
-type RadosCommander interface {
-	MgrCommand(buf [][]byte) ([]byte, string, error)
-	MonCommand(buf []byte) ([]byte, string, error)
-}
+type RadosCommander = commands.RadosCommander
 
 // FSAdmin is used to administrate CephFS within a ceph cluster.
 type FSAdmin struct {
@@ -60,39 +57,25 @@ func (fsa *FSAdmin) validate() error {
 // rawMgrCommand takes a byte buffer and sends it to the MGR as a command.
 // The buffer is expected to contain preformatted JSON.
 func (fsa *FSAdmin) rawMgrCommand(buf []byte) response {
-	if err := fsa.validate(); err != nil {
-		return response{err: err}
-	}
-	return newResponse(fsa.conn.MgrCommand([][]byte{buf}))
+	return commands.RawMgrCommand(fsa.conn, buf)
 }
 
 // marshalMgrCommand takes an generic interface{} value, converts it to JSON and
 // sends the json to the MGR as a command.
 func (fsa *FSAdmin) marshalMgrCommand(v interface{}) response {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return response{err: err}
-	}
-	return fsa.rawMgrCommand(b)
+	return commands.MarshalMgrCommand(fsa.conn, v)
 }
 
 // rawMonCommand takes a byte buffer and sends it to the MON as a command.
 // The buffer is expected to contain preformatted JSON.
 func (fsa *FSAdmin) rawMonCommand(buf []byte) response {
-	if err := fsa.validate(); err != nil {
-		return response{err: err}
-	}
-	return newResponse(fsa.conn.MonCommand(buf))
+	return commands.RawMonCommand(fsa.conn, buf)
 }
 
 // marshalMonCommand takes an generic interface{} value, converts it to JSON and
 // sends the json to the MGR as a command.
 func (fsa *FSAdmin) marshalMonCommand(v interface{}) response {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return response{err: err}
-	}
-	return fsa.rawMonCommand(b)
+	return commands.MarshalMonCommand(fsa.conn, v)
 }
 
 type listNamedResult struct {
