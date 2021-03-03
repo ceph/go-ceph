@@ -17,7 +17,7 @@ CEPH_CONF=/tmp/ceph/ceph.conf
 # but can be used to change the test behavior:
 # GO_CEPH_TEST_MDS_NAME
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -55,6 +55,11 @@ while true ; do
             shift
             shift
         ;;
+        --mirror)
+            MIRROR_CONF="${2}"
+            shift
+            shift
+        ;;
         --cpuprofile)
             CPUPROFILE=yes
             shift
@@ -78,6 +83,7 @@ while true ; do
             echo "                      (colon separated, disables micro-osd)"
             echo "  --results=PATH      Specify path to store test results"
             echo "  --ceph-conf=PATH    Specify path to ceph configuration"
+            echo "  --mirror=PATH       Specify path to ceph conf of mirror"
             echo "  --cpuprofile        Run tests with cpu profiling"
             echo "  --memprofile        Run tests with mem profiling"
             echo "  --no-cover          Disable code coverage profiling"
@@ -128,6 +134,38 @@ test_failed() {
     echo "*** ERROR: ${pkg} tests failed"
     pause_if_needed
     return 1
+}
+
+setup_mirroring() {
+    echo "Setting up mirroring..."
+    local CONF_A=${CEPH_CONF}
+    local CONF_B=${MIRROR_CONF}
+    ceph -c $CONF_A osd pool create rbd 8
+    ceph -c $CONF_B osd pool create rbd 8
+    rbd -c $CONF_A pool init
+    rbd -c $CONF_B pool init
+    rbd -c $CONF_A mirror pool enable rbd image
+    rbd -c $CONF_B mirror pool enable rbd image
+    rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd > token
+    rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd token
+    rbd -c $CONF_A create mirror_test --size 100M
+    rbd -c $CONF_A mirror image enable mirror_test snapshot
+    echo -n "Waiting for mirroring activation..."
+    while ! rbd -c $CONF_A mirror image status mirror_test \
+      | grep -q "state: \+up+replaying" ; do
+        sleep 1
+    done
+    echo "done"
+    mkdir /mnt/images_a /mnt/images_b
+    rbd-fuse -c $CONF_A /mnt/images_a
+    rbd-fuse -c $CONF_B /mnt/images_b
+    echo "Mirror Test" | dd conv=notrunc bs=1 of=/mnt/images_a/mirror_test
+    rbd -c $CONF_A mirror image snapshot mirror_test
+    echo -n "Waiting for mirror sync..."
+    while ! dd bs=1 count=100 if=/mnt/images_b/mirror_test 2>/dev/null | grep -q "Mirror Test" ; do
+        sleep 1
+    done
+    echo " mirroring functional!"
 }
 
 test_pkg() {
@@ -218,6 +256,9 @@ test_go_ceph() {
     pre_all_tests
     if [[ ${WAIT_FILES} ]]; then
         wait_for_files ${WAIT_FILES//:/ }
+    fi
+    if [[ ${MIRROR_CONF} && ${CEPH_VERSION} != nautilus ]]; then
+        setup_mirroring
     fi
     for pkg in "${pkgs[@]}"; do
         test_pkg "${pkg}" || test_failed "${pkg}"
