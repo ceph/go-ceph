@@ -94,7 +94,8 @@ test-binaries: \
 	internal/errutil.test \
 	internal/retry.test \
 	rados.test \
-	rbd.test
+	rbd.test \
+	rbd/admin.test
 test-bins: test-binaries
 
 %.test: % force_go_build
