@@ -15,10 +15,9 @@ CEPH_CONF=/tmp/ceph/ceph.conf
 
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
-# GO_CEPH_TEST_MOUNT_DIR
 # GO_CEPH_TEST_MDS_NAME
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,results:,ceph-conf:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -38,6 +37,11 @@ while true ; do
         ;;
         --micro-osd)
             MICRO_OSD_PATH="${2}"
+            shift
+            shift
+        ;;
+        --wait-for)
+            WAIT_FILES="${2}"
             shift
             shift
         ;;
@@ -70,6 +74,8 @@ while true ; do
             echo "  --test-pkg=PKG      Run only tests from PKG"
             echo "  --pause             Sleep forever after tests execute"
             echo "  --micro-osd         Specify path to micro-osd script"
+            echo "  --wait-for=FILES    Wait for files before starting tests"
+            echo "                      (colon separated, disables micro-osd)"
             echo "  --results=PATH      Specify path to store test results"
             echo "  --ceph-conf=PATH    Specify path to ceph configuration"
             echo "  --cpuprofile        Run tests with cpu profiling"
@@ -105,6 +111,16 @@ fi
 show() {
     echo "*** running:" "$@"
     "$@"
+}
+
+wait_for_files() {
+    for file in "$@" ; do
+        echo -n "*** waiting for $file ..."
+        while ! [[ -f $file ]] ; do
+            sleep 1
+        done
+        echo "done"
+    done
 }
 
 test_failed() {
@@ -178,7 +194,9 @@ post_all_tests() {
 
 test_go_ceph() {
     mkdir -p /tmp/ceph
-    show "${MICRO_OSD_PATH}" /tmp/ceph
+    if ! [[ ${WAIT_FILES} ]]; then
+        show "${MICRO_OSD_PATH}" /tmp/ceph
+    fi
     export CEPH_CONF
 
     if [[ ${TEST_RUN} == NONE ]]; then
@@ -198,6 +216,9 @@ test_go_ceph() {
         "rbd" \
         )
     pre_all_tests
+    if [[ ${WAIT_FILES} ]]; then
+        wait_for_files ${WAIT_FILES//:/ }
+    fi
     for pkg in "${pkgs[@]}"; do
         test_pkg "${pkg}" || test_failed "${pkg}"
     done
