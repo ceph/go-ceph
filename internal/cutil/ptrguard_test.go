@@ -2,6 +2,7 @@ package cutil
 
 import (
 	"math/rand"
+	"runtime"
 	"testing"
 	"unsafe"
 
@@ -32,6 +33,32 @@ func TestPtrGuard(t *testing.T) {
 		pg.Release()
 		pg.Release()
 		assert.Zero(t, *(*unsafe.Pointer)(cPtr))
+	})
+
+	t.Run("uintptrescapesTest", func(t *testing.T) {
+		// This test assures that the special //go:uintptrescapes comment before
+		// the storeUntilRelease() function works as intended, that is the
+		// garbage collector doesn't touch the object referenced by the uintptr
+		// until the function returns after Release() is called. The test will
+		// fail if the //go:uintptrescapes comment is disabled (removed) or
+		// stops working in future versions of go.
+		var pg_done, u_done bool
+		var goPtr = func(b *bool) unsafe.Pointer {
+			s := "ok"
+			runtime.SetFinalizer(&s, func(p *string) { *b = true })
+			return unsafe.Pointer(&s)
+		}
+		cPtr := Malloc(PtrSize)
+		defer Free(cPtr)
+		pg := NewPtrGuard(cPtr, goPtr(&pg_done))
+		u := uintptr(goPtr(&u_done))
+		runtime.GC()
+		assert.True(t, u_done)
+		assert.False(t, pg_done)
+		pg.Release()
+		runtime.GC()
+		assert.True(t, pg_done)
+		assert.NotZero(t, u) // avoid "unused" error
 	})
 
 	t.Run("stressTest", func(t *testing.T) {
