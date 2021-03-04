@@ -222,6 +222,7 @@ func TestSymlink(t *testing.T) {
 	})
 
 	t.Run("symlinkExistsError", func(t *testing.T) {
+		useMount(t)
 		fname1 := "TestFile1.txt"
 		f1, err := mount.Open(fname1, os.O_RDWR|os.O_CREATE, 0666)
 		assert.NoError(t, err)
