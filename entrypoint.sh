@@ -12,9 +12,6 @@ BUILD_TAGS=""
 RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
 
-# env vars consumed by go code directly.
-# set defaults if they are currently unset in the environment
-: "${GO_CEPH_TEST_REQUIRE_MOUNT:=yes}"
 
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
@@ -182,7 +179,7 @@ post_all_tests() {
 test_go_ceph() {
     mkdir -p /tmp/ceph
     show "${MICRO_OSD_PATH}" /tmp/ceph
-    export CEPH_CONF GO_CEPH_TEST_REQUIRE_MOUNT
+    export CEPH_CONF
 
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"
