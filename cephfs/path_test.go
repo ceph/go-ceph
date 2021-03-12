@@ -1,9 +1,8 @@
 package cephfs
 
 import (
-	"fmt"
 	"os"
-	"path"
+	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,10 +35,7 @@ func TestChangeDir(t *testing.T) {
 }
 
 func TestRemoveDir(t *testing.T) {
-	useMount(t)
-
 	dirname := "one"
-	localPath := path.Join(CephMountDir, dirname)
 	mount := fsConnect(t)
 	defer fsDisconnect(t, mount)
 
@@ -49,16 +45,15 @@ func TestRemoveDir(t *testing.T) {
 	err = mount.SyncFs()
 	assert.NoError(t, err)
 
-	// os.Stat the actual mounted location to verify Makedir/RemoveDir
-	_, err = os.Stat(localPath)
+	// Stat the location to verify dirname currently exists
+	_, err = mount.Statx(dirname, StatxBasicStats, 0)
 	assert.NoError(t, err)
 
 	err = mount.RemoveDir(dirname)
 	assert.NoError(t, err)
 
-	_, err = os.Stat(localPath)
-	assert.EqualError(t, err,
-		fmt.Sprintf("stat %s: no such file or directory", localPath))
+	_, err = mount.Statx(dirname, StatxBasicStats, 0)
+	assert.Equal(t, err, errNoEntry)
 }
 
 func TestLink(t *testing.T) {
@@ -119,8 +114,6 @@ func TestLink(t *testing.T) {
 	})
 
 	t.Run("sourceExistsSuccess", func(t *testing.T) {
-		useMount(t)
-
 		fname1 := "TestFile1.txt"
 		f1, err := mount.Open(fname1, os.O_WRONLY|os.O_CREATE, 0666)
 		assert.NotNil(t, f1)
@@ -134,7 +127,7 @@ func TestLink(t *testing.T) {
 		// No error, normal link operation.
 		assert.NoError(t, err)
 		// Verify that link got created.
-		_, err = os.Stat(path.Join(CephMountDir, "hardlnk"))
+		_, err = mount.Statx("hardlnk", StatxBasicStats, 0)
 		assert.NoError(t, err)
 	})
 
@@ -206,23 +199,20 @@ func TestSymlink(t *testing.T) {
 
 	// File operations.
 	t.Run("sourceDoesNotExistSuccess", func(t *testing.T) {
-		useMount(t)
 		fname1 := "TestFile1.txt"
 		err := mount.Symlink(fname1, "Symlnk1")
 		// No Error, symlink works even if source file doesn't exist.
 		assert.NoError(t, err)
-		_, err = os.Stat(path.Join(CephMountDir, "Symlnk1"))
+		_, err = mount.Statx("Symlnk1", StatxBasicStats, 0)
 		// Error, source is not there.
 		assert.Error(t, err)
 
-		localPath := path.Join(CephMountDir, fname1)
-		_, err = os.Stat(localPath)
+		_, err = mount.Statx(fname1, StatxBasicStats, 0)
 		// Error, source file is still not there.
 		assert.Error(t, err)
 	})
 
 	t.Run("symlinkExistsError", func(t *testing.T) {
-		useMount(t)
 		fname1 := "TestFile1.txt"
 		f1, err := mount.Open(fname1, os.O_RDWR|os.O_CREATE, 0666)
 		assert.NoError(t, err)
@@ -240,7 +230,6 @@ func TestSymlink(t *testing.T) {
 	})
 
 	t.Run("sourceExistsSuccess", func(t *testing.T) {
-		useMount(t)
 		fname2 := "TestFile2.txt"
 		f2, err := mount.Open(fname2, os.O_RDWR|os.O_CREATE, 0666)
 		assert.NoError(t, err)
@@ -254,7 +243,7 @@ func TestSymlink(t *testing.T) {
 		defer func() {
 			assert.NoError(t, mount.Unlink("Symlnk2"))
 		}()
-		_, err = os.Stat(path.Join(CephMountDir, "Symlnk2"))
+		_, err = mount.Statx("Symlnk2", StatxBasicStats, 0)
 		assert.NoError(t, err)
 	})
 
@@ -272,7 +261,6 @@ func TestSymlink(t *testing.T) {
 	})
 
 	t.Run("nonRootDir", func(t *testing.T) {
-		useMount(t)
 		// 1. Create a directory.
 		// 2. Create a symlink to that directory.
 		// 3. Create a file inside symlink.
@@ -298,10 +286,9 @@ func TestSymlink(t *testing.T) {
 			assert.NoError(t, f1.Close())
 			assert.NoError(t, mount.Unlink(fname))
 		}()
-		var fileInfo os.FileInfo
-		fileInfo, err = os.Stat(path.Join(CephMountDir, "symlnk/file"))
+		sx, err := mount.Statx("symlnk/file", StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.Equal(t, fileInfo.IsDir(), false)
+		assert.NotEqual(t, sx.Mode&syscall.S_IFMT, uint16(syscall.S_IFDIR))
 	})
 }
 
