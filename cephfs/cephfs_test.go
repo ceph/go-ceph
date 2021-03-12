@@ -3,8 +3,6 @@ package cephfs
 import (
 	"fmt"
 	"os"
-	"path"
-	"syscall"
 	"testing"
 	"time"
 
@@ -15,51 +13,13 @@ import (
 )
 
 var (
-	CephMountDir     = "/tmp/ceph/mds/mnt/"
-	requireCephMount = false
-	testMdsName      = "Z"
+	testMdsName = "Z"
 )
 
 func init() {
-	mdir := os.Getenv("GO_CEPH_TEST_MOUNT_DIR")
-	if mdir != "" {
-		CephMountDir = mdir
-	}
-	reqMount := os.Getenv("GO_CEPH_TEST_REQUIRE_MOUNT")
-	if reqMount == "yes" || reqMount == "true" {
-		requireCephMount = true
-	}
 	mdsName := os.Getenv("GO_CEPH_TEST_MDS_NAME")
 	if mdsName != "" {
 		testMdsName = mdsName
-	}
-}
-
-func useMount(t *testing.T) {
-	fail := func(m string) {
-		if requireCephMount {
-			t.Fatalf("cephfs mount required: %s %s", CephMountDir, m)
-		} else {
-			t.Skipf("cephfs mount needed: %s %s", CephMountDir, m)
-		}
-	}
-
-	s, err := os.Stat(CephMountDir)
-	if err != nil || !s.IsDir() {
-		fail("missing or not a directory")
-	}
-
-	if us, ok := s.Sys().(*syscall.Stat_t); ok {
-		ps, err := os.Stat(path.Dir(path.Clean(CephMountDir)))
-		if err != nil {
-			fail("missing parent directory (race condition?)")
-		}
-		if ps.Sys().(*syscall.Stat_t).Dev == us.Dev {
-			fail("not a mount point")
-		}
-	} else {
-		fail("not a unix-like file system? how did you even compile this?" +
-			"no, seriously please contact us or file an issue and let us know!")
 	}
 }
 
