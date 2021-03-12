@@ -90,9 +90,6 @@ ceph fs ls
 ceph-mds -i ${MDS_NAME}
 ceph status
 while [[ ! $(ceph mds stat | grep "up:active") ]]; do sleep 1; done
-# fuse: device not found, try 'modprobe fuse' first
-# Make sure to run with --privileged or --cap-add SYS_ADMIN --device /dev/fuse --security apparmor:unconfined for docker
-ceph-fuse ${MOUNTPT}
 
 
 # start a manager
