@@ -46,7 +46,7 @@ test:
 .PHONY: test-docker test-container
 test-docker: test-container
 test-container: $(BUILDFILE) $(RESULTS_DIR)
-	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG)
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG)
 
 ifdef RESULTS_DIR
 $(RESULTS_DIR):
