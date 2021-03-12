@@ -3,8 +3,6 @@ package cephfs
 import (
 	"io"
 	"os"
-	"path"
-	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,8 +31,6 @@ func TestFileOpen(t *testing.T) {
 	})
 
 	t.Run("existsInMount", func(t *testing.T) {
-		useMount(t)
-
 		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		assert.NoError(t, err)
 		assert.NotNil(t, f1)
@@ -42,9 +38,9 @@ func TestFileOpen(t *testing.T) {
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, mount.Unlink(fname)) }()
 
-		s, err := os.Stat(path.Join(CephMountDir, fname))
+		sx, err := mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.EqualValues(t, 0, s.Size())
+		assert.EqualValues(t, 0, sx.Size)
 	})
 
 	t.Run("idempotentClose", func(t *testing.T) {
@@ -340,7 +336,6 @@ func TestMixedReadReadAt(t *testing.T) {
 }
 
 func TestFchmod(t *testing.T) {
-	useMount(t)
 	mount := fsConnect(t)
 	defer fsDisconnect(t, mount)
 
@@ -359,15 +354,15 @@ func TestFchmod(t *testing.T) {
 	err = mount.SyncFs()
 	assert.NoError(t, err)
 
-	stats, err := os.Stat(path.Join(CephMountDir, fname))
+	sx, err := mount.Statx(fname, StatxBasicStats, 0)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(stats.Mode().Perm()), statsBefore)
+	assert.Equal(t, uint32(sx.Mode&0777), statsBefore)
 
 	err = f1.Fchmod(statsAfter)
 	assert.NoError(t, err)
 
-	stats, err = os.Stat(path.Join(CephMountDir, fname))
-	assert.Equal(t, uint32(stats.Mode().Perm()), statsAfter)
+	sx, err = mount.Statx(fname, StatxBasicStats, 0)
+	assert.Equal(t, uint32(sx.Mode&0777), statsAfter)
 
 	// TODO use t.Run sub-tests where appropriate
 	f2 := &File{}
@@ -376,8 +371,6 @@ func TestFchmod(t *testing.T) {
 }
 
 func TestFchown(t *testing.T) {
-	useMount(t)
-
 	fname := "file.txt"
 	// dockerfile creates bob user account
 	var bob uint32 = 1010
@@ -397,18 +390,18 @@ func TestFchown(t *testing.T) {
 	err = mount.SyncFs()
 	assert.NoError(t, err)
 
-	stats, err := os.Stat(path.Join(CephMountDir, fname))
+	sx, err := mount.Statx(fname, StatxBasicStats, 0)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), root)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), root)
+	assert.Equal(t, uint32(sx.Uid), root)
+	assert.Equal(t, uint32(sx.Gid), root)
 
 	err = f1.Fchown(bob, bob)
 	assert.NoError(t, err)
 
-	stats, err = os.Stat(path.Join(CephMountDir, fname))
+	sx, err = mount.Statx(fname, StatxBasicStats, 0)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Uid), bob)
-	assert.Equal(t, uint32(stats.Sys().(*syscall.Stat_t).Gid), bob)
+	assert.Equal(t, uint32(sx.Uid), bob)
+	assert.Equal(t, uint32(sx.Gid), bob)
 
 	// TODO use t.Run sub-tests where appropriate
 	f2 := &File{}
@@ -499,23 +492,21 @@ func TestFallocate(t *testing.T) {
 
 	// Allocate space - default case, mode == 0.
 	t.Run("modeIsZero", func(t *testing.T) {
-		useMount(t)
 		// check file size.
-		s, err := os.Stat(path.Join(CephMountDir, fname))
+		sx, err := mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.EqualValues(t, 0, s.Size())
+		assert.EqualValues(t, 0, sx.Size)
 		// write 10 bytes at offset 0.
 		err = f.Fallocate(FallocNoFlag, 0, 10)
 		assert.NoError(t, err)
 		// check file size again.
-		s, err = os.Stat(path.Join(CephMountDir, fname))
+		sx, err = mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.EqualValues(t, 10, s.Size())
+		assert.EqualValues(t, 10, sx.Size)
 	})
 
 	// Allocate space - size increases, data remains intact.
 	t.Run("increaseSize", func(t *testing.T) {
-		useMount(t)
 		fname := "file2.txt"
 		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0644)
 		assert.NoError(t, err)
@@ -529,16 +520,16 @@ func TestFallocate(t *testing.T) {
 		assert.NoError(t, err)
 		assert.EqualValues(t, 10, n)
 		// check the file size.
-		s, err := os.Stat(path.Join(CephMountDir, fname))
+		sx, err := mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.EqualValues(t, 10, s.Size())
+		assert.EqualValues(t, 10, sx.Size)
 		// allocate 10 more bytes from the middle.
 		err = f1.Fallocate(FallocNoFlag, 5, 10)
 		assert.NoError(t, err)
 		// check the size, it should increase.
-		s, err = os.Stat(path.Join(CephMountDir, fname))
+		sx, err = mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.EqualValues(t, 15, s.Size())
+		assert.EqualValues(t, 15, sx.Size)
 		// Read the contents, first ten chars remain intact.
 		buf := make([]byte, 10)
 		n, err = f1.ReadAt(buf, 0)
@@ -548,7 +539,6 @@ func TestFallocate(t *testing.T) {
 
 	// Allocate space - with FALLOC_FL_KEEP_SIZE.
 	t.Run("allocateSpaceWithFlag", func(t *testing.T) {
-		useMount(t)
 		fname := "file3.txt"
 		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0644)
 		assert.NoError(t, err)
@@ -565,9 +555,9 @@ func TestFallocate(t *testing.T) {
 		err = f1.Fallocate(FallocFlKeepSize, 5, 10)
 		assert.NoError(t, err)
 		// Check the file size, it should not increase.
-		s, err := os.Stat(path.Join(CephMountDir, fname))
+		sx, err := mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
-		assert.EqualValues(t, 10, s.Size())
+		assert.EqualValues(t, 10, sx.Size)
 	})
 
 	// Deallocate space - with only FALLOC_FL_PUNCH_HOLE.
