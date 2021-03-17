@@ -207,6 +207,20 @@ const (
 	MirrorImageDisabled = MirrorImageState(C.RBD_MIRROR_IMAGE_DISABLED)
 )
 
+// String representation of MirrorImageState.
+func (mis MirrorImageState) String() string {
+	switch mis {
+	case MirrorImageDisabling:
+		return "disabling"
+	case MirrorImageEnabled:
+		return "enabled"
+	case MirrorImageDisabled:
+		return "disabled"
+	default:
+		return "<unknown>"
+	}
+}
+
 // MirrorImageInfo represents the mirroring status information of a RBD image.
 type MirrorImageInfo struct {
 	GlobalID string
