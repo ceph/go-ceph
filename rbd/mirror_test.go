@@ -8,6 +8,7 @@
 package rbd
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -238,4 +239,26 @@ func TestGetMirrorImageInfo(t *testing.T) {
 		assert.Equal(t, mii.State, MirrorImageEnabled)
 		assert.Equal(t, mii.Primary, true)
 	})
+}
+
+func TestMirrorConstantStrings(t *testing.T) {
+	x := []struct {
+		s fmt.Stringer
+		t string
+	}{
+		{MirrorModeDisabled, "disabled"},
+		{MirrorModeImage, "image"},
+		{MirrorModePool, "pool"},
+		{MirrorMode(9999), "<unknown>"},
+		{ImageMirrorModeJournal, "journal"},
+		{ImageMirrorModeSnapshot, "snapshot"},
+		{ImageMirrorMode(9999), "<unknown>"},
+		{MirrorImageDisabling, "disabling"},
+		{MirrorImageEnabled, "enabled"},
+		{MirrorImageDisabled, "disabled"},
+		{MirrorImageState(9999), "<unknown>"},
+	}
+	for _, v := range x {
+		assert.Equal(t, v.s.String(), v.t)
+	}
 }
