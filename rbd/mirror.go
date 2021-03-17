@@ -31,6 +31,20 @@ const (
 	MirrorModePool = MirrorMode(C.RBD_MIRROR_MODE_POOL)
 )
 
+// String representation of MirrorMode.
+func (m MirrorMode) String() string {
+	switch m {
+	case MirrorModeDisabled:
+		return "disabled"
+	case MirrorModeImage:
+		return "image"
+	case MirrorModePool:
+		return "pool"
+	default:
+		return "<unknown>"
+	}
+}
+
 // ImageMirrorMode is used to indicate the mirroring approach for an RBD image.
 type ImageMirrorMode int64
 
