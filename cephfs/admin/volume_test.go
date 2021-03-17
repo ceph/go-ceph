@@ -178,8 +178,8 @@ func TestParseDumpToIdents(t *testing.T) {
 }
 
 func TestVolumeStatus(t *testing.T) {
-	if !serverIsOctopus {
-		t.Skipf("can only execute on octopus servers")
+	if serverVersion == cephNautilus {
+		t.Skipf("can only execute on octopus/pacific servers")
 	}
 	fsa := getFSAdmin(t)
 
@@ -189,7 +189,7 @@ func TestVolumeStatus(t *testing.T) {
 }
 
 func TestVolumeStatusInvalid(t *testing.T) {
-	if !serverIsNautilus {
+	if serverVersion != cephNautilus {
 		t.Skipf("can only excecute on nautilus servers")
 	}
 	fsa := getFSAdmin(t)
