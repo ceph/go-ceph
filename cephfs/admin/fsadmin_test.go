@@ -22,8 +22,13 @@ var (
 	debugTrace = false
 
 	// some tests are sensitive to the server version
-	serverIsNautilus = false
-	serverIsOctopus  = false
+	serverVersion string
+)
+
+const (
+	cephNautilus = "nautilus"
+	cephOctopus  = "octopus"
+	cephPacfic   = "pacific"
 )
 
 func init() {
@@ -31,11 +36,9 @@ func init() {
 	if ok, err := strconv.ParseBool(dt); ok && err == nil {
 		debugTrace = true
 	}
-	switch os.Getenv("CEPH_VERSION") {
-	case "nautilus":
-		serverIsNautilus = true
-	case "octopus":
-		serverIsOctopus = true
+	switch vname := os.Getenv("CEPH_VERSION"); vname {
+	case cephNautilus, cephOctopus, cephPacfic:
+		serverVersion = vname
 	}
 }
 
@@ -49,8 +52,8 @@ func TestServerSentinel(t *testing.T) {
 	// This check is intended to fail the test suite if you don't tell it a
 	// server version it expects and force us to update the tests if a new
 	// version of ceph is added.
-	if !serverIsNautilus && !serverIsOctopus {
-		t.Fatalf("server must be nautilus or octopus (do the tests need updating?)")
+	if serverVersion == "" {
+		t.Fatalf("server must be nautilus, octopus, or pacific (do the tests need updating?)")
 	}
 }
 
