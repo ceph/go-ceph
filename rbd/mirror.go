@@ -57,6 +57,18 @@ const (
 	ImageMirrorModeSnapshot = ImageMirrorMode(C.RBD_MIRROR_IMAGE_MODE_SNAPSHOT)
 )
 
+// String representation of ImageMirrorMode.
+func (imm ImageMirrorMode) String() string {
+	switch imm {
+	case ImageMirrorModeJournal:
+		return "journal"
+	case ImageMirrorModeSnapshot:
+		return "snapshot"
+	default:
+		return "<unknown>"
+	}
+}
+
 // SetMirrorMode is used to enable or disable pool level mirroring with either
 // an automatic or per-image behavior.
 //
