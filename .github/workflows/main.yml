@@ -36,6 +36,7 @@ jobs:
         ceph_version:
         - "nautilus"
         - "octopus"
+        - "pacific"
     steps:
     - uses: actions/checkout@v2
     - name: Run test container
