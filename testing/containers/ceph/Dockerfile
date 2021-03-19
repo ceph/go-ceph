@@ -12,7 +12,7 @@ RUN true && \
         "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
     true
 
-ENV GOTAR=go1.14.7.linux-amd64.tar.gz
+ENV GOTAR=go1.15.10.linux-amd64.tar.gz
 RUN true && \
     curl -o /tmp/${GOTAR} https://dl.google.com/go/${GOTAR} && \
     tar -x -C /opt/ -f /tmp/${GOTAR} && \
