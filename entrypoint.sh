@@ -259,6 +259,7 @@ test_go_ceph() {
     fi
     if [[ ${MIRROR_CONF} && ${CEPH_VERSION} != nautilus ]]; then
         setup_mirroring
+        export MIRROR_CONF
     fi
     for pkg in "${pkgs[@]}"; do
         test_pkg "${pkg}" || test_failed "${pkg}"
