@@ -37,8 +37,22 @@ func radosConnect(t *testing.T) *rados.Conn {
 	require.NoError(t, err)
 	err = conn.ReadDefaultConfigFile()
 	require.NoError(t, err)
+	waitForRadosConn(t, conn)
+	return conn
+}
 
-	timeout := time.After(time.Second * 5)
+func radosConnectConfig(t *testing.T, p string) *rados.Conn {
+	conn, err := rados.NewConn()
+	require.NoError(t, err)
+	err = conn.ReadConfigFile(p)
+	require.NoError(t, err)
+	waitForRadosConn(t, conn)
+	return conn
+}
+
+func waitForRadosConn(t *testing.T, conn *rados.Conn) {
+	var err error
+	timeout := time.After(time.Second * 15)
 	ch := make(chan error)
 	go func(conn *rados.Conn) {
 		ch <- conn.Connect()
@@ -49,7 +63,6 @@ func radosConnect(t *testing.T) *rados.Conn {
 		err = fmt.Errorf("timed out waiting for connect")
 	}
 	require.NoError(t, err)
-	return conn
 }
 
 func TestImageCreate(t *testing.T) {
