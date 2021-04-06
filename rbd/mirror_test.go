@@ -9,7 +9,9 @@ package rbd
 
 import (
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -321,6 +323,143 @@ func TestGetGlobalMirrorStatus(t *testing.T) {
 			ls, err := gms.LocalStatus()
 			assert.NoError(t, err)
 			assert.Equal(t, ss, ls)
+		}
+	})
+}
+
+func mirrorConfig() string {
+	return os.Getenv("MIRROR_CONF")
+}
+
+func TestGetGlobalMirrorStatusMirroredPool(t *testing.T) {
+	mconfig := mirrorConfig()
+	if mconfig == "" {
+		t.Skip("no mirror config env var set")
+	}
+	conn := radosConnect(t)
+	// this test assumes the rbd pool already exists and is mirrored
+	// this must be set up previously by the CI or manually
+	poolName := "rbd"
+
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx.Destroy()
+	}()
+
+	imgName := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t, options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+	err = CreateImage(ioctx, imgName, testImageSize, options)
+	require.NoError(t, err)
+
+	defer func() {
+		err = RemoveImage(ioctx, imgName)
+		assert.NoError(t, err)
+	}()
+
+	// this next section is not a t.Run because it must be unconditionally
+	// executed. It is wrapped in a func to use defer to close the img.
+	func() {
+		img, err := OpenImage(ioctx, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		err = img.MirrorEnable(ImageMirrorModeSnapshot)
+		assert.NoError(t, err)
+
+		mid, err := img.CreateMirrorSnapshot()
+		assert.NoError(t, err)
+		assert.NotEqual(t, 0, mid)
+
+		// wait for site statuses to get updated
+		for i := 0; i < 30; i++ {
+			gms, err := img.GetGlobalMirrorStatus()
+			assert.NoError(t, err)
+			if len(gms.SiteStatuses) > 1 {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+
+		gms, err := img.GetGlobalMirrorStatus()
+		assert.NoError(t, err)
+		assert.NotEqual(t, "", gms.Name)
+		assert.NotEqual(t, "", gms.Info.GlobalID)
+		assert.Equal(t, gms.Info.State, MirrorImageEnabled)
+		assert.Equal(t, gms.Info.Primary, true)
+		if assert.Len(t, gms.SiteStatuses, 2) {
+			ss1 := gms.SiteStatuses[0]
+			assert.Equal(t, "", ss1.MirrorUUID)
+			assert.Equal(t, MirrorImageStatusStateStopped, ss1.State, ss1.State)
+			assert.Equal(t, "local image is primary", ss1.Description)
+			assert.Greater(t, ss1.LastUpdate, int64(0))
+			assert.True(t, ss1.Up)
+			ls, err := gms.LocalStatus()
+			assert.NoError(t, err)
+			assert.Equal(t, ss1, ls)
+
+			ss2 := gms.SiteStatuses[1]
+			assert.NotEqual(t, "", ss2.MirrorUUID)
+			assert.Equal(t, MirrorImageStatusStateReplaying, ss2.State, ss2.State)
+			assert.Contains(t, ss2.Description, "replaying,")
+			assert.Greater(t, ss2.LastUpdate, int64(0))
+			assert.True(t, ss2.Up)
+		}
+	}()
+
+	// test the results of GetGlobalMirrorStatus using the "other"
+	// mirror+pool as a source
+	t.Run("fromMirror", func(t *testing.T) {
+		conn := radosConnectConfig(t, mconfig)
+		ioctx2, err := conn.OpenIOContext(poolName)
+		assert.NoError(t, err)
+		defer func() {
+			ioctx2.Destroy()
+		}()
+
+		img, err := OpenImage(ioctx2, imgName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		// wait for site statuses to get updated
+		for i := 0; i < 30; i++ {
+			gms, err := img.GetGlobalMirrorStatus()
+			assert.NoError(t, err)
+			if len(gms.SiteStatuses) > 1 {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+
+		gms, err := img.GetGlobalMirrorStatus()
+		assert.NoError(t, err)
+		assert.NotEqual(t, "", gms.Name)
+		assert.NotEqual(t, "", gms.Info.GlobalID)
+		assert.Equal(t, gms.Info.State, MirrorImageEnabled)
+		assert.Equal(t, gms.Info.Primary, false)
+		if assert.Len(t, gms.SiteStatuses, 2) {
+			ls, err := gms.LocalStatus()
+			assert.NoError(t, err)
+			assert.Equal(t, "", ls.MirrorUUID)
+			assert.Equal(t, MirrorImageStatusStateReplaying, ls.State, ls.State)
+			assert.Contains(t, ls.Description, "replaying,")
+			assert.Greater(t, ls.LastUpdate, int64(0))
+			assert.True(t, ls.Up)
+
+			assert.Equal(t, ls, gms.SiteStatuses[0])
+
+			ss2 := gms.SiteStatuses[1]
+			assert.NotEqual(t, "", ss2.MirrorUUID)
+			assert.Equal(t, MirrorImageStatusStateStopped, ss2.State, ss2.State)
+
+			assert.Equal(t, "local image is primary", ss2.Description)
+			assert.Greater(t, ss2.LastUpdate, int64(0))
+			assert.True(t, ss2.Up)
 		}
 	})
 }
