@@ -408,3 +408,16 @@ func (image *Image) GetGlobalMirrorStatus() (GlobalMirrorImageStatus, error) {
 	}
 	return status, nil
 }
+
+// CreateMirrorSnapshot creates a snapshot for image propagation to mirrors.
+//
+// Implements:
+//  int rbd_mirror_image_create_snapshot(rbd_image_t image,
+//                                       uint64_t *snap_id);
+func (image *Image) CreateMirrorSnapshot() (uint64, error) {
+	var snapID C.uint64_t
+	ret := C.rbd_mirror_image_create_snapshot(
+		image.image,
+		&snapID)
+	return uint64(snapID), getError(ret)
+}
