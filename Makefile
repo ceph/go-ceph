@@ -46,7 +46,7 @@ test:
 .PHONY: test-docker test-container test-multi-container
 test-docker: test-container
 test-container: $(BUILDFILE) $(RESULTS_DIR)
-	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG)
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG) $(ENTRYPOINT_ARGS)
 test-multi-container: $(BUILDFILE) $(RESULTS_DIR)
 	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b 2>/dev/null || true
 	$(CONTAINER_CMD) volume remove test_ceph_a_data test_ceph_b_data 2>/dev/null || true
@@ -59,7 +59,7 @@ test-multi-container: $(BUILDFILE) $(RESULTS_DIR)
 		--net test_ceph_net -v test_ceph_a_data:/ceph_a -v test_ceph_b_data:/ceph_b \
 		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) \
 		$(CI_IMAGE_TAG) --wait-for=/ceph_a/.ready:/ceph_b/.ready --ceph-conf=/ceph_a/ceph.conf \
-		--mirror=/ceph_b/ceph.conf
+		--mirror=/ceph_b/ceph.conf $(ENTRYPOINT_ARGS)
 	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b
 
 ifdef RESULTS_DIR
