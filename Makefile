@@ -55,7 +55,7 @@ test-multi-container: $(BUILDFILE) $(RESULTS_DIR)
 		-v test_ceph_a_data:/tmp/ceph $(CI_IMAGE_TAG) --test-run=NONE --pause
 	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -d --name test_ceph_b --hostname test_ceph_b --net test_ceph_net \
 		-v test_ceph_b_data:/tmp/ceph $(CI_IMAGE_TAG) --test-run=NONE --pause
-	$(CONTAINER_CMD) run --device /dev/fuse --cap-add SYS_ADMIN $(CONTAINER_OPTS) --rm \
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm \
 		--net test_ceph_net -v test_ceph_a_data:/ceph_a -v test_ceph_b_data:/ceph_b \
 		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) \
 		$(CI_IMAGE_TAG) --wait-for=/ceph_a/.ready:/ceph_b/.ready --ceph-conf=/ceph_a/ceph.conf \
