@@ -9,7 +9,6 @@ RUN true && \
     yum install -y \
         git wget curl make \
         /usr/bin/cc /usr/bin/c++ \
-        rbd-fuse \
         "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
     true
 
