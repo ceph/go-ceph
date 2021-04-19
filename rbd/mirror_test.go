@@ -463,3 +463,127 @@ func TestGetGlobalMirrorStatusMirroredPool(t *testing.T) {
 		}
 	})
 }
+
+func TestMirrorImageStatusSummary(t *testing.T) {
+	t.Run("ioctxNil", func(t *testing.T) {
+		assert.Panics(t, func() {
+			MirrorImageStatusSummary(nil)
+		})
+	})
+	t.Run("emptyPool", func(t *testing.T) {
+		conn := radosConnect(t)
+		poolName := GetUUID()
+		err := conn.MakePool(poolName)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, conn.DeletePool(poolName))
+			conn.Shutdown()
+		}()
+
+		ioctx, err := conn.OpenIOContext(poolName)
+		assert.NoError(t, err)
+		defer func() {
+			ioctx.Destroy()
+		}()
+
+		ssum, err := MirrorImageStatusSummary(ioctx)
+		assert.NoError(t, err)
+		assert.Len(t, ssum, 0)
+	})
+	t.Run("mirroredPool", testMirrorImageStatusSummaryMirroredPool)
+}
+
+func testMirrorImageStatusSummaryMirroredPool(t *testing.T) {
+	mconfig := mirrorConfig()
+	if mconfig == "" {
+		t.Skip("no mirror config env var set")
+	}
+	conn := radosConnect(t)
+	// this test assumes the rbd pool already exists and is mirrored
+	// this must be set up previously by the CI or manually
+	poolName := "rbd"
+
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx.Destroy()
+	}()
+
+	imgBase := GetUUID()
+	imgName1 := imgBase + "a"
+	imgName2 := imgBase + "b"
+	imgName3 := imgBase + "c"
+	imgName4 := imgBase + "d"
+
+	options := NewRbdImageOptions()
+	assert.NoError(t, options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+
+	for _, n := range []string{imgName1, imgName2, imgName3, imgName4} {
+		err = CreateImage(ioctx, n, testImageSize, options)
+		require.NoError(t, err)
+
+		defer func(n string) {
+			err = RemoveImage(ioctx, n)
+			assert.NoError(t, err)
+		}(n)
+	}
+
+	mkMirror := func(n string) {
+		img, err := OpenImage(ioctx, n, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		err = img.MirrorEnable(ImageMirrorModeSnapshot)
+		assert.NoError(t, err)
+
+		mid, err := img.CreateMirrorSnapshot()
+		assert.NoError(t, err)
+		assert.NotEqual(t, 0, mid)
+	}
+
+	checkMirror := func(n string) {
+		img, err := OpenImage(ioctx, n, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		// wait for site statuses to get updated
+		for i := 0; i < 30; i++ {
+			gms, err := img.GetGlobalMirrorStatus()
+			assert.NoError(t, err)
+			if len(gms.SiteStatuses) > 1 {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+	}
+
+	for _, n := range []string{imgName1, imgName3} {
+		mkMirror(n)
+	}
+	for _, n := range []string{imgName1, imgName3} {
+		checkMirror(n)
+	}
+
+	ssum, err := MirrorImageStatusSummary(ioctx)
+	assert.NoError(t, err)
+	if assert.Len(t, ssum, 1) {
+		assert.Contains(t, ssum, MirrorImageStatusStateReplaying)
+		assert.GreaterOrEqual(t, ssum[MirrorImageStatusStateReplaying], uint(2))
+	}
+
+	// immediately going for status right after enabling mirroring and not
+	// waiting for things to settle should give us one unknown status
+	mkMirror(imgName2)
+	ssum, err = MirrorImageStatusSummary(ioctx)
+	assert.NoError(t, err)
+	if assert.Len(t, ssum, 2) {
+		assert.Contains(t, ssum, MirrorImageStatusStateReplaying)
+		assert.GreaterOrEqual(t, ssum[MirrorImageStatusStateReplaying], uint(2))
+		assert.Contains(t, ssum, MirrorImageStatusStateUnknown)
+		assert.GreaterOrEqual(t, ssum[MirrorImageStatusStateUnknown], uint(1))
+	}
+}
