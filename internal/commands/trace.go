@@ -2,12 +2,14 @@ package commands
 
 import (
 	"fmt"
+
+	ccom "github.com/ceph/go-ceph/common/commands"
 )
 
 // NewTraceCommander is a RadosCommander that wraps a given RadosCommander
 // and when commands are executes prints debug level "traces" to the
 // standard output.
-func NewTraceCommander(c RadosCommander) RadosCommander {
+func NewTraceCommander(c ccom.RadosCommander) ccom.RadosCommander {
 	return &tracingCommander{c}
 }
 
@@ -17,7 +19,7 @@ func NewTraceCommander(c RadosCommander) RadosCommander {
 // interface in FSAdmin. You can layer any sort of debugging, error injection,
 // or whatnot between the FSAdmin layer and the RADOS layer.
 type tracingCommander struct {
-	conn RadosCommander
+	conn ccom.RadosCommander
 }
 
 func (t *tracingCommander) MgrCommand(buf [][]byte) ([]byte, string, error) {
