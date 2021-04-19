@@ -3,27 +3,9 @@ package commands
 import (
 	"encoding/json"
 
+	ccom "github.com/ceph/go-ceph/common/commands"
 	"github.com/ceph/go-ceph/rados"
 )
-
-// MgrCommander in an interface for the API needed to execute JSON formatted
-// commands on the ceph mgr.
-type MgrCommander interface {
-	MgrCommand(buf [][]byte) ([]byte, string, error)
-}
-
-// MonCommander is an interface for the API needed to execute JSON formatted
-// commands on the ceph mon(s).
-type MonCommander interface {
-	MonCommand(buf []byte) ([]byte, string, error)
-}
-
-// RadosCommander provides an interface for APIs needed to execute JSON
-// formatted commands on the Ceph cluster.
-type RadosCommander interface {
-	MgrCommander
-	MonCommander
-}
 
 func validate(m interface{}) error {
 	if m == nil {
@@ -34,7 +16,7 @@ func validate(m interface{}) error {
 
 // RawMgrCommand takes a byte buffer and sends it to the MGR as a command.
 // The buffer is expected to contain preformatted JSON.
-func RawMgrCommand(m MgrCommander, buf []byte) Response {
+func RawMgrCommand(m ccom.MgrCommander, buf []byte) Response {
 	if err := validate(m); err != nil {
 		return Response{err: err}
 	}
@@ -43,7 +25,7 @@ func RawMgrCommand(m MgrCommander, buf []byte) Response {
 
 // MarshalMgrCommand takes an generic interface{} value, converts it to JSON
 // and sends the json to the MGR as a command.
-func MarshalMgrCommand(m MgrCommander, v interface{}) Response {
+func MarshalMgrCommand(m ccom.MgrCommander, v interface{}) Response {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return Response{err: err}
@@ -53,7 +35,7 @@ func MarshalMgrCommand(m MgrCommander, v interface{}) Response {
 
 // RawMonCommand takes a byte buffer and sends it to the MON as a command.
 // The buffer is expected to contain preformatted JSON.
-func RawMonCommand(m MonCommander, buf []byte) Response {
+func RawMonCommand(m ccom.MonCommander, buf []byte) Response {
 	if err := validate(m); err != nil {
 		return Response{err: err}
 	}
@@ -62,7 +44,7 @@ func RawMonCommand(m MonCommander, buf []byte) Response {
 
 // MarshalMonCommand takes an generic interface{} value, converts it to JSON
 // and sends the json to the MGR as a command.
-func MarshalMonCommand(m MonCommander, v interface{}) Response {
+func MarshalMonCommand(m ccom.MonCommander, v interface{}) Response {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return Response{err: err}
