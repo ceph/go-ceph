@@ -421,3 +421,49 @@ func (image *Image) CreateMirrorSnapshot() (uint64, error) {
 		&snapID)
 	return uint64(snapID), getError(ret)
 }
+
+// MirrorImageStatusSummary returns a map of images statuses and the count
+// of images with said status.
+//
+// Implements:
+//  int rbd_mirror_image_status_summary(
+//    rados_ioctx_t io_ctx, rbd_mirror_image_status_state_t *states, int *counts,
+//    size_t *maxlen);
+func MirrorImageStatusSummary(
+	ioctx *rados.IOContext) (map[MirrorImageStatusState]uint, error) {
+	// ideally, we already know the size of the arrays - they should be
+	// the size of all the values of the rbd_mirror_image_status_state_t
+	// enum. But the C api doesn't enforce this so we give a little
+	// wiggle room in case the server returns values outside the enum
+	// we know about. This is the only case I can think of that we'd
+	// be able to get -ERANGE.
+	var (
+		cioctx  = cephIoctx(ioctx)
+		err     error
+		cStates []C.rbd_mirror_image_status_state_t
+		cCounts []C.int
+		cSize   C.size_t
+	)
+	retry.WithSizes(16, 1<<16, func(size int) retry.Hint {
+		cSize = C.size_t(size)
+		cStates = make([]C.rbd_mirror_image_status_state_t, cSize)
+		cCounts = make([]C.int, cSize)
+		ret := C.rbd_mirror_image_status_summary(
+			cioctx,
+			(*C.rbd_mirror_image_status_state_t)(&cStates[0]),
+			(*C.int)(&cCounts[0]),
+			&cSize)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(cSize)).If(err == errRange)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	m := map[MirrorImageStatusState]uint{}
+	for i := 0; i < int(cSize); i++ {
+		s := MirrorImageStatusState(cStates[i])
+		m[s] = uint(cCounts[i])
+	}
+	return m, nil
+}
