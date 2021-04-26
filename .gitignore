@@ -2,5 +2,5 @@
 *.swp
 *.out
 *.test
-*.json
+/*.json
 implements
