@@ -148,7 +148,10 @@ setup_mirroring() {
     rbd -c $CONF_B mirror pool enable rbd image
     rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd > token
     rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd token
-    rbd -c $CONF_A create mirror_test --size 100M
+
+    rbd -c $CONF_A rm mirror_test 2>/dev/null || true
+    rbd -c $CONF_B rm mirror_test 2>/dev/null || true
+    (echo "Mirror Test"; dd if=/dev/zero bs=1 count=500K) | rbd -c $CONF_A import - mirror_test
     rbd -c $CONF_A mirror image enable mirror_test snapshot
     echo -n "Waiting for mirroring activation..."
     while ! rbd -c $CONF_A mirror image status mirror_test \
@@ -156,13 +159,9 @@ setup_mirroring() {
         sleep 1
     done
     echo "done"
-    mkdir /mnt/images_a /mnt/images_b
-    rbd-fuse -c $CONF_A /mnt/images_a
-    rbd-fuse -c $CONF_B /mnt/images_b
-    echo "Mirror Test" | dd conv=notrunc bs=1 of=/mnt/images_a/mirror_test
     rbd -c $CONF_A mirror image snapshot mirror_test
     echo -n "Waiting for mirror sync..."
-    while ! dd bs=1 count=100 if=/mnt/images_b/mirror_test 2>/dev/null | grep -q "Mirror Test" ; do
+    while ! rbd -c $CONF_B export mirror_test - 2>/dev/null | grep -q "Mirror Test" ; do
         sleep 1
     done
     echo " mirroring functional!"

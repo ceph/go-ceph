@@ -59,6 +59,7 @@ go test -tags nautilus ....
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.9.0          | nautilus, octopus       |                          |
 | v0.8.0          | nautilus, octopus       |                          |
 | v0.7.0          | nautilus, octopus       |                          |
 | v0.6.0          | nautilus, octopus       | mimic                    |
@@ -89,7 +90,7 @@ introduce how some of API calls work together.
 
 ```
 docker run --rm -it --net=host \
-  --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined \
+  --security-opt apparmor:unconfined \
   -v ${PWD}:/go/src/github.com/ceph/go-ceph:z \
   -v /home/nwatkins/src/ceph/build:/home/nwatkins/src/ceph/build:z \
   -e CEPH_CONF=/home/nwatkins/src/ceph/build/ceph.conf \
