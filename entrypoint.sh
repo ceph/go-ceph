@@ -188,7 +188,7 @@ test_pkg() {
         testargs+=(\
             "-covermode=count" \
             "-coverprofile=${pkg}.cover.out" \
-            "-coverpkg=${P}/${pkg}")
+            "-coverpkg=${PKG_PREFIX}/${pkg}")
     fi
     if [[ ${CPUPROFILE} = yes ]]; then
         testargs+=("-cpuprofile" "${pkg}.cpu.out")
@@ -241,17 +241,8 @@ test_go_ceph() {
         return 0
     fi
 
-    P=github.com/ceph/go-ceph
-    pkgs=(\
-        "cephfs" \
-        "cephfs/admin" \
-        "internal/callbacks" \
-        "internal/cutil" \
-        "internal/errutil" \
-        "internal/retry" \
-        "rados" \
-        "rbd" \
-        )
+    PKG_PREFIX=github.com/ceph/go-ceph
+    pkgs=$(go list ./... | sed -e "s,^${PKG_PREFIX}/\?,," | grep -v ^contrib)
     pre_all_tests
     if [[ ${WAIT_FILES} ]]; then
         wait_for_files ${WAIT_FILES//:/ }
@@ -260,7 +251,7 @@ test_go_ceph() {
         setup_mirroring
         export MIRROR_CONF
     fi
-    for pkg in "${pkgs[@]}"; do
+    for pkg in ${pkgs}; do
         test_pkg "${pkg}" || test_failed "${pkg}"
     done
     post_all_tests
