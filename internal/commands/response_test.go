@@ -10,18 +10,18 @@ import (
 func TestResponse(t *testing.T) {
 	e1 := errors.New("error one")
 	e2 := errors.New("error two")
-	r1 := response{
+	r1 := Response{
 		body: []byte(`{"foo": "bar", "baz": 1}`),
 	}
-	r2 := response{
+	r2 := Response{
 		status: "System notice: disabled for maintenance",
 		err:    e1,
 	}
-	r3 := response{
+	r3 := Response{
 		body:   []byte(`{"oof": "RAB", "baz": 8}`),
 		status: "reversed polarity detected",
 	}
-	r4 := response{
+	r4 := Response{
 		body:   []byte(`{"whoops": true, "state": "total protonic reversal"}`),
 		status: "",
 		err:    e2,
@@ -69,14 +69,14 @@ func TestResponse(t *testing.T) {
 	})
 
 	t.Run("noBody", func(t *testing.T) {
-		x := r1.noBody()
+		x := r1.NoBody()
 		assert.EqualValues(t, ErrBodyNotEmpty, x.Unwrap())
 		assert.EqualValues(t, r1.Status(), x.Status())
 
-		assert.EqualValues(t, r2, r2.noBody())
+		assert.EqualValues(t, r2, r2.NoBody())
 
-		rtemp := response{}
-		assert.EqualValues(t, rtemp, rtemp.noBody())
+		rtemp := Response{}
+		assert.EqualValues(t, rtemp, rtemp.NoBody())
 	})
 
 	t.Run("noData", func(t *testing.T) {
@@ -88,18 +88,18 @@ func TestResponse(t *testing.T) {
 		assert.EqualValues(t, ErrStatusNotEmpty, x.Unwrap())
 		assert.EqualValues(t, r3.Status(), x.Status())
 
-		rtemp := response{}
+		rtemp := Response{}
 		assert.EqualValues(t, rtemp, rtemp.NoData())
 	})
 
 	t.Run("filterDeprecated", func(t *testing.T) {
-		assert.EqualValues(t, r1, r1.filterDeprecated())
-		assert.EqualValues(t, r2, r2.filterDeprecated())
+		assert.EqualValues(t, r1, r1.FilterDeprecated())
+		assert.EqualValues(t, r2, r2.FilterDeprecated())
 
-		rtemp := response{
+		rtemp := Response{
 			status: "blorple call is deprecated and will be removed in a future release",
 		}
-		x := rtemp.filterDeprecated()
+		x := rtemp.FilterDeprecated()
 		assert.True(t, x.Ok())
 		assert.Nil(t, x.End())
 		assert.Equal(t, "", x.Status())
@@ -112,20 +112,20 @@ func TestResponse(t *testing.T) {
 
 		assert.EqualValues(t, r2, r2.Unmarshal(&v))
 
-		rtemp := response{body: []byte("foo!")}
+		rtemp := Response{body: []byte("foo!")}
 		x := rtemp.Unmarshal(&v)
 		assert.False(t, x.Ok())
 		assert.Contains(t, x.Error(), "invalid character")
 	})
 
 	t.Run("newResponse", func(t *testing.T) {
-		rtemp := commands.NewResponse(nil, "x", e2)
+		rtemp := NewResponse(nil, "x", e2)
 		assert.False(t, rtemp.Ok())
 		assert.Equal(t, "x", rtemp.Status())
 	})
 
 	t.Run("notImplemented", func(t *testing.T) {
-		rtemp := response{
+		rtemp := Response{
 			status: "No handler found for this function",
 			err:    myCephError(-22),
 		}
