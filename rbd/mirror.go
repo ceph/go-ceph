@@ -467,3 +467,50 @@ func MirrorImageStatusSummary(
 	}
 	return m, nil
 }
+
+// SetMirrorSiteName sets the site name, used for rbd mirroring, for the ceph
+// cluster associated with the provided rados connection.
+//
+// Implements:
+//  int rbd_mirror_site_name_set(rados_t cluster,
+//                               const char *name);
+func SetMirrorSiteName(conn *rados.Conn, name string) error {
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+
+	ret := C.rbd_mirror_site_name_set(
+		C.rados_t(conn.Cluster()),
+		cName)
+	return getError(ret)
+}
+
+// GetMirrorSiteName gets the site name, used for rbd mirroring, for the ceph
+// cluster associated with the provided rados connection.
+//
+// Implements:
+// int rbd_mirror_site_name_get(rados_t cluster,
+//                              char *name, size_t *max_len);
+func GetMirrorSiteName(conn *rados.Conn) (string, error) {
+
+	var (
+		cluster = C.rados_t(conn.Cluster())
+		err     error
+		buf     []byte
+		cSize   C.size_t
+	)
+	retry.WithSizes(1024, 1<<16, func(size int) retry.Hint {
+		cSize = C.size_t(size)
+		buf = make([]byte, cSize)
+		ret := C.rbd_mirror_site_name_get(
+			cluster,
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			&cSize)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(cSize)).If(err == errRange)
+	})
+	if err != nil {
+		return "", err
+	}
+	// the C code sets the size including null byte
+	return string(buf[:cSize-1]), nil
+}
