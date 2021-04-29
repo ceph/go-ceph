@@ -587,3 +587,56 @@ func testMirrorImageStatusSummaryMirroredPool(t *testing.T) {
 		assert.GreaterOrEqual(t, ssum[MirrorImageStatusStateUnknown], uint(1))
 	}
 }
+
+func TestMirrorSiteName(t *testing.T) {
+	t.Run("connNilGet", func(t *testing.T) {
+		assert.Panics(t, func() {
+			GetMirrorSiteName(nil)
+		})
+	})
+	t.Run("connNilSet", func(t *testing.T) {
+		assert.Panics(t, func() {
+			SetMirrorSiteName(nil, "foo")
+		})
+	})
+	t.Run("simple", func(t *testing.T) {
+		conn := radosConnect(t)
+		defer conn.Shutdown()
+		err := SetMirrorSiteName(conn, "rbd4eva")
+		assert.NoError(t, err)
+		n, err := GetMirrorSiteName(conn)
+		assert.NoError(t, err)
+		assert.Equal(t, "rbd4eva", n)
+
+		err = SetMirrorSiteName(conn, "ceph_a")
+		assert.NoError(t, err)
+		n, err = GetMirrorSiteName(conn)
+		assert.NoError(t, err)
+		assert.Equal(t, "ceph_a", n)
+	})
+	t.Run("twoCluster", func(t *testing.T) {
+		mconfig := mirrorConfig()
+		if mconfig == "" {
+			t.Skip("no mirror config env var set")
+		}
+
+		conn1 := radosConnect(t)
+		defer conn1.Shutdown()
+		conn2 := radosConnectConfig(t, mconfig)
+		defer conn2.Shutdown()
+
+		err := SetMirrorSiteName(conn1, "cluster_a")
+		assert.NoError(t, err)
+		err = SetMirrorSiteName(conn2, "cluster_b")
+		assert.NoError(t, err)
+
+		// verify the two conns are properly separate
+		n1, err := GetMirrorSiteName(conn1)
+		assert.NoError(t, err)
+		assert.Equal(t, "cluster_a", n1)
+
+		n2, err := GetMirrorSiteName(conn2)
+		assert.NoError(t, err)
+		assert.Equal(t, "cluster_b", n2)
+	})
+}
