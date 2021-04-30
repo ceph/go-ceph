@@ -1,7 +1,7 @@
 ARG CEPH_VERSION
-FROM ceph/daemon-base:latest-${CEPH_VERSION:-nautilus}
+FROM ceph/daemon-base:latest-${CEPH_VERSION:-octopus}
 
-ENV CEPH_VERSION=${CEPH_VERSION:-nautilus}
+ENV CEPH_VERSION=${CEPH_VERSION:-octopus}
 
 RUN true && \
     yum clean all && \
