@@ -3,7 +3,7 @@ CONTAINER_CMD ?=
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
 CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS :=
-CEPH_VERSION := nautilus
+CEPH_VERSION := octopus
 RESULTS_DIR :=
 CHECK_GOFMT_FLAGS := -e -s -l
 IMPLEMENTS_OPTS :=
