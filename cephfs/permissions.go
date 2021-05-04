@@ -29,3 +29,12 @@ func (mount *MountInfo) Chown(path string, user uint32, group uint32) error {
 	ret := C.ceph_chown(mount.mount, cPath, C.int(user), C.int(group))
 	return getError(ret)
 }
+
+// Lchown changes the ownership of a file/directory/etc without following symbolic links
+func (mount *MountInfo) Lchown(path string, user uint32, group uint32) error {
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+
+	ret := C.ceph_lchown(mount.mount, cPath, C.int(user), C.int(group))
+	return getError(ret)
+}
