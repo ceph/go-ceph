@@ -30,7 +30,7 @@ func TestCreateMount(t *testing.T) {
 	assert.NoError(t, mount.Release())
 }
 
-func fsConnect(t *testing.T) *MountInfo {
+func fsConnect(t require.TestingT) *MountInfo {
 	mount, err := CreateMount()
 	require.NoError(t, err)
 	require.NotNil(t, mount)
@@ -52,7 +52,7 @@ func fsConnect(t *testing.T) *MountInfo {
 	return mount
 }
 
-func fsDisconnect(t *testing.T, mount *MountInfo) {
+func fsDisconnect(t assert.TestingT, mount *MountInfo) {
 	assert.NoError(t, mount.Unmount())
 	assert.NoError(t, mount.Release())
 }

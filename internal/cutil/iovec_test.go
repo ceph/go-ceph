@@ -56,3 +56,15 @@ func TestIovec(t *testing.T) {
 	iovec.Sync()
 	iovec.Free()
 }
+
+func BenchmarkIovec(b *testing.B) {
+	data := make([][]byte, 64)
+	for i := range data {
+		data[i] = make([]byte, 1024*64)
+	}
+	for i := 0; i < b.N; i++ {
+		iovec := ByteSlicesToIovec(data)
+		iovec.Sync()
+		iovec.Free()
+	}
+}
