@@ -959,3 +959,35 @@ func TestFileTruncate(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+
+func BenchmarkFile(b *testing.B) {
+	const bufNum = 64
+	const bufSize = 1024 * 64
+	mount := fsConnect(b)
+	defer fsDisconnect(b, mount)
+
+	fname := "TestFilePreadvPwritev.txt"
+	defer mount.Unlink(fname)
+
+	ivec := make([][]byte, bufNum)
+	for i := range ivec {
+		ivec[i] = make([]byte, bufSize)
+	}
+
+	ovec := make([][]byte, bufNum/4)
+	for i := range ovec {
+		ovec[i] = make([]byte, bufSize*4)
+	}
+
+	f, _ := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0644)
+	defer f.Close()
+
+	for i := 0; i < b.N; i++ {
+		n, err := f.Pwritev(ivec, 0)
+		assert.NoError(b, err)
+		assert.NotZero(b, n)
+		m, err := f.Preadv(ovec, 0)
+		assert.NoError(b, err)
+		assert.Equal(b, n, m)
+	}
+}

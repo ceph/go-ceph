@@ -17,7 +17,7 @@ CEPH_CONF=/tmp/ceph/ceph.conf
 # but can be used to change the test behavior:
 # GO_CEPH_TEST_MDS_NAME
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-bench:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -28,6 +28,11 @@ while true ; do
         ;;
         --test-run)
             TEST_RUN="${2}"
+            shift
+            shift
+        ;;
+        --test-bench)
+            TEST_BENCH="${2}"
             shift
             shift
         ;;
@@ -76,6 +81,7 @@ while true ; do
             echo "Options:"
             echo "  --test-run=VALUE    Run selected test or ALL, NONE"
             echo "                      ALL is the default"
+            echo "  --test-bench=VALUE  Run selected benchmarks"
             echo "  --test-pkg=PKG      Run only tests from PKG"
             echo "  --pause             Sleep forever after tests execute"
             echo "  --micro-osd         Specify path to micro-osd script"
@@ -183,6 +189,9 @@ test_pkg() {
             ${BUILD_TAGS})
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
+    fi
+    if [[ -n ${TEST_BENCH} ]]; then
+        testargs+=("-bench" "${TEST_BENCH}")
     fi
     if [[ ${COVERAGE} = yes ]]; then
         testargs+=(\
