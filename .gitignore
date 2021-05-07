@@ -1,4 +1,5 @@
 .build-docker
+.build.*
 *.swp
 *.out
 *.test
