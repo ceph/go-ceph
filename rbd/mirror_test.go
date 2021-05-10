@@ -640,3 +640,97 @@ func TestMirrorSiteName(t *testing.T) {
 		assert.Equal(t, "cluster_b", n2)
 	})
 }
+
+func TestMirrorBootstrapToken(t *testing.T) {
+	t.Run("ioctxNilCreate", func(t *testing.T) {
+		assert.Panics(t, func() {
+			CreateMirrorPeerBootstrapToken(nil)
+		})
+	})
+	t.Run("ioctxNilImport", func(t *testing.T) {
+		assert.Panics(t, func() {
+			ImportMirrorPeerBootstrapToken(nil, MirrorPeerDirectionRxTx, "")
+		})
+	})
+	t.Run("justCreate", func(t *testing.T) {
+		conn := radosConnect(t)
+		defer conn.Shutdown()
+
+		poolName := GetUUID()
+		err := conn.MakePool(poolName)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, conn.DeletePool(poolName))
+		}()
+
+		ioctx, err := conn.OpenIOContext(poolName)
+		assert.NoError(t, err)
+		defer func() {
+			ioctx.Destroy()
+		}()
+
+		err = SetMirrorMode(ioctx, MirrorModeImage)
+		require.NoError(t, err)
+
+		token, err := CreateMirrorPeerBootstrapToken(ioctx)
+		assert.NoError(t, err)
+		assert.GreaterOrEqual(t, len(token), 4)
+	})
+	t.Run("roundTrip", func(t *testing.T) {
+		mconfig := mirrorConfig()
+		if mconfig == "" {
+			t.Skip("no mirror config env var set")
+		}
+
+		conn1 := radosConnect(t)
+		defer conn1.Shutdown()
+
+		poolName := GetUUID()
+		err := conn1.MakePool(poolName)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, conn1.DeletePool(poolName))
+		}()
+
+		err = SetMirrorSiteName(conn1, "ceph_a")
+		require.NoError(t, err)
+
+		ioctx1, err := conn1.OpenIOContext(poolName)
+		assert.NoError(t, err)
+		defer func() {
+			ioctx1.Destroy()
+		}()
+
+		err = SetMirrorMode(ioctx1, MirrorModeImage)
+		require.NoError(t, err)
+
+		token, err := CreateMirrorPeerBootstrapToken(ioctx1)
+		assert.NoError(t, err)
+		assert.GreaterOrEqual(t, len(token), 4)
+
+		conn2 := radosConnectConfig(t, mconfig)
+		defer conn2.Shutdown()
+		err = conn2.MakePool(poolName)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, conn2.DeletePool(poolName))
+		}()
+
+		err = SetMirrorSiteName(conn2, "ceph_b")
+		require.NoError(t, err)
+
+		ioctx2, err := conn2.OpenIOContext(poolName)
+		assert.NoError(t, err)
+		defer func() {
+			ioctx2.Destroy()
+		}()
+
+		err = SetMirrorMode(ioctx2, MirrorModeImage)
+		require.NoError(t, err)
+
+		fmt.Printf("TOKEN: %s\n", string(token))
+		err = ImportMirrorPeerBootstrapToken(
+			ioctx2, MirrorPeerDirectionRxTx, token)
+		assert.NoError(t, err)
+	})
+}
