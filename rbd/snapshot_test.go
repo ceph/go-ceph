@@ -94,6 +94,9 @@ func TestErrorSnapshotNoName(t *testing.T) {
 	_, err = snapshot.IsProtected()
 	assert.Equal(t, err, ErrSnapshotNoName)
 
+	err = img.SetSnapshot(snapshot.name)
+	assert.Equal(t, err, ErrImageNotOpen)
+
 	err = snapshot.Set()
 	assert.Equal(t, err, ErrSnapshotNoName)
 
