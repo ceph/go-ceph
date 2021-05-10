@@ -916,6 +916,22 @@ func (image *Image) GetId() (string, error) {
 
 }
 
+// SetSnapshot updates the rbd image (not the Snapshot) such that the snapshot
+// is the source of readable data.
+//
+// Implements:
+//  int rbd_snap_set(rbd_image_t image, const char *snapname);
+func (image *Image) SetSnapshot(snapname string) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+
+	c_snapname := C.CString(snapname)
+	defer C.free(unsafe.Pointer(c_snapname))
+
+	return getError(C.rbd_snap_set(image.image, c_snapname))
+}
+
 // GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
 // currently residing in the trash.
 func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
