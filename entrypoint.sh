@@ -266,3 +266,5 @@ pause_if_needed() {
 
 test_go_ceph
 pause_if_needed
+
+# vim: set ts=4 sw=4 sts=4 et:
