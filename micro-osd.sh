@@ -28,11 +28,15 @@ MON_DATA=${DIR}/mon
 MDS_DATA=${DIR}/mds
 MOUNTPT=${MDS_DATA}/mnt
 OSD_DATA=${DIR}/osd
-mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA} ${MDS_DATA} ${MOUNTPT}
+RGW_DATA=${DIR}/radosgw
+mkdir ${LOG_DIR} ${MON_DATA} ${OSD_DATA} ${MDS_DATA} ${MOUNTPT} ${RGW_DATA}
 MDS_NAME="Z"
 MON_NAME="a"
 MGR_NAME="x"
 MIRROR_ID="m"
+RGW_ID="r"
+S3_ACCESS_KEY=2262XNX11FZRR44XWIRD
+S3_SECRET_KEY=rmtuS1Uj1bIC08QFYGW18GfSHAbkPqdsuYynNudw
 
 # cluster wide parameters
 cat >> ${DIR}/ceph.conf <<EOF
@@ -67,6 +71,16 @@ osd journal size = 100
 osd objectstore = memstore
 osd class load list = *
 osd class default list = *
+
+[client.rgw.${RGW_ID}]
+rgw dns name = ${HOSTNAME}
+rgw enable usage log = true
+rgw usage log tick interval = 1
+rgw usage log flush threshold = 1
+rgw usage max shards = 32
+rgw usage max user shards = 1
+log file = /var/log/ceph/client.rgw.${RGW_ID}.log
+rgw frontends = beast port=80
 EOF
 
 export CEPH_CONF=${DIR}/ceph.conf
@@ -99,6 +113,12 @@ ceph-mgr --id ${MGR_NAME}
 # start rbd-mirror
 ceph auth get-or-create client.rbd-mirror.${MIRROR_ID} mon 'profile rbd-mirror' osd 'profile rbd'
 rbd-mirror --id ${MIRROR_ID} --log-file ${LOG_DIR}/rbd-mirror.log
+
+# start an rgw
+ceph auth get-or-create client.rgw."${RGW_ID}" osd 'allow rwx' mon 'allow rw' -o ${RGW_DATA}/keyring
+radosgw -n client.rgw."${RGW_ID}" -k ${RGW_DATA}/keyring
+timeout 60 sh -c 'until [ $(ceph -s | grep -c "rgw:") -eq 1 ]; do echo "waiting for rgw to show up" && sleep 1; done'
+radosgw-admin user create --uid admin --display-name "Admin User" --caps "buckets=*;users=*;usage=read;metadata=read" --access-key="$S3_ACCESS_KEY" --secret-key="$S3_SECRET_KEY"
 
 # test the setup
 ceph --version
