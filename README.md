@@ -11,6 +11,7 @@ There are three main Go sub-packages that make up go-ceph:
 * rados - exports functionality from Ceph's librados
 * rbd - exports functionality from Ceph's librbd
 * cephfs - exports functionality from Ceph's libcephfs
+* rgw/admin - interact with [radosgw admin ops API](https://docs.ceph.com/en/latest/radosgw/adminops)
 
 We aim to provide comprehensive support for the Ceph APIs over time. This
 includes both I/O related functions and management functions.  If your project
