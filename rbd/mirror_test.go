@@ -734,3 +734,85 @@ func TestMirrorBootstrapToken(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestMirrorImageGlobalStatusIter(t *testing.T) {
+	defer func(x int) {
+		statusIterBufSize = x
+	}(statusIterBufSize)
+	// shrink the buffer size in order to trigger more of the
+	// retry logic in the iter type
+	statusIterBufSize = 4
+
+	conn := radosConnect(t)
+	poolName := GetUUID()
+	err := conn.MakePool(poolName)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, conn.DeletePool(poolName))
+		conn.Shutdown()
+	}()
+
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx.Destroy()
+	}()
+
+	// enable per-image mirroring for this pool
+	err = SetMirrorMode(ioctx, MirrorModeImage)
+	require.NoError(t, err)
+
+	imgName := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t, options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+
+	for i := 0; i < 7; i++ {
+		name := fmt.Sprintf("%s%d", imgName, i)
+		err = CreateImage(ioctx, name, testImageSize, options)
+		require.NoError(t, err)
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		err = img.MirrorEnable(ImageMirrorModeSnapshot)
+		assert.NoError(t, err)
+		require.NoError(t, img.Close())
+	}
+
+	t.Run("ioctxNil", func(t *testing.T) {
+		iter := NewMirrorImageGlobalStatusIter(nil)
+		defer iter.Close()
+		assert.Panics(t, func() {
+			iter.Next()
+		})
+	})
+
+	t.Run("getStatus", func(t *testing.T) {
+		lst := []*GlobalMirrorImageIDAndStatus{}
+		iter := NewMirrorImageGlobalStatusIter(ioctx)
+		for {
+			istatus, err := iter.Next()
+			assert.NoError(t, err)
+			if istatus == nil {
+				break
+			}
+			lst = append(lst, istatus)
+		}
+		assert.Len(t, lst, 7)
+		gms := lst[0].Status
+		assert.NoError(t, err)
+		assert.NotEqual(t, "", gms.Name)
+		assert.NotEqual(t, "", gms.Info.GlobalID)
+		assert.Equal(t, gms.Info.State, MirrorImageEnabled)
+		assert.Equal(t, gms.Info.Primary, false)
+		if assert.Len(t, gms.SiteStatuses, 1) {
+			ss := gms.SiteStatuses[0]
+			assert.Equal(t, "", ss.MirrorUUID)
+			assert.Equal(t, MirrorImageStatusStateUnknown, ss.State, ss.State)
+			assert.Equal(t, "status not found", ss.Description)
+			assert.Equal(t, int64(0), ss.LastUpdate)
+			assert.False(t, ss.Up)
+			ls, err := gms.LocalStatus()
+			assert.NoError(t, err)
+			assert.Equal(t, ss, ls)
+		}
+	})
+}
