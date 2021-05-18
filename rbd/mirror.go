@@ -389,6 +389,13 @@ func (image *Image) GetGlobalMirrorStatus() (GlobalMirrorImageStatus, error) {
 	}
 	defer C.rbd_mirror_image_global_status_cleanup(&s)
 
+	status := newGlobalMirrorImageStatus(&s)
+	return status, nil
+}
+
+func newGlobalMirrorImageStatus(
+	s *C.rbd_mirror_image_global_status_t) GlobalMirrorImageStatus {
+
 	status := GlobalMirrorImageStatus{
 		Name:         C.GoString(s.name),
 		Info:         convertMirrorImageInfo(&s.info),
@@ -406,7 +413,7 @@ func (image *Image) GetGlobalMirrorStatus() (GlobalMirrorImageStatus, error) {
 			Up:          bool(ss.up),
 		}
 	}
-	return status, nil
+	return status
 }
 
 // CreateMirrorSnapshot creates a snapshot for image propagation to mirrors.
@@ -582,4 +589,108 @@ func ImportMirrorPeerBootstrapToken(
 		C.rbd_mirror_peer_direction_t(direction),
 		cToken)
 	return getError(ret)
+}
+
+// GlobalMirrorImageIDAndStatus values contain an ID string for a RBD image
+// and that image's GlobalMirrorImageStatus.
+type GlobalMirrorImageIDAndStatus struct {
+	ID     string
+	Status GlobalMirrorImageStatus
+}
+
+func mirrorImageGlobalStatusList(
+	ioctx *rados.IOContext, start string,
+	results []GlobalMirrorImageIDAndStatus) (int, error) {
+	// this C function is treated like a "batch" iterator. Based on it's
+	// design it appears expected to call it multiple times to get
+	// the entire result.
+	cStart := C.CString(start)
+	defer C.free(unsafe.Pointer(cStart))
+
+	var (
+		max    = C.size_t(len(results))
+		length = C.size_t(0)
+		ids    = make([]*C.char, len(results))
+		images = make([]C.rbd_mirror_image_global_status_t, len(results))
+	)
+	ret := C.rbd_mirror_image_global_status_list(
+		cephIoctx(ioctx),
+		cStart,
+		max,
+		(**C.char)(unsafe.Pointer(&ids[0])),
+		(*C.rbd_mirror_image_global_status_t)(unsafe.Pointer(&images[0])),
+		&length)
+
+	for i := 0; i < int(length); i++ {
+		results[i].ID = C.GoString(ids[i])
+		results[i].Status = newGlobalMirrorImageStatus(&images[0])
+	}
+	C.rbd_mirror_image_global_status_list_cleanup(
+		(**C.char)(unsafe.Pointer(&ids[0])),
+		(*C.rbd_mirror_image_global_status_t)(unsafe.Pointer(&images[0])),
+		length)
+	return int(length), getError(ret)
+}
+
+// statusIterBufSize is intentionally not a constant. The unit tests alter
+// this value in order to get more code coverage w/o needing to create
+// very many images.
+var statusIterBufSize = 64
+
+// MirrorImageGlobalStatusIter provide methods for iterating over all
+// the GlobalMirrorImageIdAndStatus values in a pool.
+type MirrorImageGlobalStatusIter struct {
+	ioctx *rados.IOContext
+
+	buf    []GlobalMirrorImageIDAndStatus
+	lastID string
+}
+
+// NewMirrorImageGlobalStatusIter creates a new iterator type ready for use.
+func NewMirrorImageGlobalStatusIter(ioctx *rados.IOContext) *MirrorImageGlobalStatusIter {
+	return &MirrorImageGlobalStatusIter{
+		ioctx: ioctx,
+	}
+}
+
+// Next fetches one GlobalMirrorImageIDAndStatus value or a nil value if
+// iteration is exhausted. The error return will be non-nil if an underlying
+// error fetching more values occurred.
+func (iter *MirrorImageGlobalStatusIter) Next() (*GlobalMirrorImageIDAndStatus, error) {
+	if len(iter.buf) == 0 {
+		if err := iter.fetch(); err != nil {
+			return nil, err
+		}
+	}
+	if len(iter.buf) == 0 {
+		return nil, nil
+	}
+	item := iter.buf[0]
+	iter.lastID = item.ID
+	iter.buf = iter.buf[1:]
+	return &item, nil
+}
+
+// Close terminates iteration regardless if iteration was completed and
+// frees any associated resources.
+func (iter *MirrorImageGlobalStatusIter) Close() error {
+	iter.buf = nil
+	iter.lastID = ""
+	return nil
+}
+
+func (iter *MirrorImageGlobalStatusIter) fetch() error {
+	iter.buf = nil
+	items := make([]GlobalMirrorImageIDAndStatus, statusIterBufSize)
+	n, err := mirrorImageGlobalStatusList(
+		iter.ioctx,
+		iter.lastID,
+		items)
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		iter.buf = items[:n]
+	}
+	return nil
 }
