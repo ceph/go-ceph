@@ -831,7 +831,7 @@ func (image *Image) WriteSame(ofs, n uint64, data []byte, flags rados.OpFlags) (
 
 	ret := C.rbd_writesame(image.image,
 		C.uint64_t(ofs),
-		C.uint64_t(n),
+		C.size_t(n),
 		(*C.char)(unsafe.Pointer(&data[0])),
 		C.size_t(len(data)),
 		C.int(flags))
