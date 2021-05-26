@@ -46,7 +46,7 @@ test:
 .PHONY: test-docker test-container test-multi-container
 test-docker: test-container
 test-container: $(BUILDFILE) $(RESULTS_DIR)
-	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG) $(ENTRYPOINT_ARGS)
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm --hostname test_ceph_aio -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG) $(ENTRYPOINT_ARGS)
 test-multi-container: $(BUILDFILE) $(RESULTS_DIR)
 	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b 2>/dev/null || true
 	$(CONTAINER_CMD) volume remove test_ceph_a_data test_ceph_b_data 2>/dev/null || true
