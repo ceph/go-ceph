@@ -531,6 +531,33 @@ func (image *Image) Copy2(dest *Image) error {
 	return getError(C.rbd_copy2(image.image, dest.image))
 }
 
+// DeepCopy an rbd image to a new image with specific options.
+//
+// Implements:
+//  int rbd_deep_copy(rbd_image_t src, rados_ioctx_t dest_io_ctx,
+//          const char *destname, rbd_image_options_t dest_opts);
+func (image *Image) DeepCopy(ioctx *rados.IOContext, destname string, rio *ImageOptions) error {
+	if err := image.validate(imageIsOpen); err != nil {
+		return err
+	}
+	if ioctx == nil {
+		return ErrNoIOContext
+	}
+	if destname == "" {
+		return ErrNoName
+	}
+	if rio == nil {
+		return rbdError(C.EINVAL)
+	}
+
+	cDestname := C.CString(destname)
+	defer C.free(unsafe.Pointer(cDestname))
+
+	ret := C.rbd_deep_copy(image.image, cephIoctx(ioctx), cDestname,
+		C.rbd_image_options_t(rio.options))
+	return getError(ret)
+}
+
 // Flatten removes snapshot references from the image.
 //
 // Implements:
