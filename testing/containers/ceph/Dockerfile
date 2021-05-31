@@ -4,12 +4,13 @@ FROM ceph/daemon-base:latest-${CEPH_VERSION:-octopus}
 ENV CEPH_VERSION=${CEPH_VERSION:-octopus}
 
 RUN true && \
-    yum clean all && \
+    yum update -y && \
     cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" && \
     yum install -y \
         git wget curl make \
         /usr/bin/cc /usr/bin/c++ \
         "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
+    yum clean all && \
     true
 
 ENV GOTAR=go1.15.10.linux-amd64.tar.gz
