@@ -1,3 +1,3 @@
-// +build !luminous,!mimic
+// +build nautilus
 
 package rados
