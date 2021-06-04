@@ -8,47 +8,41 @@ import (
 
 // User is GO representation of the json output of a user creation
 type User struct {
-	ID          string        `json:"user_id" url:"uid"`
-	DisplayName string        `json:"display_name" url:"display-name"`
-	Email       string        `json:"email" url:"email"`
-	Suspended   *int          `json:"suspended" url:"suspended"`
-	MaxBuckets  *int          `json:"max_buckets" url:"max-buckets"`
-	Subusers    []interface{} `json:"subusers"`
-	Keys        []struct {
-		User      string `json:"user"`
-		AccessKey string `json:"access_key" url:"access-key"`
-		SecretKey string `json:"secret_key" url:"secret-key"`
-	} `json:"keys"`
-	SwiftKeys []interface{} `json:"swift_keys"`
-	Caps      []struct {
-		Type string `json:"type"`
-		Perm string `json:"perm"`
-	} `json:"caps"`
+	ID                  string        `json:"user_id" url:"uid"`
+	DisplayName         string        `json:"display_name" url:"display-name"`
+	Email               string        `json:"email" url:"email"`
+	Suspended           *int          `json:"suspended" url:"suspended"`
+	MaxBuckets          *int          `json:"max_buckets" url:"max-buckets"`
+	Subusers            []interface{} `json:"subusers"`
+	Keys                []UserKeySpec `json:"keys"`
+	SwiftKeys           []interface{} `json:"swift_keys"`
+	Caps                []UserCapSpec `json:"caps"`
 	OpMask              string        `json:"op_mask"`
 	DefaultPlacement    string        `json:"default_placement"`
 	DefaultStorageClass string        `json:"default_storage_class"`
 	PlacementTags       []interface{} `json:"placement_tags"`
-	BucketQuota         struct {
-		Enabled    *bool `json:"enabled"`
-		CheckOnRaw *bool `json:"check_on_raw"`
-		MaxSize    *int  `json:"max_size"`
-		MaxSizeKb  *int  `json:"max_size_kb"`
-		MaxObjects *int  `json:"max_objects"`
-	} `json:"bucket_quota"`
-	UserQuota struct {
-		Enabled    *bool `json:"enabled"`
-		CheckOnRaw *bool `json:"check_on_raw"`
-		MaxSize    *int  `json:"max_size"`
-		MaxSizeKb  *int  `json:"max_size_kb"`
-		MaxObjects *int  `json:"max_objects"`
-	} `json:"user_quota"`
-	TempURLKeys []interface{} `json:"temp_url_keys"`
-	Type        string        `json:"type"`
-	MfaIds      []interface{} `json:"mfa_ids"`
-	KeyType     string        `url:"key-type"`
-	Tenant      string        `url:"tenant"`
-	GenerateKey *bool         `url:"generate-key"`
-	PurgeData   *int          `url:"purge-data"`
+	BucketQuota         QuotaSpec     `json:"bucket_quota"`
+	UserQuota           QuotaSpec     `json:"user_quota"`
+	TempURLKeys         []interface{} `json:"temp_url_keys"`
+	Type                string        `json:"type"`
+	MfaIds              []interface{} `json:"mfa_ids"`
+	KeyType             string        `url:"key-type"`
+	Tenant              string        `url:"tenant"`
+	GenerateKey         *bool         `url:"generate-key"`
+	PurgeData           *int          `url:"purge-data"`
+}
+
+// UserCapSpec represents a user capability which gives access to certain ressources
+type UserCapSpec struct {
+	Type string `json:"type"`
+	Perm string `json:"perm"`
+}
+
+// UserKeySpec is the user credential configuration
+type UserKeySpec struct {
+	User      string `json:"user"`
+	AccessKey string `json:"access_key" url:"access-key"`
+	SecretKey string `json:"secret_key" url:"secret-key"`
 }
 
 // GetUser retrieves a given object store user

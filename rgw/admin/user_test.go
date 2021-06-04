@@ -97,6 +97,14 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), "leseb@leseb.com", user.Email)
 	})
 
+	suite.T().Run("modify user max bucket", func(t *testing.T) {
+		maxBuckets := -1
+		user, err := co.ModifyUser(context.Background(), User{ID: "leseb", MaxBuckets: &maxBuckets})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), "leseb@leseb.com", user.Email)
+		assert.Equal(suite.T(), -1, *user.MaxBuckets)
+	})
+
 	suite.T().Run("user already exists", func(t *testing.T) {
 		_, err := co.CreateUser(context.Background(), User{ID: "admin", DisplayName: "Admin user"})
 		assert.Error(suite.T(), err)
@@ -107,6 +115,19 @@ func (suite *RadosGWTestSuite) TestUser() {
 		users, err := co.GetUsers(context.Background())
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 2, len(*users))
+	})
+
+	suite.T().Run("set user quota", func(t *testing.T) {
+		quotaEnable := true
+		maxObjects := int64(100)
+		err := co.SetUserQuota(context.Background(), QuotaSpec{QuotaType: "user", UID: "leseb", MaxObjects: &maxObjects, Enabled: &quotaEnable})
+		assert.NoError(suite.T(), err)
+	})
+
+	suite.T().Run("get user quota", func(t *testing.T) {
+		q, err := co.GetUserQuota(context.Background(), QuotaSpec{QuotaType: "user", UID: "leseb"})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), int64(100), *q.MaxObjects)
 	})
 
 	suite.T().Run("remove user", func(t *testing.T) {
