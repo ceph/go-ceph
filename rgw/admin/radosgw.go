@@ -76,14 +76,8 @@ func New(endpoint, accessKey, secretKey string, httpClient *http.Client) (*API, 
 
 // call makes request to the RGW Admin Ops API
 func (api *API) call(ctx context.Context, verb verbHTTP, path string, args url.Values) (body []byte, err error) {
-	// Verify the endpoint URL is correct
-	url, err := url.Parse(buildQueryPath(api.Endpoint, path, args.Encode()))
-	if err != nil {
-		return nil, err
-	}
-
 	// Build request
-	request, err := http.NewRequestWithContext(ctx, string(verb), url.String(), nil)
+	request, err := http.NewRequestWithContext(ctx, string(verb), buildQueryPath(api.Endpoint, path, args.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
