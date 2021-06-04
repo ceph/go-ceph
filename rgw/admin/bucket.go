@@ -44,15 +44,9 @@ type Bucket struct {
 			NumObjects     *uint64 `json:"num_objects"`
 		} `json:"rgw.multimeta"`
 	} `json:"usage"`
-	BucketQuota struct {
-		Enabled    *bool   `json:"enabled"`
-		CheckOnRaw *bool   `json:"check_on_raw"`
-		MaxSize    *uint64 `json:"max_size"`
-		MaxSizeKb  *uint64 `json:"max_size_kb"`
-		MaxObjects *uint64 `json:"max_objects"`
-	} `json:"bucket_quota"`
-	Policy      *bool `url:"policy"`
-	PurgeObject *bool `url:"purge-objects"`
+	BucketQuota QuotaSpec `json:"bucket_quota"`
+	Policy      *bool     `url:"policy"`
+	PurgeObject *bool     `url:"purge-objects"`
 }
 
 // Policy describes a bucket policy

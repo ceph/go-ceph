@@ -12,6 +12,17 @@ const (
 )
 
 func buildQueryPath(endpoint, path, args string) string {
+	// Sometimes the API requires single URL key with no values
+	// For instance, the Quota code uses the admin API path to "/user?quota"
+	// This is done this way since url.Values does not support adding keys without values.
+	//
+	// So Quota code passes the begining of the query (indicated with a marker "?") in its path already, so we need to escape it
+	// and add a separator key instead
+	// So we can get something like "/admin/user?quota&" instead of passing two beginning query markers ("?")
+	if strings.Contains(path, "?") {
+		return fmt.Sprintf("%s%s%s&%s", endpoint, queryAdminPath, path, args)
+	}
+
 	return fmt.Sprintf("%s%s%s?%s", endpoint, queryAdminPath, path, args)
 }
 
