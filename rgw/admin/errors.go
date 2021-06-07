@@ -79,6 +79,9 @@ const (
 	// ErrUnknown - reports an unknown error
 	ErrUnknown errorReason = "Unknown"
 
+	// ErrSignatureDoesNotMatch - the query to the API has invalid parameters
+	ErrSignatureDoesNotMatch errorReason = "SignatureDoesNotMatch"
+
 	unmarshalError = "failed to unmarshal radosgw http response"
 )
 
