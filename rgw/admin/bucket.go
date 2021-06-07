@@ -96,34 +96,34 @@ func (api *API) ListBuckets(ctx context.Context) ([]string, error) {
 }
 
 // GetBucketInfo will return various information about a specific token
-func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (*Bucket, error) {
+func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (Bucket, error) {
 	body, err := api.call(ctx, get, "/bucket", valueToURLParams(bucket))
 	if err != nil {
-		return nil, err
+		return Bucket{}, err
 	}
 
-	ref := &Bucket{}
-	err = json.Unmarshal(body, ref)
+	ref := Bucket{}
+	err = json.Unmarshal(body, &ref)
 	if err != nil {
-		return nil, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
+		return Bucket{}, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
 	}
 
 	return ref, nil
 }
 
 // GetBucketPolicy - http://docs.ceph.com/docs/mimic/radosgw/adminops/#get-bucket-or-object-policy
-func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (*Policy, error) {
+func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (Policy, error) {
 	policy := true
 	bucket.Policy = &policy
 	body, err := api.call(ctx, get, "/bucket", valueToURLParams(bucket))
 	if err != nil {
-		return nil, err
+		return Policy{}, err
 	}
 
-	ref := &Policy{}
-	err = json.Unmarshal(body, ref)
+	ref := Policy{}
+	err = json.Unmarshal(body, &ref)
 	if err != nil {
-		return nil, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
+		return Policy{}, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
 	}
 
 	return ref, nil

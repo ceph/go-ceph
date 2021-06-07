@@ -46,20 +46,20 @@ type UserKeySpec struct {
 }
 
 // GetUser retrieves a given object store user
-func (api *API) GetUser(ctx context.Context, user User) (*User, error) {
+func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" {
-		return nil, errMissingUserID
+		return User{}, errMissingUserID
 	}
 
 	body, err := api.call(ctx, get, "/user", valueToURLParams(user))
 	if err != nil {
-		return nil, err
+		return User{}, err
 	}
 
-	u := &User{}
-	err = json.Unmarshal(body, u)
+	u := User{}
+	err = json.Unmarshal(body, &u)
 	if err != nil {
-		return nil, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
+		return User{}, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
 	}
 
 	return u, nil
@@ -81,25 +81,25 @@ func (api *API) GetUsers(ctx context.Context) (*[]string, error) {
 }
 
 // CreateUser creates a user in the object store
-func (api *API) CreateUser(ctx context.Context, user User) (*User, error) {
+func (api *API) CreateUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" {
-		return nil, errMissingUserID
+		return User{}, errMissingUserID
 	}
 	if user.DisplayName == "" {
-		return nil, errMissingUserDisplayName
+		return User{}, errMissingUserDisplayName
 	}
 
 	// Send request
 	body, err := api.call(ctx, put, "/user", valueToURLParams(user))
 	if err != nil {
-		return nil, err
+		return User{}, err
 	}
 
 	// Unmarshal response into Go type
-	u := &User{}
-	err = json.Unmarshal(body, u)
+	u := User{}
+	err = json.Unmarshal(body, &u)
 	if err != nil {
-		return nil, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
+		return User{}, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
 	}
 
 	return u, nil
@@ -120,20 +120,20 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 }
 
 // ModifyUser - http://docs.ceph.com/docs/latest/radosgw/adminops/#modify-user
-func (api *API) ModifyUser(ctx context.Context, user User) (*User, error) {
+func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" {
-		return nil, errMissingUserID
+		return User{}, errMissingUserID
 	}
 
 	body, err := api.call(ctx, post, "/user", valueToURLParams(user))
 	if err != nil {
-		return nil, err
+		return User{}, err
 	}
 
-	u := &User{}
-	err = json.Unmarshal(body, u)
+	u := User{}
+	err = json.Unmarshal(body, &u)
 	if err != nil {
-		return nil, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
+		return User{}, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
 	}
 
 	return u, nil
