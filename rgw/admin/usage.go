@@ -48,15 +48,15 @@ type Usage struct {
 }
 
 // GetUsage request bandwidth usage information on the object store
-func (api *API) GetUsage(ctx context.Context, usage Usage) (*Usage, error) {
+func (api *API) GetUsage(ctx context.Context, usage Usage) (Usage, error) {
 	body, err := api.call(ctx, get, "/usage", valueToURLParams(usage))
 	if err != nil {
-		return nil, err
+		return Usage{}, err
 	}
-	u := &Usage{}
-	err = json.Unmarshal(body, u)
+	u := Usage{}
+	err = json.Unmarshal(body, &u)
 	if err != nil {
-		return nil, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
+		return Usage{}, fmt.Errorf("%s. %s. %w", unmarshalError, string(body), err)
 	}
 
 	return u, nil
