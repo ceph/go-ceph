@@ -17,6 +17,51 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestGetMirrorUUID(t *testing.T) {
+	conn := radosConnect(t)
+	poolName := GetUUID()
+	err := conn.MakePool(poolName)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, conn.DeletePool(poolName))
+		conn.Shutdown()
+	}()
+
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx.Destroy()
+	}()
+
+	// verify that mirroring is not enabled on this new pool
+	m, err := GetMirrorMode(ioctx)
+	assert.NoError(t, err)
+	assert.Equal(t, m, MirrorModeDisabled)
+
+	// enable per-image mirroring for this pool
+	err = SetMirrorMode(ioctx, MirrorModeImage)
+	require.NoError(t, err)
+
+	name1 := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t,
+		options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+	err = CreateImage(ioctx, name1, testImageSize, options)
+	require.NoError(t, err)
+	t.Run("getUUID", func(t *testing.T) {
+		img, err := OpenImage(ioctx, name1, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, img.Close())
+		}()
+
+		err = img.MirrorEnable(ImageMirrorModeSnapshot)
+		assert.NoError(t, err)
+		miid, err := GetMirrorUUID(ioctx)
+		assert.NoError(t, err)
+		assert.NotEqual(t, miid, "")
+	})
+}
 func TestGetMirrorMode(t *testing.T) {
 	conn := radosConnect(t)
 	poolName := GetUUID()

@@ -71,6 +71,34 @@ func (imm ImageMirrorMode) String() string {
 	}
 }
 
+//  GetMirrorUUID returns a string naming the mirroring uuid for the pool
+//  associated with the ioctx.
+//
+//  Implements:
+//  int rbd_mirror_uuid_get(rados_ioctx_t io_ctx,
+//	                       char *uuid, size_t *max_len);
+func GetMirrorUUID(ioctx *rados.IOContext) (string, error) {
+	var (
+		err   error
+		buf   []byte
+		cSize C.size_t
+	)
+	retry.WithSizes(1024, 1<<16, func(size int) retry.Hint {
+		cSize = C.size_t(size)
+		buf = make([]byte, cSize)
+		ret := C.rbd_mirror_uuid_get(
+			cephIoctx(ioctx),
+			(*C.char)(unsafe.Pointer(&buf[0])),
+			&cSize)
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(cSize)).If(err == errRange)
+	})
+	if err != nil {
+		return "", err
+	}
+	return string(buf[:cSize]), nil
+}
+
 // SetMirrorMode is used to enable or disable pool level mirroring with either
 // an automatic or per-image behavior.
 //
