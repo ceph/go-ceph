@@ -2,18 +2,18 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.166.1/containers/docker-existing-dockerfile
 {
     "name": "go-ceph",
-    "initializeCommand": "make CEPH_VERSION=octopus ci-image",
     "build": {
         // Sets the run context to one level up instead of the .devcontainer folder.
-        //"context": "..",
-        "dockerfile": "Dockerfile",
+        "context": "..",
+        "dockerfile": "../testing/containers/ceph/Dockerfile",
         "args": {
             "CEPH_VERSION": "octopus"
         }
     },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/go/src/github.com/ceph/go-ceph,type=bind,consistency=cached",
+    "workspaceFolder": "/go/src/github.com/ceph/go-ceph",
     // Set *default* container specific settings.json values on container create.
     "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash",
         "go.toolsManagement.checkForUpdates": "local",
         "go.toolsManagement.autoUpdate": true,
         "go.useLanguageServer": true,
@@ -45,6 +45,7 @@
     ],
     // Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
     // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+    "mounts": [ "source=test_ceph_go_cache,target=/go,type=volume" ],
     // Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
     // "remoteUser": "vscode"
 }
