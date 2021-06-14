@@ -114,6 +114,27 @@ ceph-mgr --id ${MGR_NAME}
 ceph auth get-or-create client.rbd-mirror.${MIRROR_ID} mon 'profile rbd-mirror' osd 'profile rbd'
 rbd-mirror --id ${MIRROR_ID} --log-file ${LOG_DIR}/rbd-mirror.log
 
+# start cephfs-mirror
+# Skip on "nautilus" and "octopus" the supported ceph versions that
+# don't have it.
+case "${CEPH_VERSION}" in
+    nautilus|octopus)
+        echo "Skipping cephfs-mirror on ${CEPH_VERSION} ..."
+    ;;
+    *)
+        ceph auth get-or-create "client.cephfs-mirror.${MIRROR_ID}" \
+            mon 'profile cephfs-mirror' \
+            mds 'allow r' \
+            osd 'allow rw tag cephfs metadata=*, allow r tag cephfs data=*' \
+            mgr 'allow r'
+        cephfs-mirror --id "cephfs-mirror.${MIRROR_ID}" \
+            --log-file "${LOG_DIR}/cephfs-mirror.log"
+        ceph fs authorize cephfs client.cephfs-mirror-remote / rwps > "${DIR}/cephfs-mirror-remote.out"
+        # the .out file above is not used by the scripts but can be used for debugging
+    ;;
+esac
+
+
 # start an rgw
 ceph auth get-or-create client.rgw."${RGW_ID}" osd 'allow rwx' mon 'allow rw' -o ${RGW_DATA}/keyring
 radosgw -n client.rgw."${RGW_ID}" -k ${RGW_DATA}/keyring
