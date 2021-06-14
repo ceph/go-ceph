@@ -1,4 +1,4 @@
-// +build !luminous,!mimic
+// +build nautilus
 
 package rados
 
@@ -6,29 +6,25 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func (suite *RadosTestSuite) TestSetGetNamespace() {
+func (suite *RadosTestSuite) TestSetUnsetPoolFullTry() {
 	suite.SetupConnection()
+	suite.T().Run("invalidIOContext", func(t *testing.T) {
+		ioctx := &IOContext{}
+		err := ioctx.SetPoolFullTry()
+		assert.Error(t, err)
+		err = ioctx.UnsetPoolFullTry()
+		assert.Error(t, err)
+	})
 
-	suite.T().Run("validNS", func(t *testing.T) {
-		suite.ioctx.SetNamespace("space1")
-		ns, err := suite.ioctx.GetNamespace()
+	suite.T().Run("validIOContext", func(t *testing.T) {
+		ioctx, err := suite.conn.OpenIOContext(suite.pool)
+		require.NoError(suite.T(), err)
+		err = ioctx.SetPoolFullTry()
 		assert.NoError(t, err)
-		assert.Equal(t, "space1", ns)
-	})
-
-	suite.T().Run("allNamespaces", func(t *testing.T) {
-		suite.ioctx.SetNamespace(AllNamespaces)
-		ns, err := suite.ioctx.GetNamespace()
-		assert.NoError(suite.T(), err)
-		assert.Equal(suite.T(), AllNamespaces, ns)
-	})
-
-	suite.T().Run("invalidIoctx", func(t *testing.T) {
-		i := &IOContext{}
-		ns, err := i.GetNamespace()
-		assert.Error(suite.T(), err)
-		assert.Equal(suite.T(), "", ns)
+		err = ioctx.UnsetPoolFullTry()
+		assert.NoError(t, err)
 	})
 }

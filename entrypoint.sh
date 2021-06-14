@@ -15,10 +15,9 @@ CEPH_CONF=/tmp/ceph/ceph.conf
 
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
-# GO_CEPH_TEST_MOUNT_DIR
 # GO_CEPH_TEST_MDS_NAME
 
-CLI="$(getopt -o h --long test-run:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,results:,ceph-conf:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-bench:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -32,12 +31,22 @@ while true ; do
             shift
             shift
         ;;
+        --test-bench)
+            TEST_BENCH="${2}"
+            shift
+            shift
+        ;;
         --pause)
             PAUSE=yes
             shift
         ;;
         --micro-osd)
             MICRO_OSD_PATH="${2}"
+            shift
+            shift
+        ;;
+        --wait-for)
+            WAIT_FILES="${2}"
             shift
             shift
         ;;
@@ -48,6 +57,11 @@ while true ; do
         ;;
         --ceph-conf)
             CEPH_CONF="${2}"
+            shift
+            shift
+        ;;
+        --mirror)
+            MIRROR_CONF="${2}"
             shift
             shift
         ;;
@@ -67,11 +81,15 @@ while true ; do
             echo "Options:"
             echo "  --test-run=VALUE    Run selected test or ALL, NONE"
             echo "                      ALL is the default"
+            echo "  --test-bench=VALUE  Run selected benchmarks"
             echo "  --test-pkg=PKG      Run only tests from PKG"
             echo "  --pause             Sleep forever after tests execute"
             echo "  --micro-osd         Specify path to micro-osd script"
+            echo "  --wait-for=FILES    Wait for files before starting tests"
+            echo "                      (colon separated, disables micro-osd)"
             echo "  --results=PATH      Specify path to store test results"
             echo "  --ceph-conf=PATH    Specify path to ceph configuration"
+            echo "  --mirror=PATH       Specify path to ceph conf of mirror"
             echo "  --cpuprofile        Run tests with cpu profiling"
             echo "  --memprofile        Run tests with mem profiling"
             echo "  --no-cover          Disable code coverage profiling"
@@ -107,11 +125,52 @@ show() {
     "$@"
 }
 
+wait_for_files() {
+    for file in "$@" ; do
+        echo -n "*** waiting for $file ..."
+        while ! [[ -f $file ]] ; do
+            sleep 1
+        done
+        echo "done"
+    done
+}
+
 test_failed() {
     local pkg="${1}"
     echo "*** ERROR: ${pkg} tests failed"
     pause_if_needed
     return 1
+}
+
+setup_mirroring() {
+    echo "Setting up mirroring..."
+    local CONF_A=${CEPH_CONF}
+    local CONF_B=${MIRROR_CONF}
+    ceph -c $CONF_A osd pool create rbd 8
+    ceph -c $CONF_B osd pool create rbd 8
+    rbd -c $CONF_A pool init
+    rbd -c $CONF_B pool init
+    rbd -c $CONF_A mirror pool enable rbd image
+    rbd -c $CONF_B mirror pool enable rbd image
+    rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd > token
+    rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd token
+
+    rbd -c $CONF_A rm mirror_test 2>/dev/null || true
+    rbd -c $CONF_B rm mirror_test 2>/dev/null || true
+    (echo "Mirror Test"; dd if=/dev/zero bs=1 count=500K) | rbd -c $CONF_A import - mirror_test
+    rbd -c $CONF_A mirror image enable mirror_test snapshot
+    echo -n "Waiting for mirroring activation..."
+    while ! rbd -c $CONF_A mirror image status mirror_test \
+      | grep -q "state: \+up+replaying" ; do
+        sleep 1
+    done
+    echo "done"
+    rbd -c $CONF_A mirror image snapshot mirror_test
+    echo -n "Waiting for mirror sync..."
+    while ! rbd -c $CONF_B export mirror_test - 2>/dev/null | grep -q "Mirror Test" ; do
+        sleep 1
+    done
+    echo " mirroring functional!"
 }
 
 test_pkg() {
@@ -131,11 +190,14 @@ test_pkg() {
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
     fi
+    if [[ -n ${TEST_BENCH} ]]; then
+        testargs+=("-bench" "${TEST_BENCH}")
+    fi
     if [[ ${COVERAGE} = yes ]]; then
         testargs+=(\
             "-covermode=count" \
             "-coverprofile=${pkg}.cover.out" \
-            "-coverpkg=${P}/${pkg}")
+            "-coverpkg=${PKG_PREFIX}/${pkg}")
     fi
     if [[ ${CPUPROFILE} = yes ]]; then
         testargs+=("-cpuprofile" "${pkg}.cpu.out")
@@ -178,7 +240,9 @@ post_all_tests() {
 
 test_go_ceph() {
     mkdir -p /tmp/ceph
-    show "${MICRO_OSD_PATH}" /tmp/ceph
+    if ! [[ ${WAIT_FILES} ]]; then
+        show "${MICRO_OSD_PATH}" /tmp/ceph
+    fi
     export CEPH_CONF
 
     if [[ ${TEST_RUN} == NONE ]]; then
@@ -186,19 +250,17 @@ test_go_ceph() {
         return 0
     fi
 
-    P=github.com/ceph/go-ceph
-    pkgs=(\
-        "cephfs" \
-        "cephfs/admin" \
-        "internal/callbacks" \
-        "internal/cutil" \
-        "internal/errutil" \
-        "internal/retry" \
-        "rados" \
-        "rbd" \
-        )
+    PKG_PREFIX=github.com/ceph/go-ceph
+    pkgs=$(go list ./... | sed -e "s,^${PKG_PREFIX}/\?,," | grep -v ^contrib)
     pre_all_tests
-    for pkg in "${pkgs[@]}"; do
+    if [[ ${WAIT_FILES} ]]; then
+        wait_for_files ${WAIT_FILES//:/ }
+    fi
+    if [[ ${MIRROR_CONF} && ${CEPH_VERSION} != nautilus ]]; then
+        setup_mirroring
+        export MIRROR_CONF
+    fi
+    for pkg in ${pkgs}; do
         test_pkg "${pkg}" || test_failed "${pkg}"
     done
     post_all_tests
@@ -213,3 +275,5 @@ pause_if_needed() {
 
 test_go_ceph
 pause_if_needed
+
+# vim: set ts=4 sw=4 sts=4 et:

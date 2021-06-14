@@ -37,8 +37,22 @@ func radosConnect(t *testing.T) *rados.Conn {
 	require.NoError(t, err)
 	err = conn.ReadDefaultConfigFile()
 	require.NoError(t, err)
+	waitForRadosConn(t, conn)
+	return conn
+}
 
-	timeout := time.After(time.Second * 5)
+func radosConnectConfig(t *testing.T, p string) *rados.Conn {
+	conn, err := rados.NewConn()
+	require.NoError(t, err)
+	err = conn.ReadConfigFile(p)
+	require.NoError(t, err)
+	waitForRadosConn(t, conn)
+	return conn
+}
+
+func waitForRadosConn(t *testing.T, conn *rados.Conn) {
+	var err error
+	timeout := time.After(time.Second * 15)
 	ch := make(chan error)
 	go func(conn *rados.Conn) {
 		ch <- conn.Connect()
@@ -49,7 +63,6 @@ func radosConnect(t *testing.T) *rados.Conn {
 		err = fmt.Errorf("timed out waiting for connect")
 	}
 	require.NoError(t, err)
-	return conn
 }
 
 func TestImageCreate(t *testing.T) {
@@ -937,6 +950,87 @@ func TestImageCopy(t *testing.T) {
 		assert.NoError(t, err)
 
 		err = img.Remove()
+		assert.NoError(t, err)
+	})
+
+	ioctx.Destroy()
+	conn.DeletePool(poolname)
+	conn.Shutdown()
+}
+
+func TestImageDeepCopy(t *testing.T) {
+	conn := radosConnect(t)
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+
+	t.Run("invalidParameters", func(t *testing.T) {
+		name := GetUUID()
+		options := NewRbdImageOptions()
+		defer options.Destroy()
+		err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
+		assert.NoError(t, err)
+		err = CreateImage(ioctx, name, testImageSize, options)
+		require.NoError(t, err)
+
+		// img not open, should fail
+		img := GetImage(ioctx, name)
+		err = img.DeepCopy(nil, "", nil)
+		assert.Equal(t, err, ErrImageNotOpen)
+
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		require.NoError(t, err)
+
+		// pass invalid parameters
+		err = img.DeepCopy(nil, "", nil)
+		assert.Error(t, err) // order of errors not enforced
+
+		err = img.DeepCopy(ioctx, "", options)
+		assert.Equal(t, err, ErrNoName)
+
+		err = img.DeepCopy(nil, "duplicate", options)
+		assert.Equal(t, err, ErrNoIOContext)
+
+		err = img.DeepCopy(ioctx, "copied", nil)
+		assert.Error(t, err) // rbdError(C.EINVAL), but can not use C in tests
+
+		err = img.Close()
+		assert.NoError(t, err)
+		err = RemoveImage(ioctx, name)
+		assert.NoError(t, err)
+	})
+
+	// try successful copying
+	t.Run("successfulDeepCopy", func(t *testing.T) {
+		name := GetUUID()
+		options := NewRbdImageOptions()
+		defer options.Destroy()
+		err = options.SetUint64(ImageOptionOrder, uint64(testImageOrder))
+		assert.NoError(t, err)
+		err = CreateImage(ioctx, name, testImageSize, options)
+		require.NoError(t, err)
+
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		require.NoError(t, err)
+
+		name2 := GetUUID()
+		err = img.DeepCopy(ioctx, name2, options)
+		require.NoError(t, err)
+
+		img2, err := OpenImage(ioctx, name2, NoSnapshot)
+		require.NoError(t, err)
+
+		err = img2.Close()
+		assert.NoError(t, err)
+
+		err = img2.Remove()
+		assert.NoError(t, err)
+
+		err = img.Close()
 		assert.NoError(t, err)
 	})
 

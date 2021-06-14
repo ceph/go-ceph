@@ -11,6 +11,7 @@ There are three main Go sub-packages that make up go-ceph:
 * rados - exports functionality from Ceph's librados
 * rbd - exports functionality from Ceph's librbd
 * cephfs - exports functionality from Ceph's libcephfs
+* rgw/admin - interact with [radosgw admin ops API](https://docs.ceph.com/en/latest/radosgw/adminops)
 
 We aim to provide comprehensive support for the Ceph APIs over time. This
 includes both I/O related functions and management functions.  If your project
@@ -59,6 +60,8 @@ go test -tags nautilus ....
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.10.0         | nautilus, octopus, pacific  |                      |
+| v0.9.0          | nautilus, octopus       |                          |
 | v0.8.0          | nautilus, octopus       |                          |
 | v0.7.0          | nautilus, octopus       |                          |
 | v0.6.0          | nautilus, octopus       | mimic                    |
@@ -89,7 +92,7 @@ introduce how some of API calls work together.
 
 ```
 docker run --rm -it --net=host \
-  --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined \
+  --security-opt apparmor:unconfined \
   -v ${PWD}:/go/src/github.com/ceph/go-ceph:z \
   -v /home/nwatkins/src/ceph/build:/home/nwatkins/src/ceph/build:z \
   -e CEPH_CONF=/home/nwatkins/src/ceph/build/ceph.conf \

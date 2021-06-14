@@ -1,6 +1,7 @@
 .build-docker
+.build.*
 *.swp
 *.out
 *.test
-*.json
+/*.json
 implements

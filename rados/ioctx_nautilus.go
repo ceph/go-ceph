@@ -1,4 +1,4 @@
-// +build !luminous,!mimic
+// +build nautilus
 
 package rados
 
@@ -7,37 +7,28 @@ package rados
 //
 import "C"
 
-import (
-	"unsafe"
-
-	"github.com/ceph/go-ceph/internal/retry"
-)
-
-// GetNamespace gets the namespace used for objects within this IO context.
+// SetPoolFullTry makes sure to send requests to the cluster despite
+// the cluster or pool being marked full; ops will either succeed(e.g., delete)
+// or return EDQUOT or ENOSPC.
 //
 // Implements:
-//  int rados_ioctx_get_namespace(rados_ioctx_t io, char *buf,
-//                                unsigned maxlen);
-func (ioctx *IOContext) GetNamespace() (string, error) {
+//  void rados_set_osdmap_full_try(rados_ioctx_t io);
+func (ioctx *IOContext) SetPoolFullTry() error {
 	if err := ioctx.validate(); err != nil {
-		return "", err
+		return err
 	}
-	var (
-		err error
-		buf []byte
-		ret C.int
-	)
-	retry.WithSizes(128, 8192, func(size int) retry.Hint {
-		buf = make([]byte, size)
-		ret = C.rados_ioctx_get_namespace(
-			ioctx.ioctx,
-			(*C.char)(unsafe.Pointer(&buf[0])),
-			C.unsigned(len(buf)))
-		err = getErrorIfNegative(ret)
-		return retry.DoubleSize.If(err == errRange)
-	})
-	if err != nil {
-		return "", err
+	C.rados_set_osdmap_full_try(ioctx.ioctx)
+	return nil
+}
+
+// UnsetPoolFullTry unsets the flag set by SetPoolFullTry()
+//
+// Implements:
+//  void rados_unset_osdmap_full_try(rados_ioctx_t io);
+func (ioctx *IOContext) UnsetPoolFullTry() error {
+	if err := ioctx.validate(); err != nil {
+		return err
 	}
-	return string(buf[:ret]), nil
+	C.rados_unset_osdmap_full_try(ioctx.ioctx)
+	return nil
 }

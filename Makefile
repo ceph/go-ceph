@@ -3,7 +3,7 @@ CONTAINER_CMD ?=
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
 CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS :=
-CEPH_VERSION := nautilus
+CEPH_VERSION := octopus
 RESULTS_DIR :=
 CHECK_GOFMT_FLAGS := -e -s -l
 IMPLEMENTS_OPTS :=
@@ -27,6 +27,10 @@ ifneq ($(USE_PTRGUARD),)
 	BUILD_TAGS := $(BUILD_TAGS),ptrguard
 endif
 
+ifneq ($(USE_CACHE),)
+	GOCACHE_VOLUME := -v test_ceph_go_cache:/go
+endif
+
 SELINUX := $(shell getenforce 2>/dev/null)
 ifeq ($(SELINUX),Enforcing)
 	VOLUME_FLAGS = :z
@@ -43,10 +47,26 @@ fmt:
 test:
 	go test -v -tags $(BUILD_TAGS) ./...
 
-.PHONY: test-docker test-container
+.PHONY: test-docker test-container test-multi-container
 test-docker: test-container
 test-container: $(BUILDFILE) $(RESULTS_DIR)
-	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(CI_IMAGE_TAG)
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm --hostname test_ceph_aio \
+		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(GOCACHE_VOLUME) \
+		$(CI_IMAGE_TAG) $(ENTRYPOINT_ARGS)
+test-multi-container: $(BUILDFILE) $(RESULTS_DIR)
+	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b 2>/dev/null || true
+	$(CONTAINER_CMD) volume remove test_ceph_a_data test_ceph_b_data 2>/dev/null || true
+	$(CONTAINER_CMD) network create test_ceph_net 2>/dev/null || true
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -d --name test_ceph_a --hostname test_ceph_a --net test_ceph_net \
+		-v test_ceph_a_data:/tmp/ceph $(CI_IMAGE_TAG) --test-run=NONE --pause
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -d --name test_ceph_b --hostname test_ceph_b --net test_ceph_net \
+		-v test_ceph_b_data:/tmp/ceph $(CI_IMAGE_TAG) --test-run=NONE --pause
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm \
+		--net test_ceph_net -v test_ceph_a_data:/ceph_a -v test_ceph_b_data:/ceph_b \
+		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(GOCACHE_VOLUME) \
+		$(CI_IMAGE_TAG) --wait-for=/ceph_a/.ready:/ceph_b/.ready --ceph-conf=/ceph_a/ceph.conf \
+		--mirror=/ceph_b/ceph.conf $(ENTRYPOINT_ARGS)
+	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b
 
 ifdef RESULTS_DIR
 $(RESULTS_DIR):
@@ -80,7 +100,8 @@ test-binaries: \
 	internal/errutil.test \
 	internal/retry.test \
 	rados.test \
-	rbd.test
+	rbd.test \
+	rbd/admin.test
 test-bins: test-binaries
 
 %.test: % force_go_build

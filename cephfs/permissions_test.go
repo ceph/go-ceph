@@ -64,3 +64,32 @@ func TestChown(t *testing.T) {
 	assert.Equal(t, uint32(sx.Uid), bob)
 	assert.Equal(t, uint32(sx.Gid), bob)
 }
+
+func TestLchown(t *testing.T) {
+	dirname := "four"
+	var bob uint32 = 1010
+	var root uint32
+
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	err := mount.MakeDir(dirname, 0755)
+	assert.NoError(t, err)
+	defer mount.RemoveDir(dirname)
+
+	err = mount.SyncFs()
+	assert.NoError(t, err)
+
+	err = mount.Symlink(dirname, "symlnk")
+	assert.NoError(t, err)
+	defer mount.Unlink("symlnk")
+
+	err = mount.Lchown("symlnk", bob, bob)
+	sx, err := mount.Statx("symlnk", StatxBasicStats, AtSymlinkNofollow)
+	assert.NoError(t, err)
+	assert.Equal(t, uint32(sx.Uid), bob)
+	assert.Equal(t, uint32(sx.Gid), bob)
+	sx, err = mount.Statx(dirname, StatxBasicStats, AtSymlinkNofollow)
+	assert.Equal(t, uint32(sx.Uid), root)
+	assert.Equal(t, uint32(sx.Gid), root)
+}

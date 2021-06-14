@@ -4,7 +4,6 @@ package admin
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -12,6 +11,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ceph/go-ceph/internal/commands"
 )
 
 var (
@@ -21,8 +22,13 @@ var (
 	debugTrace = false
 
 	// some tests are sensitive to the server version
-	serverIsNautilus = false
-	serverIsOctopus  = false
+	serverVersion string
+)
+
+const (
+	cephNautilus = "nautilus"
+	cephOctopus  = "octopus"
+	cephPacfic   = "pacific"
 )
 
 func init() {
@@ -30,11 +36,9 @@ func init() {
 	if ok, err := strconv.ParseBool(dt); ok && err == nil {
 		debugTrace = true
 	}
-	switch os.Getenv("CEPH_VERSION") {
-	case "nautilus":
-		serverIsNautilus = true
-	case "octopus":
-		serverIsOctopus = true
+	switch vname := os.Getenv("CEPH_VERSION"); vname {
+	case cephNautilus, cephOctopus, cephPacfic:
+		serverVersion = vname
 	}
 }
 
@@ -48,52 +52,9 @@ func TestServerSentinel(t *testing.T) {
 	// This check is intended to fail the test suite if you don't tell it a
 	// server version it expects and force us to update the tests if a new
 	// version of ceph is added.
-	if !serverIsNautilus && !serverIsOctopus {
-		t.Fatalf("server must be nautilus or octopus (do the tests need updating?)")
+	if serverVersion == "" {
+		t.Fatalf("server must be nautilus, octopus, or pacific (do the tests need updating?)")
 	}
-}
-
-// tracingCommander serves two purposes: first, it allows one to trace the
-// input and output json when running the tests. It can help with actually
-// debugging the tests. Second, it demonstrates the rationale for using an
-// interface in FSAdmin. You can layer any sort of debugging, error injection,
-// or whatnot between the FSAdmin layer and the RADOS layer.
-type tracingCommander struct {
-	conn RadosCommander
-}
-
-func tracer(c RadosCommander) RadosCommander {
-	return &tracingCommander{c}
-}
-
-func (t *tracingCommander) MgrCommand(buf [][]byte) ([]byte, string, error) {
-	fmt.Println("(MGR Command)")
-	for i := range buf {
-		fmt.Println("IN:", string(buf[i]))
-	}
-	r, s, err := t.conn.MgrCommand(buf)
-	fmt.Println("OUT(result):", string(r))
-	if s != "" {
-		fmt.Println("OUT(status):", s)
-	}
-	if err != nil {
-		fmt.Println("OUT(error):", err.Error())
-	}
-	return r, s, err
-}
-
-func (t *tracingCommander) MonCommand(buf []byte) ([]byte, string, error) {
-	fmt.Println("(MON Command)")
-	fmt.Println("IN:", string(buf))
-	r, s, err := t.conn.MonCommand(buf)
-	fmt.Println("OUT(result):", string(r))
-	if s != "" {
-		fmt.Println("OUT(status):", s)
-	}
-	if err != nil {
-		fmt.Println("OUT(error):", err.Error())
-	}
-	return r, s, err
 }
 
 func getFSAdmin(t *testing.T) *FSAdmin {
@@ -107,7 +68,7 @@ func getFSAdmin(t *testing.T) *FSAdmin {
 	// optional tracer.
 	c := fsa.conn
 	if debugTrace {
-		c = tracer(c)
+		c = commands.NewTraceCommander(c)
 	}
 	cachedFSAdmin = NewFromConn(c)
 	// We sleep briefly before returning in order to ensure we have a mgr map
@@ -163,20 +124,20 @@ func TestParseListNames(t *testing.T) {
 func TestCheckEmptyResponseExpected(t *testing.T) {
 	R := newResponse
 	t.Run("error", func(t *testing.T) {
-		err := R(nil, "", errors.New("bonk")).noData().End()
+		err := R(nil, "", errors.New("bonk")).NoData().End()
 		assert.Error(t, err)
 		assert.Equal(t, "bonk", err.Error())
 	})
 	t.Run("statusSet", func(t *testing.T) {
-		err := R(nil, "unexpected!", nil).noData().End()
+		err := R(nil, "unexpected!", nil).NoData().End()
 		assert.Error(t, err)
 	})
 	t.Run("someJSON", func(t *testing.T) {
-		err := R([]byte(`{"trouble": true}`), "", nil).noData().End()
+		err := R([]byte(`{"trouble": true}`), "", nil).NoData().End()
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		err := R([]byte{}, "", nil).noData().End()
+		err := R([]byte{}, "", nil).NoData().End()
 		assert.NoError(t, err)
 	})
 }
