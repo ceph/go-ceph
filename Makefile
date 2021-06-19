@@ -16,6 +16,9 @@ ifeq ($(CONTAINER_CMD),)
 	CONTAINER_CMD:=$(shell podman version >/dev/null 2>&1 && echo podman)
 endif
 
+GO_CMD:=go
+GOFMT_CMD:=gofmt
+
 # the full name of the marker file including the ceph version
 BUILDFILE=.build.$(CEPH_VERSION)
 
@@ -41,11 +44,11 @@ ifdef RESULTS_DIR
 endif
 
 build:
-	go build -v -tags $(BUILD_TAGS) $(shell go list ./... | grep -v /contrib)
+	$(GO_CMD) build -v -tags $(BUILD_TAGS) $(shell $(GO_CMD) list ./... | grep -v /contrib)
 fmt:
-	go fmt ./...
+	$(GO_CMD) fmt ./...
 test:
-	go test -v -tags $(BUILD_TAGS) ./...
+	$(GO_CMD) test -v -tags $(BUILD_TAGS) ./...
 
 .PHONY: test-docker test-container test-multi-container
 test-docker: test-container
@@ -83,12 +86,12 @@ $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
 check: check-revive check-format
 
 check-format:
-	! gofmt $(CHECK_GOFMT_FLAGS) . | sed 's,^,formatting error: ,' | grep 'go$$'
+	! $(GOFMT_CMD) $(CHECK_GOFMT_FLAGS) . | sed 's,^,formatting error: ,' | grep 'go$$'
 
 check-revive:
 	# Configure project's revive checks using .revive.toml
 	# See: https://github.com/mgechev/revive
-	revive -config .revive.toml $$(go list ./... | grep -v /vendor/)
+	revive -config .revive.toml $$($(GO_CMD) list ./... | grep -v /vendor/)
 
 # Do a quick compile only check of the tests and impliclity the
 # library code as well.
@@ -105,10 +108,10 @@ test-binaries: \
 test-bins: test-binaries
 
 %.test: % force_go_build
-	go test -c -tags $(BUILD_TAGS) ./$<
+	$(GO_CMD) test -c -tags $(BUILD_TAGS) ./$<
 
 implements:
-	go build -o implements ./contrib/implements
+	$(GO_CMD) build -o implements ./contrib/implements
 
 check-implements: implements
 	./implements $(IMPLEMENTS_OPTS) ./cephfs ./rados ./rbd
