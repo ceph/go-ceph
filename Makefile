@@ -43,6 +43,11 @@ ifdef RESULTS_DIR
 	RESULTS_VOLUME := -v $(RESULTS_DIR):/results$(VOLUME_FLAGS)
 endif
 
+ifneq ($(USE_GOCO),)
+	GO_CMD:=$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm $(GOCACHE_VOLUME) -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) --entrypoint $(GO_CMD) $(CI_IMAGE_TAG)
+	GOFMT_CMD:=$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm $(GOCACHE_VOLUME) -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) --entrypoint $(GOFMT_CMD) $(CI_IMAGE_TAG)
+endif
+
 build:
 	$(GO_CMD) build -v -tags $(BUILD_TAGS) $(shell $(GO_CMD) list ./... | grep -v /contrib)
 fmt:
