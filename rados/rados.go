@@ -93,14 +93,14 @@ func NewConnWithUser(user string) (*Conn, error) {
 // NewConnWithClusterAndUser creates a new connection object for a specific cluster and username.
 // It returns the connection and an error, if any.
 func NewConnWithClusterAndUser(clusterName string, userName string) (*Conn, error) {
-	c_cluster_name := C.CString(clusterName)
-	defer C.free(unsafe.Pointer(c_cluster_name))
+	cClusterName := C.CString(clusterName)
+	defer C.free(unsafe.Pointer(cClusterName))
 
-	c_name := C.CString(userName)
-	defer C.free(unsafe.Pointer(c_name))
+	cName := C.CString(userName)
+	defer C.free(unsafe.Pointer(cName))
 
 	conn := makeConn()
-	ret := C.rados_create2(&conn.cluster, c_cluster_name, c_name, 0)
+	ret := C.rados_create2(&conn.cluster, cClusterName, cName, 0)
 	if ret != 0 {
 		return nil, getError(ret)
 	}
