@@ -38,13 +38,13 @@ func (c *Conn) Cluster() ClusterRef {
 
 // PingMonitor sends a ping to a monitor and returns the reply.
 func (c *Conn) PingMonitor(id string) (string, error) {
-	c_id := C.CString(id)
-	defer C.free(unsafe.Pointer(c_id))
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
 
 	var strlen C.size_t
 	var strout *C.char
 
-	ret := C.rados_ping_monitor(c.cluster, c_id, &strout, &strlen)
+	ret := C.rados_ping_monitor(c.cluster, cid, &strout, &strlen)
 	defer C.rados_buffer_free(strout)
 
 	if ret == 0 {
@@ -298,8 +298,8 @@ func (c *Conn) GetPoolByID(id int64) (string, error) {
 	if err := c.ensure_connected(); err != nil {
 		return "", err
 	}
-	c_id := C.int64_t(id)
-	ret := int(C.rados_pool_reverse_lookup(c.cluster, c_id, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
+	cid := C.int64_t(id)
+	ret := int(C.rados_pool_reverse_lookup(c.cluster, cid, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf))))
 	if ret < 0 {
 		return "", radosError(ret)
 	}
