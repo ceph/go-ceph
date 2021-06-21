@@ -179,16 +179,16 @@ func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
 	if err := c.ensure_connected(); err != nil {
 		return ClusterStat{}, err
 	}
-	c_stat := C.struct_rados_cluster_stat_t{}
-	ret := C.rados_cluster_stat(c.cluster, &c_stat)
+	cStat := C.struct_rados_cluster_stat_t{}
+	ret := C.rados_cluster_stat(c.cluster, &cStat)
 	if ret < 0 {
 		return ClusterStat{}, getError(ret)
 	}
 	return ClusterStat{
-		Kb:          uint64(c_stat.kb),
-		Kb_used:     uint64(c_stat.kb_used),
-		Kb_avail:    uint64(c_stat.kb_avail),
-		Num_objects: uint64(c_stat.num_objects),
+		Kb:          uint64(cStat.kb),
+		Kb_used:     uint64(cStat.kb_used),
+		Kb_avail:    uint64(cStat.kb_avail),
+		Num_objects: uint64(cStat.num_objects),
 	}, nil
 }
 
