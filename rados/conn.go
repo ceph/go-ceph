@@ -261,9 +261,9 @@ func (c *Conn) GetInstanceID() uint64 {
 
 // MakePool creates a new pool with default settings.
 func (c *Conn) MakePool(name string) error {
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
-	ret := C.rados_pool_create(c.cluster, c_name)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	ret := C.rados_pool_create(c.cluster, cName)
 	return getError(ret)
 }
 
@@ -272,9 +272,9 @@ func (c *Conn) DeletePool(name string) error {
 	if err := c.ensure_connected(); err != nil {
 		return err
 	}
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
-	ret := C.rados_pool_delete(c.cluster, c_name)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	ret := C.rados_pool_delete(c.cluster, cName)
 	return getError(ret)
 }
 
@@ -283,9 +283,9 @@ func (c *Conn) GetPoolByName(name string) (int64, error) {
 	if err := c.ensure_connected(); err != nil {
 		return 0, err
 	}
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
-	ret := int64(C.rados_pool_lookup(c.cluster, c_name))
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	ret := int64(C.rados_pool_lookup(c.cluster, cName))
 	if ret < 0 {
 		return 0, radosError(ret)
 	}
