@@ -94,10 +94,10 @@ func (c *Conn) ReadDefaultConfigFile() error {
 //  int rados_ioctx_create(rados_t cluster, const char *pool_name,
 //                         rados_ioctx_t *ioctx);
 func (c *Conn) OpenIOContext(pool string) (*IOContext, error) {
-	c_pool := C.CString(pool)
-	defer C.free(unsafe.Pointer(c_pool))
+	cPool := C.CString(pool)
+	defer C.free(unsafe.Pointer(cPool))
 	ioctx := &IOContext{}
-	ret := C.rados_ioctx_create(c.cluster, c_pool, &ioctx.ioctx)
+	ret := C.rados_ioctx_create(c.cluster, cPool, &ioctx.ioctx)
 	if ret == 0 {
 		return ioctx, nil
 	}
