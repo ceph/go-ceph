@@ -127,10 +127,10 @@ func (c *Conn) ListPools() (names []string, err error) {
 // SetConfigOption sets the value of the configuration option identified by
 // the given name.
 func (c *Conn) SetConfigOption(option, value string) error {
-	c_opt, c_val := C.CString(option), C.CString(value)
-	defer C.free(unsafe.Pointer(c_opt))
-	defer C.free(unsafe.Pointer(c_val))
-	ret := C.rados_conf_set(c.cluster, c_opt, c_val)
+	cOpt, cVal := C.CString(option), C.CString(value)
+	defer C.free(unsafe.Pointer(cOpt))
+	defer C.free(unsafe.Pointer(cVal))
+	ret := C.rados_conf_set(c.cluster, cOpt, cVal)
 	return getError(ret)
 }
 
