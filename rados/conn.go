@@ -75,9 +75,9 @@ func (c *Conn) Shutdown() {
 
 // ReadConfigFile configures the connection using a Ceph configuration file.
 func (c *Conn) ReadConfigFile(path string) error {
-	c_path := C.CString(path)
-	defer C.free(unsafe.Pointer(c_path))
-	ret := C.rados_conf_read_file(c.cluster, c_path)
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+	ret := C.rados_conf_read_file(c.cluster, cPath)
 	return getError(ret)
 }
 
