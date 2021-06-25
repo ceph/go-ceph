@@ -71,12 +71,12 @@ func (imm ImageMirrorMode) String() string {
 	}
 }
 
-//  GetMirrorUUID returns a string naming the mirroring uuid for the pool
-//  associated with the ioctx.
+// GetMirrorUUID returns a string naming the mirroring uuid for the pool
+// associated with the ioctx.
 //
-//  Implements:
-//  int rbd_mirror_uuid_get(rados_ioctx_t io_ctx,
-//	                       char *uuid, size_t *max_len);
+// Implements:
+//  int rbd_mirror_uuid_get(rados_ioctx_t io_ctx, char *uuid, size_t
+//                          *max_len);
 func GetMirrorUUID(ioctx *rados.IOContext) (string, error) {
 	var (
 		err   error
