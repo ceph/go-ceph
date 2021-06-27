@@ -655,8 +655,8 @@ func mirrorImageGlobalStatusList(
 		cephIoctx(ioctx),
 		cStart,
 		max,
-		(**C.char)(unsafe.Pointer(&ids[0])),
-		(*C.rbd_mirror_image_global_status_t)(unsafe.Pointer(&images[0])),
+		&ids[0],
+		&images[0],
 		&length)
 
 	for i := 0; i < int(length); i++ {
@@ -664,8 +664,8 @@ func mirrorImageGlobalStatusList(
 		results[i].Status = newGlobalMirrorImageStatus(&images[0])
 	}
 	C.rbd_mirror_image_global_status_list_cleanup(
-		(**C.char)(unsafe.Pointer(&ids[0])),
-		(*C.rbd_mirror_image_global_status_t)(unsafe.Pointer(&images[0])),
+		&ids[0],
+		&images[0],
 		length)
 	return int(length), getError(ret)
 }
