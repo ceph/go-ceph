@@ -782,11 +782,11 @@ func TestMirrorBootstrapToken(t *testing.T) {
 
 func TestMirrorImageGlobalStatusIter(t *testing.T) {
 	defer func(x int) {
-		statusIterBufSize = x
-	}(statusIterBufSize)
+		iterBufSize = x
+	}(iterBufSize)
 	// shrink the buffer size in order to trigger more of the
 	// retry logic in the iter type
-	statusIterBufSize = 4
+	iterBufSize = 4
 
 	conn := radosConnect(t)
 	poolName := GetUUID()

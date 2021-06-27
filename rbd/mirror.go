@@ -50,6 +50,16 @@ func (m MirrorMode) String() string {
 // ImageMirrorMode is used to indicate the mirroring approach for an RBD image.
 type ImageMirrorMode int64
 
+// ImageMirrorModeFilter is a ImageMirrorMode or nil for no filtering
+type ImageMirrorModeFilter interface {
+	mode() ImageMirrorMode
+}
+
+// Mode returns the ImageMirrorMode
+func (imm ImageMirrorMode) mode() ImageMirrorMode {
+	return imm
+}
+
 const (
 	// ImageMirrorModeJournal uses journaling to propagate RBD images between
 	// ceph clusters.
@@ -660,10 +670,10 @@ func mirrorImageGlobalStatusList(
 	return int(length), getError(ret)
 }
 
-// statusIterBufSize is intentionally not a constant. The unit tests alter
+// iterBufSize is intentionally not a constant. The unit tests alter
 // this value in order to get more code coverage w/o needing to create
 // very many images.
-var statusIterBufSize = 64
+var iterBufSize = 64
 
 // MirrorImageGlobalStatusIter provide methods for iterating over all
 // the GlobalMirrorImageIdAndStatus values in a pool.
@@ -709,10 +719,112 @@ func (iter *MirrorImageGlobalStatusIter) Close() error {
 
 func (iter *MirrorImageGlobalStatusIter) fetch() error {
 	iter.buf = nil
-	items := make([]GlobalMirrorImageIDAndStatus, statusIterBufSize)
+	items := make([]GlobalMirrorImageIDAndStatus, iterBufSize)
 	n, err := mirrorImageGlobalStatusList(
 		iter.ioctx,
 		iter.lastID,
+		items)
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		iter.buf = items[:n]
+	}
+	return nil
+}
+
+// MirrorImageInfoItem contains an ID string for a RBD image and that image's
+// ImageMirrorMode and MirrorImageInfo.
+type MirrorImageInfoItem struct {
+	ID   string
+	Mode ImageMirrorMode
+	Info MirrorImageInfo
+}
+
+func mirrorImageInfoList(ioctx *rados.IOContext, start string,
+	modeFilter ImageMirrorModeFilter, results []MirrorImageInfoItem) (int, error) {
+
+	cStart := C.CString(start)
+	defer C.free(unsafe.Pointer(cStart))
+
+	var (
+		max           = C.size_t(len(results))
+		length        = C.size_t(0)
+		ids           = make([]*C.char, len(results))
+		modes         = make([]C.rbd_mirror_image_mode_t, len(results))
+		infos         = make([]C.rbd_mirror_image_info_t, len(results))
+		modeFilterPtr *C.rbd_mirror_image_mode_t
+	)
+	if modeFilter != nil {
+		cMode := C.rbd_mirror_image_mode_t(modeFilter.mode())
+		modeFilterPtr = &cMode
+	}
+	ret := C.rbd_mirror_image_info_list(
+		cephIoctx(ioctx),
+		modeFilterPtr,
+		cStart,
+		max,
+		&ids[0],
+		&modes[0],
+		&infos[0],
+		&length,
+	)
+
+	for i := 0; i < int(length); i++ {
+		results[i].ID = C.GoString(ids[i])
+		results[i].Mode = ImageMirrorMode(modes[i])
+		results[i].Info = convertMirrorImageInfo(&infos[i])
+	}
+	C.rbd_mirror_image_info_list_cleanup(
+		&ids[0],
+		&infos[0],
+		length)
+	return int(length), getError(ret)
+}
+
+// MirrorImageInfoIter provide methods for iterating over all
+// the MirrorImageInfoItem values in a pool.
+type MirrorImageInfoIter struct {
+	ioctx *rados.IOContext
+
+	modeFilter ImageMirrorModeFilter
+	buf        []MirrorImageInfoItem
+	lastID     string
+}
+
+// NewMirrorImageInfoIter creates a new iterator ready for use.
+func NewMirrorImageInfoIter(ioctx *rados.IOContext, modeFilter ImageMirrorModeFilter) *MirrorImageInfoIter {
+	return &MirrorImageInfoIter{
+		ioctx:      ioctx,
+		modeFilter: modeFilter,
+	}
+}
+
+// Next fetches one MirrorImageInfoItem value or a nil value if iteration is
+// exhausted. The error return will be non-nil if an underlying error fetching
+// more values occurred.
+func (iter *MirrorImageInfoIter) Next() (*MirrorImageInfoItem, error) {
+	if len(iter.buf) == 0 {
+		if err := iter.fetch(); err != nil {
+			return nil, err
+		}
+		if len(iter.buf) == 0 {
+			return nil, nil
+		}
+		iter.lastID = iter.buf[len(iter.buf)-1].ID
+	}
+	item := iter.buf[0]
+	iter.buf = iter.buf[1:]
+	return &item, nil
+}
+
+func (iter *MirrorImageInfoIter) fetch() error {
+	iter.buf = nil
+	items := make([]MirrorImageInfoItem, iterBufSize)
+	n, err := mirrorImageInfoList(
+		iter.ioctx,
+		iter.lastID,
+		iter.modeFilter,
 		items)
 	if err != nil {
 		return err
