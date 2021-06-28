@@ -182,8 +182,8 @@ func (ioctx *IOContext) Append(oid string, data []byte) error {
 // Read reads up to len(data) bytes from the object with key oid starting at byte
 // offset offset. It returns the number of bytes read and an error, if any.
 func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error) {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
 
 	var buf *C.char
 	if len(data) > 0 {
@@ -192,7 +192,7 @@ func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error
 
 	ret := C.rados_read(
 		ioctx.ioctx,
-		c_oid,
+		coid,
 		buf,
 		(C.size_t)(len(data)),
 		(C.uint64_t)(offset))
