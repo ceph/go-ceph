@@ -380,33 +380,33 @@ func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error 
 // ListXattrs lists all the xattrs for an object. The xattrs are returned as a
 // mapping of string keys and byte-slice values.
 func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
 
 	var it C.rados_xattrs_iter_t
 
-	ret := C.rados_getxattrs(ioctx.ioctx, c_oid, &it)
+	ret := C.rados_getxattrs(ioctx.ioctx, coid, &it)
 	if ret < 0 {
 		return nil, getError(ret)
 	}
 	defer func() { C.rados_getxattrs_end(it) }()
 	m := make(map[string][]byte)
 	for {
-		var c_name, c_val *C.char
-		var c_len C.size_t
-		defer C.free(unsafe.Pointer(c_name))
-		defer C.free(unsafe.Pointer(c_val))
+		var cName, cVal *C.char
+		var cLen C.size_t
+		defer C.free(unsafe.Pointer(cName))
+		defer C.free(unsafe.Pointer(cVal))
 
-		ret := C.rados_getxattrs_next(it, &c_name, &c_val, &c_len)
+		ret := C.rados_getxattrs_next(it, &cName, &cVal, &cLen)
 		if ret < 0 {
 			return nil, getError(ret)
 		}
 		// rados api returns a null name,val & 0-length upon
 		// end of iteration
-		if c_name == nil {
+		if cName == nil {
 			return m, nil // stop iteration
 		}
-		m[C.GoString(c_name)] = C.GoBytes(unsafe.Pointer(c_val), (C.int)(c_len))
+		m[C.GoString(cName)] = C.GoBytes(unsafe.Pointer(cVal), (C.int)(cLen))
 	}
 }
 
