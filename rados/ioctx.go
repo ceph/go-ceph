@@ -342,15 +342,15 @@ func (ioctx *IOContext) Stat(object string) (stat ObjectStat, err error) {
 // GetXattr gets an xattr with key `name`, it returns the length of
 // the key read or an error if not successful
 func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, error) {
-	c_object := C.CString(object)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_object))
-	defer C.free(unsafe.Pointer(c_name))
+	cObject := C.CString(object)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cObject))
+	defer C.free(unsafe.Pointer(cName))
 
 	ret := C.rados_getxattr(
 		ioctx.ioctx,
-		c_object,
-		c_name,
+		cObject,
+		cName,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 
