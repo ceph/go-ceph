@@ -319,23 +319,23 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 
 // Stat returns the size of the object and its last modification time
 func (ioctx *IOContext) Stat(object string) (stat ObjectStat, err error) {
-	var c_psize C.uint64_t
-	var c_pmtime C.time_t
-	c_object := C.CString(object)
-	defer C.free(unsafe.Pointer(c_object))
+	var cPsize C.uint64_t
+	var cPmtime C.time_t
+	cObject := C.CString(object)
+	defer C.free(unsafe.Pointer(cObject))
 
 	ret := C.rados_stat(
 		ioctx.ioctx,
-		c_object,
-		&c_psize,
-		&c_pmtime)
+		cObject,
+		&cPsize,
+		&cPmtime)
 
 	if ret < 0 {
 		return ObjectStat{}, getError(ret)
 	}
 	return ObjectStat{
-		Size:    uint64(c_psize),
-		ModTime: time.Unix(int64(c_pmtime), 0),
+		Size:    uint64(cPsize),
+		ModTime: time.Unix(int64(cPmtime), 0),
 	}, nil
 }
 
