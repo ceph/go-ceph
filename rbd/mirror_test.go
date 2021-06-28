@@ -780,7 +780,7 @@ func TestMirrorBootstrapToken(t *testing.T) {
 	})
 }
 
-func TestMirrorImageGlobalStatusIter(t *testing.T) {
+func TestMirrorImageLists(t *testing.T) {
 	defer func(x int) {
 		iterBufSize = x
 	}(iterBufSize)
@@ -811,7 +811,7 @@ func TestMirrorImageGlobalStatusIter(t *testing.T) {
 	options := NewRbdImageOptions()
 	assert.NoError(t, options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
 
-	for i := 0; i < 7; i++ {
+	for i := 0; i < 5; i++ {
 		name := fmt.Sprintf("%s%d", imgName, i)
 		err = CreateImage(ioctx, name, testImageSize, options)
 		require.NoError(t, err)
@@ -822,11 +822,29 @@ func TestMirrorImageGlobalStatusIter(t *testing.T) {
 		require.NoError(t, img.Close())
 	}
 
-	t.Run("ioctxNil", func(t *testing.T) {
+	for i := 5; i < 10; i++ {
+		name := fmt.Sprintf("%s%d", imgName, i)
+		err = CreateImage(ioctx, name, testImageSize, options)
+		require.NoError(t, err)
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		err = img.MirrorEnable(ImageMirrorModeJournal)
+		assert.NoError(t, err)
+		require.NoError(t, img.Close())
+	}
+
+	t.Run("statusIterIoctxNil", func(t *testing.T) {
 		iter := NewMirrorImageGlobalStatusIter(nil)
-		defer iter.Close()
+		defer iter.Close() //nolint:errcheck
 		assert.Panics(t, func() {
-			iter.Next()
+			iter.Next() //nolint:errcheck
+		})
+	})
+
+	t.Run("infoIterIoctxNil", func(t *testing.T) {
+		iter := NewMirrorImageInfoIter(nil, nil)
+		assert.Panics(t, func() {
+			iter.Next() //nolint:errcheck
 		})
 	})
 
@@ -841,7 +859,7 @@ func TestMirrorImageGlobalStatusIter(t *testing.T) {
 			}
 			lst = append(lst, istatus)
 		}
-		assert.Len(t, lst, 7)
+		assert.Len(t, lst, 10)
 		gms := lst[0].Status
 		assert.NoError(t, err)
 		assert.NotEqual(t, "", gms.Name)
@@ -859,5 +877,51 @@ func TestMirrorImageGlobalStatusIter(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, ss, ls)
 		}
+	})
+
+	t.Run("getInfo", func(t *testing.T) {
+		get := func(iter *MirrorImageInfoIter) []*MirrorImageInfoItem {
+			lst := []*MirrorImageInfoItem{}
+			for {
+				info, err := iter.Next()
+				assert.NoError(t, err)
+				if info == nil {
+					break
+				}
+				lst = append(lst, info)
+			}
+			return lst
+		}
+		iter := NewMirrorImageInfoIter(ioctx, nil)
+		lst := get(iter)
+		assert.Len(t, lst, 10)
+		item := lst[0]
+		assert.NotEqual(t, "", item.ID)
+		assert.NotEqual(t, "", item.Info.GlobalID)
+		assert.Equal(t, item.Info.State, MirrorImageEnabled)
+		assert.Equal(t, item.Info.Primary, true)
+		for i := 1; i < 10; i++ {
+			assert.NotEqual(t, lst[i-1].ID, lst[i].ID)
+		}
+
+		iter = NewMirrorImageInfoIter(ioctx, ImageMirrorModeJournal)
+		lst = get(iter)
+		assert.Len(t, lst, 5)
+		item = lst[0]
+		assert.Equal(t, item.Mode, ImageMirrorModeJournal)
+		assert.NotEqual(t, "", item.ID)
+		assert.NotEqual(t, "", item.Info.GlobalID)
+		assert.Equal(t, item.Info.State, MirrorImageEnabled)
+		assert.Equal(t, item.Info.Primary, true)
+
+		iter = NewMirrorImageInfoIter(ioctx, ImageMirrorModeSnapshot)
+		lst = get(iter)
+		assert.Len(t, lst, 5)
+		item = lst[0]
+		assert.Equal(t, item.Mode, ImageMirrorModeSnapshot)
+		assert.NotEqual(t, "", item.ID)
+		assert.NotEqual(t, "", item.Info.GlobalID)
+		assert.Equal(t, item.Info.State, MirrorImageEnabled)
+		assert.Equal(t, item.Info.Primary, true)
 	})
 }
