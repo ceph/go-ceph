@@ -613,15 +613,15 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 
 // BreakLock releases a shared or exclusive lock on an object, which was taken by the specified client.
 func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_client := C.CString(client)
-	c_cookie := C.CString(cookie)
+	coid := C.CString(oid)
+	cName := C.CString(name)
+	cClient := C.CString(client)
+	cCookie := C.CString(cookie)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_client))
-	defer C.free(unsafe.Pointer(c_cookie))
+	defer C.free(unsafe.Pointer(coid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cClient))
+	defer C.free(unsafe.Pointer(cCookie))
 
 	// 0 on success, negative error code on failure
 	// -ENOENT if the lock is not held by the specified (client, cookie) pair
@@ -629,10 +629,10 @@ func (ioctx *IOContext) BreakLock(oid, name, client, cookie string) (int, error)
 
 	ret := C.rados_break_lock(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_client,
-		c_cookie)
+		coid,
+		cName,
+		cClient,
+		cCookie)
 
 	switch ret {
 	case 0:
