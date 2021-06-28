@@ -114,12 +114,12 @@ func (ioctx *IOContext) Pointer() unsafe.Pointer {
 //  void rados_ioctx_set_namespace(rados_ioctx_t io,
 //                                 const char *nspace);
 func (ioctx *IOContext) SetNamespace(namespace string) {
-	var c_ns *C.char
+	var cns *C.char
 	if len(namespace) > 0 {
-		c_ns = C.CString(namespace)
-		defer C.free(unsafe.Pointer(c_ns))
+		cns = C.CString(namespace)
+		defer C.free(unsafe.Pointer(cns))
 	}
-	C.rados_ioctx_set_namespace(ioctx.ioctx, c_ns)
+	C.rados_ioctx_set_namespace(ioctx.ioctx, cns)
 }
 
 // Create a new object with key oid.
