@@ -205,10 +205,10 @@ func (ioctx *IOContext) Read(oid string, data []byte, offset uint64) (int, error
 
 // Delete deletes the object with key oid. It returns an error, if any.
 func (ioctx *IOContext) Delete(oid string) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
 
-	return getError(C.rados_remove(ioctx.ioctx, c_oid))
+	return getError(C.rados_remove(ioctx.ioctx, coid))
 }
 
 // Truncate resizes the object with key oid to size size. If the operation
