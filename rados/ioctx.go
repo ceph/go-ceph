@@ -475,38 +475,38 @@ func (ioctx *IOContext) LockExclusive(oid, name, cookie, desc string, duration t
 
 // LockShared takes a shared lock on an object.
 func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration time.Duration, flags *byte) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_cookie := C.CString(cookie)
-	c_tag := C.CString(tag)
-	c_desc := C.CString(desc)
+	coid := C.CString(oid)
+	cName := C.CString(name)
+	cCookie := C.CString(cookie)
+	cTag := C.CString(tag)
+	cDesc := C.CString(desc)
 
-	var c_duration C.struct_timeval
+	var cDuration C.struct_timeval
 	if duration != 0 {
 		tv := syscall.NsecToTimeval(duration.Nanoseconds())
-		c_duration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
+		cDuration = C.struct_timeval{tv_sec: C.ceph_time_t(tv.Sec), tv_usec: C.ceph_suseconds_t(tv.Usec)}
 	}
 
-	var c_flags C.uint8_t
+	var cFlags C.uint8_t
 	if flags != nil {
-		c_flags = C.uint8_t(*flags)
+		cFlags = C.uint8_t(*flags)
 	}
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_cookie))
-	defer C.free(unsafe.Pointer(c_tag))
-	defer C.free(unsafe.Pointer(c_desc))
+	defer C.free(unsafe.Pointer(coid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cCookie))
+	defer C.free(unsafe.Pointer(cTag))
+	defer C.free(unsafe.Pointer(cDesc))
 
 	ret := C.rados_lock_shared(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_cookie,
-		c_tag,
-		c_desc,
-		&c_duration,
-		c_flags)
+		coid,
+		cName,
+		cCookie,
+		cTag,
+		cDesc,
+		&cDuration,
+		cFlags)
 
 	// 0 on success, negative error code on failure
 	// -EBUSY if the lock is already held by another (client, cookie) pair
