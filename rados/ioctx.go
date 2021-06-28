@@ -306,14 +306,14 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	defer func() { C.rados_nobjects_list_close(ctx) }()
 
 	for {
-		var c_entry *C.char
-		ret := C.rados_nobjects_list_next(ctx, &c_entry, nil, nil)
+		var cEntry *C.char
+		ret := C.rados_nobjects_list_next(ctx, &cEntry, nil, nil)
 		if ret == -C.ENOENT {
 			return nil
 		} else if ret < 0 {
 			return getError(ret)
 		}
-		listFn(C.GoString(c_entry))
+		listFn(C.GoString(cEntry))
 	}
 }
 
