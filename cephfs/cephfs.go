@@ -73,6 +73,17 @@ func (mount *MountInfo) ReadDefaultConfigFile() error {
 	return getError(ret)
 }
 
+// ReadConfigFile loads the ceph configuration from the specified config file.
+//
+// Implements:
+//  int ceph_conf_read_file(struct ceph_mount_info *cmount, const char *path_list);
+func (mount *MountInfo) ReadConfigFile(path string) error {
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+	ret := C.ceph_conf_read_file(mount.mount, cPath)
+	return getError(ret)
+}
+
 // ParseConfigArgv configures the mount using a unix style command line
 // argument vector.
 //
