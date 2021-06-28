@@ -362,15 +362,15 @@ func (ioctx *IOContext) GetXattr(object string, name string, data []byte) (int, 
 
 // SetXattr sets an xattr for an object with key `name` with value as `data`
 func (ioctx *IOContext) SetXattr(object string, name string, data []byte) error {
-	c_object := C.CString(object)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_object))
-	defer C.free(unsafe.Pointer(c_name))
+	cObject := C.CString(object)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cObject))
+	defer C.free(unsafe.Pointer(cName))
 
 	ret := C.rados_setxattr(
 		ioctx.ioctx,
-		c_object,
-		c_name,
+		cObject,
+		cName,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 
