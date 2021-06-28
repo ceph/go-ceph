@@ -559,40 +559,40 @@ func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
 // out parameter.  If any of the provided buffers are too short, -ERANGE is
 // returned after these sizes are filled in.
 func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
+	coid := C.CString(oid)
+	cName := C.CString(name)
 
-	c_tag := (*C.char)(C.malloc(C.size_t(1024)))
-	c_clients := (*C.char)(C.malloc(C.size_t(1024)))
-	c_cookies := (*C.char)(C.malloc(C.size_t(1024)))
-	c_addrs := (*C.char)(C.malloc(C.size_t(1024)))
+	cTag := (*C.char)(C.malloc(C.size_t(1024)))
+	cClients := (*C.char)(C.malloc(C.size_t(1024)))
+	cCookies := (*C.char)(C.malloc(C.size_t(1024)))
+	cAddrs := (*C.char)(C.malloc(C.size_t(1024)))
 
-	var c_exclusive C.int
-	c_tag_len := C.size_t(1024)
-	c_clients_len := C.size_t(1024)
-	c_cookies_len := C.size_t(1024)
-	c_addrs_len := C.size_t(1024)
+	var cExclusive C.int
+	cTagLen := C.size_t(1024)
+	cClientsLen := C.size_t(1024)
+	cCookiesLen := C.size_t(1024)
+	cAddrsLen := C.size_t(1024)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_tag))
-	defer C.free(unsafe.Pointer(c_clients))
-	defer C.free(unsafe.Pointer(c_cookies))
-	defer C.free(unsafe.Pointer(c_addrs))
+	defer C.free(unsafe.Pointer(coid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cTag))
+	defer C.free(unsafe.Pointer(cClients))
+	defer C.free(unsafe.Pointer(cCookies))
+	defer C.free(unsafe.Pointer(cAddrs))
 
 	ret := C.rados_list_lockers(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		&c_exclusive,
-		c_tag,
-		&c_tag_len,
-		c_clients,
-		&c_clients_len,
-		c_cookies,
-		&c_cookies_len,
-		c_addrs,
-		&c_addrs_len)
+		coid,
+		cName,
+		&cExclusive,
+		cTag,
+		&cTagLen,
+		cClients,
+		&cClientsLen,
+		cCookies,
+		&cCookiesLen,
+		cAddrs,
+		&cAddrsLen)
 
 	splitCString := func(items *C.char, itemsLen C.size_t) []string {
 		currLen := 0
@@ -608,7 +608,7 @@ func (ioctx *IOContext) ListLockers(oid, name string) (*LockInfo, error) {
 	if ret < 0 {
 		return nil, radosError(ret)
 	}
-	return &LockInfo{int(ret), c_exclusive == 1, C.GoString(c_tag), splitCString(c_clients, c_clients_len), splitCString(c_cookies, c_cookies_len), splitCString(c_addrs, c_addrs_len)}, nil
+	return &LockInfo{int(ret), cExclusive == 1, C.GoString(cTag), splitCString(cClients, cClientsLen), splitCString(cCookies, cCookiesLen), splitCString(cAddrs, cAddrsLen)}, nil
 }
 
 // BreakLock releases a shared or exclusive lock on an object, which was taken by the specified client.
