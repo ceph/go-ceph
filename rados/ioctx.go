@@ -526,22 +526,22 @@ func (ioctx *IOContext) LockShared(oid, name, cookie, tag, desc string, duration
 
 // Unlock releases a shared or exclusive lock on an object.
 func (ioctx *IOContext) Unlock(oid, name, cookie string) (int, error) {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	c_cookie := C.CString(cookie)
+	coid := C.CString(oid)
+	cName := C.CString(name)
+	cCookie := C.CString(cookie)
 
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
-	defer C.free(unsafe.Pointer(c_cookie))
+	defer C.free(unsafe.Pointer(coid))
+	defer C.free(unsafe.Pointer(cName))
+	defer C.free(unsafe.Pointer(cCookie))
 
 	// 0 on success, negative error code on failure
 	// -ENOENT if the lock is not held by the specified (client, cookie) pair
 
 	ret := C.rados_unlock(
 		ioctx.ioctx,
-		c_oid,
-		c_name,
-		c_cookie)
+		coid,
+		cName,
+		cCookie)
 
 	switch ret {
 	case 0:
