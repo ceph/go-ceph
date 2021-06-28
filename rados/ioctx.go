@@ -412,15 +412,15 @@ func (ioctx *IOContext) ListXattrs(oid string) (map[string][]byte, error) {
 
 // RmXattr removes an xattr with key `name` from object `oid`
 func (ioctx *IOContext) RmXattr(oid string, name string) error {
-	c_oid := C.CString(oid)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_oid))
-	defer C.free(unsafe.Pointer(c_name))
+	coid := C.CString(oid)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(coid))
+	defer C.free(unsafe.Pointer(cName))
 
 	ret := C.rados_rmxattr(
 		ioctx.ioctx,
-		c_oid,
-		c_name)
+		coid,
+		cName)
 
 	return getError(ret)
 }
