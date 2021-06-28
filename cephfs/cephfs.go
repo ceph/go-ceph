@@ -64,7 +64,10 @@ func CreateFromRados(conn *rados.Conn) (*MountInfo, error) {
 	return mount, nil
 }
 
-// ReadDefaultConfigFile loads the ceph configuration from the specified config file.
+// ReadDefaultConfigFile loads the ceph configuration from the default config file.
+//
+// Implements:
+//  int ceph_conf_read_file(struct ceph_mount_info *cmount, const char *path_list);
 func (mount *MountInfo) ReadDefaultConfigFile() error {
 	ret := C.ceph_conf_read_file(mount.mount, nil)
 	return getError(ret)
