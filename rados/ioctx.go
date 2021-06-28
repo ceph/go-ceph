@@ -157,10 +157,10 @@ func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
 // The object is filled with the provided data. If the object exists,
 // it is atomically truncated and then written. It returns an error, if any.
 func (ioctx *IOContext) WriteFull(oid string, data []byte) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
 
-	ret := C.rados_write_full(ioctx.ioctx, c_oid,
+	ret := C.rados_write_full(ioctx.ioctx, coid,
 		(*C.char)(unsafe.Pointer(&data[0])),
 		(C.size_t)(len(data)))
 	return getError(ret)
