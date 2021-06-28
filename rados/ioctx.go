@@ -137,15 +137,15 @@ func (ioctx *IOContext) Create(oid string, exclusive CreateOption) error {
 // Write writes len(data) bytes to the object with key oid starting at byte
 // offset offset. It returns an error, if any.
 func (ioctx *IOContext) Write(oid string, data []byte, offset uint64) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
 
 	dataPointer := unsafe.Pointer(nil)
 	if len(data) > 0 {
 		dataPointer = unsafe.Pointer(&data[0])
 	}
 
-	ret := C.rados_write(ioctx.ioctx, c_oid,
+	ret := C.rados_write(ioctx.ioctx, coid,
 		(*C.char)(dataPointer),
 		(C.size_t)(len(data)),
 		(C.uint64_t)(offset))
