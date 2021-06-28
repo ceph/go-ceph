@@ -236,24 +236,24 @@ func (ioctx *IOContext) Destroy() {
 //  int rados_ioctx_pool_stat(rados_ioctx_t io,
 //                            struct rados_pool_stat_t *stats);
 func (ioctx *IOContext) GetPoolStats() (stat PoolStat, err error) {
-	c_stat := C.struct_rados_pool_stat_t{}
-	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &c_stat)
+	cStat := C.struct_rados_pool_stat_t{}
+	ret := C.rados_ioctx_pool_stat(ioctx.ioctx, &cStat)
 	if ret < 0 {
 		return PoolStat{}, getError(ret)
 	}
 	return PoolStat{
-		Num_bytes:                      uint64(c_stat.num_bytes),
-		Num_kb:                         uint64(c_stat.num_kb),
-		Num_objects:                    uint64(c_stat.num_objects),
-		Num_object_clones:              uint64(c_stat.num_object_clones),
-		Num_object_copies:              uint64(c_stat.num_object_copies),
-		Num_objects_missing_on_primary: uint64(c_stat.num_objects_missing_on_primary),
-		Num_objects_unfound:            uint64(c_stat.num_objects_unfound),
-		Num_objects_degraded:           uint64(c_stat.num_objects_degraded),
-		Num_rd:                         uint64(c_stat.num_rd),
-		Num_rd_kb:                      uint64(c_stat.num_rd_kb),
-		Num_wr:                         uint64(c_stat.num_wr),
-		Num_wr_kb:                      uint64(c_stat.num_wr_kb),
+		Num_bytes:                      uint64(cStat.num_bytes),
+		Num_kb:                         uint64(cStat.num_kb),
+		Num_objects:                    uint64(cStat.num_objects),
+		Num_object_clones:              uint64(cStat.num_object_clones),
+		Num_object_copies:              uint64(cStat.num_object_copies),
+		Num_objects_missing_on_primary: uint64(cStat.num_objects_missing_on_primary),
+		Num_objects_unfound:            uint64(cStat.num_objects_unfound),
+		Num_objects_degraded:           uint64(cStat.num_objects_degraded),
+		Num_rd:                         uint64(cStat.num_rd),
+		Num_rd_kb:                      uint64(cStat.num_rd_kb),
+		Num_wr:                         uint64(cStat.num_wr),
+		Num_wr_kb:                      uint64(cStat.num_wr_kb),
 	}, nil
 }
 
