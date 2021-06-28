@@ -216,10 +216,10 @@ func (ioctx *IOContext) Delete(oid string) error {
 // operation shrinks the object, the excess data is removed. It returns an
 // error, if any.
 func (ioctx *IOContext) Truncate(oid string, size uint64) error {
-	c_oid := C.CString(oid)
-	defer C.free(unsafe.Pointer(c_oid))
+	coid := C.CString(oid)
+	defer C.free(unsafe.Pointer(coid))
 
-	return getError(C.rados_trunc(ioctx.ioctx, c_oid, (C.uint64_t)(size)))
+	return getError(C.rados_trunc(ioctx.ioctx, coid, (C.uint64_t)(size)))
 }
 
 // Destroy informs librados that the I/O context is no longer in use.
