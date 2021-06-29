@@ -824,14 +824,13 @@ func TestMirrorImageGlobalStatusIter(t *testing.T) {
 
 	t.Run("ioctxNil", func(t *testing.T) {
 		iter := NewMirrorImageGlobalStatusIter(nil)
-		defer iter.Close()
 		assert.Panics(t, func() {
 			iter.Next()
 		})
 	})
 
 	t.Run("getStatus", func(t *testing.T) {
-		lst := []*GlobalMirrorImageIDAndStatus{}
+		lst := []*MirrorImageGlobalStatusItem{}
 		iter := NewMirrorImageGlobalStatusIter(ioctx)
 		for {
 			istatus, err := iter.Next()

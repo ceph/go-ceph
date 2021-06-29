@@ -619,16 +619,16 @@ func ImportMirrorPeerBootstrapToken(
 	return getError(ret)
 }
 
-// GlobalMirrorImageIDAndStatus values contain an ID string for a RBD image
+// MirrorImageGlobalStatusItem values contain an ID string for a RBD image
 // and that image's GlobalMirrorImageStatus.
-type GlobalMirrorImageIDAndStatus struct {
+type MirrorImageGlobalStatusItem struct {
 	ID     string
 	Status GlobalMirrorImageStatus
 }
 
 func mirrorImageGlobalStatusList(
 	ioctx *rados.IOContext, start string,
-	results []GlobalMirrorImageIDAndStatus) (int, error) {
+	results []MirrorImageGlobalStatusItem) (int, error) {
 	// this C function is treated like a "batch" iterator. Based on it's
 	// design it appears expected to call it multiple times to get
 	// the entire result.
@@ -670,7 +670,7 @@ var statusIterBufSize = 64
 type MirrorImageGlobalStatusIter struct {
 	ioctx *rados.IOContext
 
-	buf    []GlobalMirrorImageIDAndStatus
+	buf    []MirrorImageGlobalStatusItem
 	lastID string
 }
 
@@ -684,32 +684,24 @@ func NewMirrorImageGlobalStatusIter(ioctx *rados.IOContext) *MirrorImageGlobalSt
 // Next fetches one GlobalMirrorImageIDAndStatus value or a nil value if
 // iteration is exhausted. The error return will be non-nil if an underlying
 // error fetching more values occurred.
-func (iter *MirrorImageGlobalStatusIter) Next() (*GlobalMirrorImageIDAndStatus, error) {
+func (iter *MirrorImageGlobalStatusIter) Next() (*MirrorImageGlobalStatusItem, error) {
 	if len(iter.buf) == 0 {
 		if err := iter.fetch(); err != nil {
 			return nil, err
 		}
-	}
-	if len(iter.buf) == 0 {
-		return nil, nil
+		if len(iter.buf) == 0 {
+			return nil, nil
+		}
+		iter.lastID = iter.buf[len(iter.buf)-1].ID
 	}
 	item := iter.buf[0]
-	iter.lastID = item.ID
 	iter.buf = iter.buf[1:]
 	return &item, nil
 }
 
-// Close terminates iteration regardless if iteration was completed and
-// frees any associated resources.
-func (iter *MirrorImageGlobalStatusIter) Close() error {
-	iter.buf = nil
-	iter.lastID = ""
-	return nil
-}
-
 func (iter *MirrorImageGlobalStatusIter) fetch() error {
 	iter.buf = nil
-	items := make([]GlobalMirrorImageIDAndStatus, statusIterBufSize)
+	items := make([]MirrorImageGlobalStatusItem, statusIterBufSize)
 	n, err := mirrorImageGlobalStatusList(
 		iter.ioctx,
 		iter.lastID,
