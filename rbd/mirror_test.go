@@ -879,6 +879,26 @@ func TestMirrorImageLists(t *testing.T) {
 		}
 	})
 
+	t.Run("getStatusSlice", func(t *testing.T) {
+		lst, err := MirrorImageGlobalStatusList(ioctx, "", 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 10)
+		for i := 1; i < 10; i++ {
+			assert.NotEqual(t, lst[i-1].ID, lst[i].ID)
+		}
+		for i := 1; i <= iterBufSize; i++ {
+			lst, err := MirrorImageGlobalStatusList(ioctx, "", i)
+			assert.NoError(t, err)
+			assert.Len(t, lst, i)
+		}
+		lst, err = MirrorImageGlobalStatusList(ioctx, "", 3)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 3)
+		lst, err = MirrorImageGlobalStatusList(ioctx, lst[2].ID, 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 7)
+	})
+
 	t.Run("getInfo", func(t *testing.T) {
 		get := func(iter *MirrorImageInfoIter) []*MirrorImageInfoItem {
 			lst := []*MirrorImageInfoItem{}
@@ -923,5 +943,31 @@ func TestMirrorImageLists(t *testing.T) {
 		assert.NotEqual(t, "", item.Info.GlobalID)
 		assert.Equal(t, item.Info.State, MirrorImageEnabled)
 		assert.Equal(t, item.Info.Primary, true)
+	})
+
+	t.Run("getInfoSlice", func(t *testing.T) {
+		lst, err := MirrorImageInfoList(ioctx, nil, "", 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 10)
+		for i := 1; i < 10; i++ {
+			assert.NotEqual(t, lst[i-1].ID, lst[i].ID)
+		}
+		for i := 1; i <= iterBufSize; i++ {
+			lst, err := MirrorImageInfoList(ioctx, nil, "", i)
+			assert.NoError(t, err)
+			assert.Len(t, lst, i)
+		}
+		lst, err = MirrorImageInfoList(ioctx, ImageMirrorModeJournal, "", 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 5)
+		lst, err = MirrorImageInfoList(ioctx, ImageMirrorModeSnapshot, "", 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 5)
+		lst, err = MirrorImageInfoList(ioctx, nil, "", 3)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 3)
+		lst, err = MirrorImageInfoList(ioctx, nil, lst[2].ID, 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 7)
 	})
 }
