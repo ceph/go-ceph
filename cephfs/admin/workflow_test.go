@@ -19,13 +19,18 @@ import (
 
 var snapDir = ".snapshots"
 
-func fsConnect(t *testing.T) *cephfs.MountInfo {
+func fsConnect(t *testing.T, configFile string) *cephfs.MountInfo {
 	mount, err := cephfs.CreateMount()
 	require.NoError(t, err)
 	require.NotNil(t, mount)
 
-	err = mount.ReadDefaultConfigFile()
-	require.NoError(t, err)
+	if configFile == "" {
+		err = mount.ReadDefaultConfigFile()
+		require.NoError(t, err)
+	} else {
+		err = mount.ReadConfigFile(configFile)
+		require.NoError(t, err)
+	}
 	err = mount.SetConfigOption("client_snapdir", snapDir)
 	require.NoError(t, err)
 
@@ -114,7 +119,7 @@ func TestWorkflow(t *testing.T) {
 	require.NotEqual(t, "", subPath)
 
 	// connect to volume, cd to path (?)
-	mount := fsConnect(t)
+	mount := fsConnect(t, "")
 	defer func(mount *cephfs.MountInfo) {
 		assert.NoError(t, mount.Unmount())
 		assert.NoError(t, mount.Release())
