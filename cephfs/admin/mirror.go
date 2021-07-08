@@ -110,3 +110,125 @@ func (sma *SnapshotMirrorAdmin) ImportPeerBoostrapToken(fsname, token string) er
 	}
 	return commands.MarshalMgrCommand(sma.conn, m).NoStatus().EmptyBody().End()
 }
+
+// DaemonID represents the ID of a cephfs mirroring daemon.
+type DaemonID uint
+
+// FileSystemID represents the ID of a cephfs file system.
+type FileSystemID uint
+
+// PeerUUID represents the UUID of a cephfs mirroring peer.
+type PeerUUID string
+
+// DaemonStatusPeerRemote contains fields detailing a remote peer.
+type DaemonStatusPeerRemote struct {
+	ClientName  string `json:"client_name"`
+	ClusterName string `json:"cluster_name"`
+	FSName      string `json:"fs_name"`
+}
+
+// DaemonStatusPeerStats contains fields detailing the a remote peer's stats.
+type DaemonStatusPeerStats struct {
+	FailureCount  uint64 `json:"failure_count"`
+	RecoveryCount uint64 `json:"recovery_count"`
+}
+
+// DaemonStatusPeerInfo contains fields representing information about a remote peer.
+type DaemonStatusPeerInfo struct {
+	UUID   PeerUUID               `json:"uuid"`
+	Remote DaemonStatusPeerRemote `json:"remote"`
+	Stats  DaemonStatusPeerStats  `json:"stats"`
+}
+
+// DaemonStatusFileSystemInfo represents information about a mirrored file system.
+type DaemonStatusFileSystemInfo struct {
+	FileSystemID   FileSystemID           `json:"filesystem_id"`
+	Name           string                 `json:"name"`
+	DirectoryCount int64                  `json:"directory_count"`
+	Peers          []DaemonStatusPeerInfo `json:"peers"`
+}
+
+// DaemonStatusInfo maps file system IDs to information about that file system.
+type DaemonStatusInfo struct {
+	DaemonID    DaemonID                     `json:"daemon_id"`
+	FileSystems []DaemonStatusFileSystemInfo `json:"filesystems"`
+}
+
+// DaemonStatusResults maps mirroring daemon IDs to information about that
+// mirroring daemon.
+type DaemonStatusResults []DaemonStatusInfo
+
+func parseDaemonStatus(res response) (DaemonStatusResults, error) {
+	var dsr DaemonStatusResults
+	if err := res.NoStatus().Unmarshal(&dsr).End(); err != nil {
+		return nil, err
+	}
+	return dsr, nil
+}
+
+// DaemonStatus returns information on the status of cephfs mirroring daemons
+// associated with the given file system.
+//
+// Similar To:
+//  ceph fs snapshot mirror daemon status <fs_name>
+func (sma *SnapshotMirrorAdmin) DaemonStatus(fsname string) (
+	DaemonStatusResults, error) {
+	// ---
+	m := map[string]string{
+		"prefix":  "fs snapshot mirror daemon status",
+		"fs_name": fsname,
+		"format":  "json",
+	}
+	return parseDaemonStatus(commands.MarshalMgrCommand(sma.conn, m))
+}
+
+// PeerInfo includes information about a cephfs mirroring peer.
+type PeerInfo struct {
+	ClientName string `json:"client_name"`
+	SiteName   string `json:"site_name"`
+	FSName     string `json:"fs_name"`
+	MonHost    string `json:"mon_host"`
+}
+
+// PeerListResults maps a peer's UUID to information about that peer.
+type PeerListResults map[PeerUUID]PeerInfo
+
+func parsePeerList(res response) (PeerListResults, error) {
+	var plr PeerListResults
+	if err := res.NoStatus().Unmarshal(&plr).End(); err != nil {
+		return nil, err
+	}
+	return plr, nil
+}
+
+// PeerList returns information about peers associated with the given file system.
+//
+// Similar To:
+//  ceph fs snapshot mirror peer_list <fs_name>
+func (sma *SnapshotMirrorAdmin) PeerList(fsname string) (
+	PeerListResults, error) {
+	// ---
+	m := map[string]string{
+		"prefix":  "fs snapshot mirror peer_list",
+		"fs_name": fsname,
+		"format":  "json",
+	}
+	return parsePeerList(commands.MarshalMgrCommand(sma.conn, m))
+}
+
+/*
+ DirMap - figure out what last_shuffled is supposed to mean and, if it is a time
+          like it seems to be, how best to represent in Go.
+
+ DirMap TODO
+ceph fs snapshot mirror dirmap
+func (sma *SnapshotMirrorAdmin) DirMap(fsname, path string) error {
+	m := map[string]string{
+		"prefix":  "fs snapshot mirror dirmap",
+		"fs_name": fsname,
+		"path":    path,
+		"format":  "json",
+	}
+	return commands.MarshalMgrCommand(sma.conn, m).NoStatus().EmptyBody().End()
+}
+*/
