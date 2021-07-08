@@ -2,6 +2,8 @@ package cephfs
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -331,4 +333,27 @@ func TestValidate(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrNotConnected)
 	})
+}
+
+func TestReadConfigFile(t *testing.T) {
+	file, err := ioutil.TempFile("/tmp", "cephfs.conf")
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, file.Close())
+		assert.NoError(t, os.Remove(file.Name()))
+	}()
+	_, err = io.WriteString(
+		file, "[global]\nfsid = 04862775-14d5-46e0-a015-000000000000\n")
+	require.NoError(t, err)
+
+	mount, err := CreateMount()
+	require.NoError(t, err)
+	require.NotNil(t, mount)
+
+	err = mount.ReadConfigFile(file.Name())
+	require.NoError(t, err)
+
+	v, err := mount.GetConfigOption("fsid")
+	assert.NoError(t, err)
+	assert.Equal(t, "04862775-14d5-46e0-a015-000000000000", v)
 }
