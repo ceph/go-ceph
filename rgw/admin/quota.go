@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 // QuotaSpec describes an object store quota for a user or a bucket
@@ -27,7 +28,7 @@ func (api *API) GetUserQuota(ctx context.Context, quota QuotaSpec) (QuotaSpec, e
 		return QuotaSpec{}, errMissingUserID
 	}
 
-	body, err := api.call(ctx, get, "/user?quota", valueToURLParams(quota))
+	body, err := api.call(ctx, http.MethodGet, "/user?quota", valueToURLParams(quota))
 	if err != nil {
 		return QuotaSpec{}, err
 	}
@@ -52,7 +53,7 @@ func (api *API) SetUserQuota(ctx context.Context, quota QuotaSpec) error {
 		return errMissingUserID
 	}
 
-	_, err := api.call(ctx, put, "/user?quota", valueToURLParams(quota))
+	_, err := api.call(ctx, http.MethodPut, "/user?quota", valueToURLParams(quota))
 	if err != nil {
 		return err
 	}

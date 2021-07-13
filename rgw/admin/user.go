@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 // User is GO representation of the json output of a user creation
@@ -51,7 +52,7 @@ func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 		return User{}, errMissingUserID
 	}
 
-	body, err := api.call(ctx, get, "/user", valueToURLParams(user))
+	body, err := api.call(ctx, http.MethodGet, "/user", valueToURLParams(user))
 	if err != nil {
 		return User{}, err
 	}
@@ -67,7 +68,7 @@ func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 
 // GetUsers lists all object store users
 func (api *API) GetUsers(ctx context.Context) (*[]string, error) {
-	body, err := api.call(ctx, get, "/metadata/user", nil)
+	body, err := api.call(ctx, http.MethodGet, "/metadata/user", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func (api *API) CreateUser(ctx context.Context, user User) (User, error) {
 	}
 
 	// Send request
-	body, err := api.call(ctx, put, "/user", valueToURLParams(user))
+	body, err := api.call(ctx, http.MethodPut, "/user", valueToURLParams(user))
 	if err != nil {
 		return User{}, err
 	}
@@ -111,7 +112,7 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 		return errMissingUserID
 	}
 
-	_, err := api.call(ctx, delete, "/user", valueToURLParams(user))
+	_, err := api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user))
 	if err != nil {
 		return err
 	}
@@ -125,7 +126,7 @@ func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 		return User{}, errMissingUserID
 	}
 
-	body, err := api.call(ctx, post, "/user", valueToURLParams(user))
+	body, err := api.call(ctx, http.MethodPost, "/user", valueToURLParams(user))
 	if err != nil {
 		return User{}, err
 	}

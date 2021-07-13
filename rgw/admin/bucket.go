@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 // Bucket describes an object store bucket
@@ -82,7 +83,7 @@ type Policy struct {
 
 // ListBuckets will return the list of all buckets present in the object store
 func (api *API) ListBuckets(ctx context.Context) ([]string, error) {
-	body, err := api.call(ctx, get, "/bucket", nil)
+	body, err := api.call(ctx, http.MethodGet, "/bucket", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,7 @@ func (api *API) ListBuckets(ctx context.Context) ([]string, error) {
 
 // GetBucketInfo will return various information about a specific token
 func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (Bucket, error) {
-	body, err := api.call(ctx, get, "/bucket", valueToURLParams(bucket))
+	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket))
 	if err != nil {
 		return Bucket{}, err
 	}
@@ -115,7 +116,7 @@ func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (Bucket, error
 func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (Policy, error) {
 	policy := true
 	bucket.Policy = &policy
-	body, err := api.call(ctx, get, "/bucket", valueToURLParams(bucket))
+	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket))
 	if err != nil {
 		return Policy{}, err
 	}
@@ -131,7 +132,7 @@ func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (Policy, err
 
 // RemoveBucket will remove a given token from the object store
 func (api *API) RemoveBucket(ctx context.Context, bucket Bucket) error {
-	_, err := api.call(ctx, delete, "/bucket", valueToURLParams(bucket))
+	_, err := api.call(ctx, http.MethodDelete, "/bucket", valueToURLParams(bucket))
 	if err != nil {
 		return err
 	}

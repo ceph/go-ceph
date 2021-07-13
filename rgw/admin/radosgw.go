@@ -17,13 +17,9 @@ import (
 )
 
 const (
-	authRegion                 = "default"
-	service                    = "s3"
-	connectionTimeout          = time.Second * 3
-	post              verbHTTP = "POST"
-	put               verbHTTP = "PUT"
-	get               verbHTTP = "GET"
-	delete            verbHTTP = "DELETE"
+	authRegion        = "default"
+	service           = "s3"
+	connectionTimeout = time.Second * 3
 )
 
 var (
