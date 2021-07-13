@@ -1,10 +1,13 @@
 package admin
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -134,4 +137,25 @@ func (suite *RadosGWTestSuite) TestUser() {
 		err = co.RemoveUser(context.Background(), User{ID: "leseb"})
 		assert.NoError(suite.T(), err)
 	})
+}
+
+func TestGetUserMockAPI(t *testing.T) {
+	r := ioutil.NopCloser(bytes.NewReader(fakeUserResponse))
+	mockClient := &MockClient{
+		MockDo: func(req *http.Request) (*http.Response, error) {
+			if req.URL.RawQuery == "format=json&uid=dashboard-admin" && req.Method == http.MethodGet && req.URL.Path == "127.0.0.1/admin/user" {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       r,
+				}, nil
+			}
+			return nil, fmt.Errorf("unexpected request: %q. method %q. path %q", req.URL.RawQuery, req.Method, req.URL.Path)
+		},
+	}
+
+	api, err := New("127.0.0.1", "accessKey", "secretKey", mockClient)
+	assert.NoError(t, err)
+	u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
+	assert.NoError(t, err)
+	assert.Equal(t, "dashboard-admin", u.DisplayName, u)
 }
