@@ -28,6 +28,11 @@ var (
 	errNoSecretKey = errors.New("secret key not set")
 )
 
+// HTTPClient interface that conforms to that of the http package's Client.
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type verbHTTP string
 
 // API struct for New Client
@@ -35,12 +40,12 @@ type API struct {
 	AccessKey  string
 	SecretKey  string
 	Endpoint   string
-	HTTPClient *http.Client
+	HTTPClient HTTPClient
 	Debug      bool
 }
 
 // New returns client for Ceph RGW
-func New(endpoint, accessKey, secretKey string, httpClient *http.Client) (*API, error) {
+func New(endpoint, accessKey, secretKey string, httpClient HTTPClient) (*API, error) {
 	// validate endpoint
 	if endpoint == "" {
 		return nil, errNoEndpoint
@@ -56,7 +61,7 @@ func New(endpoint, accessKey, secretKey string, httpClient *http.Client) (*API, 
 		return nil, errNoSecretKey
 	}
 
-	// set http client, if TLS is desired it will have to be passed with an http client
+	// If no client is passed initialize it
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: connectionTimeout}
 	}
