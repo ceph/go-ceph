@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ceph/go-ceph/internal/commands"
+	"github.com/ceph/go-ceph/rados"
 )
 
 var (
@@ -61,20 +62,34 @@ func getFSAdmin(t *testing.T) *FSAdmin {
 	if cachedFSAdmin != nil {
 		return cachedFSAdmin
 	}
-	fsa, err := New()
+	cachedFSAdmin = newFSAdmin(t, "")
+	return cachedFSAdmin
+}
+
+func newFSAdmin(t *testing.T, configFile string) *FSAdmin {
+	conn, err := rados.NewConn()
 	require.NoError(t, err)
-	require.NotNil(t, fsa)
-	// We steal the connection set up by the New() method and wrap it in an
-	// optional tracer.
-	c := fsa.conn
-	if debugTrace {
-		c = commands.NewTraceCommander(c)
+	if configFile == "" {
+		err = conn.ReadDefaultConfigFile()
+		require.NoError(t, err)
+	} else {
+		err = conn.ReadConfigFile(configFile)
+		require.NoError(t, err)
 	}
-	cachedFSAdmin = NewFromConn(c)
+	err = conn.Connect()
+	require.NoError(t, err)
+
+	var cmdr RadosCommander = conn
+	if debugTrace {
+		// We wrap the "real" connection, which meets the RadosCommander interface,
+		// with a trace commander when debugTrace is set.
+		cmdr = commands.NewTraceCommander(conn)
+	}
+
 	// We sleep briefly before returning in order to ensure we have a mgr map
 	// before we start executing the tests.
 	time.Sleep(50 * time.Millisecond)
-	return cachedFSAdmin
+	return NewFromConn(cmdr)
 }
 
 func TestInvalidFSAdmin(t *testing.T) {
