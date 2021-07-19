@@ -421,19 +421,19 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 //
 // Implements:
 //  int rbd_get_old_format(rbd_image_t image, uint8_t *old);
-func (image *Image) IsOldFormat() (old_format bool, err error) {
+func (image *Image) IsOldFormat() (bool, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return false, err
 	}
 
-	var c_old_format C.uint8_t
+	var cOldFormat C.uint8_t
 	ret := C.rbd_get_old_format(image.image,
-		&c_old_format)
+		&cOldFormat)
 	if ret < 0 {
 		return false, rbdError(ret)
 	}
 
-	return c_old_format != 0, nil
+	return cOldFormat != 0, nil
 }
 
 // GetSize returns the size of the rbd image.
