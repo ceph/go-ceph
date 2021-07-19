@@ -49,6 +49,8 @@ const (
 // Timespec is a public type for the internal C 'struct timespec'
 type Timespec ts.Timespec
 
+// revive:disable:var-naming old-yet-exported public api
+
 // ImageInfo represents the status information for an image.
 type ImageInfo struct {
 	Size              uint64
@@ -57,6 +59,8 @@ type ImageInfo struct {
 	Order             int
 	Block_name_prefix string
 }
+
+// revive:enable:var-naming
 
 // SnapInfo represents the status information for a snapshot.
 type SnapInfo struct {
