@@ -681,10 +681,10 @@ func (image *Image) Unlock(cookie string) error {
 		return err
 	}
 
-	c_cookie := C.CString(cookie)
-	defer C.free(unsafe.Pointer(c_cookie))
+	cCookie := C.CString(cookie)
+	defer C.free(unsafe.Pointer(cCookie))
 
-	return getError(C.rbd_unlock(image.image, c_cookie))
+	return getError(C.rbd_unlock(image.image, cCookie))
 }
 
 // BreakLock forces the release of a lock held by another client.
