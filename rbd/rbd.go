@@ -696,12 +696,12 @@ func (image *Image) BreakLock(client string, cookie string) error {
 		return err
 	}
 
-	c_client := C.CString(client)
-	c_cookie := C.CString(cookie)
-	defer C.free(unsafe.Pointer(c_client))
-	defer C.free(unsafe.Pointer(c_cookie))
+	cClient := C.CString(client)
+	cCookie := C.CString(cookie)
+	defer C.free(unsafe.Pointer(cClient))
+	defer C.free(unsafe.Pointer(cCookie))
 
-	return getError(C.rbd_break_lock(image.image, c_client, c_cookie))
+	return getError(C.rbd_break_lock(image.image, cClient, cCookie))
 }
 
 // ssize_t rbd_read(rbd_image_t image, uint64_t ofs, size_t len, char *buf);
