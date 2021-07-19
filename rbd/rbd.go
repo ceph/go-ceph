@@ -649,10 +649,10 @@ func (image *Image) LockExclusive(cookie string) error {
 		return err
 	}
 
-	c_cookie := C.CString(cookie)
-	defer C.free(unsafe.Pointer(c_cookie))
+	cCookie := C.CString(cookie)
+	defer C.free(unsafe.Pointer(cCookie))
 
-	return getError(C.rbd_lock_exclusive(image.image, c_cookie))
+	return getError(C.rbd_lock_exclusive(image.image, cCookie))
 }
 
 // LockShared acquires a shared lock on the rbd image.
@@ -664,12 +664,12 @@ func (image *Image) LockShared(cookie string, tag string) error {
 		return err
 	}
 
-	c_cookie := C.CString(cookie)
-	c_tag := C.CString(tag)
-	defer C.free(unsafe.Pointer(c_cookie))
-	defer C.free(unsafe.Pointer(c_tag))
+	cCookie := C.CString(cookie)
+	cTag := C.CString(tag)
+	defer C.free(unsafe.Pointer(cCookie))
+	defer C.free(unsafe.Pointer(cTag))
 
-	return getError(C.rbd_lock_shared(image.image, c_cookie, c_tag))
+	return getError(C.rbd_lock_shared(image.image, cCookie, cTag))
 }
 
 // Unlock releases a lock on the image.
