@@ -242,31 +242,35 @@ func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
 //  int rbd_clone(rados_ioctx_t p_ioctx, const char *p_name,
 //           const char *p_snapname, rados_ioctx_t c_ioctx,
 //           const char *c_name, uint64_t features, int *c_order);
-func (image *Image) Clone(snapname string, c_ioctx *rados.IOContext, c_name string, features uint64, order int) (*Image, error) {
+func (image *Image) Clone(snapname string, cIoctx *rados.IOContext, cName string, features uint64, order int) (*Image, error) {
 	if err := image.validate(imageNeedsIOContext); err != nil {
 		return nil, err
 	}
 
-	c_order := C.int(order)
-	c_p_name := C.CString(image.name)
-	c_p_snapname := C.CString(snapname)
-	c_c_name := C.CString(c_name)
+	cOrder := C.int(order)
+	cParentName := C.CString(image.name)
+	cParentSnapName := C.CString(snapname)
+	cCloneName := C.CString(cName)
 
-	defer C.free(unsafe.Pointer(c_p_name))
-	defer C.free(unsafe.Pointer(c_p_snapname))
-	defer C.free(unsafe.Pointer(c_c_name))
+	defer C.free(unsafe.Pointer(cParentName))
+	defer C.free(unsafe.Pointer(cParentSnapName))
+	defer C.free(unsafe.Pointer(cCloneName))
 
-	ret := C.rbd_clone(cephIoctx(image.ioctx),
-		c_p_name, c_p_snapname,
-		cephIoctx(c_ioctx),
-		c_c_name, C.uint64_t(features), &c_order)
+	ret := C.rbd_clone(
+		cephIoctx(image.ioctx),
+		cParentName,
+		cParentSnapName,
+		cephIoctx(cIoctx),
+		cCloneName,
+		C.uint64_t(features),
+		&cOrder)
 	if ret < 0 {
 		return nil, rbdError(ret)
 	}
 
 	return &Image{
-		ioctx: c_ioctx,
-		name:  c_name,
+		ioctx: cIoctx,
+		name:  cName,
 	}, nil
 }
 
