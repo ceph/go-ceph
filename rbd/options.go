@@ -189,14 +189,14 @@ func (rio *ImageOptions) GetUint64(option ImageOption) (uint64, error) {
 //  int rbd_image_options_is_set(rbd_image_options_t opts, int optname,
 //          bool* is_set);
 func (rio *ImageOptions) IsSet(option ImageOption) (bool, error) {
-	var c_set C.bool
+	var cSet C.bool
 
-	ret := C.rbd_image_options_is_set(rio.options, C.int(option), &c_set)
+	ret := C.rbd_image_options_is_set(rio.options, C.int(option), &cSet)
 	if ret != 0 {
 		return false, fmt.Errorf("%v, could not check option %v", getError(ret), option)
 	}
 
-	return bool(c_set), nil
+	return bool(cSet), nil
 }
 
 // Unset a given RbdImageOption.
