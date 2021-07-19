@@ -456,32 +456,34 @@ func (image *Image) GetSize() (size uint64, err error) {
 //
 // Implements:
 //  int rbd_get_stripe_unit(rbd_image_t image, uint64_t *stripe_unit);
-func (image *Image) GetStripeUnit() (stripe_unit uint64, err error) {
+func (image *Image) GetStripeUnit() (uint64, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
 	}
 
-	if ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripe_unit)); ret < 0 {
+	var stripeUnit uint64
+	if ret := C.rbd_get_stripe_unit(image.image, (*C.uint64_t)(&stripeUnit)); ret < 0 {
 		return 0, rbdError(ret)
 	}
 
-	return stripe_unit, nil
+	return stripeUnit, nil
 }
 
 // GetStripeCount returns the stripe-count value for the rbd image.
 //
 // Implements:
 //  int rbd_get_stripe_count(rbd_image_t image, uint64_t *stripe_count);
-func (image *Image) GetStripeCount() (stripe_count uint64, err error) {
+func (image *Image) GetStripeCount() (uint64, error) {
 	if err := image.validate(imageIsOpen); err != nil {
 		return 0, err
 	}
 
-	if ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripe_count)); ret < 0 {
+	var stripeCount uint64
+	if ret := C.rbd_get_stripe_count(image.image, (*C.uint64_t)(&stripeCount)); ret < 0 {
 		return 0, rbdError(ret)
 	}
 
-	return stripe_count, nil
+	return stripeCount, nil
 }
 
 // GetOverlap returns the overlapping bytes between the rbd image and its
