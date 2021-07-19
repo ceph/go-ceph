@@ -292,10 +292,10 @@ func (image *Image) Trash(delay time.Duration) error {
 		return err
 	}
 
-	c_name := C.CString(image.name)
-	defer C.free(unsafe.Pointer(c_name))
+	cName := C.CString(image.name)
+	defer C.free(unsafe.Pointer(cName))
 
-	return getError(C.rbd_trash_move(cephIoctx(image.ioctx), c_name,
+	return getError(C.rbd_trash_move(cephIoctx(image.ioctx), cName,
 		C.uint64_t(delay.Seconds())))
 }
 
