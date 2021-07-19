@@ -160,13 +160,13 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 	case 1:
 		return Create2(ioctx, name, size, args[0], order)
 	case 0:
-		c_order := C.int(order)
-		c_name := C.CString(name)
+		cOrder := C.int(order)
+		cName := C.CString(name)
 
-		defer C.free(unsafe.Pointer(c_name))
+		defer C.free(unsafe.Pointer(cName))
 
 		ret = C.rbd_create(cephIoctx(ioctx),
-			c_name, C.uint64_t(size), &c_order)
+			cName, C.uint64_t(size), &cOrder)
 	default:
 		return nil, errors.New("Wrong number of argument")
 	}
@@ -190,13 +190,13 @@ func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
 	order int) (image *Image, err error) {
 	var ret C.int
 
-	c_order := C.int(order)
-	c_name := C.CString(name)
+	cOrder := C.int(order)
+	cName := C.CString(name)
 
-	defer C.free(unsafe.Pointer(c_name))
+	defer C.free(unsafe.Pointer(cName))
 
-	ret = C.rbd_create2(cephIoctx(ioctx), c_name,
-		C.uint64_t(size), C.uint64_t(features), &c_order)
+	ret = C.rbd_create2(cephIoctx(ioctx), cName,
+		C.uint64_t(size), C.uint64_t(features), &cOrder)
 	if ret < 0 {
 		return nil, rbdError(ret)
 	}
@@ -215,17 +215,17 @@ func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
 //        uint64_t features, int *order,
 //        uint64_t stripe_unit, uint64_t stripe_count);
 func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
-	order int, stripe_unit uint64, stripe_count uint64) (image *Image, err error) {
+	order int, stripeUnit uint64, stripeCount uint64) (image *Image, err error) {
 	var ret C.int
 
-	c_order := C.int(order)
-	c_name := C.CString(name)
+	cOrder := C.int(order)
+	cName := C.CString(name)
 
-	defer C.free(unsafe.Pointer(c_name))
+	defer C.free(unsafe.Pointer(cName))
 
-	ret = C.rbd_create3(cephIoctx(ioctx), c_name,
-		C.uint64_t(size), C.uint64_t(features), &c_order,
-		C.uint64_t(stripe_unit), C.uint64_t(stripe_count))
+	ret = C.rbd_create3(cephIoctx(ioctx), cName,
+		C.uint64_t(size), C.uint64_t(features), &cOrder,
+		C.uint64_t(stripeUnit), C.uint64_t(stripeCount))
 	if ret < 0 {
 		return nil, rbdError(ret)
 	}
