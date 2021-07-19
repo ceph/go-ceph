@@ -33,8 +33,6 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-type verbHTTP string
-
 // API struct for New Client
 type API struct {
 	AccessKey  string
@@ -76,9 +74,9 @@ func New(endpoint, accessKey, secretKey string, httpClient HTTPClient) (*API, er
 }
 
 // call makes request to the RGW Admin Ops API
-func (api *API) call(ctx context.Context, verb verbHTTP, path string, args url.Values) (body []byte, err error) {
+func (api *API) call(ctx context.Context, httpMethod, path string, args url.Values) (body []byte, err error) {
 	// Build request
-	request, err := http.NewRequestWithContext(ctx, string(verb), buildQueryPath(api.Endpoint, path, args.Encode()), nil)
+	request, err := http.NewRequestWithContext(ctx, httpMethod, buildQueryPath(api.Endpoint, path, args.Encode()), nil)
 	if err != nil {
 		return nil, err
 	}
