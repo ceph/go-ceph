@@ -897,26 +897,26 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 		return nil, err
 	}
 
-	var c_max_snaps C.int
+	var cMaxSnaps C.int
 
-	ret := C.rbd_snap_list(image.image, nil, &c_max_snaps)
+	ret := C.rbd_snap_list(image.image, nil, &cMaxSnaps)
 
-	c_snaps := make([]C.rbd_snap_info_t, c_max_snaps)
-	snaps = make([]SnapInfo, c_max_snaps)
+	cSnaps := make([]C.rbd_snap_info_t, cMaxSnaps)
+	snaps = make([]SnapInfo, cMaxSnaps)
 
 	ret = C.rbd_snap_list(image.image,
-		&c_snaps[0], &c_max_snaps)
+		&cSnaps[0], &cMaxSnaps)
 	if ret < 0 {
 		return nil, rbdError(ret)
 	}
 
-	for i, s := range c_snaps {
+	for i, s := range cSnaps {
 		snaps[i] = SnapInfo{Id: uint64(s.id),
 			Size: uint64(s.size),
 			Name: C.GoString(s.name)}
 	}
 
-	C.rbd_snap_list_end(&c_snaps[0])
+	C.rbd_snap_list_end(&cSnaps[0])
 	return snaps[:len(snaps)-1], nil
 }
 
