@@ -58,6 +58,12 @@ func TestGetFeatures(t *testing.T) {
 	})
 }
 
+func TestGetFeaturesInMimic(t *testing.T) {
+	f, ok := featureNameToBit[FeatureNameOperations]
+	assert.True(t, ok)
+	assert.Equal(t, f, FeatureOperations)
+}
+
 func TestFeatureSet(t *testing.T) {
 	fsBits := FeatureSet(FeatureExclusiveLock | FeatureDeepFlatten)
 	fsNames := FeatureSetFromNames([]string{FeatureNameExclusiveLock, FeatureNameDeepFlatten})
