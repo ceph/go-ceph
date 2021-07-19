@@ -308,14 +308,14 @@ func (image *Image) Rename(destname string) error {
 		return err
 	}
 
-	c_srcname := C.CString(image.name)
-	c_destname := C.CString(destname)
+	cSrcName := C.CString(image.name)
+	cDestName := C.CString(destname)
 
-	defer C.free(unsafe.Pointer(c_srcname))
-	defer C.free(unsafe.Pointer(c_destname))
+	defer C.free(unsafe.Pointer(cSrcName))
+	defer C.free(unsafe.Pointer(cDestName))
 
 	err := rbdError(C.rbd_rename(cephIoctx(image.ioctx),
-		c_srcname, c_destname))
+		cSrcName, cDestName))
 	if err == 0 {
 		image.name = destname
 		return nil
