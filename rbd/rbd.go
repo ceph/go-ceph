@@ -1225,9 +1225,9 @@ func RemoveImage(ioctx *rados.IOContext, name string) error {
 		return ErrNoName
 	}
 
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
-	return getError(C.rbd_remove(cephIoctx(ioctx), c_name))
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	return getError(C.rbd_remove(cephIoctx(ioctx), cName))
 }
 
 // CloneImage creates a clone of the image from the named snapshot in the
