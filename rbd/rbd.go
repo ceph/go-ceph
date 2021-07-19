@@ -516,11 +516,11 @@ func (image *Image) Copy(ioctx *rados.IOContext, destname string) error {
 		return ErrNoName
 	}
 
-	c_destname := C.CString(destname)
-	defer C.free(unsafe.Pointer(c_destname))
+	cDestName := C.CString(destname)
+	defer C.free(unsafe.Pointer(cDestName))
 
 	return getError(C.rbd_copy(image.image,
-		cephIoctx(ioctx), c_destname))
+		cephIoctx(ioctx), cDestName))
 }
 
 // Copy2 copies one rbd image to another, using an image handle.
