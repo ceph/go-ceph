@@ -589,55 +589,55 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 		return "", nil, err
 	}
 
-	var c_exclusive C.int
-	var c_tag_len, c_clients_len, c_cookies_len, c_addrs_len C.size_t
-	var c_locker_cnt C.ssize_t
+	var cExclusive C.int
+	var cTagLen, cClientsLen, cCookiesLen, cAddrsLen C.size_t
+	var cLockerCount C.ssize_t
 
-	C.rbd_list_lockers(image.image, &c_exclusive,
-		nil, (*C.size_t)(&c_tag_len),
-		nil, (*C.size_t)(&c_clients_len),
-		nil, (*C.size_t)(&c_cookies_len),
-		nil, (*C.size_t)(&c_addrs_len))
+	C.rbd_list_lockers(image.image, &cExclusive,
+		nil, (*C.size_t)(&cTagLen),
+		nil, (*C.size_t)(&cClientsLen),
+		nil, (*C.size_t)(&cCookiesLen),
+		nil, (*C.size_t)(&cAddrsLen))
 
 	// no locker held on rbd image when either c_clients_len,
 	// c_cookies_len or c_addrs_len is *0*, so just quickly returned
-	if int(c_clients_len) == 0 || int(c_cookies_len) == 0 ||
-		int(c_addrs_len) == 0 {
+	if int(cClientsLen) == 0 || int(cCookiesLen) == 0 ||
+		int(cAddrsLen) == 0 {
 		lockers = make([]Locker, 0)
 		return "", lockers, nil
 	}
 
-	tag_buf := make([]byte, c_tag_len)
-	clients_buf := make([]byte, c_clients_len)
-	cookies_buf := make([]byte, c_cookies_len)
-	addrs_buf := make([]byte, c_addrs_len)
+	tagBuf := make([]byte, cTagLen)
+	clientsBuf := make([]byte, cClientsLen)
+	cookiesBuf := make([]byte, cCookiesLen)
+	addrsBuf := make([]byte, cAddrsLen)
 
-	c_locker_cnt = C.rbd_list_lockers(image.image, &c_exclusive,
-		(*C.char)(unsafe.Pointer(&tag_buf[0])), (*C.size_t)(&c_tag_len),
-		(*C.char)(unsafe.Pointer(&clients_buf[0])), (*C.size_t)(&c_clients_len),
-		(*C.char)(unsafe.Pointer(&cookies_buf[0])), (*C.size_t)(&c_cookies_len),
-		(*C.char)(unsafe.Pointer(&addrs_buf[0])), (*C.size_t)(&c_addrs_len))
+	cLockerCount = C.rbd_list_lockers(image.image, &cExclusive,
+		(*C.char)(unsafe.Pointer(&tagBuf[0])), (*C.size_t)(&cTagLen),
+		(*C.char)(unsafe.Pointer(&clientsBuf[0])), (*C.size_t)(&cClientsLen),
+		(*C.char)(unsafe.Pointer(&cookiesBuf[0])), (*C.size_t)(&cCookiesLen),
+		(*C.char)(unsafe.Pointer(&addrsBuf[0])), (*C.size_t)(&cAddrsLen))
 
 	// rbd_list_lockers returns negative value for errors
 	// and *0* means no locker held on rbd image.
 	// but *0* is unexpected here because first rbd_list_lockers already
 	// dealt with no locker case
-	if int(c_locker_cnt) <= 0 {
-		return "", nil, rbdError(c_locker_cnt)
+	if int(cLockerCount) <= 0 {
+		return "", nil, rbdError(cLockerCount)
 	}
 
-	clients := cutil.SplitSparseBuffer(clients_buf)
-	cookies := cutil.SplitSparseBuffer(cookies_buf)
-	addrs := cutil.SplitSparseBuffer(addrs_buf)
+	clients := cutil.SplitSparseBuffer(clientsBuf)
+	cookies := cutil.SplitSparseBuffer(cookiesBuf)
+	addrs := cutil.SplitSparseBuffer(addrsBuf)
 
-	lockers = make([]Locker, c_locker_cnt)
-	for i := 0; i < int(c_locker_cnt); i++ {
+	lockers = make([]Locker, cLockerCount)
+	for i := 0; i < int(cLockerCount); i++ {
 		lockers[i] = Locker{Client: clients[i],
 			Cookie: cookies[i],
 			Addr:   addrs[i]}
 	}
 
-	return string(tag_buf), lockers, nil
+	return string(tagBuf), lockers, nil
 }
 
 // LockExclusive acquires an exclusive lock on the rbd image.
