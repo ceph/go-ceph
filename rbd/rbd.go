@@ -959,10 +959,10 @@ func (image *Image) SetSnapshot(snapname string) error {
 		return err
 	}
 
-	c_snapname := C.CString(snapname)
-	defer C.free(unsafe.Pointer(c_snapname))
+	cSnapName := C.CString(snapname)
+	defer C.free(unsafe.Pointer(cSnapName))
 
-	return getError(C.rbd_snap_set(image.image, c_snapname))
+	return getError(C.rbd_snap_set(image.image, cSnapName))
 }
 
 // GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images
