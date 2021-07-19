@@ -125,9 +125,9 @@ func (image *Image) validate(req uint32) error {
 
 // Version returns the major, minor, and patch level of the librbd library.
 func Version() (int, int, int) {
-	var c_major, c_minor, c_patch C.int
-	C.rbd_version(&c_major, &c_minor, &c_patch)
-	return int(c_major), int(c_minor), int(c_patch)
+	var cMajor, cMinor, cPatch C.int
+	C.rbd_version(&cMajor, &cMinor, &cPatch)
+	return int(cMajor), int(cMinor), int(cPatch)
 }
 
 // GetImage gets a reference to a previously created rbd image.
