@@ -1000,21 +1000,21 @@ func GetTrashList(ioctx *rados.IOContext) ([]TrashInfo, error) {
 
 // TrashRemove permanently deletes the trashed RBD with the specified id.
 func TrashRemove(ioctx *rados.IOContext, id string, force bool) error {
-	c_id := C.CString(id)
-	defer C.free(unsafe.Pointer(c_id))
+	cid := C.CString(id)
+	defer C.free(unsafe.Pointer(cid))
 
-	return getError(C.rbd_trash_remove(cephIoctx(ioctx), c_id, C.bool(force)))
+	return getError(C.rbd_trash_remove(cephIoctx(ioctx), cid, C.bool(force)))
 }
 
 // TrashRestore restores the trashed RBD with the specified id back to the pool from whence it
 // came, with the specified new name.
 func TrashRestore(ioctx *rados.IOContext, id, name string) error {
-	c_id := C.CString(id)
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_id))
-	defer C.free(unsafe.Pointer(c_name))
+	cid := C.CString(id)
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cid))
+	defer C.free(unsafe.Pointer(cName))
 
-	return getError(C.rbd_trash_restore(cephIoctx(ioctx), c_id, c_name))
+	return getError(C.rbd_trash_restore(cephIoctx(ioctx), cid, cName))
 }
 
 // OpenImage will open an existing rbd image by name and snapshot name,
