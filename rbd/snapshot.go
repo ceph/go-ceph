@@ -133,18 +133,18 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 		return false, err
 	}
 
-	var c_is_protected C.int
+	var cIsProtected C.int
 
 	cSnapName := C.CString(snapshot.name)
 	defer C.free(unsafe.Pointer(cSnapName))
 
 	ret := C.rbd_snap_is_protected(snapshot.image.image, cSnapName,
-		&c_is_protected)
+		&cIsProtected)
 	if ret < 0 {
 		return false, rbdError(ret)
 	}
 
-	return c_is_protected != 0, nil
+	return cIsProtected != 0, nil
 }
 
 // Set updates the rbd image (not the Snapshot) such that the snapshot
