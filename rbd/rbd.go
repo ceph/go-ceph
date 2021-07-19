@@ -1205,10 +1205,10 @@ func CreateImage(ioctx *rados.IOContext, name string, size uint64, rio *ImageOpt
 		return rbdError(C.EINVAL)
 	}
 
-	c_name := C.CString(name)
-	defer C.free(unsafe.Pointer(c_name))
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
 
-	ret := C.rbd_create4(cephIoctx(ioctx), c_name,
+	ret := C.rbd_create4(cephIoctx(ioctx), cName,
 		C.uint64_t(size), C.rbd_image_options_t(rio.options))
 	return getError(ret)
 }
