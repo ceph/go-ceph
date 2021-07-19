@@ -403,18 +403,18 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 		return nil, err
 	}
 
-	var c_stat C.rbd_image_info_t
+	var cStat C.rbd_image_info_t
 
-	if ret := C.rbd_stat(image.image, &c_stat, C.size_t(unsafe.Sizeof(info))); ret < 0 {
+	if ret := C.rbd_stat(image.image, &cStat, C.size_t(unsafe.Sizeof(info))); ret < 0 {
 		return info, rbdError(ret)
 	}
 
 	return &ImageInfo{
-		Size:              uint64(c_stat.size),
-		Obj_size:          uint64(c_stat.obj_size),
-		Num_objs:          uint64(c_stat.num_objs),
-		Order:             int(c_stat.order),
-		Block_name_prefix: C.GoString((*C.char)(&c_stat.block_name_prefix[0]))}, nil
+		Size:              uint64(cStat.size),
+		Obj_size:          uint64(cStat.obj_size),
+		Num_objs:          uint64(cStat.num_objs),
+		Order:             int(cStat.order),
+		Block_name_prefix: C.GoString((*C.char)(&cStat.block_name_prefix[0]))}, nil
 }
 
 // IsOldFormat returns true if the rbd image uses the old format.
