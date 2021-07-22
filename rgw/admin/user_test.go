@@ -13,6 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// mockClient is the mock of the HTTP Client
+// It can be used to mock HTTP request/response from the rgw admin ops API
+type mockClient struct {
+	// mockDo is a type that mock the Do method from the HTTP package
+	mockDo mockDoType
+}
+
+// mockDoType is a custom type that allows setting the function that our Mock Do func will run instead
+type mockDoType func(req *http.Request) (*http.Response, error)
+
+// Do is the mock client's `Do` func
+func (m *mockClient) Do(req *http.Request) (*http.Response, error) { return m.mockDo(req) }
+
 var (
 	fakeUserResponse = []byte(`
 {
@@ -141,8 +154,8 @@ func (suite *RadosGWTestSuite) TestUser() {
 
 func TestGetUserMockAPI(t *testing.T) {
 	r := ioutil.NopCloser(bytes.NewReader(fakeUserResponse))
-	mockClient := &MockClient{
-		MockDo: func(req *http.Request) (*http.Response, error) {
+	mockClient := &mockClient{
+		mockDo: func(req *http.Request) (*http.Response, error) {
 			if req.URL.RawQuery == "format=json&uid=dashboard-admin" && req.Method == http.MethodGet && req.URL.Path == "127.0.0.1/admin/user" {
 				return &http.Response{
 					StatusCode: 200,
