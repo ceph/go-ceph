@@ -33,6 +33,11 @@ On rpm based systems (dnf, yum, etc) these may be:
 ```sh
 libcephfs-devel librbd-devel librados-devel
 ```
+On macOS (only support go-ceph v0.9.0 and previous versions):
+```sh
+brew tap mulbc/ceph-client
+brew install ceph-client
+```
 
 To quickly test if one can build with go-ceph on your system, run:
 ```sh
