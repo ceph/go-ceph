@@ -763,39 +763,39 @@ func TestReadAt(t *testing.T) {
 	assert.NoError(t, err)
 
 	// write 0 bytes should succeed
-	data_out := make([]byte, 0)
-	n_out, err := img.WriteAt(data_out, 256)
-	assert.Equal(t, 0, n_out)
+	dataOut := make([]byte, 0)
+	numOut, err := img.WriteAt(dataOut, 256)
+	assert.Equal(t, 0, numOut)
 	assert.NoError(t, err)
 
 	// reading 0 bytes should be successful
-	data_in := make([]byte, 0)
-	n_in, err := img.ReadAt(data_in, 256)
-	assert.Equal(t, 0, n_in)
+	dataIn := make([]byte, 0)
+	numIn, err := img.ReadAt(dataIn, 256)
+	assert.Equal(t, 0, numIn)
 	assert.NoError(t, err)
 
 	// write some data at the end of the image
-	data_out = []byte("Hi rbd! Nice to talk through go-ceph :)")
+	dataOut = []byte("Hi rbd! Nice to talk through go-ceph :)")
 
 	stats, err := img.Stat()
 	require.NoError(t, err)
-	offset := int64(stats.Size) - int64(len(data_out))
+	offset := int64(stats.Size) - int64(len(dataOut))
 
-	n_out, err = img.WriteAt(data_out, offset)
-	assert.Equal(t, len(data_out), n_out)
+	numOut, err = img.WriteAt(dataOut, offset)
+	assert.Equal(t, len(dataOut), numOut)
 	assert.NoError(t, err)
 
-	data_in = make([]byte, len(data_out))
-	n_in, err = img.ReadAt(data_in, offset)
-	assert.Equal(t, n_in, len(data_in))
-	assert.Equal(t, data_in, data_out)
+	dataIn = make([]byte, len(dataOut))
+	numIn, err = img.ReadAt(dataIn, offset)
+	assert.Equal(t, numIn, len(dataIn))
+	assert.Equal(t, dataIn, dataOut)
 	assert.NoError(t, err)
 
 	// reading after EOF (needs to be large enough to hit EOF)
-	data_in = make([]byte, len(data_out)+256)
-	n_in, err = img.ReadAt(data_in, offset)
-	assert.Equal(t, n_in, len(data_out))
-	assert.Equal(t, data_in[0:len(data_out)], data_out)
+	dataIn = make([]byte, len(dataOut)+256)
+	numIn, err = img.ReadAt(dataIn, offset)
+	assert.Equal(t, numIn, len(dataOut))
+	assert.Equal(t, dataIn[0:len(dataOut)], dataOut)
 	assert.Equal(t, io.EOF, err)
 
 	err = img.Close()
@@ -805,7 +805,7 @@ func TestReadAt(t *testing.T) {
 	img, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	_, err = img.WriteAt(data_out, 256)
+	_, err = img.WriteAt(dataOut, 256)
 	assert.Error(t, err)
 
 	err = img.Close()
