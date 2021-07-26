@@ -9,12 +9,12 @@ import (
 
 func TestChmodDir(t *testing.T) {
 	dirname := "two"
-	var stats_before uint32 = 0755
-	var stats_after uint32 = 0700
+	var statsBefore uint32 = 0755
+	var statsAfter uint32 = 0700
 	mount := fsConnect(t)
 	defer fsDisconnect(t, mount)
 
-	err := mount.MakeDir(dirname, stats_before)
+	err := mount.MakeDir(dirname, statsBefore)
 	assert.NoError(t, err)
 	defer mount.RemoveDir(dirname)
 
@@ -24,14 +24,14 @@ func TestChmodDir(t *testing.T) {
 	sx, err := mount.Statx(dirname, StatxBasicStats, 0)
 	require.NoError(t, err)
 
-	assert.Equal(t, uint32(sx.Mode&0777), stats_before)
+	assert.Equal(t, uint32(sx.Mode&0777), statsBefore)
 
-	err = mount.Chmod(dirname, stats_after)
+	err = mount.Chmod(dirname, statsAfter)
 	assert.NoError(t, err)
 
 	sx, err = mount.Statx(dirname, StatxBasicStats, 0)
 	require.NoError(t, err)
-	assert.Equal(t, uint32(sx.Mode&0777), stats_after)
+	assert.Equal(t, uint32(sx.Mode&0777), statsAfter)
 }
 
 func TestChown(t *testing.T) {
