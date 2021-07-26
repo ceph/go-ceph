@@ -493,25 +493,25 @@ func (suite *RadosTestSuite) TestCreate() {
 func (suite *RadosTestSuite) TestReadWrite() {
 	suite.SetupConnection()
 
-	bytes_in := []byte("input data")
-	err := suite.ioctx.Write("obj", bytes_in, 0)
+	bytesIn := []byte("input data")
+	err := suite.ioctx.Write("obj", bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
-	bytes_out := make([]byte, len(bytes_in))
-	n_out, err := suite.ioctx.Read("obj", bytes_out, 0)
+	bytesOut := make([]byte, len(bytesIn))
+	numOut, err := suite.ioctx.Read("obj", bytesOut, 0)
 
-	assert.Equal(suite.T(), n_out, len(bytes_in))
-	assert.Equal(suite.T(), bytes_in, bytes_out)
+	assert.Equal(suite.T(), numOut, len(bytesIn))
+	assert.Equal(suite.T(), bytesIn, bytesOut)
 
-	bytes_in = []byte("input another data")
-	err = suite.ioctx.WriteFull("obj", bytes_in)
+	bytesIn = []byte("input another data")
+	err = suite.ioctx.WriteFull("obj", bytesIn)
 	assert.NoError(suite.T(), err)
 
-	bytes_out = make([]byte, len(bytes_in))
-	n_out, err = suite.ioctx.Read("obj", bytes_out, 0)
+	bytesOut = make([]byte, len(bytesIn))
+	numOut, err = suite.ioctx.Read("obj", bytesOut, 0)
 
-	assert.Equal(suite.T(), n_out, len(bytes_in))
-	assert.Equal(suite.T(), bytes_in, bytes_out)
+	assert.Equal(suite.T(), numOut, len(bytesIn))
+	assert.Equal(suite.T(), bytesIn, bytesOut)
 }
 
 func (suite *RadosTestSuite) TestAppend() {
