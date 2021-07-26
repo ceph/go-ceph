@@ -987,12 +987,12 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 
 	// create oid
 	oid := suite.GenObjectName()
-	bytes_in := []byte("input data")
-	err := suite.ioctx.Write(oid, bytes_in, 0)
+	bytesIn := []byte("input data")
+	err := suite.ioctx.Write(oid, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	stat, err := suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
+	assert.Equal(suite.T(), uint64(len(bytesIn)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
 
 	// oid isn't seen in space1 ns
@@ -1002,8 +1002,8 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 
 	// create oid2 in space1 ns
 	oid2 := suite.GenObjectName()
-	bytes_in = []byte("input data")
-	err = suite.ioctx.Write(oid2, bytes_in, 0)
+	bytesIn = []byte("input data")
+	err = suite.ioctx.Write(oid2, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	suite.ioctx.SetNamespace("")
@@ -1011,7 +1011,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 	assert.Equal(suite.T(), err, ErrNotFound)
 
 	stat, err = suite.ioctx.Stat(oid)
-	assert.Equal(suite.T(), uint64(len(bytes_in)), stat.Size)
+	assert.Equal(suite.T(), uint64(len(bytesIn)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
 }
 
