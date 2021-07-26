@@ -137,21 +137,21 @@ func (suite *RadosTestSuite) TestGetSetConfigOption() {
 	assert.Error(suite.T(), err)
 
 	// verify SetConfigOption changes a values
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	err = suite.conn.SetConfigOption("log_file", "/dev/null")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 }
 
 func (suite *RadosTestSuite) TestParseDefaultConfigEnv() {
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	err = os.Setenv("CEPH_ARGS", "--log-file /dev/null")
@@ -160,26 +160,26 @@ func (suite *RadosTestSuite) TestParseDefaultConfigEnv() {
 	err = suite.conn.ParseDefaultConfigEnv()
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 }
 
 func (suite *RadosTestSuite) TestParseConfigArgv() {
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	argv := []string{"rados.test", "--log_file", "/dev/null"}
 	err = suite.conn.ParseConfigArgv(argv)
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 
 	// ensure that an empty slice triggers an error (not a crash)
 	err = suite.conn.ParseConfigArgv([]string{})
@@ -193,26 +193,26 @@ func (suite *RadosTestSuite) TestParseConfigArgv() {
 }
 
 func (suite *RadosTestSuite) TestParseCmdLineArgs() {
-	prev_val, err := suite.conn.GetConfigOption("log_file")
+	prevVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
 	args := []string{"--log_file", "/dev/null"}
 	err = suite.conn.ParseCmdLineArgs(args)
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := suite.conn.GetConfigOption("log_file")
+	currVal, err := suite.conn.GetConfigOption("log_file")
 	assert.NoError(suite.T(), err, "Invalid option")
 
-	assert.NotEqual(suite.T(), prev_val, "/dev/null")
-	assert.Equal(suite.T(), curr_val, "/dev/null")
+	assert.NotEqual(suite.T(), prevVal, "/dev/null")
+	assert.Equal(suite.T(), currVal, "/dev/null")
 }
 
 func (suite *RadosTestSuite) TestReadConfigFile() {
 	// check current log_file value
-	prev_str, err := suite.conn.GetConfigOption("log_max_new")
+	prevStr, err := suite.conn.GetConfigOption("log_max_new")
 	assert.NoError(suite.T(), err)
 
-	prev_val, err := strconv.Atoi(prev_str)
+	prevVal, err := strconv.Atoi(prevStr)
 	assert.NoError(suite.T(), err)
 
 	// create conf file that changes log_file conf option
@@ -223,8 +223,8 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 		assert.NoError(suite.T(), os.Remove(file.Name()))
 	}()
 
-	next_val := prev_val + 1
-	conf := fmt.Sprintf("[global]\nlog_max_new = %d\n", next_val)
+	nextVal := prevVal + 1
+	conf := fmt.Sprintf("[global]\nlog_max_new = %d\n", nextVal)
 	_, err = io.WriteString(file, conf)
 	assert.NoError(suite.T(), err)
 
@@ -233,14 +233,14 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 	assert.NoError(suite.T(), err)
 
 	// check current log_file value
-	curr_str, err := suite.conn.GetConfigOption("log_max_new")
+	currStr, err := suite.conn.GetConfigOption("log_max_new")
 	assert.NoError(suite.T(), err)
 
-	curr_val, err := strconv.Atoi(curr_str)
+	currVal, err := strconv.Atoi(currStr)
 	assert.NoError(suite.T(), err)
 
-	assert.NotEqual(suite.T(), prev_str, curr_str)
-	assert.Equal(suite.T(), curr_val, prev_val+1)
+	assert.NotEqual(suite.T(), prevStr, currStr)
+	assert.Equal(suite.T(), currVal, prevVal+1)
 }
 
 func (suite *RadosTestSuite) TestGetClusterStats() {
