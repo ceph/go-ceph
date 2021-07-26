@@ -1422,8 +1422,8 @@ func TestOpenImage(t *testing.T) {
 	oImage, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	bytes_in := []byte("input data")
-	_, err = oImage.Write(bytes_in)
+	bytesIn := []byte("input data")
+	_, err = oImage.Write(bytesIn)
 	// writing should fail in read-only mode
 	assert.Error(t, err)
 
