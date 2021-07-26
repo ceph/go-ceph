@@ -49,14 +49,14 @@ func (suite *RadosTestSuite) TestMonCommandWithInputBuffer() {
 	})
 	assert.NoError(suite.T(), err)
 
-	client_key := fmt.Sprintf(clientKeyFormat, entity)
+	clientKey := fmt.Sprintf(clientKeyFormat, entity)
 
-	inbuf := []byte(client_key)
+	inbuf := []byte(clientKey)
 
 	buf, info, err := suite.conn.MonCommandWithInputBuffer(command, inbuf)
 	assert.NoError(suite.T(), err)
-	expected_info := fmt.Sprintf("added key for %s", entity)
-	assert.Equal(suite.T(), expected_info, info)
+	expectedInfo := fmt.Sprintf("added key for %s", entity)
+	assert.Equal(suite.T(), expectedInfo, info)
 	assert.Equal(suite.T(), "", string(buf[:]))
 
 	// get the key and verify that it's what we previously set
