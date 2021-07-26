@@ -562,40 +562,40 @@ func TestWriteSame(t *testing.T) {
 	img, err := OpenImage(ioctx, name, NoSnapshot)
 	assert.NoError(t, err)
 
-	data_out := []byte("this is a string of 28 bytes")
+	dataOut := []byte("this is a string of 28 bytes")
 
 	t.Run("writeAndRead", func(t *testing.T) {
 		// write some bytes at the start of the image
-		n_out, err := img.WriteSame(0, uint64(4*len(data_out)), data_out, rados.OpFlagNone)
-		assert.Equal(t, int64(4*len(data_out)), n_out)
+		numOut, err := img.WriteSame(0, uint64(4*len(dataOut)), dataOut, rados.OpFlagNone)
+		assert.Equal(t, int64(4*len(dataOut)), numOut)
 		assert.NoError(t, err)
 
 		// the same string should be read from byte 0
-		data_in := make([]byte, len(data_out))
-		n_in, err := img.ReadAt(data_in, 0)
-		assert.Equal(t, len(data_out), n_in)
-		assert.Equal(t, data_out, data_in)
+		dataIn := make([]byte, len(dataOut))
+		numIn, err := img.ReadAt(dataIn, 0)
+		assert.Equal(t, len(dataOut), numIn)
+		assert.Equal(t, dataOut, dataIn)
 		assert.NoError(t, err)
 
 		// the same string should be read from byte 28
-		data_in = make([]byte, len(data_out))
-		n_in, err = img.ReadAt(data_in, 28)
-		assert.Equal(t, len(data_out), n_in)
-		assert.Equal(t, data_out, data_in)
+		dataIn = make([]byte, len(dataOut))
+		numIn, err = img.ReadAt(dataIn, 28)
+		assert.Equal(t, len(dataOut), numIn)
+		assert.Equal(t, dataOut, dataIn)
 		assert.NoError(t, err)
 	})
 
 	t.Run("writePartialData", func(t *testing.T) {
-		// writing a non-multiple of data_out len will fail
-		_, err = img.WriteSame(0, 64, data_out, rados.OpFlagNone)
+		// writing a non-multiple of dataOut len will fail
+		_, err = img.WriteSame(0, 64, dataOut, rados.OpFlagNone)
 		assert.Error(t, err)
 	})
 
 	t.Run("writeNoData", func(t *testing.T) {
 		// writing empty data should succeed
-		n_in, err := img.WriteSame(0, 64, []byte(""), rados.OpFlagNone)
+		numIn, err := img.WriteSame(0, 64, []byte(""), rados.OpFlagNone)
 		assert.NoError(t, err)
-		assert.Equal(t, int64(0), n_in)
+		assert.Equal(t, int64(0), numIn)
 	})
 
 	t.Run("zerofill", func(t *testing.T) {
@@ -613,9 +613,9 @@ func TestWriteSame(t *testing.T) {
 		// by the stripe-count
 		order := uint(st.Order) // signed shifting requires newer golang?!
 		zeroBlock := make([]byte, sc*(1<<order))
-		n_in, err := img.WriteSame(0, size, zeroBlock, rados.OpFlagNone)
+		numIn, err := img.WriteSame(0, size, zeroBlock, rados.OpFlagNone)
 		assert.NoError(t, err)
-		assert.Equal(t, size, uint64(n_in))
+		assert.Equal(t, size, uint64(numIn))
 
 		cmd := exec.Command("rbd", "diff", "--pool", poolname, name)
 		out, err := cmd.Output()
@@ -631,7 +631,7 @@ func TestWriteSame(t *testing.T) {
 		img, err = OpenImageReadOnly(ioctx, name, NoSnapshot)
 		assert.NoError(t, err)
 
-		_, err = img.WriteSame(96, 32, data_out, rados.OpFlagNone)
+		_, err = img.WriteSame(96, 32, dataOut, rados.OpFlagNone)
 		assert.Error(t, err)
 
 		err = img.Close()
