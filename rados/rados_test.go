@@ -579,8 +579,8 @@ func (suite *RadosTestSuite) TestGetPoolStats() {
 	suite.SetupConnection()
 
 	// grab current stats
-	prev_stat, err := suite.ioctx.GetPoolStats()
-	fmt.Printf("prev_stat: %+v\n", prev_stat)
+	prevStat, err := suite.ioctx.GetPoolStats()
+	fmt.Printf("prevStat: %+v\n", prevStat)
 	assert.NoError(suite.T(), err)
 
 	// make some changes to the cluster
@@ -597,7 +597,7 @@ func (suite *RadosTestSuite) TestGetPoolStats() {
 		assert.NoError(suite.T(), err)
 
 		// wait for something to change
-		if stat == prev_stat {
+		if stat == prevStat {
 			fmt.Printf("curr_stat: %+v (trying again...)\n", stat)
 			time.Sleep(time.Second)
 		} else {
