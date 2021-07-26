@@ -683,8 +683,8 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 	// create an object in a different namespace to verify that
 	// iteration within a namespace does not return it
 	suite.ioctx.SetNamespace("ns1")
-	bytes_in := []byte("input data")
-	err = suite.ioctx.Write(suite.GenObjectName(), bytes_in, 0)
+	bytesIn := []byte("input data")
+	err = suite.ioctx.Write(suite.GenObjectName(), bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	// create some objects in default namespace
@@ -692,8 +692,8 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 	createdList := []string{}
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		bytes_in := []byte("input data")
-		err = suite.ioctx.Write(oid, bytes_in, 0)
+		bytesIn := []byte("input data")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
 		assert.NoError(suite.T(), err)
 		createdList = append(createdList, oid)
 	}
@@ -743,8 +743,8 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	suite.ioctx.SetNamespace("nsX")
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		bytes_in := []byte("input data")
-		err = suite.ioctx.Write(oid, bytes_in, 0)
+		bytesIn := []byte("input data")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
 		assert.NoError(suite.T(), err)
 		createdList = append(createdList, oid)
 	}
@@ -754,8 +754,8 @@ func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	suite.ioctx.SetNamespace("nsY")
 	for i := 0; i < 10; i++ {
 		oid := suite.GenObjectName()
-		bytes_in := []byte("input data")
-		err = suite.ioctx.Write(oid, bytes_in, 0)
+		bytesIn := []byte("input data")
+		err = suite.ioctx.Write(oid, bytesIn, 0)
 		assert.NoError(suite.T(), err)
 		createdList = append(createdList, oid)
 	}
