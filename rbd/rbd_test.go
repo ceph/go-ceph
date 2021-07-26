@@ -682,52 +682,52 @@ func TestIOReaderWriter(t *testing.T) {
 	assert.Equal(t, &stats, &stats2)
 
 	_, err = img.Seek(0, SeekSet)
-	bytes_in := []byte("input data")
-	_, err = img.Write(bytes_in)
+	bytesIn := []byte("input data")
+	_, err = img.Write(bytesIn)
 	assert.NoError(t, err)
 
 	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
 	// reading 0 bytes should succeed
-	nil_bytes := make([]byte, 0)
-	n_out, err := img.Read(nil_bytes)
-	assert.Equal(t, n_out, 0)
+	nothing := make([]byte, 0)
+	numOut, err := img.Read(nothing)
+	assert.Equal(t, numOut, 0)
 	assert.NoError(t, err)
 
-	bytes_out := make([]byte, len(bytes_in))
-	n_out, err = img.Read(bytes_out)
+	bytesOut := make([]byte, len(bytesIn))
+	numOut, err = img.Read(bytesOut)
 
-	assert.Equal(t, n_out, len(bytes_in))
-	assert.Equal(t, bytes_in, bytes_out)
+	assert.Equal(t, numOut, len(bytesIn))
+	assert.Equal(t, bytesIn, bytesOut)
 
 	// write some data at the end of the image
-	offset := int64(stats.Size) - int64(len(bytes_in))
+	offset := int64(stats.Size) - int64(len(bytesIn))
 
 	_, err = img.Seek(offset, SeekSet)
 	assert.NoError(t, err)
 
-	n_out, err = img.Write(bytes_in)
-	assert.Equal(t, len(bytes_in), n_out)
+	numOut, err = img.Write(bytesIn)
+	assert.Equal(t, len(bytesIn), numOut)
 	assert.NoError(t, err)
 
 	_, err = img.Seek(offset, SeekSet)
 	assert.NoError(t, err)
 
-	bytes_out = make([]byte, len(bytes_in))
-	n_out, err = img.Read(bytes_out)
-	assert.Equal(t, n_out, len(bytes_in))
-	assert.Equal(t, bytes_in, bytes_out)
+	bytesOut = make([]byte, len(bytesIn))
+	numOut, err = img.Read(bytesOut)
+	assert.Equal(t, numOut, len(bytesIn))
+	assert.Equal(t, bytesIn, bytesOut)
 	assert.NoError(t, err)
 
 	// reading after EOF (needs to be large enough to hit EOF)
 	_, err = img.Seek(offset, SeekSet)
 	assert.NoError(t, err)
 
-	bytes_in = make([]byte, len(bytes_out)+256)
-	n_out, err = img.Read(bytes_in)
-	assert.Equal(t, n_out, len(bytes_out))
-	assert.Equal(t, bytes_in[0:len(bytes_out)], bytes_out)
+	bytesIn = make([]byte, len(bytesOut)+256)
+	numOut, err = img.Read(bytesIn)
+	assert.Equal(t, numOut, len(bytesOut))
+	assert.Equal(t, bytesIn[0:len(bytesOut)], bytesOut)
 	assert.Equal(t, io.EOF, err)
 
 	err = img.Close()
