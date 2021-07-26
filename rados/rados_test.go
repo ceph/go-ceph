@@ -1026,15 +1026,15 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 
 	// create oid
 	oid := suite.GenObjectName()
-	bytes_in := []byte("input data")
-	err = suite.ioctx.Write(oid, bytes_in, 0)
+	bytesIn := []byte("input data")
+	err = suite.ioctx.Write(oid, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	// create oid2 in space1 ns
 	suite.ioctx.SetNamespace("space1")
 	oid2 := suite.GenObjectName()
-	bytes_in = []byte("input data")
-	err = suite.ioctx.Write(oid2, bytes_in, 0)
+	bytesIn = []byte("input data")
+	err = suite.ioctx.Write(oid2, bytesIn, 0)
 	assert.NoError(suite.T(), err)
 
 	// count objects in space1 ns
