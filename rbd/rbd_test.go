@@ -275,8 +275,8 @@ func TestDeprecatedImageOpen(t *testing.T) {
 	err = image.Open(true)
 	assert.NoError(t, err)
 
-	bytes_in := []byte("input data")
-	_, err = image.Write(bytes_in)
+	bytesIn := []byte("input data")
+	_, err = image.Write(bytesIn)
 	// writing should fail in read-only mode
 	assert.Error(t, err)
 
@@ -442,28 +442,28 @@ func TestImageSeek(t *testing.T) {
 	_, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 
-	bytes_in := []byte("input data")
-	n_in, err := img.Write(bytes_in)
+	bytesIn := []byte("input data")
+	numIn, err := img.Write(bytesIn)
 	assert.NoError(t, err)
-	assert.Equal(t, n_in, len(bytes_in))
+	assert.Equal(t, numIn, len(bytesIn))
 
 	pos, err := img.Seek(0, SeekCur)
 	assert.NoError(t, err)
-	assert.Equal(t, pos, int64(n_in))
+	assert.Equal(t, pos, int64(numIn))
 
 	pos, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
 	assert.Equal(t, pos, int64(0))
 
-	bytes_out := make([]byte, len(bytes_in))
-	n_out, err := img.Read(bytes_out)
+	bytesOut := make([]byte, len(bytesIn))
+	numOut, err := img.Read(bytesOut)
 	assert.NoError(t, err)
-	assert.Equal(t, n_out, len(bytes_out))
-	assert.Equal(t, bytes_in, bytes_out)
+	assert.Equal(t, numOut, len(bytesOut))
+	assert.Equal(t, bytesIn, bytesOut)
 
 	pos, err = img.Seek(0, SeekCur)
 	assert.NoError(t, err)
-	assert.Equal(t, pos, int64(n_out))
+	assert.Equal(t, pos, int64(numOut))
 
 	pos, err = img.Seek(0, SeekSet)
 	assert.NoError(t, err)
