@@ -49,3 +49,8 @@ func NewLevelSpec(pool, namespace, image string) LevelSpec {
 func NewRawLevelSpec(spec string) LevelSpec {
 	return LevelSpec{spec}
 }
+
+// String representation of a level spec.
+func (ls LevelSpec) String() string {
+	return ls.spec
+}

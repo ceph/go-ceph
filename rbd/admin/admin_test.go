@@ -30,3 +30,11 @@ func TestRawLevelSpec(t *testing.T) {
 	rls = NewRawLevelSpec("totally! invalid! haha. ha...")
 	assert.Equal(t, "totally! invalid! haha. ha...", rls.spec)
 }
+
+func TestLevelSpecString(t *testing.T) {
+	ls := NewLevelSpec("bob", "", "")
+	assert.Equal(t, "bob/", ls.String())
+
+	ls = NewRawLevelSpec("bob/alice")
+	assert.Equal(t, "bob/alice", ls.String())
+}
