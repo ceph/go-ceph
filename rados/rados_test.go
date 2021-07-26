@@ -327,38 +327,38 @@ func (suite *RadosTestSuite) TestGetPoolByName() {
 	assert.NoError(suite.T(), err)
 
 	// check that new pool name is unique
-	new_name := uuid.Must(uuid.NewV4()).String()
+	newName := uuid.Must(uuid.NewV4()).String()
 	require.NotContains(
-		suite.T(), pools, new_name, "Random pool name exists!")
+		suite.T(), pools, newName, "Random pool name exists!")
 
-	pool, _ := suite.conn.GetPoolByName(new_name)
+	pool, _ := suite.conn.GetPoolByName(newName)
 	assert.Equal(suite.T(), int64(0), pool, "Pool does not exist, but was found!")
 
 	// create pool
-	err = suite.conn.MakePool(new_name)
+	err = suite.conn.MakePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that the new pool name exists
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
 	assert.Contains(
-		suite.T(), pools, new_name, "Cannot find newly created pool")
+		suite.T(), pools, newName, "Cannot find newly created pool")
 
-	pool, err = suite.conn.GetPoolByName(new_name)
+	pool, err = suite.conn.GetPoolByName(newName)
 	assert.NoError(suite.T(), err)
 	assert.NotEqual(suite.T(), int64(0), pool, "Pool not found!")
 
 	// delete the pool
-	err = suite.conn.DeletePool(new_name)
+	err = suite.conn.DeletePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that it is gone
 	pools, err = suite.conn.ListPools()
 	assert.NoError(suite.T(), err)
 	assert.NotContains(
-		suite.T(), pools, new_name, "Deleted pool still exists")
+		suite.T(), pools, newName, "Deleted pool still exists")
 
-	pool, err = suite.conn.GetPoolByName(new_name)
+	pool, err = suite.conn.GetPoolByName(newName)
 	assert.Error(suite.T(), err)
 	assert.Equal(
 		suite.T(), int64(0), pool, "Pool should have been deleted, but was found!")
@@ -368,19 +368,19 @@ func (suite *RadosTestSuite) TestGetPoolByID() {
 	suite.SetupConnection()
 
 	// check that new pool name is unique
-	new_name := uuid.Must(uuid.NewV4()).String()
-	pool, err := suite.conn.GetPoolByName(new_name)
+	newName := uuid.Must(uuid.NewV4()).String()
+	pool, err := suite.conn.GetPoolByName(newName)
 	if pool != 0 || err == nil {
 		suite.T().Error("Random pool name exists!")
 		return
 	}
 
 	// create pool
-	err = suite.conn.MakePool(new_name)
+	err = suite.conn.MakePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that the new pool name exists
-	id, err := suite.conn.GetPoolByName(new_name)
+	id, err := suite.conn.GetPoolByName(newName)
 	assert.NoError(suite.T(), err)
 
 	if id == 0 {
@@ -396,7 +396,7 @@ func (suite *RadosTestSuite) TestGetPoolByID() {
 	}
 
 	// delete the pool
-	err = suite.conn.DeletePool(new_name)
+	err = suite.conn.DeletePool(newName)
 	assert.NoError(suite.T(), err)
 
 	// verify that it is gone
