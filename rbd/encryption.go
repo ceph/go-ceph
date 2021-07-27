@@ -16,8 +16,8 @@ import (
 	"unsafe"
 )
 
-// cData contains the data needed by the encryption functions
-type cData struct {
+// cEncryptionData contains the data needed by the encryption functions
+type cEncryptionData struct {
 	format   C.rbd_encryption_format_t
 	opts     C.rbd_encryption_options_t
 	optsSize C.size_t
@@ -56,12 +56,12 @@ type EncryptionOptionsLUKS2 struct {
 // EncryptionOptions interface is used to encapsulate the different encryption
 // formats options and enable converting them from go to C structures.
 type EncryptionOptions interface {
-	allocateEncryptionOptions() cData
+	allocateEncryptionOptions() cEncryptionData
 }
 
-func (opts EncryptionOptionsLUKS1) allocateEncryptionOptions() cData {
+func (opts EncryptionOptionsLUKS1) allocateEncryptionOptions() cEncryptionData {
 	var cOpts C.rbd_encryption_luks1_format_options_t
-	var retData cData
+	var retData cEncryptionData
 	cOpts.alg = C.rbd_encryption_algorithm_t(opts.Alg)
 	//CBytes allocates memory which we'll free by calling cOptsFree()
 	cOpts.passphrase = (*C.char)(C.CBytes(opts.Passphrase))
@@ -73,9 +73,9 @@ func (opts EncryptionOptionsLUKS1) allocateEncryptionOptions() cData {
 	return retData
 }
 
-func (opts EncryptionOptionsLUKS2) allocateEncryptionOptions() cData {
+func (opts EncryptionOptionsLUKS2) allocateEncryptionOptions() cEncryptionData {
 	var cOpts C.rbd_encryption_luks2_format_options_t
-	var retData cData
+	var retData cEncryptionData
 	cOpts.alg = C.rbd_encryption_algorithm_t(opts.Alg)
 	//CBytes allocates memory which we'll free by calling cOptsFree()
 	cOpts.passphrase = (*C.char)(C.CBytes(opts.Passphrase))
@@ -112,5 +112,28 @@ func (image *Image) EncryptionFormat(opts EncryptionOptions) error {
 		encryptionOpts.opts,
 		encryptionOpts.optsSize)
 
+	return getError(ret)
+}
+
+// EncryptionLoad enables IO on an open encrypted image
+//
+// Implements:
+//  int rbd_encryption_load(rbd_image_t image,
+//                          rbd_encryption_format_t format,
+//                          rbd_encryption_options_t opts,
+//                          size_t opts_size);
+func (image *Image) EncryptionLoad(opts EncryptionOptions) error {
+	if image.image == nil {
+		return ErrImageNotOpen
+	}
+
+	encryptionOpts := opts.allocateEncryptionOptions()
+	defer encryptionOpts.free()
+
+	ret := C.rbd_encryption_load(
+		image.image,
+		encryptionOpts.format,
+		encryptionOpts.opts,
+		encryptionOpts.optsSize)
 	return getError(ret)
 }
