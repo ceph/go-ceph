@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"errors"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,8 +11,7 @@ import (
 
 func (suite *RadosGWTestSuite) TestBucket() {
 	suite.SetupConnection()
-	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, nil)
-	co.Debug = true
+	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
 
 	s3, err := newS3Agent(suite.accessKey, suite.secretKey, suite.endpoint, true)

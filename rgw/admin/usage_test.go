@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,8 +10,7 @@ import (
 
 func (suite *RadosGWTestSuite) TestUsage() {
 	suite.SetupConnection()
-	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, nil)
-	co.Debug = true
+	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
 
 	suite.T().Run("get usage", func(t *testing.T) {

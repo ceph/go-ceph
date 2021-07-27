@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"time"
 
@@ -39,7 +37,6 @@ type API struct {
 	SecretKey  string
 	Endpoint   string
 	HTTPClient HTTPClient
-	Debug      bool
 }
 
 // New returns client for Ceph RGW
@@ -69,7 +66,6 @@ func New(endpoint, accessKey, secretKey string, httpClient HTTPClient) (*API, er
 		AccessKey:  accessKey,
 		SecretKey:  secretKey,
 		HTTPClient: httpClient,
-		Debug:      false,
 	}, nil
 }
 
@@ -94,30 +90,12 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 		return nil, err
 	}
 
-	// Print request if Debug is enabled
-	if api.Debug {
-		dump, err := httputil.DumpRequestOut(request, true)
-		if err != nil {
-			return nil, err
-		}
-		log.Printf("\n%s\n", string(dump))
-	}
-
 	// Send HTTP request
 	resp, err := api.HTTPClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	// Print response if Debug is enabled
-	if api.Debug {
-		dump, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return nil, err
-		}
-		log.Printf("\n%s\n", string(dump))
-	}
 
 	// Decode HTTP response
 	decodedResponse, err := ioutil.ReadAll(resp.Body)
