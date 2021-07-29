@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"reflect"
 	"testing"
@@ -22,6 +23,36 @@ type RadosGWTestSuite struct {
 	accessKey      string
 	secretKey      string
 	bucketTestName string
+}
+
+type debugHTTPClient struct {
+	client HTTPClient
+}
+
+func newDebugHTTPClient(client HTTPClient) *debugHTTPClient {
+	return &debugHTTPClient{client}
+}
+
+func (c *debugHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	dump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("\n%s\n", string(dump))
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	dump, err = httputil.DumpResponse(resp, true)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("\n%s\n", string(dump))
+
+	return resp, nil
 }
 
 func TestRadosGWTestSuite(t *testing.T) {

@@ -24,9 +24,6 @@ func main() {
         panic(err)
     }
 
-    // To enable debug requests
-    // co.Debug = true
-
     // Get the "admin" user
     user, err := co.GetUser(context.Background(), "admin")
     if err != nil {
