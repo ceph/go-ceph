@@ -120,8 +120,8 @@ type FileSystemID uint
 // PeerUUID represents the UUID of a cephfs mirroring peer.
 type PeerUUID string
 
-// DaemonStatusPeerRemote contains fields detailing a remote peer.
-type DaemonStatusPeerRemote struct {
+// DaemonStatusPeer contains fields detailing a remote peer.
+type DaemonStatusPeer struct {
 	ClientName  string `json:"client_name"`
 	ClusterName string `json:"cluster_name"`
 	FSName      string `json:"fs_name"`
@@ -135,9 +135,9 @@ type DaemonStatusPeerStats struct {
 
 // DaemonStatusPeerInfo contains fields representing information about a remote peer.
 type DaemonStatusPeerInfo struct {
-	UUID   PeerUUID               `json:"uuid"`
-	Remote DaemonStatusPeerRemote `json:"remote"`
-	Stats  DaemonStatusPeerStats  `json:"stats"`
+	UUID   PeerUUID              `json:"uuid"`
+	Remote DaemonStatusPeer      `json:"remote"`
+	Stats  DaemonStatusPeerStats `json:"stats"`
 }
 
 // DaemonStatusFileSystemInfo represents information about a mirrored file system.
