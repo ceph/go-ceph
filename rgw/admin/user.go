@@ -31,6 +31,8 @@ type User struct {
 	Tenant              string        `url:"tenant"`
 	GenerateKey         *bool         `url:"generate-key"`
 	PurgeData           *int          `url:"purge-data"`
+	GenerateStat        *bool         `url:"stats"`
+	Stat                UserStat      `json:"stats"`
 }
 
 // UserCapSpec represents a user capability which gives access to certain ressources
@@ -44,6 +46,13 @@ type UserKeySpec struct {
 	User      string `json:"user"`
 	AccessKey string `json:"access_key" url:"access-key"`
 	SecretKey string `json:"secret_key" url:"secret-key"`
+}
+
+// UserStat contains information about storage consumption by the ceph user
+type UserStat struct {
+	Size        *uint64 `json:"size"`
+	SizeRounded *uint64 `json:"size_rounded"`
+	NumObjects  *uint64 `json:"num_objects"`
 }
 
 // GetUser retrieves a given object store user
