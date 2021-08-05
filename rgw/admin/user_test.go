@@ -145,6 +145,13 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), int64(100), *q.MaxObjects)
 	})
 
+	suite.T().Run("get user stat", func(t *testing.T) {
+		statEnable := true
+		user, err := co.GetUser(context.Background(), User{ID: "leseb", GenerateStat: &statEnable})
+		assert.NoError(suite.T(), err)
+		assert.NotNil(suite.T(), user.Stat.Size)
+	})
+
 	suite.T().Run("remove user", func(t *testing.T) {
 		err = co.RemoveUser(context.Background(), User{ID: "leseb"})
 		assert.NoError(suite.T(), err)
