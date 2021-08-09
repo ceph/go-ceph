@@ -710,10 +710,8 @@ func (iter *MirrorImageGlobalStatusIter) Next() (*GlobalMirrorImageIDAndStatus, 
 }
 
 // Close terminates iteration regardless if iteration was completed and
-// frees any associated resources.
-func (iter *MirrorImageGlobalStatusIter) Close() error {
-	iter.buf = nil
-	iter.lastID = ""
+// frees any associated resources. (DEPRECATED)
+func (*MirrorImageGlobalStatusIter) Close() error {
 	return nil
 }
 
