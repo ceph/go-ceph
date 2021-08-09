@@ -33,6 +33,7 @@ type User struct {
 	PurgeData           *int          `url:"purge-data"`
 	GenerateStat        *bool         `url:"stats"`
 	Stat                UserStat      `json:"stats"`
+	UserCaps            string        `url:"user-caps"`
 }
 
 // UserCapSpec represents a user capability which gives access to certain ressources
