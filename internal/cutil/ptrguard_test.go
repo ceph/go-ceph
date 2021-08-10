@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"runtime"
 	"testing"
+	"time"
 	"unsafe"
 
 	"github.com/stretchr/testify/assert"
@@ -42,7 +43,7 @@ func TestPtrGuard(t *testing.T) {
 		// until the function returns after Release() is called. The test will
 		// fail if the //go:uintptrescapes comment is disabled (removed) or
 		// stops working in future versions of go.
-		var pg_done, u_done bool
+		var pgDone, uDone bool
 		var goPtr = func(b *bool) unsafe.Pointer {
 			s := "ok"
 			runtime.SetFinalizer(&s, func(p *string) { *b = true })
@@ -50,14 +51,16 @@ func TestPtrGuard(t *testing.T) {
 		}
 		cPtr := Malloc(PtrSize)
 		defer Free(cPtr)
-		pg := NewPtrGuard(cPtr, goPtr(&pg_done))
-		u := uintptr(goPtr(&u_done))
+		pg := NewPtrGuard(cPtr, goPtr(&pgDone))
+		u := uintptr(goPtr(&uDone))
 		runtime.GC()
-		assert.True(t, u_done)
-		assert.False(t, pg_done)
+		assert.Eventually(t, func() bool { return uDone },
+			time.Second, 10*time.Millisecond)
+		assert.False(t, pgDone)
 		pg.Release()
 		runtime.GC()
-		assert.True(t, pg_done)
+		assert.Eventually(t, func() bool { return pgDone },
+			time.Second, 10*time.Millisecond)
 		assert.NotZero(t, u) // avoid "unused" error
 	})
 
