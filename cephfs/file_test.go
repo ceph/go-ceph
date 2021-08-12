@@ -934,7 +934,6 @@ func TestFileTruncate(t *testing.T) {
 	})
 
 	t.Run("closedFile", func(t *testing.T) {
-		t.Skip("test fails because of a bug(?) in ceph")
 		// "touch" the file
 		f1, err := mount.Open(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 		assert.NoError(t, err)
