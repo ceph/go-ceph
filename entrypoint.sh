@@ -11,13 +11,14 @@ MICRO_OSD_PATH="/micro-osd.sh"
 BUILD_TAGS=""
 RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
+MIRROR_STATE=/dev/null
 
 
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
 # GO_CEPH_TEST_MDS_NAME
 
-CLI="$(getopt -o h --long test-run:,test-bench:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-bench:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,mirror-state:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -65,6 +66,11 @@ while true ; do
             shift
             shift
         ;;
+        --mirror-state)
+            MIRROR_STATE="${2}"
+            shift
+            shift
+        ;;
         --cpuprofile)
             CPUPROFILE=yes
             shift
@@ -87,6 +93,7 @@ while true ; do
             echo "  --micro-osd         Specify path to micro-osd script"
             echo "  --wait-for=FILES    Wait for files before starting tests"
             echo "                      (colon separated, disables micro-osd)"
+            echo "  --mirror-state=PATH Path to track state of (rbd) mirroring"
             echo "  --results=PATH      Specify path to store test results"
             echo "  --ceph-conf=PATH    Specify path to ceph configuration"
             echo "  --mirror=PATH       Specify path to ceph conf of mirror"
@@ -143,6 +150,11 @@ test_failed() {
 }
 
 setup_mirroring() {
+    mstate="$(cat "${MIRROR_STATE}" 2>/dev/null || true)"
+    if [[ "$mstate" = functional ]]; then
+        echo "Mirroring already functional"
+        return 0
+    fi
     echo "Setting up mirroring..."
     local CONF_A=${CEPH_CONF}
     local CONF_B=${MIRROR_CONF}
@@ -155,6 +167,7 @@ setup_mirroring() {
     rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd > token
     rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd token
 
+    echo "enabled" > "${MIRROR_STATE}"
     rbd -c $CONF_A rm mirror_test 2>/dev/null || true
     rbd -c $CONF_B rm mirror_test 2>/dev/null || true
     (echo "Mirror Test"; dd if=/dev/zero bs=1 count=500K) | rbd -c $CONF_A import - mirror_test
@@ -170,6 +183,7 @@ setup_mirroring() {
     while ! rbd -c $CONF_B export mirror_test - 2>/dev/null | grep -q "Mirror Test" ; do
         sleep 1
     done
+    echo "functional" > "${MIRROR_STATE}"
     echo " mirroring functional!"
 }
 
