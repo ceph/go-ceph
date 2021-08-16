@@ -14,11 +14,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/stretchr/testify/suite"
+	tsuite "github.com/stretchr/testify/suite"
 )
 
 type RadosGWTestSuite struct {
-	suite.Suite
+	tsuite.Suite
 	endpoint       string
 	accessKey      string
 	secretKey      string
