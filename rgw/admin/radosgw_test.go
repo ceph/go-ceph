@@ -56,7 +56,7 @@ func (c *debugHTTPClient) Do(req *http.Request) (*http.Response, error) {
 }
 
 func TestRadosGWTestSuite(t *testing.T) {
-	suite.Run(t, new(RadosGWTestSuite))
+	tsuite.Run(t, new(RadosGWTestSuite))
 }
 
 // S3Agent wraps the s3.S3 structure to allow for wrapper methods
