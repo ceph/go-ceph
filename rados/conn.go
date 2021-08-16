@@ -67,7 +67,7 @@ func (c *Conn) Connect() error {
 
 // Shutdown disconnects from the cluster.
 func (c *Conn) Shutdown() {
-	if err := c.ensure_connected(); err != nil {
+	if err := c.ensureConnected(); err != nil {
 		return
 	}
 	freeConn(c)
@@ -166,7 +166,7 @@ func (c *Conn) WaitForLatestOSDMap() error {
 	return getError(ret)
 }
 
-func (c *Conn) ensure_connected() error {
+func (c *Conn) ensureConnected() error {
 	if c.connected {
 		return nil
 	}
@@ -176,7 +176,7 @@ func (c *Conn) ensure_connected() error {
 // GetClusterStats returns statistics about the cluster associated with the
 // connection.
 func (c *Conn) GetClusterStats() (stat ClusterStat, err error) {
-	if err := c.ensure_connected(); err != nil {
+	if err := c.ensureConnected(); err != nil {
 		return ClusterStat{}, err
 	}
 	cStat := C.struct_rados_cluster_stat_t{}
@@ -269,7 +269,7 @@ func (c *Conn) MakePool(name string) error {
 
 // DeletePool deletes a pool and all the data inside the pool.
 func (c *Conn) DeletePool(name string) error {
-	if err := c.ensure_connected(); err != nil {
+	if err := c.ensureConnected(); err != nil {
 		return err
 	}
 	cName := C.CString(name)
@@ -280,7 +280,7 @@ func (c *Conn) DeletePool(name string) error {
 
 // GetPoolByName returns the ID of the pool with a given name.
 func (c *Conn) GetPoolByName(name string) (int64, error) {
-	if err := c.ensure_connected(); err != nil {
+	if err := c.ensureConnected(); err != nil {
 		return 0, err
 	}
 	cName := C.CString(name)
@@ -295,7 +295,7 @@ func (c *Conn) GetPoolByName(name string) (int64, error) {
 // GetPoolByID returns the name of a pool by a given ID.
 func (c *Conn) GetPoolByID(id int64) (string, error) {
 	buf := make([]byte, 4096)
-	if err := c.ensure_connected(); err != nil {
+	if err := c.ensureConnected(); err != nil {
 		return "", err
 	}
 	cid := C.int64_t(id)
