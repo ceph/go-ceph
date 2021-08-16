@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	// CastXmlBin is the name/location of the castxml binary.
-	CastXmlBin = "castxml"
+	// CastXMLBin is the name/location of the castxml binary.
+	CastXMLBin = "castxml"
 
 	// Add a stub C function that goes nowhere and does nothing. Just
 	// to give castxml something to chew on. It may not be strictly
@@ -130,7 +130,7 @@ func stubCFunctions(libname string) (CFunctions, error) {
 	}
 
 	cmd := []string{
-		CastXmlBin,
+		CastXMLBin,
 		"--castxml-output=1",
 		"-o", "-",
 		tfile.Name(),
