@@ -14,11 +14,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
+	tsuite "github.com/stretchr/testify/suite"
 )
 
 type RadosTestSuite struct {
-	suite.Suite
+	tsuite.Suite
 	conn  *Conn
 	ioctx *IOContext
 	pool  string
@@ -1293,5 +1293,5 @@ func (suite *RadosTestSuite) TestSetGetNamespace() {
 }
 
 func TestRadosTestSuite(t *testing.T) {
-	suite.Run(t, new(RadosTestSuite))
+	tsuite.Run(t, new(RadosTestSuite))
 }
