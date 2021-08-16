@@ -22,6 +22,11 @@ GOFMT_CMD:=gofmt
 # the full name of the marker file including the ceph version
 BUILDFILE=.build.$(CEPH_VERSION)
 
+# files marking daemon containers supporting the tests
+TEST_CTR_A=.run.test_ceph_a
+TEST_CTR_B=.run.test_ceph_b
+TEST_CTR_NET=.run.test_ceph_net
+
 # the name of the image plus ceph version as tag
 CI_IMAGE_TAG=$(CI_IMAGE_NAME):$(CEPH_VERSION)
 
@@ -62,19 +67,81 @@ test-container: $(BUILDFILE) $(RESULTS_DIR)
 		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(GOCACHE_VOLUME) \
 		$(CI_IMAGE_TAG) $(ENTRYPOINT_ARGS)
 test-multi-container: $(BUILDFILE) $(RESULTS_DIR)
-	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b 2>/dev/null || true
-	$(CONTAINER_CMD) volume remove test_ceph_a_data test_ceph_b_data 2>/dev/null || true
-	$(CONTAINER_CMD) network create test_ceph_net 2>/dev/null || true
-	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -d --name test_ceph_a --hostname test_ceph_a --net test_ceph_net \
-		-v test_ceph_a_data:/tmp/ceph $(CI_IMAGE_TAG) --test-run=NONE --pause
-	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm -d --name test_ceph_b --hostname test_ceph_b --net test_ceph_net \
-		-v test_ceph_b_data:/tmp/ceph $(CI_IMAGE_TAG) --test-run=NONE --pause
+	-$(MAKE) test-containers-kill
+	-$(MAKE) test-containers-rm-volumes
+	-$(MAKE) test-containers-rm-network
+	$(MAKE) test-containers-test
+	$(MAKE) test-containers-kill
+	$(MAKE) test-containers-rm-volumes
+	$(MAKE) test-containers-rm-network
+
+# The test-containers-* cleanup rules:
+.PHONY: test-containers-clean \
+	test-containers-kill \
+	test-containers-rm-volumes \
+	test-containers-rm-network
+
+test-containers-clean: test-containers-kill
+	-$(MAKE) test-containers-rm-volumes
+	-$(MAKE) test-containers-rm-network
+
+test-containers-kill:
+	-$(CONTAINER_CMD) kill test_ceph_a || $(CONTAINER_CMD) rm test_ceph_a
+	-$(CONTAINER_CMD) kill test_ceph_b || $(CONTAINER_CMD) rm test_ceph_b
+	$(RM) $(TEST_CTR_A) $(TEST_CTR_B)
+	sleep 0.3
+# sometimes the container runtime fails to remove things immediately after
+# killing the containers. The short sleep helps avoid hitting that condition.
+
+test-containers-rm-volumes:
+	$(CONTAINER_CMD) volume remove test_ceph_a_data test_ceph_b_data
+
+test-containers-rm-network:
+	$(CONTAINER_CMD) network rm test_ceph_net
+	$(RM) $(TEST_CTR_NET)
+
+# Thest test-containers-* setup rules:
+.PHONY: test-containers-network \
+	test-containers-test_ceph_a \
+	test-containers-test_ceph_b \
+	test-containers-test
+
+test-containers-network: $(TEST_CTR_NET)
+$(TEST_CTR_NET):
+	($(CONTAINER_CMD) network ls -q | grep -q test_ceph_net) \
+		|| $(CONTAINER_CMD) network create test_ceph_net
+	@echo "test_ceph_net" > $(TEST_CTR_NET)
+
+test-containers-test_ceph_a: $(TEST_CTR_A)
+$(TEST_CTR_A): $(TEST_CTR_NET) $(BUILDFILE)
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) \
+		--cidfile=$(TEST_CTR_A) --rm -d --name test_ceph_a \
+		 --hostname test_ceph_a \
+		--net test_ceph_net \
+		-v test_ceph_a_data:/tmp/ceph $(CI_IMAGE_TAG) \
+		--test-run=NONE --pause
+
+test-containers-test_ceph_b: $(TEST_CTR_B)
+$(TEST_CTR_B): $(TEST_CTR_NET) $(BUILDFILE)
+	$(CONTAINER_CMD) run $(CONTAINER_OPTS) \
+		--cidfile=$(TEST_CTR_B) --rm -d --name test_ceph_b \
+		--hostname test_ceph_b \
+		--net test_ceph_net \
+		-v test_ceph_b_data:/tmp/ceph $(CI_IMAGE_TAG) \
+		--test-run=NONE --pause
+
+test-containers-test: $(BUILDFILE) $(TEST_CTR_A) $(TEST_CTR_B)
 	$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm \
-		--net test_ceph_net -v test_ceph_a_data:/ceph_a -v test_ceph_b_data:/ceph_b \
-		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) $(RESULTS_VOLUME) $(GOCACHE_VOLUME) \
-		$(CI_IMAGE_TAG) --wait-for=/ceph_a/.ready:/ceph_b/.ready --ceph-conf=/ceph_a/ceph.conf \
+		--net test_ceph_net \
+		-v test_ceph_a_data:/ceph_a \
+		-v test_ceph_b_data:/ceph_b \
+		-v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) \
+		$(RESULTS_VOLUME) $(GOCACHE_VOLUME) \
+		$(CI_IMAGE_TAG) \
+		--wait-for=/ceph_a/.ready:/ceph_b/.ready \
+		--mirror-state=/ceph_b/.mstate \
+		--ceph-conf=/ceph_a/ceph.conf \
 		--mirror=/ceph_b/ceph.conf $(ENTRYPOINT_ARGS)
-	$(CONTAINER_CMD) kill test_ceph_a test_ceph_b
 
 ifdef RESULTS_DIR
 $(RESULTS_DIR):
