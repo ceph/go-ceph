@@ -14,6 +14,8 @@ import (
 
 var argvPlaceholder = "placeholder"
 
+//revive:disable:var-naming old-yet-exported public api
+
 // ClusterStat represents Ceph cluster statistics.
 type ClusterStat struct {
 	Kb          uint64
@@ -21,6 +23,8 @@ type ClusterStat struct {
 	Kb_avail    uint64
 	Num_objects uint64
 }
+
+//revive:enable:var-naming
 
 // Conn is a connection handle to a Ceph cluster.
 type Conn struct {
