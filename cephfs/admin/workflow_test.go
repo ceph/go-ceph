@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	pathpkg "path"
 	"testing"
 	"time"
 
@@ -66,12 +66,16 @@ func readFile(t *testing.T, mount *cephfs.MountInfo, path string) []byte {
 
 func getSnapPath(t *testing.T, mount *cephfs.MountInfo, subvol, snapname string) string {
 	// I wish there was a nicer way to do this
-	snapPath := path.Join(subvol, snapDir, snapname)
+	snapPath := pathpkg.Join(subvol, snapDir, snapname)
 	_, err := mount.Statx(snapPath, cephfs.StatxBasicStats, 0)
 	if err == nil {
 		return snapPath
 	}
-	snapPath = path.Join(path.Dir(subvol), snapDir, snapname, path.Base(subvol))
+	snapPath = pathpkg.Join(
+		pathpkg.Dir(subvol),
+		snapDir,
+		snapname,
+		pathpkg.Base(subvol))
 	_, err = mount.Statx(snapPath, cephfs.StatxBasicStats, 0)
 	if err == nil {
 		return snapPath
@@ -169,7 +173,7 @@ func TestWorkflow(t *testing.T) {
 	snapPath := getSnapPath(t, mount, subPath, snapname1)
 	require.NotEqual(t, "", snapPath)
 
-	tempPath := path.Join(snapPath, "content1/robots.txt")
+	tempPath := pathpkg.Join(snapPath, "content1/robots.txt")
 	txt := readFile(t, mount, tempPath)
 	assert.Contains(t, string(txt), "robbie")
 
@@ -181,10 +185,10 @@ func TestWorkflow(t *testing.T) {
 
 	// snapshot may not be modified
 	err = mount.Rename(
-		path.Join(snapPath, "content2/docs/lore.txt"),
-		path.Join(snapPath, "content1/lore.txt"))
+		pathpkg.Join(snapPath, "content2/docs/lore.txt"),
+		pathpkg.Join(snapPath, "content1/lore.txt"))
 	assert.Error(t, err)
-	txt = readFile(t, mount, path.Join(snapPath, "content2/docs/lore.txt"))
+	txt = readFile(t, mount, pathpkg.Join(snapPath, "content2/docs/lore.txt"))
 	assert.Contains(t, string(txt), "Spirit")
 
 	// make a clone
@@ -234,24 +238,24 @@ func TestWorkflow(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEqual(t, "", clonePath)
 
-	txt = readFile(t, mount, path.Join(clonePath, "content1/robots.txt"))
+	txt = readFile(t, mount, pathpkg.Join(clonePath, "content1/robots.txt"))
 	assert.Contains(t, string(txt), "robbie")
 
 	// clones are r/w
 	err = mount.Rename(
-		path.Join(clonePath, "content2/docs/lore.txt"),
-		path.Join(clonePath, "content1/lore.txt"))
+		pathpkg.Join(clonePath, "content2/docs/lore.txt"),
+		pathpkg.Join(clonePath, "content1/lore.txt"))
 	assert.NoError(t, err)
-	txt = readFile(t, mount, path.Join(clonePath, "content1/lore.txt"))
+	txt = readFile(t, mount, pathpkg.Join(clonePath, "content1/lore.txt"))
 	assert.Contains(t, string(txt), "Spirit")
 
 	// it reflects what was in the snapshot
-	txt = readFile(t, mount, path.Join(clonePath, "content1/songs.txt"))
+	txt = readFile(t, mount, pathpkg.Join(clonePath, "content1/songs.txt"))
 	assert.Contains(t, string(txt), "robots")
 	assert.NotContains(t, string(txt), "moriendi")
 
 	// ... with it's own independent data
-	writeFile(t, mount, path.Join(clonePath, "content1/songs.txt"),
+	writeFile(t, mount, pathpkg.Join(clonePath, "content1/songs.txt"),
 		[]byte("none of them knew they were robots\nsweet charity\n"))
 
 	// (orig)
@@ -261,7 +265,7 @@ func TestWorkflow(t *testing.T) {
 	assert.NotContains(t, string(txt), "charity")
 
 	// (clone)
-	txt = readFile(t, mount, path.Join(clonePath, "content1/songs.txt"))
+	txt = readFile(t, mount, pathpkg.Join(clonePath, "content1/songs.txt"))
 	assert.Contains(t, string(txt), "robots")
 	assert.NotContains(t, string(txt), "moriendi")
 	assert.Contains(t, string(txt), "charity")
