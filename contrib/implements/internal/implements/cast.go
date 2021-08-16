@@ -29,24 +29,24 @@ GNDN int foo(int x) {
 	// Individual "package" stubs. Add the needed headers to pick up the
 	// ceph lib<whatever> content plus the code stub for castxml.
 
-	cephfs_c_stub = `
+	cephfsCStub = `
 #define FILE_OFFSET_BITS 64
 #include <stdlib.h>
 #define __USE_FILE_OFFSET64
 #include <cephfs/libcephfs.h>
 ` + gndn
-	rados_c_stub = `
+	radosCStub = `
 #include <rados/librados.h>
 ` + gndn
-	rbd_c_stub = `
+	rbdCStub = `
 #include <rbd/librbd.h>
 #include <rbd/features.h>
 ` + gndn
 
 	stubs = map[string]string{
-		"cephfs": cephfs_c_stub,
-		"rados":  rados_c_stub,
-		"rbd":    rbd_c_stub,
+		"cephfs": cephfsCStub,
+		"rados":  radosCStub,
+		"rbd":    rbdCStub,
 	}
 	funcPrefix = map[string]string{
 		"cephfs": "ceph_",
