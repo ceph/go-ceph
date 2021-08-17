@@ -908,3 +908,132 @@ func (iter *MirrorImageInfoIter) fetch() error {
 	}
 	return nil
 }
+
+// MirrorImageInstanceIDItem contains an ID string for a RBD image and
+// its corresponding mirrored image's Instance ID.
+type MirrorImageInstanceIDItem struct {
+	ID         string
+	InstanceID string
+}
+
+// MirrorImageInstanceIDList returns a slice of MirrorImageInstanceIDItem. If
+// the length of the returned slice equals max, the next chunk of the list can
+// be obtained by setting start to the ID of the last item of the returned slice.
+// If max is 0 a slice of all items is returned.
+//
+// Implements:
+// int rbd_mirror_image_instance_id_list(
+// 	 	rados_ioctx_t io_ctx,
+// 	 	const char *start_id,
+// 	 	size_t max, char **image_ids,
+// 	 	char **instance_ids,
+// 	 	size_t *len)
+func MirrorImageInstanceIDList(
+	ioctx *rados.IOContext, start string,
+	max int) ([]MirrorImageInstanceIDItem, error) {
+	var (
+		result   []MirrorImageInstanceIDItem
+		fetchAll bool
+	)
+	if max <= 0 {
+		max = iterBufSize
+		fetchAll = true
+	}
+	chunk := make([]MirrorImageInstanceIDItem, max)
+	for {
+		length, err := mirrorImageInstanceIDList(ioctx, start, chunk)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, chunk[:length]...)
+		if !fetchAll || length < max {
+			break
+		}
+		start = chunk[length-1].ID
+	}
+	return result, nil
+}
+
+func mirrorImageInstanceIDList(ioctx *rados.IOContext, start string,
+	results []MirrorImageInstanceIDItem) (int, error) {
+
+	cStart := C.CString(start)
+	defer C.free(unsafe.Pointer(cStart))
+
+	var (
+		max          = C.size_t(len(results))
+		length       = C.size_t(0)
+		ids          = make([]*C.char, len(results))
+		instance_ids = make([]*C.char, len(results))
+	)
+	ret := C.rbd_mirror_image_instance_id_list(
+		cephIoctx(ioctx),
+		cStart,
+		max,
+		&ids[0],
+		&instance_ids[0],
+		&length,
+	)
+	if err := getError(ret); err != nil {
+		return 0, err
+	}
+	for i := 0; i < int(length); i++ {
+		results[i].ID = C.GoString(ids[i])
+		results[i].InstanceID = C.GoString(instance_ids[i])
+	}
+	C.rbd_mirror_image_instance_id_list_cleanup(
+		&ids[0],
+		&instance_ids[0],
+		length)
+	return int(length), getError(ret)
+}
+
+// MirrorImageInstanceIDIter provide methods for iterating over all
+// the MirrorImageInstanceIDItem values in a pool.
+type MirrorImageInstanceIDIter struct {
+	ioctx *rados.IOContext
+
+	buf    []MirrorImageInstanceIDItem
+	lastID string
+}
+
+// NewMirrorImageInstanceIDIter creates a new iterator ready for use.
+func NewMirrorImageInstanceIDIter(ioctx *rados.IOContext) *MirrorImageInstanceIDIter {
+	return &MirrorImageInstanceIDIter{
+		ioctx: ioctx,
+	}
+}
+
+// Next fetches one MirrorImageInstanceIDItem value or a nil value if iteration is
+// exhausted. The error return will be non-nil if an underlying error fetching
+// more values occurred.
+func (iter *MirrorImageInstanceIDIter) Next() (*MirrorImageInstanceIDItem, error) {
+	if len(iter.buf) == 0 {
+		if err := iter.fetch(); err != nil {
+			return nil, err
+		}
+		if len(iter.buf) == 0 {
+			return nil, nil
+		}
+		iter.lastID = iter.buf[len(iter.buf)-1].ID
+	}
+	item := iter.buf[0]
+	iter.buf = iter.buf[1:]
+	return &item, nil
+}
+
+func (iter *MirrorImageInstanceIDIter) fetch() error {
+	iter.buf = nil
+	items := make([]MirrorImageInstanceIDItem, iterBufSize)
+	n, err := mirrorImageInstanceIDList(
+		iter.ioctx,
+		iter.lastID,
+		items)
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		iter.buf = items[:n]
+	}
+	return nil
+}

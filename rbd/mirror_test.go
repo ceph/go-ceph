@@ -971,3 +971,130 @@ func TestMirrorImageLists(t *testing.T) {
 		assert.Len(t, lst, 7)
 	})
 }
+
+func TestMirrorImageInstanceIDLists(t *testing.T) {
+	defer func(x int) {
+		iterBufSize = x
+	}(iterBufSize)
+	// shrink the buffer size in order to trigger more of the
+	// retry logic in the iter type
+	iterBufSize = 4
+
+	t.Run("instanceIDIterIoctxNil", func(t *testing.T) {
+		iter := NewMirrorImageInstanceIDIter(nil)
+		assert.Panics(t, func() {
+			iter.Next() //nolint:errcheck
+		})
+	})
+
+	mconfig := mirrorConfig()
+	if mconfig == "" {
+		t.Skip("no mirror config env var set")
+	}
+
+	conn := radosConnect(t)
+	defer conn.Shutdown()
+
+	poolName := GetUUID()
+	err := conn.MakePool(poolName)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, conn.DeletePool(poolName))
+	}()
+
+	ioctx, err := conn.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx.Destroy()
+	}()
+
+	err = SetMirrorMode(ioctx, MirrorModeImage)
+	require.NoError(t, err)
+
+	token, err := CreateMirrorPeerBootstrapToken(ioctx)
+	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(token), 4)
+
+	conn2 := radosConnectConfig(t, mconfig)
+	defer conn2.Shutdown()
+
+	err = conn2.MakePool(poolName)
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, conn2.DeletePool(poolName))
+	}()
+
+	ioctx2, err := conn2.OpenIOContext(poolName)
+	assert.NoError(t, err)
+	defer func() {
+		ioctx2.Destroy()
+	}()
+
+	err = SetMirrorMode(ioctx2, MirrorModeImage)
+	require.NoError(t, err)
+
+	err = ImportMirrorPeerBootstrapToken(
+		ioctx2, MirrorPeerDirectionRxTx, token)
+	assert.NoError(t, err)
+
+	imgName := GetUUID()
+	options := NewRbdImageOptions()
+	assert.NoError(t, options.SetUint64(ImageOptionOrder, uint64(testImageOrder)))
+
+	for i := 0; i < 5; i++ {
+		name := fmt.Sprintf("%s%d", imgName, i)
+		err = CreateImage(ioctx, name, testImageSize, options)
+		require.NoError(t, err)
+		img, err := OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		err = img.MirrorEnable(ImageMirrorModeSnapshot)
+		assert.NoError(t, err)
+		require.NoError(t, img.Close())
+	}
+
+	// wait for all the images to be mirrored
+	for i := 0; i < 30; i++ {
+		lst, err := MirrorImageInstanceIDList(ioctx, "", 0)
+		assert.NoError(t, err)
+		if len(lst) == 5 {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
+	t.Run("getInstanceID", func(t *testing.T) {
+		lst := []*MirrorImageInstanceIDItem{}
+		iter := NewMirrorImageInstanceIDIter(ioctx)
+		for {
+			istatus, err := iter.Next()
+			assert.NoError(t, err)
+			if istatus == nil {
+				break
+			}
+			lst = append(lst, istatus)
+		}
+		assert.Len(t, lst, 5)
+		assert.NoError(t, err)
+	})
+
+	t.Run("getInstanceIDSlice", func(t *testing.T) {
+		lst, err := MirrorImageInstanceIDList(ioctx, "", 0)
+		fmt.Print(lst)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 5)
+		for i := 1; i < len(lst); i++ {
+			assert.NotEqual(t, lst[i-1].ID, lst[i].ID)
+		}
+		for i := 1; i <= iterBufSize; i++ {
+			lst, err := MirrorImageInstanceIDList(ioctx, "", i)
+			assert.NoError(t, err)
+			assert.Len(t, lst, i)
+		}
+		lst, err = MirrorImageInstanceIDList(ioctx, "", 3)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 3)
+		lst, err = MirrorImageInstanceIDList(ioctx, lst[2].ID, 0)
+		assert.NoError(t, err)
+		assert.Len(t, lst, 2)
+	})
+}
