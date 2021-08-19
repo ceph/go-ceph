@@ -12,7 +12,6 @@ pull_request_rules:
       - label!=do-not-merge
       - label!=extended-review
       - base=master
-      - "#approved-reviews-by>=2"
       - "#changes-requested-reviews-by=0"
       - status-success=check
       - status-success=dpulls
@@ -21,6 +20,17 @@ pull_request_rules:
       - status-success=test-suite (nautilus)
       - status-success=test-suite (octopus)
       - status-success=test-suite (pacific)
+      - or:
+        - and:
+          - label!=API
+          - "#approved-reviews-by>=1"
+        - and:
+          - label=API
+          - "#approved-reviews-by>=2"
+        - and:
+          - label=API
+          - "#approved-reviews-by>=1"
+          - "updated-at<10 days ago"
     actions:
       merge:
         method: rebase
