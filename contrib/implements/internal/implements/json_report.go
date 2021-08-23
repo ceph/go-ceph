@@ -39,6 +39,11 @@ type jrFunction struct {
 	Refs  []string `json:"referenced_by,omitempty"`
 }
 
+type gFunc struct {
+	Name    string `json:"name"`
+	Comment string `json:"comment,omitempty"`
+}
+
 type jrPackage struct {
 	Name    string `json:"name"`
 	Summary struct {
@@ -47,8 +52,10 @@ type jrPackage struct {
 		Missing    int `json:"missing"`
 		Deprecated int `json:"deprecated"`
 	} `json:"summary"`
-	Found   []jrFunction `json:"found,omitempty"`
-	Missing []jrFunction `json:"missing,omitempty"`
+	Found      []jrFunction `json:"found,omitempty"`
+	Missing    []jrFunction `json:"missing,omitempty"`
+	Deprecated []gFunc      `json:"deprecated_api,omitempty"`
+	Preview    []gFunc      `json:"preview_api,omitempty"`
 }
 
 type jrOut map[string]jrPackage
@@ -104,6 +111,15 @@ func collectFuncs(jp *jrPackage, ii *Inspector) {
 		}
 		jp.Missing = append(jp.Missing,
 			jrFunction{cf.Name, flags, []string{}})
+	}
+
+	for d, v := range ii.deprecated {
+		jp.Deprecated = append(jp.Deprecated,
+			gFunc{Name: d, Comment: v})
+	}
+	for p, v := range ii.preview {
+		jp.Preview = append(jp.Preview,
+			gFunc{Name: p, Comment: v})
 	}
 }
 

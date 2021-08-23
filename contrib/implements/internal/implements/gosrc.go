@@ -14,21 +14,34 @@ import (
 type visitor struct {
 	inFunction *ast.FuncDecl
 
-	callMap map[string]string
-	docMap  map[string]string
+	callMap    map[string]string
+	docMap     map[string]string
+	deprecated map[string]string
+	preview    map[string]string
 }
 
 func newVisitor() *visitor {
 	return &visitor{
-		callMap: map[string]string{},
-		docMap:  map[string]string{},
+		callMap:    map[string]string{},
+		docMap:     map[string]string{},
+		deprecated: map[string]string{},
+		preview:    map[string]string{},
 	}
 }
 
-func (v *visitor) checkDocImplements(fdec *ast.FuncDecl) {
+func (v *visitor) checkDocComment(fdec *ast.FuncDecl) {
 	dtext := fdec.Doc.Text()
 	lines := strings.Split(dtext, "\n")
 	for i := range lines {
+		if strings.Contains(lines[i], "DEPRECATED") {
+			v.deprecated[fdec.Name.Name] = dtext
+			logger.Printf("marked deprecated: %s\n", fdec.Name.Name)
+		}
+		if strings.Contains(lines[i], "PREVIEW") {
+			v.preview[fdec.Name.Name] = dtext
+			logger.Printf("marked preview: %s\n", fdec.Name.Name)
+		}
+
 		if lines[i] == "Implements:" {
 			cfunc := cfuncFromComment(lines[i+1])
 			if cfunc == "" {
@@ -67,7 +80,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		return v
 	case *ast.FuncDecl:
 		logger.Printf("checking function: %v\n", n.Name.Name)
-		v.checkDocImplements(n)
+		v.checkDocComment(n)
 		v.inFunction = n
 		return v
 	case *ast.CallExpr:
