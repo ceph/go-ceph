@@ -18,7 +18,10 @@ func TestStatxFieldsRootDir(t *testing.T) {
 	assert.NotNil(t, st)
 
 	assert.Equal(t, StatxBasicStats, st.Mask&StatxBasicStats)
-	assert.Equal(t, uint32(2), st.Nlink)
+	// allow Nlink to be >= 2 in the case that some test(s) don't entirely
+	// clean up after themselves or the environment is being used outside
+	// of the go-ceph suite only.
+	assert.GreaterOrEqual(t, st.Nlink, uint32(2))
 	assert.Equal(t, uint32(0), st.Uid)
 	assert.Equal(t, uint32(0), st.Gid)
 	assert.NotEqual(t, uint16(0), st.Mode)
