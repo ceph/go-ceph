@@ -20,6 +20,9 @@ type Inspector struct {
 	expected          CFunctions
 	found             map[string]foundFlags
 	deprecatedMissing int
+
+	deprecated map[string]string
+	preview    map[string]string
 }
 
 // SetExpected sets the expected C functions, asuming the supplied prefix.
@@ -54,6 +57,8 @@ func (ii *Inspector) update() {
 			}
 		}
 	}
+	ii.deprecated = ii.visitor.deprecated
+	ii.preview = ii.visitor.preview
 }
 
 // NewInspector returns a newly created code inspector object.
