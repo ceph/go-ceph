@@ -254,6 +254,9 @@ func TestSymlink(t *testing.T) {
 
 		err = mount.Symlink("/", "someDir")
 		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, mount.Unlink("someDir"))
+		}()
 
 		err = mount.Symlink("someFile", "/")
 		// Error, permission denied.
