@@ -327,7 +327,7 @@ func (image *Image) Rename(destname string) error {
 	return err
 }
 
-// Open the rbd image.
+// Open the rbd image (DEPRECATED).
 //
 // Deprecated: The Open function was provided in earlier versions of the API
 // and now exists to support older code. The use of OpenImage and
