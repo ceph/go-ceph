@@ -1,9 +1,18 @@
-ARG CEPH_VERSION
-FROM ceph/daemon-base:latest-${CEPH_VERSION:-octopus}
+ARG CEPH_IMG=quay.io/ceph/ceph
+ARG CEPH_TAG=v16
+FROM ${CEPH_IMG}:${CEPH_TAG}
 
-ENV CEPH_VERSION=${CEPH_VERSION:-octopus}
+# A CEPH_VERSION env var is already set in the base image.
+# We save our build arg as GO_CEPH_VERSION and later ensure that
+# the values agree to ensure we're building what we meant to build.
+ARG CEPH_TAG
+ARG GO_CEPH_VERSION
+ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION} \
+    CEPH_TAG=${CEPH_TAG}
 
 RUN true && \
+    echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" && \
+    [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] && \
     yum update -y && \
     cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" && \
     yum install -y \
