@@ -22,11 +22,14 @@ RUN true && \
     yum clean all && \
     true
 
-ENV GOTAR=go1.15.10.linux-amd64.tar.gz
+ARG GO_VERSION=1.16.7
+ENV GO_VERSION=${GO_VERSION}
 RUN true && \
-    curl -o /tmp/${GOTAR} https://dl.google.com/go/${GOTAR} && \
-    tar -x -C /opt/ -f /tmp/${GOTAR} && \
-    rm -f /tmp/${GOTAR} && \
+    gotar=go${GO_VERSION}.linux-amd64.tar.gz && \
+    gourl="https://dl.google.com/go/${gotar}" && \
+    curl -o /tmp/${gotar} "${gourl}" && \
+    tar -x -C /opt/ -f /tmp/${gotar} && \
+    rm -f /tmp/${gotar} && \
     true
 
 ENV PATH="${PATH}:/opt/go/bin"
