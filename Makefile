@@ -1,6 +1,7 @@
 CI_IMAGE_NAME = go-ceph-ci
 CONTAINER_CMD ?=
 CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
+CONTAINER_BUILD_OPTS :=
 CONTAINER_CONFIG_DIR := testing/containers/ceph
 VOLUME_FLAGS :=
 CEPH_VERSION := octopus
@@ -164,6 +165,7 @@ $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
 	$(CONTAINER_CMD) build \
 		--build-arg GO_CEPH_VERSION=$(CEPH_VERSION) \
 		--build-arg CEPH_TAG=$(CEPH_TAG) \
+		$(CONTAINER_BUILD_OPTS) \
 		-t $(CI_IMAGE_TAG) \
 		-f $(CONTAINER_CONFIG_DIR)/Dockerfile .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
