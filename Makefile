@@ -16,6 +16,16 @@ ifeq ($(CONTAINER_CMD),)
 	CONTAINER_CMD:=$(shell podman version >/dev/null 2>&1 && echo podman)
 endif
 
+ifeq ($(CEPH_VERSION),nautilus)
+	CEPH_TAG := v14
+endif
+ifeq ($(CEPH_VERSION),octopus)
+	CEPH_TAG := v15
+endif
+ifeq ($(CEPH_VERSION),pacific)
+	CEPH_TAG := v16
+endif
+
 GO_CMD:=go
 GOFMT_CMD:=gofmt
 
@@ -151,7 +161,11 @@ endif
 .PHONY: ci-image
 ci-image: $(BUILDFILE)
 $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
-	$(CONTAINER_CMD) build --build-arg CEPH_VERSION=$(CEPH_VERSION) -t $(CI_IMAGE_TAG) -f $(CONTAINER_CONFIG_DIR)/Dockerfile .
+	$(CONTAINER_CMD) build \
+		--build-arg GO_CEPH_VERSION=$(CEPH_VERSION) \
+		--build-arg CEPH_TAG=$(CEPH_TAG) \
+		-t $(CI_IMAGE_TAG) \
+		-f $(CONTAINER_CONFIG_DIR)/Dockerfile .
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
 	echo $(CEPH_VERSION) >> $(BUILDFILE)
 
