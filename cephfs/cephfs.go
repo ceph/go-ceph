@@ -37,6 +37,13 @@ func (mount *MountInfo) validate() error {
 	return nil
 }
 
+// Version returns the major, minor, and patch level of the libcephfs library.
+func Version() (int, int, int) {
+	var cMajor, cMinor, cPatch C.int
+	C.ceph_version(&cMajor, &cMinor, &cPatch)
+	return int(cMajor), int(cMinor), int(cPatch)
+}
+
 // CreateMount creates a mount handle for interacting with Ceph.
 func CreateMount() (*MountInfo, error) {
 	return createMount(nil)
