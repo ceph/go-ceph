@@ -357,3 +357,10 @@ func TestReadConfigFile(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "04862775-14d5-46e0-a015-000000000000", v)
 }
+
+func TestVersion(t *testing.T) {
+	var major, minor, patch = Version()
+	assert.False(t, major < 0 || major > 1000, "invalid major")
+	assert.False(t, minor < 0 || minor > 1000, "invalid minor")
+	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
+}
