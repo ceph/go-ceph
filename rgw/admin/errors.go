@@ -88,6 +88,7 @@ const (
 var (
 	errMissingUserID          = errors.New("missing user ID")
 	errMissingUserDisplayName = errors.New("missing user display name")
+	errMissingUserCap         = errors.New("missing user capabilities")
 )
 
 // errorReason is the reason of the error
