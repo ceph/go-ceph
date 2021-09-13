@@ -961,17 +961,17 @@ func mirrorImageInstanceIDList(ioctx *rados.IOContext, start string,
 	defer C.free(unsafe.Pointer(cStart))
 
 	var (
-		max          = C.size_t(len(results))
-		length       = C.size_t(0)
-		ids          = make([]*C.char, len(results))
-		instance_ids = make([]*C.char, len(results))
+		max         = C.size_t(len(results))
+		length      = C.size_t(0)
+		ids         = make([]*C.char, len(results))
+		instanceIDs = make([]*C.char, len(results))
 	)
 	ret := C.rbd_mirror_image_instance_id_list(
 		cephIoctx(ioctx),
 		cStart,
 		max,
 		&ids[0],
-		&instance_ids[0],
+		&instanceIDs[0],
 		&length,
 	)
 	if err := getError(ret); err != nil {
@@ -979,11 +979,11 @@ func mirrorImageInstanceIDList(ioctx *rados.IOContext, start string,
 	}
 	for i := 0; i < int(length); i++ {
 		results[i].ID = C.GoString(ids[i])
-		results[i].InstanceID = C.GoString(instance_ids[i])
+		results[i].InstanceID = C.GoString(instanceIDs[i])
 	}
 	C.rbd_mirror_image_instance_id_list_cleanup(
 		&ids[0],
-		&instance_ids[0],
+		&instanceIDs[0],
 		length)
 	return int(length), getError(ret)
 }
