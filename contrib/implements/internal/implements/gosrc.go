@@ -12,6 +12,26 @@ import (
 	"strings"
 )
 
+// ignoreCCalls is a map of calls from "C" that we know we can just ignore.
+// ignoring this stuff makes the number of tracked entries smaller, fewer logs,
+// and less stuff to iterate over in other code.
+var ignoreCCalls = map[string]bool{
+	// some special cgo calls
+	"CString":  true,
+	"CBytes":   true,
+	"GoString": true,
+	"GoBytes":  true,
+	// common utility functions
+	"free": true,
+	// common types
+	"int":       true,
+	"int64_t":   true,
+	"uint64_t":  true,
+	"size_t":    true,
+	"ssize_t":   true,
+	"uintptr_t": true,
+}
+
 type goFunction struct {
 	shortName       string
 	fullName        string
@@ -89,7 +109,11 @@ func (v *visitor) checkCalled(s *ast.SelectorExpr) {
 		return
 	}
 	if "C" == ident.String() {
-		v.callMap[s.Sel.String()] = v.currentFunc
+		cname := s.Sel.String()
+		if ignoreCCalls[cname] {
+			return
+		}
+		v.callMap[cname] = v.currentFunc
 		logger.Printf("updated %s in call map\n", s.Sel.String())
 	}
 }
