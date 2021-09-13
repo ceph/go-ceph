@@ -19,6 +19,7 @@ RUN true && \
         git wget curl make \
         /usr/bin/cc /usr/bin/c++ \
         "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
+    (dnf install -y 'castxml >= 0.4.3' || true) && \
     yum clean all && \
     true
 
