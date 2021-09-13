@@ -91,11 +91,11 @@ func collectFuncs(jp *jrPackage, ii *Inspector) {
 	for _, cf := range ii.expected {
 		if flags, ok := ii.found[cf.Name]; ok {
 			refm := map[string]bool{}
-			if n := ii.visitor.callMap[cf.Name]; n != "" {
-				refm[n] = true
+			if gf := ii.visitor.callMap[cf.Name]; gf != nil {
+				refm[gf.shortName] = true
 			}
-			if n := ii.visitor.docMap[cf.Name]; n != "" {
-				refm[n] = true
+			if gf := ii.visitor.docMap[cf.Name]; gf != nil {
+				refm[gf.shortName] = true
 			}
 			jp.Found = append(jp.Found,
 				jrFunction{cf.Name, jrFlags(flags), mkeys(refm)})
@@ -113,13 +113,13 @@ func collectFuncs(jp *jrPackage, ii *Inspector) {
 			jrFunction{cf.Name, flags, []string{}})
 	}
 
-	for d, v := range ii.deprecated {
+	for _, gf := range ii.deprecated {
 		jp.Deprecated = append(jp.Deprecated,
-			gFunc{Name: d, Comment: v})
+			gFunc{Name: gf.fullName, Comment: gf.comment})
 	}
-	for p, v := range ii.preview {
+	for _, gf := range ii.preview {
 		jp.Preview = append(jp.Preview,
-			gFunc{Name: p, Comment: v})
+			gFunc{Name: gf.fullName, Comment: gf.comment})
 	}
 }
 

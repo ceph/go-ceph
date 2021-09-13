@@ -102,12 +102,12 @@ func (r *TextReport) Report(name string, ii *Inspector) error {
 		r.printf("  Missing: %s%s\n", cf.Name, d)
 	}
 	r.printf("Deprecated by go-ceph:\n")
-	for d := range ii.deprecated {
-		r.printf("  %s\n", d)
+	for _, gf := range ii.deprecated {
+		r.printf("  %s\n", gf.fullName)
 	}
 	r.printf("Preview in go-ceph:\n")
-	for p := range ii.preview {
-		r.printf("  %s\n", p)
+	for _, gf := range ii.preview {
+		r.printf("  %s\n", gf.fullName)
 	}
 	return nil
 }
