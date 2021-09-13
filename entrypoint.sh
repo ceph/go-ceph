@@ -244,7 +244,7 @@ post_all_tests() {
         mkdir -p "${RESULTS_DIR}/coverage"
         show go tool cover -html=cover.out -o "${RESULTS_DIR}/coverage/go-ceph.html"
     fi
-    if [[ ${COVERAGE} = yes ]] && command -v castxml ; then
+    if [[ ${COVERAGE} = yes ]] && command -v castxml >/dev/null ; then
         mkdir -p "${RESULTS_DIR}/coverage"
         show ./implements --list \
             --report-json "${RESULTS_DIR}/implements.json" \
