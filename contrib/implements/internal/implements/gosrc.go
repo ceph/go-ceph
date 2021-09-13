@@ -1,6 +1,7 @@
 package implements
 
 import (
+	"fmt"
 	"go/ast"
 	"go/build"
 	"go/parser"
@@ -11,34 +12,63 @@ import (
 	"strings"
 )
 
-type visitor struct {
-	inFunction *ast.FuncDecl
+type goFunction struct {
+	shortName       string
+	fullName        string
+	comment         string
+	implementsCFunc string
+	callsCFunc      string
+	isDeprecated    bool
+	isPreview       bool
 
-	callMap    map[string]string
-	docMap     map[string]string
-	deprecated map[string]string
-	preview    map[string]string
+	endPos token.Pos
+}
+
+type visitor struct {
+	currentFunc *goFunction
+
+	callMap    map[string]*goFunction
+	docMap     map[string]*goFunction
+	deprecated []*goFunction
+	preview    []*goFunction
 }
 
 func newVisitor() *visitor {
 	return &visitor{
-		callMap:    map[string]string{},
-		docMap:     map[string]string{},
-		deprecated: map[string]string{},
-		preview:    map[string]string{},
+		callMap:    map[string]*goFunction{},
+		docMap:     map[string]*goFunction{},
+		deprecated: []*goFunction{},
+		preview:    []*goFunction{},
 	}
 }
 
-func (v *visitor) checkDocComment(fdec *ast.FuncDecl) {
-	dtext := fdec.Doc.Text()
-	lines := strings.Split(dtext, "\n")
+func funcDeclFullName(fdec *ast.FuncDecl) string {
+	if fdec.Recv == nil {
+		return fdec.Name.Name
+	}
+	if len(fdec.Recv.List) != 1 {
+		return fdec.Name.Name
+	}
+	typeName := "UNKNOWN!"
+	switch t := fdec.Recv.List[0].Type.(type) {
+	case *ast.StarExpr:
+		typeName = t.X.(*ast.Ident).Name
+	case *ast.Ident:
+		typeName = t.Name
+	}
+	return fmt.Sprintf("%s.%s", typeName, fdec.Name.Name)
+}
+
+func readDocComment(fdec *ast.FuncDecl, gfunc *goFunction) {
+	gfunc.comment = fdec.Doc.Text()
+	lines := strings.Split(gfunc.comment, "\n")
 	for i := range lines {
 		if strings.Contains(lines[i], "DEPRECATED") {
-			v.deprecated[fdec.Name.Name] = dtext
+			gfunc.isDeprecated = true
 			logger.Printf("marked deprecated: %s\n", fdec.Name.Name)
 		}
 		if strings.Contains(lines[i], "PREVIEW") {
-			v.preview[fdec.Name.Name] = dtext
+			gfunc.isPreview = true
 			logger.Printf("marked preview: %s\n", fdec.Name.Name)
 		}
 
@@ -47,8 +77,8 @@ func (v *visitor) checkDocComment(fdec *ast.FuncDecl) {
 			if cfunc == "" {
 				return
 			}
-			v.docMap[cfunc] = fdec.Name.Name
-			logger.Printf("updated %s in doc map\n", cfunc)
+			gfunc.implementsCFunc = cfunc
+			logger.Printf("implements c function %s: %s\n", fdec.Name.Name, cfunc)
 		}
 	}
 }
@@ -59,7 +89,7 @@ func (v *visitor) checkCalled(s *ast.SelectorExpr) {
 		return
 	}
 	if "C" == ident.String() {
-		v.callMap[s.Sel.String()] = v.inFunction.Name.Name
+		v.callMap[s.Sel.String()] = v.currentFunc
 		logger.Printf("updated %s in call map\n", s.Sel.String())
 	}
 }
@@ -68,30 +98,43 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch {
 	case node == nil:
 		return nil
-	case v.inFunction == nil:
-	case node.Pos() > v.inFunction.End():
-		logger.Printf("left function %v\n", v.inFunction.Name.Name)
-		v.inFunction = nil
+	case v.currentFunc == nil:
+	case node.Pos() > v.currentFunc.endPos:
+		logger.Printf("left function %v\n", v.currentFunc.shortName)
+		v.currentFunc = nil
 	}
 
 	switch n := node.(type) {
 	case *ast.File:
-		v.inFunction = nil
+		v.currentFunc = nil
 		return v
 	case *ast.FuncDecl:
 		logger.Printf("checking function: %v\n", n.Name.Name)
-		v.checkDocComment(n)
-		v.inFunction = n
+		gfunc := &goFunction{
+			shortName: n.Name.Name,
+			fullName:  funcDeclFullName(n),
+			endPos:    n.End(),
+		}
+		readDocComment(n, gfunc)
+		v.currentFunc = gfunc
+		if gfunc.isDeprecated {
+			v.deprecated = append(v.deprecated, gfunc)
+			logger.Printf("rem1 %v\n", v.deprecated)
+		}
+		if gfunc.isPreview {
+			v.preview = append(v.preview, gfunc)
+			logger.Printf("rem2 %v\n", v.preview)
+		}
 		return v
 	case *ast.CallExpr:
-		if v.inFunction == nil {
+		if v.currentFunc == nil {
 			return nil
 		}
 		if s, ok := n.Fun.(*ast.SelectorExpr); ok {
 			v.checkCalled(s)
 		}
 	}
-	if v.inFunction != nil {
+	if v.currentFunc != nil {
 		return v
 	}
 	return nil

@@ -21,8 +21,8 @@ type Inspector struct {
 	found             map[string]foundFlags
 	deprecatedMissing int
 
-	deprecated map[string]string
-	preview    map[string]string
+	deprecated []*goFunction
+	preview    []*goFunction
 }
 
 // SetExpected sets the expected C functions, asuming the supplied prefix.
@@ -41,6 +41,9 @@ func (ii *Inspector) SetExpected(prefix string, expected CFunctions) error {
 func (ii *Inspector) update() {
 	ii.found = map[string]foundFlags{}
 	ii.deprecatedMissing = 0
+	ii.deprecated = []*goFunction{}
+	ii.preview = []*goFunction{}
+
 	for i := range ii.expected {
 		n := ii.expected[i].Name
 		if _, found := ii.visitor.callMap[n]; found {
@@ -57,8 +60,8 @@ func (ii *Inspector) update() {
 			}
 		}
 	}
-	ii.deprecated = ii.visitor.deprecated
-	ii.preview = ii.visitor.preview
+	ii.deprecated = append(ii.deprecated, ii.visitor.deprecated...)
+	ii.preview = append(ii.preview, ii.visitor.preview...)
 }
 
 // NewInspector returns a newly created code inspector object.
