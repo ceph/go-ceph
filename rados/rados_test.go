@@ -499,6 +499,7 @@ func (suite *RadosTestSuite) TestReadWrite() {
 
 	bytesOut := make([]byte, len(bytesIn))
 	numOut, err := suite.ioctx.Read("obj", bytesOut, 0)
+	assert.NoError(suite.T(), err)
 
 	assert.Equal(suite.T(), numOut, len(bytesIn))
 	assert.Equal(suite.T(), bytesIn, bytesOut)
@@ -509,6 +510,7 @@ func (suite *RadosTestSuite) TestReadWrite() {
 
 	bytesOut = make([]byte, len(bytesIn))
 	numOut, err = suite.ioctx.Read("obj", bytesOut, 0)
+	assert.NoError(suite.T(), err)
 
 	assert.Equal(suite.T(), numOut, len(bytesIn))
 	assert.Equal(suite.T(), bytesIn, bytesOut)
