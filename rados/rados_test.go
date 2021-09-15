@@ -1175,7 +1175,9 @@ func (suite *RadosTestSuite) TestGetLastVersion() {
 		ioctx, err := suite.conn.OpenIOContext(suite.pool)
 		require.NoError(suite.T(), err)
 		oid := suite.GenObjectName()
-		defer suite.ioctx.Delete(oid)
+		defer func(oid string) {
+			assert.NoError(t, ioctx.Delete(oid))
+		}(oid)
 
 		v1, _ := ioctx.GetLastVersion()
 
@@ -1201,7 +1203,9 @@ func (suite *RadosTestSuite) TestGetLastVersion() {
 		ioctx, err := suite.conn.OpenIOContext(suite.pool)
 		require.NoError(suite.T(), err)
 		oid := suite.GenObjectName()
-		defer ioctx.Delete(oid)
+		defer func(oid string) {
+			assert.NoError(t, ioctx.Delete(oid))
+		}(oid)
 
 		v1, _ := ioctx.GetLastVersion()
 
@@ -1241,7 +1245,9 @@ func (suite *RadosTestSuite) TestGetLastVersion() {
 		vers := make([]uint64, 5)
 		for i := 0; i < 5; i++ {
 			oid := suite.GenObjectName()
-			defer ioctx.Delete(oid)
+			defer func(oid string) {
+				assert.NoError(t, ioctx.Delete(oid))
+			}(oid)
 			err = ioctx.Write(oid, []byte(oid), 0)
 			assert.NoError(t, err)
 

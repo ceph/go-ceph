@@ -195,7 +195,6 @@ func (suite *RadosTestSuite) TestRollbackSnapshot() {
 		ioctx, err := suite.conn.OpenIOContext(suite.pool)
 		require.NoError(suite.T(), err)
 		oid := suite.GenObjectName()
-		defer suite.ioctx.Delete(oid)
 
 		err = ioctx.RollbackSnap(oid, "someName")
 		assert.Error(t, err)
@@ -220,7 +219,9 @@ func (suite *RadosTestSuite) TestRollbackSnapshot() {
 		ioctx, err := suite.conn.OpenIOContext(suite.pool)
 		require.NoError(suite.T(), err)
 		oid := suite.GenObjectName()
-		defer suite.ioctx.Delete(oid)
+		defer func(oid string) {
+			assert.NoError(t, ioctx.Delete(oid))
+		}(oid)
 
 		bytesIn := []byte("Harry Potter")
 		err = suite.ioctx.Write(oid, bytesIn, 0)
