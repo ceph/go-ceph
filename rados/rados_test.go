@@ -450,6 +450,7 @@ func (suite *RadosTestSuite) TestGetLargePoolList() {
 		require.NoError(suite.T(), err)
 	}
 	pools, err = suite.conn.ListPools()
+	assert.NoError(suite.T(), err)
 	for _, name := range names {
 		assert.Contains(suite.T(), pools, name)
 	}
@@ -573,6 +574,7 @@ func (suite *RadosTestSuite) TestObjectStat() {
 	assert.NoError(suite.T(), err)
 
 	stat, err := suite.ioctx.Stat(oid)
+	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), uint64(len(bytes)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
 }
@@ -994,6 +996,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 	assert.NoError(suite.T(), err)
 
 	stat, err := suite.ioctx.Stat(oid)
+	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), uint64(len(bytesIn)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
 
@@ -1013,6 +1016,7 @@ func (suite *RadosTestSuite) TestSetNamespace() {
 	assert.Equal(suite.T(), err, ErrNotFound)
 
 	stat, err = suite.ioctx.Stat(oid)
+	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), uint64(len(bytesIn)), stat.Size)
 	assert.NotNil(suite.T(), stat.ModTime)
 }
@@ -1022,9 +1026,10 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 
 	// count objects in pool
 	origObjects := 0
-	err := suite.ioctx.ListObjects(func(oid string) {
+	err := suite.ioctx.ListObjects(func(string) {
 		origObjects++
 	})
+	assert.NoError(suite.T(), err)
 
 	// create oid
 	oid := suite.GenObjectName()
@@ -1041,7 +1046,7 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 
 	// count objects in space1 ns
 	nsFoundObjects := 0
-	err = suite.ioctx.ListObjects(func(oid string) {
+	err = suite.ioctx.ListObjects(func(string) {
 		nsFoundObjects++
 	})
 	assert.NoError(suite.T(), err)
