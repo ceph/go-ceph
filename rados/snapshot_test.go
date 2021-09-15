@@ -74,8 +74,7 @@ func (suite *RadosTestSuite) TestSnapshotIDFunctions() {
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrInvalidIOContext)
 
-		var snapID SnapID
-		snapID = 22 // some random number
+		snapID := SnapID(22) // some random number
 		_, err = ioctx.GetSnapName(snapID)
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrInvalidIOContext)
@@ -104,8 +103,7 @@ func (suite *RadosTestSuite) TestSnapshotIDFunctions() {
 		_, err = ioctx.LookupSnap("someSnapName")
 		assert.Error(t, err)
 
-		var snapID SnapID
-		snapID = 22 // some random number
+		snapID := SnapID(22) // some random number
 		_, err = ioctx.GetSnapName(snapID)
 		assert.Error(t, err)
 
