@@ -724,8 +724,6 @@ func (suite *RadosTestSuite) TestObjectIterator() {
 func (suite *RadosTestSuite) TestObjectIteratorAcrossNamespaces() {
 	suite.SetupConnection()
 
-	const perNamespace = 100
-
 	// tests use a shared pool so namespaces need to be unique across tests.
 	// below ns1=nsX and ns2=nsY. ns1 is used elsewhere.
 	objectListNS1 := []string{}
