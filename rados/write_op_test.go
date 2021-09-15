@@ -31,7 +31,7 @@ func (suite *RadosTestSuite) TestWriteOpCreate() {
 	assert.Panics(suite.T(), func() {
 		op := CreateWriteOp()
 		defer op.Release()
-		op.Operate(nil, "foo", OperationNoFlag)
+		_ = op.Operate(nil, "foo", OperationNoFlag)
 	})
 }
 

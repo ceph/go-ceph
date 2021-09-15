@@ -30,7 +30,7 @@ func (suite *RadosTestSuite) TestReadOpAssertExists() {
 
 	// ensure a nil ioctx triggers a panic
 	assert.Panics(suite.T(), func() {
-		op2.Operate(nil, "foo", OperationNoFlag)
+		_ = op2.Operate(nil, "foo", OperationNoFlag)
 	})
 }
 
