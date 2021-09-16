@@ -128,8 +128,14 @@ if [ -n "${BUILD_TAGS}" ]; then
 fi
 
 show() {
+    local ret
     echo "*** running:" "$@"
     "$@"
+    ret=$?
+    if [ ${ret} -ne 0 ] ; then
+        echo "*** ERROR: returned ${ret}"
+    fi
+    return ${ret}
 }
 
 wait_for_files() {
