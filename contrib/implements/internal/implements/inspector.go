@@ -23,6 +23,7 @@ type Inspector struct {
 
 	deprecated []*goFunction
 	preview    []*goFunction
+	stable     []*goFunction
 }
 
 // SetExpected sets the expected C functions, asuming the supplied prefix.
@@ -62,6 +63,7 @@ func (ii *Inspector) update() {
 	}
 	ii.deprecated = append(ii.deprecated, ii.visitor.deprecated...)
 	ii.preview = append(ii.preview, ii.visitor.preview...)
+	ii.stable = append(ii.stable, ii.visitor.stable...)
 }
 
 // NewInspector returns a newly created code inspector object.
