@@ -115,21 +115,14 @@ while true ; do
     esac
 done
 
-if [ -n "${CEPH_VERSION}" ]; then
-    BUILD_TAGS="${CEPH_VERSION}"
-fi
-
-if [ -n "${USE_PTRGUARD}" ]; then
-    BUILD_TAGS+=",ptrguard"
-fi
-
-if [ -z "${NO_PREVIEW}" ]; then
-    BUILD_TAGS+=",ceph_preview"
-fi
-
-if [ -n "${BUILD_TAGS}" ]; then
-    BUILD_TAGS="-tags ${BUILD_TAGS}"
-fi
+add_build_tag() {
+    local val="$1"
+    if [ -n "$BUILD_TAGS" ]; then
+        BUILD_TAGS+=",${val}"
+    else
+        BUILD_TAGS="${val}"
+    fi
+}
 
 show() {
     local ret
@@ -296,6 +289,23 @@ pause_if_needed() {
         sleep infinity
     fi
 }
+
+
+if [ -n "${CEPH_VERSION}" ]; then
+    add_build_tag "${CEPH_VERSION}"
+fi
+
+if [ -n "${USE_PTRGUARD}" ]; then
+    add_build_tag "ptrguard"
+fi
+
+if [ -z "${NO_PREVIEW}" ]; then
+    add_build_tag "ceph_preview"
+fi
+
+if [ -n "${BUILD_TAGS}" ]; then
+    BUILD_TAGS="-tags ${BUILD_TAGS}"
+fi
 
 test_go_ceph
 pause_if_needed
