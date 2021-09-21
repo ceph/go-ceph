@@ -249,7 +249,7 @@ post_all_tests() {
         show ./implements --list \
             --report-json "${RESULTS_DIR}/implements.json" \
             --report-text "${RESULTS_DIR}/implements.txt" \
-            cephfs rados rbd
+            cephfs rados rbd cephfs/admin rbd/admin rgw/admin
         # output the brief summary info onto stdout
         grep '^[A-Z]' "${RESULTS_DIR}/implements.txt"
     fi
