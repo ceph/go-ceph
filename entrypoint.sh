@@ -123,6 +123,10 @@ if [ -n "${USE_PTRGUARD}" ]; then
     BUILD_TAGS+=",ptrguard"
 fi
 
+if [ -z "${NO_PREVIEW}" ]; then
+    BUILD_TAGS+=",ceph_preview"
+fi
+
 if [ -n "${BUILD_TAGS}" ]; then
     BUILD_TAGS="-tags ${BUILD_TAGS}"
 fi
