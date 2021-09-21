@@ -51,6 +51,7 @@ type visitor struct {
 	docMap     map[string]*goFunction
 	deprecated []*goFunction
 	preview    []*goFunction
+	stable     []*goFunction
 }
 
 func newVisitor() *visitor {
@@ -59,6 +60,7 @@ func newVisitor() *visitor {
 		docMap:     map[string]*goFunction{},
 		deprecated: []*goFunction{},
 		preview:    []*goFunction{},
+		stable:     []*goFunction{},
 	}
 }
 
@@ -103,6 +105,10 @@ func readDocComment(fdec *ast.FuncDecl, gfunc *goFunction) {
 	}
 }
 
+func isPublic(gfunc *goFunction) bool {
+	return ast.IsExported(gfunc.shortName)
+}
+
 func (v *visitor) checkCalled(s *ast.SelectorExpr) {
 	ident, ok := s.X.(*ast.Ident)
 	if !ok {
@@ -141,13 +147,14 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		}
 		readDocComment(n, gfunc)
 		v.currentFunc = gfunc
-		if gfunc.isDeprecated {
-			v.deprecated = append(v.deprecated, gfunc)
-			logger.Printf("rem1 %v\n", v.deprecated)
-		}
-		if gfunc.isPreview {
-			v.preview = append(v.preview, gfunc)
-			logger.Printf("rem2 %v\n", v.preview)
+		if isPublic(gfunc) {
+			if gfunc.isDeprecated {
+				v.deprecated = append(v.deprecated, gfunc)
+			} else if gfunc.isPreview {
+				v.preview = append(v.preview, gfunc)
+			} else {
+				v.stable = append(v.stable, gfunc)
+			}
 		}
 		return v
 	case *ast.CallExpr:
