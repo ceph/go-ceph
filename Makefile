@@ -46,6 +46,12 @@ ifneq ($(USE_PTRGUARD),)
 	BUILD_TAGS := $(BUILD_TAGS),ptrguard
 endif
 
+ifneq ($(NO_PREVIEW),)
+	CONTAINER_OPTS += -e NO_PREVIEW=true
+else
+	BUILD_TAGS := $(BUILD_TAGS),ceph_preview
+endif
+
 ifneq ($(USE_CACHE),)
 	GOCACHE_VOLUME := -v test_ceph_go_cache:/go
 endif
