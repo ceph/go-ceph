@@ -51,19 +51,24 @@ func (r *TextReport) Report(name string, ii *Inspector) error {
 
 	found := len(ii.found)
 	total := len(ii.expected)
+	missing := total - found - ii.deprecatedMissing
+	var percentFound, percentMissing int
+	if total > 0 {
+		percentFound = (100 * found) / total
+		percentMissing = (100 * missing) / total
+	}
 	r.printf(
 		"%s functions covered: %d/%d : %v%%\n",
 		packageLabel,
 		found,
 		total,
-		(100*found)/total)
-	missing := total - found - ii.deprecatedMissing
+		percentFound)
 	r.printf(
 		"%s functions missing: %d/%d : %v%%\n",
 		packageLabel,
 		missing,
 		total,
-		(100*missing)/total)
+		percentMissing)
 	r.printf(
 		"  (note missing count does not include deprecated functions in ceph)\n")
 
