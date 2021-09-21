@@ -51,8 +51,15 @@ jobs:
         name: "go-ceph-coverage-${{ matrix.ceph_version }}"
         path: "_results/coverage/go-ceph.html"
     - name: Archive implements results
-      if: "matrix.ceph_version == 'octopus'"
+      if: "matrix.ceph_version == 'pacific'"
       uses: actions/upload-artifact@v2
       with:
         name: "go-ceph-implements-${{ matrix.ceph_version }}"
         path: "_results/implements.*"
+    - name: Check API Versions and Aging
+      run: |
+        if [ -f _results/implements.json ]; then
+          ./contrib/apiage.py
+        else
+          echo "Skipping apiage check"
+        fi
