@@ -19,7 +19,6 @@ import (
 	"flag"
 	"log"
 	"os"
-	"path"
 
 	"github.com/ceph/go-ceph/contrib/implements/internal/implements"
 )
@@ -47,6 +46,13 @@ func init() {
 
 	flag.StringVar(&outputJSON, "report-json", "", "filename for JSON report")
 	flag.StringVar(&outputText, "report-text", "", "filename for plain-text report")
+}
+
+// TODO: this is a stub implementation that doesn't do anything.
+// the intent is to eventually be able to tell a go-ceph sub-package
+// like "rbd" or "cephfs/admin" apart from a real path like "/home/foo/go-ceph/rbd".
+func splitPkg(s string) (string, string) {
+	return "", s
 }
 
 func main() {
@@ -96,9 +102,15 @@ func main() {
 	}
 
 	for _, pkgref := range args[0:] {
-		source, pkg := path.Split(pkgref)
+		source, pkg := splitPkg(pkgref)
+		checkCLang := false
 		switch pkg {
 		case "cephfs", "rados", "rbd":
+			checkCLang = true
+			if verbose {
+				logger.Printf("Processing package (with C): %s\n", pkg)
+			}
+		case "cephfs/admin", "rbd/admin", "rgw/admin":
 			if verbose {
 				logger.Printf("Processing package: %s\n", pkg)
 			}
@@ -109,8 +121,10 @@ func main() {
 			source = "."
 		}
 		ii := implements.NewInspector()
-		if err := implements.CephCFunctions(pkg, ii); err != nil {
-			abort(err.Error())
+		if checkCLang {
+			if err := implements.CephCFunctions(pkg, ii); err != nil {
+				abort(err.Error())
+			}
 		}
 		if err := implements.CephGoFunctions(source, pkg, ii); err != nil {
 			abort(err.Error())
