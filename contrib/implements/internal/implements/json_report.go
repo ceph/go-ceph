@@ -56,6 +56,7 @@ type jrPackage struct {
 	Missing    []jrFunction `json:"missing,omitempty"`
 	Deprecated []gFunc      `json:"deprecated_api,omitempty"`
 	Preview    []gFunc      `json:"preview_api,omitempty"`
+	Stable     []gFunc      `json:"stable_api,omitempty"`
 }
 
 type jrOut map[string]jrPackage
@@ -119,6 +120,10 @@ func collectFuncs(jp *jrPackage, ii *Inspector) {
 	}
 	for _, gf := range ii.preview {
 		jp.Preview = append(jp.Preview,
+			gFunc{Name: gf.fullName, Comment: gf.comment})
+	}
+	for _, gf := range ii.stable {
+		jp.Stable = append(jp.Stable,
 			gFunc{Name: gf.fullName, Comment: gf.comment})
 	}
 }
