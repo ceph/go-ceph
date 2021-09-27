@@ -1,0 +1,1677 @@
+{
+  "cephfs": {
+    "stable_api": [
+      {
+        "name": "Version",
+        "comment": "Version returns the major, minor, and patch level of the libcephfs library.\n"
+      },
+      {
+        "name": "CreateMount",
+        "comment": "CreateMount creates a mount handle for interacting with Ceph.\n"
+      },
+      {
+        "name": "CreateMountWithId",
+        "comment": "CreateMountWithId creates a mount handle for interacting with Ceph.\nThe caller can specify a unique id that will identify this client.\n"
+      },
+      {
+        "name": "CreateFromRados",
+        "comment": "CreateFromRados creates a mount handle using an existing rados cluster\nconnection.\n\nImplements:\n int ceph_create_from_rados(struct ceph_mount_info **cmount, rados_t cluster);\n"
+      },
+      {
+        "name": "MountInfo.ReadDefaultConfigFile",
+        "comment": "ReadDefaultConfigFile loads the ceph configuration from the default config file.\n\nImplements:\n int ceph_conf_read_file(struct ceph_mount_info *cmount, const char *path_list);\n"
+      },
+      {
+        "name": "MountInfo.ReadConfigFile",
+        "comment": "ReadConfigFile loads the ceph configuration from the specified config file.\n\nImplements:\n int ceph_conf_read_file(struct ceph_mount_info *cmount, const char *path_list);\n"
+      },
+      {
+        "name": "MountInfo.ParseConfigArgv",
+        "comment": "ParseConfigArgv configures the mount using a unix style command line\nargument vector.\n\nImplements:\n int ceph_conf_parse_argv(struct ceph_mount_info *cmount, int argc, const char **argv);\n"
+      },
+      {
+        "name": "MountInfo.ParseDefaultConfigEnv",
+        "comment": "ParseDefaultConfigEnv configures the mount from the default Ceph\nenvironment variable CEPH_ARGS.\n\nImplements:\n int ceph_conf_parse_env(struct ceph_mount_info *cmount, const char *var);\n"
+      },
+      {
+        "name": "MountInfo.SetConfigOption",
+        "comment": "SetConfigOption sets the value of the configuration option identified by\nthe given name.\n\nImplements:\n int ceph_conf_set(struct ceph_mount_info *cmount, const char *option, const char *value);\n"
+      },
+      {
+        "name": "MountInfo.GetConfigOption",
+        "comment": "GetConfigOption returns the value of the Ceph configuration option\nidentified by the given name.\n\nImplements:\n int ceph_conf_get(struct ceph_mount_info *cmount, const char *option, char *buf, size_t len);\n"
+      },
+      {
+        "name": "MountInfo.Init",
+        "comment": "Init the file system client without actually mounting the file system.\n\nImplements:\n int ceph_init(struct ceph_mount_info *cmount);\n"
+      },
+      {
+        "name": "MountInfo.Mount",
+        "comment": "Mount the file system, establishing a connection capable of I/O.\n\nImplements:\n int ceph_mount(struct ceph_mount_info *cmount, const char *root);\n"
+      },
+      {
+        "name": "MountInfo.MountWithRoot",
+        "comment": "MountWithRoot mounts the file system using the path provided for the root of\nthe mount. This establishes a connection capable of I/O.\n\nImplements:\n int ceph_mount(struct ceph_mount_info *cmount, const char *root);\n"
+      },
+      {
+        "name": "MountInfo.Unmount",
+        "comment": "Unmount the file system.\n\nImplements:\n int ceph_unmount(struct ceph_mount_info *cmount);\n"
+      },
+      {
+        "name": "MountInfo.Release",
+        "comment": "Release destroys the mount handle.\n\nImplements:\n int ceph_release(struct ceph_mount_info *cmount);\n"
+      },
+      {
+        "name": "MountInfo.SyncFs",
+        "comment": "SyncFs synchronizes all filesystem data to persistent media.\n"
+      },
+      {
+        "name": "MountInfo.IsMounted",
+        "comment": "IsMounted checks mount status.\n"
+      },
+      {
+        "name": "MountInfo.MdsCommand",
+        "comment": "MdsCommand sends commands to the specified MDS.\n"
+      },
+      {
+        "name": "MountInfo.MdsCommandWithInputBuffer",
+        "comment": "MdsCommandWithInputBuffer sends commands to the specified MDS, with an input\nbuffer.\n"
+      },
+      {
+        "name": "MountInfo.GetFsCid",
+        "comment": "GetFsCid returns the cluster ID for a mounted ceph file system.\nIf the object does not refer to a mounted file system, an error\nwill be returned.\n\nNote:\n Only supported in Ceph Nautilus and newer.\n\nImplements:\n int64_t ceph_get_fs_cid(struct ceph_mount_info *cmount);\n"
+      },
+      {
+        "name": "MountInfo.OpenDir",
+        "comment": "OpenDir returns a new Directory handle open for I/O.\n\nImplements:\n int ceph_opendir(struct ceph_mount_info *cmount, const char *name, struct ceph_dir_result **dirpp);\n"
+      },
+      {
+        "name": "Directory.Close",
+        "comment": "Close the open directory handle.\n\nImplements:\n int ceph_closedir(struct ceph_mount_info *cmount, struct ceph_dir_result *dirp);\n"
+      },
+      {
+        "name": "DirEntry.Name",
+        "comment": "Name returns the directory entry's name.\n"
+      },
+      {
+        "name": "DirEntry.Inode",
+        "comment": "Inode returns the directory entry's inode number.\n"
+      },
+      {
+        "name": "DirEntry.DType",
+        "comment": "DType returns the Directory-entry's Type, indicating if it\nis a regular file, directory, etc.\nDType may be unknown and thus require an additional call\n(stat for example) if Unknown.\n"
+      },
+      {
+        "name": "DirEntryPlus.Statx",
+        "comment": "Statx returns cached stat metadata for the directory entry.\nThis call does not incur an actual file system stat.\n"
+      },
+      {
+        "name": "Directory.ReadDir",
+        "comment": "ReadDir reads a single directory entry from the open Directory.\nA nil DirEntry pointer will be returned when the Directory stream has been\nexhausted.\n\nImplements:\n int ceph_readdir_r(struct ceph_mount_info *cmount, struct ceph_dir_result *dirp, struct dirent *de);\n"
+      },
+      {
+        "name": "Directory.ReadDirPlus",
+        "comment": "ReadDirPlus reads a single directory entry and stat information from the\nopen Directory.\nA nil DirEntryPlus pointer will be returned when the Directory stream has\nbeen exhausted.\nSee Statx for a description of the wants and flags parameters.\n\nImplements:\n int ceph_readdirplus_r(struct ceph_mount_info *cmount, struct ceph_dir_result *dirp, struct dirent *de,\n                        struct ceph_statx *stx, unsigned want, unsigned flags, struct Inode **out);\n"
+      },
+      {
+        "name": "Directory.RewindDir",
+        "comment": "RewindDir sets the directory stream to the beginning of the directory.\n\nImplements:\n void ceph_rewinddir(struct ceph_mount_info *cmount, struct ceph_dir_result *dirp);\n"
+      },
+      {
+        "name": "cephFSError.Error",
+        "comment": "Error returns the error string for the cephFSError type.\n"
+      },
+      {
+        "name": "cephFSError.ErrorCode"
+      },
+      {
+        "name": "MountInfo.Open",
+        "comment": "Open a file at the given path. The flags are the same os flags as\na local open call. Mode is the same mode bits as a local open call.\n\nImplements:\n int ceph_open(struct ceph_mount_info *cmount, const char *path, int flags, mode_t mode);\n"
+      },
+      {
+        "name": "File.Close",
+        "comment": "Close the file.\n\nImplements:\n int ceph_close(struct ceph_mount_info *cmount, int fd);\n"
+      },
+      {
+        "name": "File.Read",
+        "comment": "Read data from file. Up to len(buf) bytes will be read from the file.\nThe number of bytes read will be returned.\nWhen nothing is left to read from the file, Read returns, 0, io.EOF.\n"
+      },
+      {
+        "name": "File.ReadAt",
+        "comment": "ReadAt will read data from the file starting at the given offset.\nUp to len(buf) bytes will be read from the file.\nThe number of bytes read will be returned.\nWhen nothing is left to read from the file, ReadAt returns, 0, io.EOF.\n"
+      },
+      {
+        "name": "File.Preadv",
+        "comment": "Preadv will read data from the file, starting at the given offset,\ninto the byte-slice data buffers sequentially.\nThe number of bytes read will be returned.\nWhen nothing is left to read from the file the return values will be:\n0, io.EOF.\n\nImplements:\n int ceph_preadv(struct ceph_mount_info *cmount, int fd, const struct iovec *iov, int iovcnt,\n                 int64_t offset);\n"
+      },
+      {
+        "name": "File.Write",
+        "comment": "Write data from buf to the file.\nThe number of bytes written is returned.\n"
+      },
+      {
+        "name": "File.WriteAt",
+        "comment": "WriteAt writes data from buf to the file at the specified offset.\nThe number of bytes written is returned.\n"
+      },
+      {
+        "name": "File.Pwritev",
+        "comment": "Pwritev writes data from the slice of byte-slice buffers to the file at the\nspecified offset.\nThe number of bytes written is returned.\n\nImplements:\n int ceph_pwritev(struct ceph_mount_info *cmount, int fd, const struct iovec *iov, int iovcnt,\n                  int64_t offset);\n"
+      },
+      {
+        "name": "File.Seek",
+        "comment": "Seek will reposition the file stream based on the given offset.\n\nImplements:\n int64_t ceph_lseek(struct ceph_mount_info *cmount, int fd, int64_t offset, int whence);\n"
+      },
+      {
+        "name": "File.Fchmod",
+        "comment": "Fchmod changes the mode bits (permissions) of a file.\n\nImplements:\n int ceph_fchmod(struct ceph_mount_info *cmount, int fd, mode_t mode);\n"
+      },
+      {
+        "name": "File.Fchown",
+        "comment": "Fchown changes the ownership of a file.\n\nImplements:\n int ceph_fchown(struct ceph_mount_info *cmount, int fd, int uid, int gid);\n"
+      },
+      {
+        "name": "File.Fstatx",
+        "comment": "Fstatx returns information about an open file.\n\nImplements:\n int ceph_fstatx(struct ceph_mount_info *cmount, int fd, struct ceph_statx *stx,\n                 unsigned int want, unsigned int flags);\n"
+      },
+      {
+        "name": "File.Fallocate",
+        "comment": "Fallocate preallocates or releases disk space for the file for the\ngiven byte range, the flags determine the operation to be performed\non the given range.\n\nImplements:\n\tint ceph_fallocate(struct ceph_mount_info *cmount, int fd, int mode,\n\t\t\t\t\t\t\t\t  int64_t offset, int64_t length);\n"
+      },
+      {
+        "name": "File.Flock",
+        "comment": "Flock applies or removes an advisory lock on an open file.\nParam owner is the user-supplied identifier for the owner of the\nlock, must be an arbitrary integer.\n\nImplements:\n int ceph_flock(struct ceph_mount_info *cmount, int fd, int operation, uint64_t owner);\n"
+      },
+      {
+        "name": "File.Fsync",
+        "comment": "Fsync ensures the file content that may be cached is committed to stable\nstorage.\nPass SyncAll to have this call behave like standard fsync and synchronize\nall data and metadata.\nPass SyncDataOnly to have this call behave more like fdatasync (on linux).\n\nImplements:\n int ceph_fsync(struct ceph_mount_info *cmount, int fd, int syncdataonly);\n"
+      },
+      {
+        "name": "File.Sync",
+        "comment": "Sync ensures the file content that may be cached is committed to stable\nstorage.\nSync behaves like Go's os package File.Sync function.\n"
+      },
+      {
+        "name": "File.Truncate",
+        "comment": "Truncate sets the size of the open file.\nNOTE: In some versions of ceph a bug exists where calling ftruncate on a\nfile open for read-only is permitted. The go-ceph wrapper does no additional\nchecking and will inherit the issue on affected versions of ceph.  Please\nrefer to the following issue for details:\nhttps://tracker.ceph.com/issues/48202\n\nImplements:\n int ceph_ftruncate(struct ceph_mount_info *cmount, int fd, int64_t size);\n"
+      },
+      {
+        "name": "File.SetXattr",
+        "comment": "SetXattr sets an extended attribute on the open file.\n\nNOTE: Attempting to set an xattr value with an empty value may cause the\nxattr to be unset on some older versions of ceph.\nPlease refer to https://tracker.ceph.com/issues/46084\n\nImplements:\n int ceph_fsetxattr(struct ceph_mount_info *cmount, int fd, const char *name,\n                    const void *value, size_t size, int flags);\n"
+      },
+      {
+        "name": "File.GetXattr",
+        "comment": "GetXattr gets an extended attribute from the open file.\n\nImplements:\n int ceph_fgetxattr(struct ceph_mount_info *cmount, int fd, const char *name,\n                    void *value, size_t size);\n"
+      },
+      {
+        "name": "File.ListXattr",
+        "comment": "ListXattr returns a slice containing strings for the name of each xattr set\non the file.\n\nImplements:\n int ceph_flistxattr(struct ceph_mount_info *cmount, int fd, char *list, size_t size);\n"
+      },
+      {
+        "name": "File.RemoveXattr",
+        "comment": "RemoveXattr removes the named xattr from the open file.\n\nImplements:\n int ceph_fremovexattr(struct ceph_mount_info *cmount, int fd, const char *name);\n"
+      },
+      {
+        "name": "MountInfo.SetMountPerms",
+        "comment": "SetMountPerms applies the given UserPerm to the mount object, which it will\nthen use to define the connection's ownership credentials.\nThis function must be called after Init but before Mount.\n\nImplements:\n int ceph_mount_perms_set(struct ceph_mount_info *cmount, UserPerm *perm);\n"
+      },
+      {
+        "name": "MountInfo.CurrentDir",
+        "comment": "CurrentDir gets the current working directory.\n"
+      },
+      {
+        "name": "MountInfo.ChangeDir",
+        "comment": "ChangeDir changes the current working directory.\n"
+      },
+      {
+        "name": "MountInfo.MakeDir",
+        "comment": "MakeDir creates a directory.\n"
+      },
+      {
+        "name": "MountInfo.RemoveDir",
+        "comment": "RemoveDir removes a directory.\n"
+      },
+      {
+        "name": "MountInfo.Unlink",
+        "comment": "Unlink removes a file.\n\nImplements:\n int ceph_unlink(struct ceph_mount_info *cmount, const char *path);\n"
+      },
+      {
+        "name": "MountInfo.Link",
+        "comment": "Link creates a new link to an existing file.\n\nImplements:\n int ceph_link (struct ceph_mount_info *cmount, const char *existing, const char *newname);\n"
+      },
+      {
+        "name": "MountInfo.Symlink",
+        "comment": "Symlink creates a symbolic link to an existing path.\n\nImplements:\n int ceph_symlink(struct ceph_mount_info *cmount, const char *existing, const char *newname);\n"
+      },
+      {
+        "name": "MountInfo.Readlink",
+        "comment": "Readlink returns the value of a symbolic link.\n\nImplements:\n int ceph_readlink(struct ceph_mount_info *cmount, const char *path, char *buf, int64_t size);\n"
+      },
+      {
+        "name": "MountInfo.Statx",
+        "comment": "Statx returns information about a file/directory.\n\nImplements:\n int ceph_statx(struct ceph_mount_info *cmount, const char *path, struct ceph_statx *stx,\n                unsigned int want, unsigned int flags);\n"
+      },
+      {
+        "name": "MountInfo.Rename",
+        "comment": "Rename a file or directory.\n\nImplements:\n int ceph_rename(struct ceph_mount_info *cmount, const char *from, const char *to);\n"
+      },
+      {
+        "name": "MountInfo.Truncate",
+        "comment": "Truncate sets the size of the specified file.\n\nImplements:\n int ceph_truncate(struct ceph_mount_info *cmount, const char *path, int64_t size);\n"
+      },
+      {
+        "name": "MountInfo.SetXattr",
+        "comment": "SetXattr sets an extended attribute on the file at the supplied path.\n\nNOTE: Attempting to set an xattr value with an empty value may cause\nthe xattr to be unset. Please refer to https://tracker.ceph.com/issues/46084\n\nImplements:\n int ceph_setxattr(struct ceph_mount_info *cmount, const char *path, const char *name,\n                   const void *value, size_t size, int flags);\n"
+      },
+      {
+        "name": "MountInfo.GetXattr",
+        "comment": "GetXattr gets an extended attribute from the file at the supplied path.\n\nImplements:\n int ceph_getxattr(struct ceph_mount_info *cmount, const char *path, const char *name,\n                   void *value, size_t size);\n"
+      },
+      {
+        "name": "MountInfo.ListXattr",
+        "comment": "ListXattr returns a slice containing strings for the name of each xattr set\non the file at the supplied path.\n\nImplements:\n int ceph_listxattr(struct ceph_mount_info *cmount, const char *path, char *list, size_t size);\n"
+      },
+      {
+        "name": "MountInfo.RemoveXattr",
+        "comment": "RemoveXattr removes the named xattr from the open file.\n\nImplements:\n int ceph_removexattr(struct ceph_mount_info *cmount, const char *path, const char *name);\n"
+      },
+      {
+        "name": "MountInfo.LsetXattr",
+        "comment": "LsetXattr sets an extended attribute on the file at the supplied path.\n\nNOTE: Attempting to set an xattr value with an empty value may cause\nthe xattr to be unset. Please refer to https://tracker.ceph.com/issues/46084\n\nImplements:\n int ceph_lsetxattr(struct ceph_mount_info *cmount, const char *path, const char *name,\n                   const void *value, size_t size, int flags);\n"
+      },
+      {
+        "name": "MountInfo.LgetXattr",
+        "comment": "LgetXattr gets an extended attribute from the file at the supplied path.\n\nImplements:\n int ceph_lgetxattr(struct ceph_mount_info *cmount, const char *path, const char *name,\n                   void *value, size_t size);\n"
+      },
+      {
+        "name": "MountInfo.LlistXattr",
+        "comment": "LlistXattr returns a slice containing strings for the name of each xattr set\non the file at the supplied path.\n\nImplements:\n int ceph_llistxattr(struct ceph_mount_info *cmount, const char *path, char *list, size_t size);\n"
+      },
+      {
+        "name": "MountInfo.LremoveXattr",
+        "comment": "LremoveXattr removes the named xattr from the open file.\n\nImplements:\n int ceph_lremovexattr(struct ceph_mount_info *cmount, const char *path, const char *name);\n"
+      },
+      {
+        "name": "MountInfo.Chmod",
+        "comment": "Chmod changes the mode bits (permissions) of a file/directory.\n"
+      },
+      {
+        "name": "MountInfo.Chown",
+        "comment": "Chown changes the ownership of a file/directory.\n"
+      },
+      {
+        "name": "MountInfo.Lchown",
+        "comment": "Lchown changes the ownership of a file/directory/etc without following symbolic links\n"
+      },
+      {
+        "name": "MountInfo.StatFS",
+        "comment": "StatFS returns file system wide statistics.\nNOTE: Many of the statistics fields reported by ceph are not filled in with\nuseful values.\n\nImplements:\n int ceph_statfs(struct ceph_mount_info *cmount, const char *path, struct statvfs *stbuf);\n"
+      },
+      {
+        "name": "NewUserPerm",
+        "comment": "NewUserPerm creates a UserPerm pointer and the underlying ceph resources.\n\nImplements:\n UserPerm *ceph_userperm_new(uid_t uid, gid_t gid, int ngids, gid_t *gidlist);\n"
+      },
+      {
+        "name": "UserPerm.Destroy",
+        "comment": "Destroy will explicitly free ceph resources associated with the UserPerm.\n\nImplements:\n void ceph_userperm_destroy(UserPerm *perm);\n"
+      }
+    ]
+  },
+  "cephfs/admin": {
+    "stable_api": [
+      {
+        "name": "quotaSizePlaceholder.UnmarshalJSON"
+      },
+      {
+        "name": "FSAdmin.CloneSubVolumeSnapshot",
+        "comment": "CloneSubVolumeSnapshot clones the specified snapshot from the subvolume.\nThe group, subvolume, and snapshot parameters specify the source for the\nclone, and only the source.  Additional properties of the clone, such as the\nsubvolume group that the clone will be created in and the pool layout may be\nspecified using the clone options parameter.\n\nSimilar To:\n ceph fs subvolume snapshot clone <volume> --group_name=<group> <subvolume> <snapshot> <name> [...]\n"
+      },
+      {
+        "name": "FSAdmin.CloneStatus",
+        "comment": "CloneStatus returns data reporting the status of a subvolume clone.\n\nSimilar To:\n ceph fs clone status <volume> --group_name=<group> <clone>\n"
+      },
+      {
+        "name": "FSAdmin.CancelClone",
+        "comment": "CancelClone stops the background processes that populate a clone.\nCancelClone does not delete the clone.\n\nSimilar To:\n ceph fs clone cancel <volume> --group_name=<group> <clone>\n"
+      },
+      {
+        "name": "New",
+        "comment": "New creates an FSAdmin automatically based on the default ceph\nconfiguration file. If more customization is needed, create a\n*rados.Conn as you see fit and use NewFromConn to use that\nconnection with these administrative functions.\n"
+      },
+      {
+        "name": "NewFromConn",
+        "comment": "NewFromConn creates an FSAdmin management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface. This may be useful\nif the calling layer needs to inject additional logging, error handling,\nfault injection, etc.\n"
+      },
+      {
+        "name": "FSAdmin.EnableModule",
+        "comment": "EnableModule will enable the specified manager module.\n\nSimilar To:\n ceph mgr module enable <module> [--force]\n"
+      },
+      {
+        "name": "FSAdmin.DisableModule",
+        "comment": "DisableModule will disable the specified manager module.\n\nSimilar To:\n ceph mgr module disable <module>\n"
+      },
+      {
+        "name": "FSAdmin.EnableMirroringModule",
+        "comment": "EnableMirroringModule will enable the mirroring module for cephfs.\n\nSimilar To:\n ceph mgr module enable mirroring [--force]\n"
+      },
+      {
+        "name": "FSAdmin.DisableMirroringModule",
+        "comment": "DisableMirroringModule will disable the mirroring module for cephfs.\n\nSimilar To:\n ceph mgr module disable mirroring\n"
+      },
+      {
+        "name": "FSAdmin.SnapshotMirror",
+        "comment": "SnapshotMirror returns a new SnapshotMirrorAdmin to be used for the\nadministration of snapshot mirroring features.\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.Enable",
+        "comment": "Enable snapshot mirroring for the given file system.\n\nSimilar To:\n ceph fs snapshot mirror enable <fs_name>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.Disable",
+        "comment": "Disable snapshot mirroring for the given file system.\n\nSimilar To:\n ceph fs snapshot mirror disable <fs_name>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.Add",
+        "comment": "Add a path in the file system to be mirrored.\n\nSimilar To:\n ceph fs snapshot mirror add <fs_name> <path>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.Remove",
+        "comment": "Remove a path in the file system from mirroring.\n\nSimilar To:\n ceph fs snapshot mirror remove <fs_name> <path>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.CreatePeerBootstrapToken",
+        "comment": "CreatePeerBootstrapToken returns a token that can be used to create\na peering association between this site an another site.\n\nSimilar To:\n ceph fs snapshot mirror peer_bootstrap create <fs_name> <client_entity> <site-name>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.ImportPeerBoostrapToken",
+        "comment": "ImportPeerBoostrapToken creates an association between another site, one\nthat has provided a token, with the current site.\n\nSimilar To:\n ceph fs snapshot mirror peer_bootstrap import <fs_name> <token>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.DaemonStatus",
+        "comment": "DaemonStatus returns information on the status of cephfs mirroring daemons\nassociated with the given file system.\n\nSimilar To:\n ceph fs snapshot mirror daemon status <fs_name>\n"
+      },
+      {
+        "name": "SnapshotMirrorAdmin.PeerList",
+        "comment": "PeerList returns information about peers associated with the given file system.\n\nSimilar To:\n ceph fs snapshot mirror peer_list <fs_name>\n"
+      },
+      {
+        "name": "FSAdmin.CreateSubVolume",
+        "comment": "CreateSubVolume sends a request to create a CephFS subvolume in a volume,\nbelonging to an optional subvolume group.\n\nSimilar To:\n ceph fs subvolume create <volume> --group-name=<group> <name> ...\n"
+      },
+      {
+        "name": "FSAdmin.ListSubVolumes",
+        "comment": "ListSubVolumes returns a list of subvolumes belonging to the volume and\noptional subvolume group.\n\nSimilar To:\n ceph fs subvolume ls <volume> --group-name=<group>\n"
+      },
+      {
+        "name": "FSAdmin.RemoveSubVolume",
+        "comment": "RemoveSubVolume will delete a CephFS subvolume in a volume and optional\nsubvolume group.\n\nSimilar To:\n ceph fs subvolume rm <volume> --group-name=<group> <name>\n"
+      },
+      {
+        "name": "FSAdmin.ForceRemoveSubVolume",
+        "comment": "ForceRemoveSubVolume will delete a CephFS subvolume in a volume and optional\nsubvolume group.\n\nSimilar To:\n ceph fs subvolume rm <volume> --group-name=<group> <name> --force\n"
+      },
+      {
+        "name": "FSAdmin.RemoveSubVolumeWithFlags",
+        "comment": "RemoveSubVolumeWithFlags will delete a CephFS subvolume in a volume and\noptional subvolume group. This function accepts a SubVolRmFlags type that\ncan be used to specify flags that modify the operations behavior.\nEquivalent to RemoveSubVolume with no flags set.\nEquivalent to ForceRemoveSubVolume if only the \"Force\" flag is set.\n\nSimilar To:\n ceph fs subvolume rm <volume> --group-name=<group> <name> [...flags...]\n"
+      },
+      {
+        "name": "FSAdmin.ResizeSubVolume",
+        "comment": "ResizeSubVolume will resize a CephFS subvolume. The newSize value may be a\nByteCount or the special Infinite constant. Setting noShrink to true will\nprevent reducing the size of the volume below the current used size.\n\nSimilar To:\n ceph fs subvolume resize <volume> --group-name=<group> <name> ...\n"
+      },
+      {
+        "name": "FSAdmin.SubVolumePath",
+        "comment": "SubVolumePath returns the path to the subvolume from the root of the file system.\n\nSimilar To:\n ceph fs subvolume getpath <volume> --group-name=<group> <name>\n"
+      },
+      {
+        "name": "FSAdmin.SubVolumeInfo",
+        "comment": "SubVolumeInfo returns information about the specified subvolume.\n\nSimilar To:\n ceph fs subvolume info <volume> --group-name=<group> <name>\n"
+      },
+      {
+        "name": "FSAdmin.CreateSubVolumeSnapshot",
+        "comment": "CreateSubVolumeSnapshot creates a new snapshot from the source subvolume.\n\nSimilar To:\n ceph fs subvolume snapshot create <volume> --group-name=<group> <source> <name>\n"
+      },
+      {
+        "name": "FSAdmin.RemoveSubVolumeSnapshot",
+        "comment": "RemoveSubVolumeSnapshot removes the specified snapshot from the subvolume.\n\nSimilar To:\n ceph fs subvolume snapshot rm <volume> --group-name=<group> <subvolume> <name>\n"
+      },
+      {
+        "name": "FSAdmin.ForceRemoveSubVolumeSnapshot",
+        "comment": "ForceRemoveSubVolumeSnapshot removes the specified snapshot from the subvolume.\n\nSimilar To:\n ceph fs subvolume snapshot rm <volume> --group-name=<group> <subvolume> <name> --force\n"
+      },
+      {
+        "name": "FSAdmin.ListSubVolumeSnapshots",
+        "comment": "ListSubVolumeSnapshots returns a listing of snapshots for a given subvolume.\n\nSimilar To:\n ceph fs subvolume snapshot ls <volume> --group-name=<group> <name>\n"
+      },
+      {
+        "name": "FSAdmin.SubVolumeSnapshotInfo",
+        "comment": "SubVolumeSnapshotInfo returns information about the specified subvolume snapshot.\n\nSimilar To:\n ceph fs subvolume snapshot info <volume> --group-name=<group> <subvolume> <name>\n"
+      },
+      {
+        "name": "FSAdmin.ProtectSubVolumeSnapshot",
+        "comment": "ProtectSubVolumeSnapshot protects the specified snapshot.\n\nSimilar To:\n ceph fs subvolume snapshot protect <volume> --group-name=<group> <subvolume> <name>\n"
+      },
+      {
+        "name": "FSAdmin.UnprotectSubVolumeSnapshot",
+        "comment": "UnprotectSubVolumeSnapshot removes protection from the specified snapshot.\n\nSimilar To:\n ceph fs subvolume snapshot unprotect <volume> --group-name=<group> <subvolume> <name>\n"
+      },
+      {
+        "name": "FSAdmin.CreateSubVolumeGroup",
+        "comment": "CreateSubVolumeGroup sends a request to create a subvolume group in a volume.\n\nSimilar To:\n ceph fs subvolumegroup create <volume> <group_name>  ...\n"
+      },
+      {
+        "name": "FSAdmin.ListSubVolumeGroups",
+        "comment": "ListSubVolumeGroups returns a list of subvolume groups belonging to the\nspecified volume.\n\nSimilar To:\n ceph fs subvolumegroup ls cephfs <volume>\n"
+      },
+      {
+        "name": "FSAdmin.RemoveSubVolumeGroup",
+        "comment": "RemoveSubVolumeGroup will delete a subvolume group in a volume.\nSimilar To:\n ceph fs subvolumegroup rm <volume> <group_name>\n"
+      },
+      {
+        "name": "FSAdmin.ForceRemoveSubVolumeGroup",
+        "comment": "ForceRemoveSubVolumeGroup will delete a subvolume group in a volume.\nSimilar To:\n ceph fs subvolumegroup rm <volume> <group_name> --force\n"
+      },
+      {
+        "name": "FSAdmin.SubVolumeGroupPath",
+        "comment": "SubVolumeGroupPath returns the path to the subvolume from the root of the\nfile system.\n\nSimilar To:\n ceph fs subvolumegroup getpath <volume> <group_name>\n"
+      },
+      {
+        "name": "TimeStamp.String",
+        "comment": "String returns a string representing the date+time as presented\nby ceph.\n"
+      },
+      {
+        "name": "TimeStamp.UnmarshalJSON",
+        "comment": "UnmarshalJSON implements the json Unmarshaler interface.\n"
+      },
+      {
+        "name": "FSAdmin.ListVolumes",
+        "comment": "ListVolumes return a list of volumes in this Ceph cluster.\n\nSimilar To:\n ceph fs volume ls\n"
+      },
+      {
+        "name": "FSAdmin.ListFileSystems",
+        "comment": "ListFileSystems lists file systems along with the pools occupied by those\nfile systems.\n\nSimilar To:\n ceph fs ls\n"
+      },
+      {
+        "name": "FSAdmin.EnumerateVolumes",
+        "comment": "EnumerateVolumes returns a list of volume-name volume-id pairs.\n"
+      },
+      {
+        "name": "FSAdmin.VolumeStatus",
+        "comment": "VolumeStatus returns a VolumeStatus object for the given volume name.\n\nSimilar To:\n ceph fs status cephfs <name>\n"
+      }
+    ]
+  },
+  "rados": {
+    "stable_api": [
+      {
+        "name": "Conn.MonCommand",
+        "comment": "MonCommand sends a command to one of the monitors\n"
+      },
+      {
+        "name": "Conn.MonCommandWithInputBuffer",
+        "comment": "MonCommandWithInputBuffer sends a command to one of the monitors, with an input buffer\n"
+      },
+      {
+        "name": "Conn.PGCommand",
+        "comment": "PGCommand sends a command to one of the PGs\n\nImplements:\n int rados_pg_command(rados_t cluster, const char *pgstr,\n                      const char **cmd, size_t cmdlen,\n                      const char *inbuf, size_t inbuflen,\n                      char **outbuf, size_t *outbuflen,\n                      char **outs, size_t *outslen);\n"
+      },
+      {
+        "name": "Conn.PGCommandWithInputBuffer",
+        "comment": "PGCommandWithInputBuffer sends a command to one of the PGs, with an input buffer\n\nImplements:\n int rados_pg_command(rados_t cluster, const char *pgstr,\n                      const char **cmd, size_t cmdlen,\n                      const char *inbuf, size_t inbuflen,\n                      char **outbuf, size_t *outbuflen,\n                      char **outs, size_t *outslen);\n"
+      },
+      {
+        "name": "Conn.MgrCommand",
+        "comment": "MgrCommand sends a command to a ceph-mgr.\n"
+      },
+      {
+        "name": "Conn.MgrCommandWithInputBuffer",
+        "comment": "MgrCommandWithInputBuffer sends a command, with an input buffer, to a ceph-mgr.\n\nImplements:\n int rados_mgr_command(rados_t cluster, const char **cmd,\n                        size_t cmdlen, const char *inbuf,\n                        size_t inbuflen, char **outbuf,\n                        size_t *outbuflen, char **outs,\n                         size_t *outslen);\n"
+      },
+      {
+        "name": "Conn.OsdCommand",
+        "comment": "OsdCommand sends a command to the specified ceph OSD.\n"
+      },
+      {
+        "name": "Conn.OsdCommandWithInputBuffer",
+        "comment": "OsdCommandWithInputBuffer sends a command, with an input buffer, to the\nspecified ceph OSD.\n\nImplements:\n int rados_osd_command(rados_t cluster, int osdid,\n                                      const char **cmd, size_t cmdlen,\n                                      const char *inbuf, size_t inbuflen,\n                                      char **outbuf, size_t *outbuflen,\n                                      char **outs, size_t *outslen);\n"
+      },
+      {
+        "name": "Conn.MonCommandTarget",
+        "comment": "MonCommandTarget sends a command to a specified monitor.\n"
+      },
+      {
+        "name": "Conn.MonCommandTargetWithInputBuffer",
+        "comment": "MonCommandTargetWithInputBuffer sends a command, with an input buffer, to a specified monitor.\n\nImplements:\n int rados_mon_command_target(rados_t cluster, const char *name,\n                              const char **cmd, size_t cmdlen,\n                              const char *inbuf, size_t inbuflen,\n                              char **outbuf, size_t *outbuflen,\n                              char **outs, size_t *outslen);\n"
+      },
+      {
+        "name": "Conn.Cluster",
+        "comment": "Cluster returns the underlying RADOS cluster reference for this Conn.\n"
+      },
+      {
+        "name": "Conn.PingMonitor",
+        "comment": "PingMonitor sends a ping to a monitor and returns the reply.\n"
+      },
+      {
+        "name": "Conn.Connect",
+        "comment": "Connect establishes a connection to a RADOS cluster. It returns an error,\nif any.\n"
+      },
+      {
+        "name": "Conn.Shutdown",
+        "comment": "Shutdown disconnects from the cluster.\n"
+      },
+      {
+        "name": "Conn.ReadConfigFile",
+        "comment": "ReadConfigFile configures the connection using a Ceph configuration file.\n"
+      },
+      {
+        "name": "Conn.ReadDefaultConfigFile",
+        "comment": "ReadDefaultConfigFile configures the connection using a Ceph configuration\nfile located at default locations.\n"
+      },
+      {
+        "name": "Conn.OpenIOContext",
+        "comment": "OpenIOContext creates and returns a new IOContext for the given pool.\n\nImplements:\n int rados_ioctx_create(rados_t cluster, const char *pool_name,\n                        rados_ioctx_t *ioctx);\n"
+      },
+      {
+        "name": "Conn.ListPools",
+        "comment": "ListPools returns the names of all existing pools.\n"
+      },
+      {
+        "name": "Conn.SetConfigOption",
+        "comment": "SetConfigOption sets the value of the configuration option identified by\nthe given name.\n"
+      },
+      {
+        "name": "Conn.GetConfigOption",
+        "comment": "GetConfigOption returns the value of the Ceph configuration option\nidentified by the given name.\n"
+      },
+      {
+        "name": "Conn.WaitForLatestOSDMap",
+        "comment": "WaitForLatestOSDMap blocks the caller until the latest OSD map has been\nretrieved.\n"
+      },
+      {
+        "name": "Conn.GetClusterStats",
+        "comment": "GetClusterStats returns statistics about the cluster associated with the\nconnection.\n"
+      },
+      {
+        "name": "Conn.ParseConfigArgv",
+        "comment": "ParseConfigArgv configures the connection using a unix style command line\nargument vector.\n\nImplements:\n int rados_conf_parse_argv(rados_t cluster, int argc,\n                           const char **argv);\n"
+      },
+      {
+        "name": "Conn.ParseCmdLineArgs",
+        "comment": "ParseCmdLineArgs configures the connection from command line arguments.\n\nThis function passes a placeholder value to Ceph as argv[0], see\nParseConfigArgv for a version of this function that allows the caller to\nspecify argv[0].\n"
+      },
+      {
+        "name": "Conn.ParseDefaultConfigEnv",
+        "comment": "ParseDefaultConfigEnv configures the connection from the default Ceph\nenvironment variable CEPH_ARGS.\n"
+      },
+      {
+        "name": "Conn.GetFSID",
+        "comment": "GetFSID returns the fsid of the cluster as a hexadecimal string. The fsid\nis a unique identifier of an entire Ceph cluster.\n"
+      },
+      {
+        "name": "Conn.GetInstanceID",
+        "comment": "GetInstanceID returns a globally unique identifier for the cluster\nconnection instance.\n"
+      },
+      {
+        "name": "Conn.MakePool",
+        "comment": "MakePool creates a new pool with default settings.\n"
+      },
+      {
+        "name": "Conn.DeletePool",
+        "comment": "DeletePool deletes a pool and all the data inside the pool.\n"
+      },
+      {
+        "name": "Conn.GetPoolByName",
+        "comment": "GetPoolByName returns the ID of the pool with a given name.\n"
+      },
+      {
+        "name": "Conn.GetPoolByID",
+        "comment": "GetPoolByID returns the name of a pool by a given ID.\n"
+      },
+      {
+        "name": "radosError.Error",
+        "comment": "Error returns the error string for the radosError type.\n"
+      },
+      {
+        "name": "radosError.ErrorCode"
+      },
+      {
+        "name": "IOContext.Pointer",
+        "comment": "Pointer returns a pointer reference to an internal structure.\nThis function should NOT be used outside of go-ceph itself.\n"
+      },
+      {
+        "name": "IOContext.SetNamespace",
+        "comment": "SetNamespace sets the namespace for objects within this IO context (pool).\nSetting namespace to a empty or zero length string sets the pool to the default namespace.\n\nImplements:\n void rados_ioctx_set_namespace(rados_ioctx_t io,\n                                const char *nspace);\n"
+      },
+      {
+        "name": "IOContext.Create",
+        "comment": "Create a new object with key oid.\n\nImplements:\n void rados_write_op_create(rados_write_op_t write_op, int exclusive,\n                            const char* category)\n"
+      },
+      {
+        "name": "IOContext.Write",
+        "comment": "Write writes len(data) bytes to the object with key oid starting at byte\noffset offset. It returns an error, if any.\n"
+      },
+      {
+        "name": "IOContext.WriteFull",
+        "comment": "WriteFull writes len(data) bytes to the object with key oid.\nThe object is filled with the provided data. If the object exists,\nit is atomically truncated and then written. It returns an error, if any.\n"
+      },
+      {
+        "name": "IOContext.Append",
+        "comment": "Append appends len(data) bytes to the object with key oid.\nThe object is appended with the provided data. If the object exists,\nit is atomically appended to. It returns an error, if any.\n"
+      },
+      {
+        "name": "IOContext.Read",
+        "comment": "Read reads up to len(data) bytes from the object with key oid starting at byte\noffset offset. It returns the number of bytes read and an error, if any.\n"
+      },
+      {
+        "name": "IOContext.Delete",
+        "comment": "Delete deletes the object with key oid. It returns an error, if any.\n"
+      },
+      {
+        "name": "IOContext.Truncate",
+        "comment": "Truncate resizes the object with key oid to size size. If the operation\nenlarges the object, the new area is logically filled with zeroes. If the\noperation shrinks the object, the excess data is removed. It returns an\nerror, if any.\n"
+      },
+      {
+        "name": "IOContext.Destroy",
+        "comment": "Destroy informs librados that the I/O context is no longer in use.\nResources associated with the context may not be freed immediately, and the\ncontext should not be used again after calling this method.\n"
+      },
+      {
+        "name": "IOContext.GetPoolStats",
+        "comment": "GetPoolStats returns a set of statistics about the pool associated with this I/O\ncontext.\n\nImplements:\n int rados_ioctx_pool_stat(rados_ioctx_t io,\n                           struct rados_pool_stat_t *stats);\n"
+      },
+      {
+        "name": "IOContext.GetPoolID",
+        "comment": "GetPoolID returns the pool ID associated with the I/O context.\n\nImplements:\n int64_t rados_ioctx_get_id(rados_ioctx_t io)\n"
+      },
+      {
+        "name": "IOContext.GetPoolName",
+        "comment": "GetPoolName returns the name of the pool associated with the I/O context.\n"
+      },
+      {
+        "name": "IOContext.ListObjects",
+        "comment": "ListObjects lists all of the objects in the pool associated with the I/O\ncontext, and called the provided listFn function for each object, passing\nto the function the name of the object. Call SetNamespace with\nRadosAllNamespaces before calling this function to return objects from all\nnamespaces\n"
+      },
+      {
+        "name": "IOContext.Stat",
+        "comment": "Stat returns the size of the object and its last modification time\n"
+      },
+      {
+        "name": "IOContext.GetXattr",
+        "comment": "GetXattr gets an xattr with key `name`, it returns the length of\nthe key read or an error if not successful\n"
+      },
+      {
+        "name": "IOContext.SetXattr",
+        "comment": "SetXattr sets an xattr for an object with key `name` with value as `data`\n"
+      },
+      {
+        "name": "IOContext.ListXattrs",
+        "comment": "ListXattrs lists all the xattrs for an object. The xattrs are returned as a\nmapping of string keys and byte-slice values.\n"
+      },
+      {
+        "name": "IOContext.RmXattr",
+        "comment": "RmXattr removes an xattr with key `name` from object `oid`\n"
+      },
+      {
+        "name": "IOContext.LockExclusive",
+        "comment": "LockExclusive takes an exclusive lock on an object.\n"
+      },
+      {
+        "name": "IOContext.LockShared",
+        "comment": "LockShared takes a shared lock on an object.\n"
+      },
+      {
+        "name": "IOContext.Unlock",
+        "comment": "Unlock releases a shared or exclusive lock on an object.\n"
+      },
+      {
+        "name": "IOContext.ListLockers",
+        "comment": "ListLockers lists clients that have locked the named object lock and\ninformation about the lock.\nThe number of bytes required in each buffer is put in the corresponding size\nout parameter.  If any of the provided buffers are too short, -ERANGE is\nreturned after these sizes are filled in.\n"
+      },
+      {
+        "name": "IOContext.BreakLock",
+        "comment": "BreakLock releases a shared or exclusive lock on an object, which was taken by the specified client.\n"
+      },
+      {
+        "name": "IOContext.GetLastVersion",
+        "comment": "GetLastVersion will return the version number of the last object read or\nwritten to.\n\nImplements:\n uint64_t rados_get_last_version(rados_ioctx_t io);\n"
+      },
+      {
+        "name": "IOContext.GetNamespace",
+        "comment": "GetNamespace gets the namespace used for objects within this IO context.\n\nImplements:\n int rados_ioctx_get_namespace(rados_ioctx_t io, char *buf,\n                               unsigned maxlen);\n"
+      },
+      {
+        "name": "IOContext.SetPoolFullTry",
+        "comment": "SetPoolFullTry makes sure to send requests to the cluster despite\nthe cluster or pool being marked full; ops will either succeed(e.g., delete)\nor return EDQUOT or ENOSPC.\n\nImplements:\n void rados_set_pool_full_try(rados_ioctx_t io);\n"
+      },
+      {
+        "name": "IOContext.UnsetPoolFullTry",
+        "comment": "UnsetPoolFullTry unsets the flag set by SetPoolFullTry()\n\nImplements:\n void rados_unset_pool_full_try(rados_ioctx_t io);\n"
+      },
+      {
+        "name": "IOContext.Iter",
+        "comment": "Iter returns a Iterator object that can be used to list the object names in the current pool\n"
+      },
+      {
+        "name": "Iter.Token",
+        "comment": "Token returns a token marking the current position of the iterator. To be used in combination with Iter.Seek()\n"
+      },
+      {
+        "name": "Iter.Seek",
+        "comment": "Seek moves the iterator to the position indicated by the token.\n"
+      },
+      {
+        "name": "Iter.Next",
+        "comment": "Next retrieves the next object name in the pool/namespace iterator.\nUpon a successful invocation (return value of true), the Value method should\nbe used to obtain the name of the retrieved object name. When the iterator is\nexhausted, Next returns false. The Err method should used to verify whether the\nend of the iterator was reached, or the iterator received an error.\n\nExample:\n\titer := pool.Iter()\n\tdefer iter.Close()\n\tfor iter.Next() {\n\t\tfmt.Printf(\"%v\\n\", iter.Value())\n\t}\n\treturn iter.Err()\n"
+      },
+      {
+        "name": "Iter.Value",
+        "comment": "Value returns the current value of the iterator (object name), after a successful call to Next.\n"
+      },
+      {
+        "name": "Iter.Namespace",
+        "comment": "Namespace returns the namespace associated with the current value of the iterator (object name), after a successful call to Next.\n"
+      },
+      {
+        "name": "Iter.Err",
+        "comment": "Err checks whether the iterator has encountered an error.\n"
+      },
+      {
+        "name": "Iter.Close",
+        "comment": "Close the iterator cursor on the server. Be aware that iterators are not closed automatically\nat the end of iteration.\n"
+      },
+      {
+        "name": "GetOmapStep.Next",
+        "comment": "Next returns the next key value pair or nil if iteration is exhausted.\n"
+      },
+      {
+        "name": "GetOmapStep.More",
+        "comment": "More returns true if there are more matching keys available.\n"
+      },
+      {
+        "name": "IOContext.SetOmap",
+        "comment": "SetOmap appends the map `pairs` to the omap `oid`\n"
+      },
+      {
+        "name": "IOContext.ListOmapValues",
+        "comment": "ListOmapValues iterates over the keys and values in an omap by way of\na callback function.\n\n`startAfter`: iterate only on the keys after this specified one\n`filterPrefix`: iterate only on the keys beginning with this prefix\n`maxReturn`: iterate no more than `maxReturn` key/value pairs\n`listFn`: the function called at each iteration\n"
+      },
+      {
+        "name": "IOContext.GetOmapValues",
+        "comment": "GetOmapValues fetches a set of keys and their values from an omap and returns then as a map\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`maxReturn`: retrieve no more than `maxReturn` key/value pairs\n"
+      },
+      {
+        "name": "IOContext.GetAllOmapValues",
+        "comment": "GetAllOmapValues fetches all the keys and their values from an omap and returns then as a map\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`iteratorSize`: internal number of keys to fetch during a read operation\n"
+      },
+      {
+        "name": "IOContext.RmOmapKeys",
+        "comment": "RmOmapKeys removes the specified `keys` from the omap `oid`\n"
+      },
+      {
+        "name": "IOContext.CleanOmap",
+        "comment": "CleanOmap clears the omap `oid`\n"
+      },
+      {
+        "name": "OperationError.Error"
+      },
+      {
+        "name": "Version",
+        "comment": "Version returns the major, minor, and patch components of the version of\nthe RADOS library linked against.\n"
+      },
+      {
+        "name": "NewConn",
+        "comment": "NewConn creates a new connection object. It returns the connection and an\nerror, if any.\n"
+      },
+      {
+        "name": "NewConnWithUser",
+        "comment": "NewConnWithUser creates a new connection object with a custom username.\nIt returns the connection and an error, if any.\n"
+      },
+      {
+        "name": "NewConnWithClusterAndUser",
+        "comment": "NewConnWithClusterAndUser creates a new connection object for a specific cluster and username.\nIt returns the connection and an error, if any.\n"
+      },
+      {
+        "name": "CreateReadOp",
+        "comment": "CreateReadOp returns a newly constructed read operation.\n"
+      },
+      {
+        "name": "ReadOp.Release",
+        "comment": "Release the resources associated with this read operation.\n"
+      },
+      {
+        "name": "ReadOp.Operate",
+        "comment": "Operate will perform the operation(s).\n"
+      },
+      {
+        "name": "ReadOp.AssertExists",
+        "comment": "AssertExists assures the object targeted by the read op exists.\n\nImplements:\n void rados_read_op_assert_exists(rados_read_op_t read_op);\n"
+      },
+      {
+        "name": "ReadOp.GetOmapValues",
+        "comment": "GetOmapValues is used to iterate over a set, or sub-set, of omap keys\nas part of a read operation. An GetOmapStep is returned from this\nfunction. The GetOmapStep may be used to iterate over the key-value\npairs after the Operate call has been performed.\n"
+      },
+      {
+        "name": "IOContext.CreateSnap",
+        "comment": "CreateSnap creates a pool-wide snapshot.\n\nImplements:\nint rados_ioctx_snap_create(rados_ioctx_t io, const char *snapname)\n"
+      },
+      {
+        "name": "IOContext.RemoveSnap",
+        "comment": "RemoveSnap deletes the pool snapshot.\n\nImplements:\n int rados_ioctx_snap_remove(rados_ioctx_t io, const char *snapname)\n"
+      },
+      {
+        "name": "IOContext.LookupSnap",
+        "comment": "LookupSnap returns the ID of a pool snapshot.\n\nImplements:\n int rados_ioctx_snap_lookup(rados_ioctx_t io, const char *name, rados_snap_t *id)\n"
+      },
+      {
+        "name": "IOContext.GetSnapName",
+        "comment": "GetSnapName returns the name of a pool snapshot with the given snapshot ID.\n\nImplements:\n int rados_ioctx_snap_get_name(rados_ioctx_t io, rados_snap_t id, char *name, int maxlen)\n"
+      },
+      {
+        "name": "IOContext.GetSnapStamp",
+        "comment": "GetSnapStamp returns the time of the pool snapshot creation.\n\nImplements:\n int rados_ioctx_snap_get_stamp(rados_ioctx_t io, rados_snap_t id, time_t *t)\n"
+      },
+      {
+        "name": "IOContext.ListSnaps",
+        "comment": "ListSnaps returns a slice containing the SnapIDs of existing pool snapshots.\n\nImplements:\n int rados_ioctx_snap_list(rados_ioctx_t io, rados_snap_t *snaps, int maxlen)\n"
+      },
+      {
+        "name": "IOContext.RollbackSnap",
+        "comment": "RollbackSnap rollbacks the object with key oID to the pool snapshot.\nThe contents of the object will be the same as when the snapshot was taken.\n\nImplements:\n int rados_ioctx_snap_rollback(rados_ioctx_t io, const char *oid, const char *snapname);\n"
+      },
+      {
+        "name": "IOContext.SetReadSnap",
+        "comment": "SetReadSnap sets the snapshot from which reads are performed.\nSubsequent reads will return data as it was at the time of that snapshot.\nPass SnapHead for no snapshot (i.e. normal operation).\n\nImplements:\n void rados_ioctx_snap_set_read(rados_ioctx_t io, rados_snap_t snap);\n"
+      },
+      {
+        "name": "CreateWriteOp",
+        "comment": "CreateWriteOp returns a newly constructed write operation.\n"
+      },
+      {
+        "name": "WriteOp.Release",
+        "comment": "Release the resources associated with this write operation.\n"
+      },
+      {
+        "name": "WriteOp.Operate",
+        "comment": "Operate will perform the operation(s).\n"
+      },
+      {
+        "name": "WriteOp.OperateWithMtime",
+        "comment": "OperateWithMtime will perform the operation while setting the modification\ntime stamp to the supplied value.\n"
+      },
+      {
+        "name": "WriteOp.Create",
+        "comment": "Create a rados object.\n"
+      },
+      {
+        "name": "WriteOp.SetOmap",
+        "comment": "SetOmap appends the map `pairs` to the omap `oid`.\n"
+      },
+      {
+        "name": "WriteOp.RmOmapKeys",
+        "comment": "RmOmapKeys removes the specified `keys` from the omap `oid`.\n"
+      },
+      {
+        "name": "WriteOp.CleanOmap",
+        "comment": "CleanOmap clears the omap `oid`.\n"
+      },
+      {
+        "name": "WriteOp.AssertExists",
+        "comment": "AssertExists assures the object targeted by the write op exists.\n\nImplements:\n void rados_write_op_assert_exists(rados_write_op_t write_op);\n"
+      },
+      {
+        "name": "WriteOp.Write",
+        "comment": "Write a given byte slice at the supplied offset.\n\nImplements:\n void rados_write_op_write(rados_write_op_t write_op,\n                                      const char *buffer,\n                                      size_t len,\n                                      uint64_t offset);\n"
+      },
+      {
+        "name": "WriteOp.WriteFull",
+        "comment": "WriteFull writes a given byte slice as the whole object,\natomically replacing it.\n\nImplements:\n void rados_write_op_write_full(rados_write_op_t write_op,\n                                const char *buffer,\n                                size_t len);\n"
+      },
+      {
+        "name": "WriteOp.WriteSame",
+        "comment": "WriteSame write a given byte slice to the object multiple times, until\nwriteLen is satisfied.\n\nImplements:\n void rados_write_op_writesame(rados_write_op_t write_op,\n                               const char *buffer,\n                               size_t data_len,\n                               size_t write_len,\n                               uint64_t offset);\n"
+      }
+    ]
+  },
+  "rbd": {
+    "deprecated_api": [
+      {
+        "name": "MirrorImageGlobalStatusIter.Close",
+        "comment": "Close terminates iteration regardless if iteration was completed and\nfrees any associated resources. (DEPRECATED)\n",
+        "deprecated_in_version": "v0.11.0",
+        "expected_remove_version": ""
+      },
+      {
+        "name": "Image.Open",
+        "comment": "Open the rbd image (DEPRECATED).\n\nDeprecated: The Open function was provided in earlier versions of the API\nand now exists to support older code. The use of OpenImage and\nOpenImageReadOnly is preferred.\n",
+        "deprecated_in_version": "v0.2.0",
+        "expected_remove_version": ""
+      },
+      {
+        "name": "Snapshot.Set",
+        "comment": "Set updates the rbd image (not the Snapshot) such that the snapshot\nis the source of readable data (DEPRECATED).\nRefer the SetSnapshot method of the Image type instead.\n\nImplements:\n int rbd_snap_set(rbd_image_t image, const char *snapname);\n",
+        "deprecated_in_version": "v0.10.0",
+        "expected_remove_version": ""
+      }
+    ],
+    "stable_api": [
+      {
+        "name": "Image.DiffIterate",
+        "comment": "DiffIterate calls a callback on changed extents of an image.\n\nCalling DiffIterate will cause the callback specified in the\nDiffIterateConfig to be called as many times as there are changed\nregions in the image (controlled by the parameters as passed to librbd).\n\nSee the documentation of DiffIterateCallback for a description of the\narguments to the callback and the return behavior.\n\nImplements:\n int rbd_diff_iterate2(rbd_image_t image,\n                       const char *fromsnapname,\n                       uint64_t ofs, uint64_t len,\n                       uint8_t include_parent, uint8_t whole_object,\n                       int (*cb)(uint64_t, size_t, int, void *),\n                       void *arg);\n"
+      },
+      {
+        "name": "Image.EncryptionFormat",
+        "comment": "EncryptionFormat creates an encryption format header\n\nImplements:\n int rbd_encryption_format(rbd_image_t image,\n                           rbd_encryption_format_t format,\n                           rbd_encryption_options_t opts,\n                           size_t opts_size);\n\nTo issue an IO against the image, you need to mount the image\nwith libvirt/qemu using the LUKS format, or make a call to\nrbd_encryption_load().\n"
+      },
+      {
+        "name": "Image.EncryptionLoad",
+        "comment": "EncryptionLoad enables IO on an open encrypted image\n\nImplements:\n int rbd_encryption_load(rbd_image_t image,\n                         rbd_encryption_format_t format,\n                         rbd_encryption_options_t opts,\n                         size_t opts_size);\n"
+      },
+      {
+        "name": "rbdError.Error"
+      },
+      {
+        "name": "rbdError.ErrorCode"
+      },
+      {
+        "name": "FeatureSetFromNames",
+        "comment": "FeatureSetFromNames returns a FeatureSet built from flag bits corresponding\nto the provided feature names.\n"
+      },
+      {
+        "name": "FeatureSet.Names",
+        "comment": "Names converts all of the enabled feature bits in the FeatureSet to\na slice of strings corresponding to the names for each feature.\n"
+      },
+      {
+        "name": "Image.GetFeatures",
+        "comment": "GetFeatures returns the features bitmask for the rbd image.\n\nImplements:\n int rbd_get_features(rbd_image_t image, uint64_t *features);\n"
+      },
+      {
+        "name": "Image.UpdateFeatures",
+        "comment": "UpdateFeatures updates the features on the Image.\n\nImplements:\n  int rbd_update_features(rbd_image_t image, uint64_t features,\n                          uint8_t enabled);\n"
+      },
+      {
+        "name": "GroupCreate",
+        "comment": "GroupCreate is used to create an image group.\n\nImplements:\n int rbd_group_create(rados_ioctx_t p, const char *name);\n"
+      },
+      {
+        "name": "GroupRemove",
+        "comment": "GroupRemove is used to remove an image group.\n\nImplements:\n int rbd_group_remove(rados_ioctx_t p, const char *name);\n"
+      },
+      {
+        "name": "GroupRename",
+        "comment": "GroupRename will rename an existing image group.\n\nImplements:\n int rbd_group_rename(rados_ioctx_t p, const char *src_name,\n                      const char *dest_name);\n"
+      },
+      {
+        "name": "GroupList",
+        "comment": "GroupList returns a slice of image group names.\n\nImplements:\n int rbd_group_list(rados_ioctx_t p, char *names, size_t *size);\n"
+      },
+      {
+        "name": "GroupImageAdd",
+        "comment": "GroupImageAdd will add the specified image to the named group.\nAn io context must be supplied for both the group and image.\n\nImplements:\n int rbd_group_image_add(rados_ioctx_t group_p,\n                         const char *group_name,\n                         rados_ioctx_t image_p,\n                         const char *image_name);\n"
+      },
+      {
+        "name": "GroupImageRemove",
+        "comment": "GroupImageRemove will remove the specified image from the named group.\nAn io context must be supplied for both the group and image.\n\nImplements:\n int rbd_group_image_remove(rados_ioctx_t group_p,\n                            const char *group_name,\n                            rados_ioctx_t image_p,\n                            const char *image_name);\n"
+      },
+      {
+        "name": "GroupImageRemoveByID",
+        "comment": "GroupImageRemoveByID will remove the specified image from the named group.\nAn io context must be supplied for both the group and image.\n\nImplements:\n CEPH_RBD_API int rbd_group_image_remove_by_id(rados_ioctx_t group_p,\n                                              const char *group_name,\n                                              rados_ioctx_t image_p,\n                                              const char *image_id);\n"
+      },
+      {
+        "name": "GroupImageList",
+        "comment": "GroupImageList returns a slice of GroupImageInfo types based on the\nimages that are part of the named group.\n\nImplements:\n int rbd_group_image_list(rados_ioctx_t group_p,\n                          const char *group_name,\n                          rbd_group_image_info_t *images,\n                          size_t group_image_info_size,\n                          size_t *num_entries);\n"
+      },
+      {
+        "name": "Image.GetGroup",
+        "comment": "GetGroup returns group info for the group this image is part of.\n\nImplements:\n int rbd_get_group(rbd_image_t image, rbd_group_info_t *group_info,\n                   size_t group_info_size);\n"
+      },
+      {
+        "name": "GroupSnapCreate",
+        "comment": "GroupSnapCreate will create a group snapshot.\n\nImplements:\n int rbd_group_snap_create(rados_ioctx_t group_p,\n                           const char *group_name,\n                           const char *snap_name);\n"
+      },
+      {
+        "name": "GroupSnapRemove",
+        "comment": "GroupSnapRemove removes an existing group snapshot.\n\nImplements:\n int rbd_group_snap_remove(rados_ioctx_t group_p,\n                           const char *group_name,\n                           const char *snap_name);\n"
+      },
+      {
+        "name": "GroupSnapRename",
+        "comment": "GroupSnapRename will rename an existing group snapshot.\n\nImplements:\n int rbd_group_snap_rename(rados_ioctx_t group_p,\n                           const char *group_name,\n                           const char *old_snap_name,\n                           const char *new_snap_name);\n"
+      },
+      {
+        "name": "GroupSnapList",
+        "comment": "GroupSnapList returns a slice of snapshots in a group.\n\nImplements:\n int rbd_group_snap_list(rados_ioctx_t group_p,\n                         const char *group_name,\n                         rbd_group_snap_info_t *snaps,\n                         size_t group_snap_info_size,\n                         size_t *num_entries);\n"
+      },
+      {
+        "name": "GroupSnapRollback",
+        "comment": "GroupSnapRollback will roll back the images in the group to that of the\ngiven snapshot.\n\nImplements:\n int rbd_group_snap_rollback(rados_ioctx_t group_p,\n                             const char *group_name,\n                             const char *snap_name);\n"
+      },
+      {
+        "name": "GroupSnapRollbackWithProgress",
+        "comment": "GroupSnapRollbackWithProgress will roll back the images in the group\nto that of given snapshot. The given progress callback will be called\nto report on the progress of the snapshot rollback.\n\nImplements:\n int rbd_group_snap_rollback_with_progress(rados_ioctx_t group_p,\n                                           const char *group_name,\n                                           const char *snap_name,\n                                           librbd_progress_fn_t cb,\n                                           void *cbdata);\n"
+      },
+      {
+        "name": "Image.GetMetadata",
+        "comment": "GetMetadata returns the metadata string associated with the given key.\n\nImplements:\n int rbd_metadata_get(rbd_image_t image, const char *key, char *value, size_t *vallen)\n"
+      },
+      {
+        "name": "Image.SetMetadata",
+        "comment": "SetMetadata updates the metadata string associated with the given key.\n\nImplements:\n int rbd_metadata_set(rbd_image_t image, const char *key, const char *value)\n"
+      },
+      {
+        "name": "Image.RemoveMetadata",
+        "comment": "RemoveMetadata clears the metadata associated with the given key.\n\nImplements:\n int rbd_metadata_remove(rbd_image_t image, const char *key)\n"
+      },
+      {
+        "name": "Image.ListMetadata",
+        "comment": "ListMetadata returns a map containing all metadata assigned to the RBD image.\n\nImplements:\n int rbd_metadata_list(rbd_image_t image, const char *start, uint64_t max,\n                       char *keys, size_t *key_len, char *values, size_t *vals_len);\n"
+      },
+      {
+        "name": "MirrorMode.String",
+        "comment": "String representation of MirrorMode.\n"
+      },
+      {
+        "name": "ImageMirrorMode.String",
+        "comment": "String representation of ImageMirrorMode.\n"
+      },
+      {
+        "name": "GetMirrorUUID",
+        "comment": "GetMirrorUUID returns a string naming the mirroring uuid for the pool\nassociated with the ioctx.\n\nImplements:\n int rbd_mirror_uuid_get(rados_ioctx_t io_ctx, char *uuid, size_t\n                         *max_len);\n"
+      },
+      {
+        "name": "SetMirrorMode",
+        "comment": "SetMirrorMode is used to enable or disable pool level mirroring with either\nan automatic or per-image behavior.\n\nImplements:\n int rbd_mirror_mode_set(rados_ioctx_t io_ctx,\n                         rbd_mirror_mode_t mirror_mode);\n"
+      },
+      {
+        "name": "GetMirrorMode",
+        "comment": "GetMirrorMode is used to fetch the current mirroring mode for a pool.\n\nImplements:\n int rbd_mirror_mode_get(rados_ioctx_t io_ctx,\n                         rbd_mirror_mode_t *mirror_mode);\n"
+      },
+      {
+        "name": "Image.MirrorEnable",
+        "comment": "MirrorEnable will enable mirroring for an image using the specified mode.\n\nImplements:\n int rbd_mirror_image_enable2(rbd_image_t image,\n                              rbd_mirror_image_mode_t mode);\n"
+      },
+      {
+        "name": "Image.MirrorDisable",
+        "comment": "MirrorDisable will disable mirroring for the image.\n\nImplements:\n int rbd_mirror_image_disable(rbd_image_t image, bool force);\n"
+      },
+      {
+        "name": "Image.MirrorPromote",
+        "comment": "MirrorPromote will promote the image to primary status.\n\nImplements:\n int rbd_mirror_image_promote(rbd_image_t image, bool force);\n"
+      },
+      {
+        "name": "Image.MirrorDemote",
+        "comment": "MirrorDemote will demote the image to secondary status.\n\nImplements:\n int rbd_mirror_image_demote(rbd_image_t image);\n"
+      },
+      {
+        "name": "Image.MirrorResync",
+        "comment": "MirrorResync is used to manually resolve split-brain status by triggering\nresynchronization.\n\nImplements:\n int rbd_mirror_image_resync(rbd_image_t image);\n"
+      },
+      {
+        "name": "Image.MirrorInstanceID",
+        "comment": "MirrorInstanceID returns a string naming the instance id for the image.\n\nImplements:\n int rbd_mirror_image_get_instance_id(rbd_image_t image,\n                                      char *instance_id,\n                                      size_t *id_max_length);\n"
+      },
+      {
+        "name": "MirrorImageState.String",
+        "comment": "String representation of MirrorImageState.\n"
+      },
+      {
+        "name": "Image.GetMirrorImageInfo",
+        "comment": "GetMirrorImageInfo fetches the mirroring status information of a RBD image.\n\nImplements:\n int rbd_mirror_image_get_info(rbd_image_t image,\n                               rbd_mirror_image_info_t *mirror_image_info,\n                               size_t info_size)\n"
+      },
+      {
+        "name": "Image.GetImageMirrorMode",
+        "comment": "GetImageMirrorMode fetches the mirroring approach for an RBD image.\n\nImplements:\n int rbd_mirror_image_get_mode(rbd_image_t image, rbd_mirror_image_mode_t *mode);\n"
+      },
+      {
+        "name": "MirrorImageStatusState.String",
+        "comment": "String represents the MirrorImageStatusState as a short string.\n"
+      },
+      {
+        "name": "GlobalMirrorImageStatus.LocalStatus",
+        "comment": "LocalStatus returns one SiteMirrorImageStatus item from the SiteStatuses\nslice that corresponds to the local site's status. If the local status\nis not found than the error ErrNotExist will be returned.\n"
+      },
+      {
+        "name": "Image.GetGlobalMirrorStatus",
+        "comment": "GetGlobalMirrorStatus returns status information pertaining to the state\nof the images's mirroring.\n\nImplements:\n  int rbd_mirror_image_get_global_status(\n    rbd_image_t image,\n    rbd_mirror_image_global_status_t *mirror_image_global_status,\n    size_t status_size);\n"
+      },
+      {
+        "name": "Image.CreateMirrorSnapshot",
+        "comment": "CreateMirrorSnapshot creates a snapshot for image propagation to mirrors.\n\nImplements:\n int rbd_mirror_image_create_snapshot(rbd_image_t image,\n                                      uint64_t *snap_id);\n"
+      },
+      {
+        "name": "MirrorImageStatusSummary",
+        "comment": "MirrorImageStatusSummary returns a map of images statuses and the count\nof images with said status.\n\nImplements:\n int rbd_mirror_image_status_summary(\n   rados_ioctx_t io_ctx, rbd_mirror_image_status_state_t *states, int *counts,\n   size_t *maxlen);\n"
+      },
+      {
+        "name": "SetMirrorSiteName",
+        "comment": "SetMirrorSiteName sets the site name, used for rbd mirroring, for the ceph\ncluster associated with the provided rados connection.\n\nImplements:\n int rbd_mirror_site_name_set(rados_t cluster,\n                              const char *name);\n"
+      },
+      {
+        "name": "GetMirrorSiteName",
+        "comment": "GetMirrorSiteName gets the site name, used for rbd mirroring, for the ceph\ncluster associated with the provided rados connection.\n\nImplements:\nint rbd_mirror_site_name_get(rados_t cluster,\n                             char *name, size_t *max_len);\n"
+      },
+      {
+        "name": "CreateMirrorPeerBootstrapToken",
+        "comment": "CreateMirrorPeerBootstrapToken returns a token value, representing the\ncluster and pool associated with the given IO context,  that can be provided\nto ImportMirrorPeerBootstrapToken in order to set up mirroring between\npools.\n\nImplements:\n int rbd_mirror_peer_bootstrap_create(\n   rados_ioctx_t io_ctx, char *token, size_t *max_len);\n"
+      },
+      {
+        "name": "ImportMirrorPeerBootstrapToken",
+        "comment": "ImportMirrorPeerBootstrapToken applies the provided bootstrap token to the\npool associated with the IO context to create a mirroring relationship\nbetween pools. The direction parameter controls if data in the pool is a\nsource, destination, or both.\n\nImplements:\n int rbd_mirror_peer_bootstrap_import(\n   rados_ioctx_t io_ctx, rbd_mirror_peer_direction_t direction,\n   const char *token);\n"
+      },
+      {
+        "name": "MirrorImageGlobalStatusList",
+        "comment": "MirrorImageGlobalStatusList returns a slice of GlobalMirrorImageIDAndStatus.\nIf the length of the returned slice equals max, the next chunk of the list\ncan be obtained by setting start to the ID of the last item of the returned\nslice. If max is 0 a slice of all items is returned.\n\nImplements:\nint rbd_mirror_image_status_list(rados_ioctx_t p,\n    const char *start_id, size_t max, char **image_ids,\n    rbd_mirror_image_status_t *images, size_t *len)\n"
+      },
+      {
+        "name": "NewMirrorImageGlobalStatusIter",
+        "comment": "NewMirrorImageGlobalStatusIter creates a new iterator type ready for use.\n"
+      },
+      {
+        "name": "MirrorImageGlobalStatusIter.Next",
+        "comment": "Next fetches one GlobalMirrorImageIDAndStatus value or a nil value if\niteration is exhausted. The error return will be non-nil if an underlying\nerror fetching more values occurred.\n"
+      },
+      {
+        "name": "MirrorImageInfoList",
+        "comment": "MirrorImageInfoList returns a slice of MirrorImageInfoItem. If the length of\nthe returned slice equals max, the next chunk of the list can be obtained by\nsetting start to the ID of the last item of the returned slice. The returned\nitems are filtered by the mirror mode specified with modeFilter. If max is 0\na slice of all items is returned.\n\nImplements:\nint rbd_mirror_image_info_list(\n    rados_ioctx_t p, rbd_mirror_image_mode_t *mode_filter,\n    const char *start_id, size_t max, char **image_ids,\n    rbd_mirror_image_mode_t *mode_entries,\n    rbd_mirror_image_info_t *info_entries, size_t *num_entries)\n"
+      },
+      {
+        "name": "NewMirrorImageInfoIter",
+        "comment": "NewMirrorImageInfoIter creates a new iterator ready for use.\n"
+      },
+      {
+        "name": "MirrorImageInfoIter.Next",
+        "comment": "Next fetches one MirrorImageInfoItem value or a nil value if iteration is\nexhausted. The error return will be non-nil if an underlying error fetching\nmore values occurred.\n"
+      },
+      {
+        "name": "MirrorImageInstanceIDList",
+        "comment": "MirrorImageInstanceIDList returns a slice of MirrorImageInstanceIDItem. If\nthe length of the returned slice equals max, the next chunk of the list can\nbe obtained by setting start to the ID of the last item of the returned slice.\nIf max is 0 a slice of all items is returned.\n\nImplements:\nint rbd_mirror_image_instance_id_list(\n\t \trados_ioctx_t io_ctx,\n\t \tconst char *start_id,\n\t \tsize_t max, char **image_ids,\n\t \tchar **instance_ids,\n\t \tsize_t *len)\n"
+      },
+      {
+        "name": "NewMirrorImageInstanceIDIter",
+        "comment": "NewMirrorImageInstanceIDIter creates a new iterator ready for use.\n"
+      },
+      {
+        "name": "MirrorImageInstanceIDIter.Next",
+        "comment": "Next fetches one MirrorImageInstanceIDItem value or a nil value if iteration is\nexhausted. The error return will be non-nil if an underlying error fetching\nmore values occurred.\n"
+      },
+      {
+        "name": "NamespaceCreate",
+        "comment": "NamespaceCreate creates the namespace for a given Rados IOContext.\n\nImplements:\n int rbd_namespace_create(rados_ioctx_t io, const char *namespace_name);\n"
+      },
+      {
+        "name": "NamespaceRemove",
+        "comment": "NamespaceRemove removes a given namespace.\n\nImplements:\n int rbd_namespace_remove(rados_ioctx_t io, const char *namespace_name);\n"
+      },
+      {
+        "name": "NamespaceExists",
+        "comment": "NamespaceExists checks whether a given namespace exists or not.\n\nImplements:\n int rbd_namespace_exists(rados_ioctx_t io, const char *namespace_name, bool *exists);\n"
+      },
+      {
+        "name": "NamespaceList",
+        "comment": "NamespaceList returns a slice containing the names of existing rbd namespaces.\n\nImplements:\n int rbd_namespace_list(rados_ioctx_t io, char *namespace_names, size_t *size);\n"
+      },
+      {
+        "name": "NewRbdImageOptions",
+        "comment": "NewRbdImageOptions creates a new RbdImageOptions struct. Call\nRbdImageOptions.Destroy() to free the resources.\n\nImplements:\n void rbd_image_options_create(rbd_image_options_t* opts)\n"
+      },
+      {
+        "name": "ImageOptions.Destroy",
+        "comment": "Destroy a RbdImageOptions struct and free the associated resources.\n\nImplements:\n void rbd_image_options_destroy(rbd_image_options_t opts);\n"
+      },
+      {
+        "name": "ImageOptions.SetString",
+        "comment": "SetString sets the value of the RbdImageOption to the given string.\n\nImplements:\n int rbd_image_options_set_string(rbd_image_options_t opts, int optname,\n         const char* optval);\n"
+      },
+      {
+        "name": "ImageOptions.GetString",
+        "comment": "GetString returns the string value of the RbdImageOption.\n\nImplements:\n int rbd_image_options_get_string(rbd_image_options_t opts, int optname,\n         char* optval, size_t maxlen);\n"
+      },
+      {
+        "name": "ImageOptions.SetUint64",
+        "comment": "SetUint64 sets the value of the RbdImageOption to the given uint64.\n\nImplements:\n int rbd_image_options_set_uint64(rbd_image_options_t opts, int optname,\n         const uint64_t optval);\n"
+      },
+      {
+        "name": "ImageOptions.GetUint64",
+        "comment": "GetUint64 returns the uint64 value of the RbdImageOption.\n\nImplements:\n int rbd_image_options_get_uint64(rbd_image_options_t opts, int optname,\n         uint64_t* optval);\n"
+      },
+      {
+        "name": "ImageOptions.IsSet",
+        "comment": "IsSet returns a true if the RbdImageOption is set, false otherwise.\n\nImplements:\n int rbd_image_options_is_set(rbd_image_options_t opts, int optname,\n         bool* is_set);\n"
+      },
+      {
+        "name": "ImageOptions.Unset",
+        "comment": "Unset a given RbdImageOption.\n\nImplements:\n int rbd_image_options_unset(rbd_image_options_t opts, int optname)\n"
+      },
+      {
+        "name": "ImageOptions.Clear",
+        "comment": "Clear all options in the RbdImageOptions.\n\nImplements:\n void rbd_image_options_clear(rbd_image_options_t opts)\n"
+      },
+      {
+        "name": "ImageOptions.IsEmpty",
+        "comment": "IsEmpty returns true if there are no options set in the RbdImageOptions,\nfalse otherwise.\n\nImplements:\n int rbd_image_options_is_empty(rbd_image_options_t opts)\n"
+      },
+      {
+        "name": "GetPoolMetadata",
+        "comment": "GetPoolMetadata returns pool metadata associated with the given key.\n\nImplements:\n int rbd_pool_metadata_get(rados_ioctx_t io_ctx, const char *key, char *value, size_t *val_len);\n"
+      },
+      {
+        "name": "SetPoolMetadata",
+        "comment": "SetPoolMetadata updates the pool metadata string associated with the given key.\n\nImplements:\n int rbd_pool_metadata_set(rados_ioctx_t io_ctx, const char *key, const char *value);\n"
+      },
+      {
+        "name": "RemovePoolMetadata",
+        "comment": "RemovePoolMetadata removes the pool metadata value for a given pool metadata key.\n\nImplements:\n int rbd_pool_metadata_remove(rados_ioctx_t io_ctx, const char *key)\n"
+      },
+      {
+        "name": "PoolInit",
+        "comment": "PoolInit initializes a pool for use by rbd.\nThis function does not create new pools, rather it prepares the pool\nto host rbd images.\n\nImplements:\n int rbd_pool_init(rados_ioctx_t io, bool force)\n"
+      },
+      {
+        "name": "GetAllPoolStats",
+        "comment": "GetAllPoolStats returns a map of all PoolStatOption(s) to their respective values.\n\nImplements:\n int rbd_pool_stats_get(rados_ioctx_t io, rbd_pool_stats_t stats);\n"
+      },
+      {
+        "name": "Version",
+        "comment": "Version returns the major, minor, and patch level of the librbd library.\n"
+      },
+      {
+        "name": "GetImage",
+        "comment": "GetImage gets a reference to a previously created rbd image.\n"
+      },
+      {
+        "name": "Create",
+        "comment": "Create a new rbd image.\n\nImplements:\n int rbd_create(rados_ioctx_t io, const char *name, uint64_t size, int *order);\n\nAlso implements (for backward compatibility):\n int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,\n         uint64_t features, int *order);\n int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,\n       uint64_t features, int *order,\n       uint64_t stripe_unit, uint64_t stripe_count);\n"
+      },
+      {
+        "name": "Create2",
+        "comment": "Create2 creates a new rbd image using provided features.\n\nImplements:\n int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,\n         uint64_t features, int *order);\n"
+      },
+      {
+        "name": "Create3",
+        "comment": "Create3 creates a new rbd image using provided features and stripe\nparameters.\n\nImplements:\n int rbd_create3(rados_ioctx_t io, const char *name, uint64_t size,\n       uint64_t features, int *order,\n       uint64_t stripe_unit, uint64_t stripe_count);\n"
+      },
+      {
+        "name": "Image.Clone",
+        "comment": "Clone a new rbd image from a snapshot.\n\nImplements:\n int rbd_clone(rados_ioctx_t p_ioctx, const char *p_name,\n          const char *p_snapname, rados_ioctx_t c_ioctx,\n          const char *c_name, uint64_t features, int *c_order);\n"
+      },
+      {
+        "name": "Image.Remove",
+        "comment": "Remove the specified rbd image.\n\nImplements:\n int rbd_remove(rados_ioctx_t io, const char *name);\n"
+      },
+      {
+        "name": "Image.Trash",
+        "comment": "Trash will move an image into the RBD trash, where it will be protected (i.e., salvageable) for\nat least the specified delay.\n"
+      },
+      {
+        "name": "Image.Rename",
+        "comment": "Rename an rbd image.\n\nImplements:\n int rbd_rename(rados_ioctx_t src_io_ctx, const char *srcname, const char *destname);\n"
+      },
+      {
+        "name": "Image.Close",
+        "comment": "Close an open rbd image.\n\nImplements:\n int rbd_close(rbd_image_t image);\n"
+      },
+      {
+        "name": "Image.Resize",
+        "comment": "Resize an rbd image.\n\nImplements:\n int rbd_resize(rbd_image_t image, uint64_t size);\n"
+      },
+      {
+        "name": "Image.Stat",
+        "comment": "Stat an rbd image.\n\nImplements:\n int rbd_stat(rbd_image_t image, rbd_image_info_t *info, size_t infosize);\n"
+      },
+      {
+        "name": "Image.IsOldFormat",
+        "comment": "IsOldFormat returns true if the rbd image uses the old format.\n\nImplements:\n int rbd_get_old_format(rbd_image_t image, uint8_t *old);\n"
+      },
+      {
+        "name": "Image.GetSize",
+        "comment": "GetSize returns the size of the rbd image.\n\nImplements:\n int rbd_size(rbd_image_t image, uint64_t *size);\n"
+      },
+      {
+        "name": "Image.GetStripeUnit",
+        "comment": "GetStripeUnit returns the stripe-unit value for the rbd image.\n\nImplements:\n int rbd_get_stripe_unit(rbd_image_t image, uint64_t *stripe_unit);\n"
+      },
+      {
+        "name": "Image.GetStripeCount",
+        "comment": "GetStripeCount returns the stripe-count value for the rbd image.\n\nImplements:\n int rbd_get_stripe_count(rbd_image_t image, uint64_t *stripe_count);\n"
+      },
+      {
+        "name": "Image.GetOverlap",
+        "comment": "GetOverlap returns the overlapping bytes between the rbd image and its\nparent.\n\nImplements:\n int rbd_get_overlap(rbd_image_t image, uint64_t *overlap);\n"
+      },
+      {
+        "name": "Image.Copy",
+        "comment": "Copy one rbd image to another.\n\nImplements:\n int rbd_copy(rbd_image_t image, rados_ioctx_t dest_io_ctx, const char *destname);\n"
+      },
+      {
+        "name": "Image.Copy2",
+        "comment": "Copy2 copies one rbd image to another, using an image handle.\n\nImplements:\n int rbd_copy2(rbd_image_t src, rbd_image_t dest);\n"
+      },
+      {
+        "name": "Image.DeepCopy",
+        "comment": "DeepCopy an rbd image to a new image with specific options.\n\nImplements:\n int rbd_deep_copy(rbd_image_t src, rados_ioctx_t dest_io_ctx,\n         const char *destname, rbd_image_options_t dest_opts);\n"
+      },
+      {
+        "name": "Image.Flatten",
+        "comment": "Flatten removes snapshot references from the image.\n\nImplements:\n int rbd_flatten(rbd_image_t image);\n"
+      },
+      {
+        "name": "Image.ListLockers",
+        "comment": "ListLockers returns a list of clients that have locks on the image.\n\nImpelemnts:\n ssize_t rbd_list_lockers(rbd_image_t image, int *exclusive,\n             char *tag, size_t *tag_len,\n             char *clients, size_t *clients_len,\n             char *cookies, size_t *cookies_len,\n             char *addrs, size_t *addrs_len);\n"
+      },
+      {
+        "name": "Image.LockExclusive",
+        "comment": "LockExclusive acquires an exclusive lock on the rbd image.\n\nImplements:\n int rbd_lock_exclusive(rbd_image_t image, const char *cookie);\n"
+      },
+      {
+        "name": "Image.LockShared",
+        "comment": "LockShared acquires a shared lock on the rbd image.\n\nImplements:\n int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);\n"
+      },
+      {
+        "name": "Image.Unlock",
+        "comment": "Unlock releases a lock on the image.\n\nImplements:\n int rbd_lock_shared(rbd_image_t image, const char *cookie, const char *tag);\n"
+      },
+      {
+        "name": "Image.BreakLock",
+        "comment": "BreakLock forces the release of a lock held by another client.\n\nImplements:\n int rbd_break_lock(rbd_image_t image, const char *client, const char *cookie);\n"
+      },
+      {
+        "name": "Image.Read",
+        "comment": "ssize_t rbd_read(rbd_image_t image, uint64_t ofs, size_t len, char *buf);\nTODO: int64_t rbd_read_iterate(rbd_image_t image, uint64_t ofs, size_t len,\n             int (*cb)(uint64_t, size_t, const char *, void *), void *arg);\nTODO: int rbd_read_iterate2(rbd_image_t image, uint64_t ofs, uint64_t len,\n              int (*cb)(uint64_t, size_t, const char *, void *), void *arg);\nTODO: int rbd_diff_iterate(rbd_image_t image,\n             const char *fromsnapname,\n             uint64_t ofs, uint64_t len,\n             int (*cb)(uint64_t, size_t, int, void *), void *arg);\n"
+      },
+      {
+        "name": "Image.Write",
+        "comment": "ssize_t rbd_write(rbd_image_t image, uint64_t ofs, size_t len, const char *buf);\n"
+      },
+      {
+        "name": "Image.Seek",
+        "comment": "Seek updates the internal file position for the current image.\n"
+      },
+      {
+        "name": "Image.Discard",
+        "comment": "Discard the supplied range from the image. The supplied range will be read\nas zeros once Discard returns. The discarded range will no longer take up\nspace.\n\nImplements:\n int rbd_discard(rbd_image_t image, uint64_t ofs, uint64_t len);\n"
+      },
+      {
+        "name": "Image.ReadAt",
+        "comment": "ReadAt copies data from the image into the supplied buffer.\n"
+      },
+      {
+        "name": "Image.WriteAt",
+        "comment": "WriteAt copies data from the supplied buffer to the image.\n"
+      },
+      {
+        "name": "Image.WriteSame",
+        "comment": "WriteSame repeats writing data from starting point ofs until n bytes have\nbeen written.\n\nImplements:\n ssize_t rbd_writesame(rbd_image_t image, uint64_t ofs, size_t len,\n                       const char *buf, size_t data_len, int op_flags);\n"
+      },
+      {
+        "name": "Image.Flush",
+        "comment": "Flush all cached writes to storage.\n\nImplements:\n int rbd_flush(rbd_image_t image);\n"
+      },
+      {
+        "name": "Image.GetSnapshotNames",
+        "comment": "GetSnapshotNames returns more than just the names of snapshots\nassociated with the rbd image.\n\nImplements:\n int rbd_snap_list(rbd_image_t image, rbd_snap_info_t *snaps, int *max_snaps);\n"
+      },
+      {
+        "name": "Image.GetId",
+        "comment": "GetId returns the internal image ID string.\n\nImplements:\n int rbd_get_id(rbd_image_t image, char *id, size_t id_len);\n"
+      },
+      {
+        "name": "Image.SetSnapshot",
+        "comment": "SetSnapshot updates the rbd image (not the Snapshot) such that the snapshot\nis the source of readable data.\n\nImplements:\n int rbd_snap_set(rbd_image_t image, const char *snapname);\n"
+      },
+      {
+        "name": "GetTrashList",
+        "comment": "GetTrashList returns a slice of TrashInfo structs, containing information about all RBD images\ncurrently residing in the trash.\n"
+      },
+      {
+        "name": "TrashRemove",
+        "comment": "TrashRemove permanently deletes the trashed RBD with the specified id.\n"
+      },
+      {
+        "name": "TrashRestore",
+        "comment": "TrashRestore restores the trashed RBD with the specified id back to the pool from whence it\ncame, with the specified new name.\n"
+      },
+      {
+        "name": "OpenImage",
+        "comment": "OpenImage will open an existing rbd image by name and snapshot name,\nreturning a new opened image. Pass the NoSnapshot sentinel value as the\nsnapName to explicitly indicate that no snapshot name is being provided.\n\nImplements:\n int rbd_open(rados_ioctx_t io, const char *name,\n              rbd_image_t *image, const char *snap_name);\n"
+      },
+      {
+        "name": "OpenImageReadOnly",
+        "comment": "OpenImageReadOnly will open an existing rbd image by name and snapshot name,\nreturning a new opened-for-read image.  Pass the NoSnapshot sentinel value\nas the snapName to explicitly indicate that no snapshot name is being\nprovided.\n\nImplements:\n int rbd_open_read_only(rados_ioctx_t io, const char *name,\n                        rbd_image_t *image, const char *snap_name);\n"
+      },
+      {
+        "name": "OpenImageById",
+        "comment": "OpenImageById will open an existing rbd image by ID and snapshot name,\nreturning a new opened image. Pass the NoSnapshot sentinel value as the\nsnapName to explicitly indicate that no snapshot name is being provided.\nError handling will fail & segfault unless compiled with a version of ceph\nthat fixes https://tracker.ceph.com/issues/43178\n\nImplements:\n int rbd_open_by_id(rados_ioctx_t io, const char *id,\n                    rbd_image_t *image, const char *snap_name);\n"
+      },
+      {
+        "name": "OpenImageByIdReadOnly",
+        "comment": "OpenImageByIdReadOnly will open an existing rbd image by ID and snapshot\nname, returning a new opened-for-read image. Pass the NoSnapshot sentinel\nvalue as the snapName to explicitly indicate that no snapshot name is being\nprovided.\nError handling will fail & segfault unless compiled with a version of ceph\nthat fixes https://tracker.ceph.com/issues/43178\n\nImplements:\n int rbd_open_by_id_read_only(rados_ioctx_t io, const char *id,\n                              rbd_image_t *image, const char *snap_name);\n"
+      },
+      {
+        "name": "CreateImage",
+        "comment": "CreateImage creates a new rbd image using provided image options.\n\nImplements:\n int rbd_create4(rados_ioctx_t io, const char *name, uint64_t size,\n                rbd_image_options_t opts);\n"
+      },
+      {
+        "name": "RemoveImage",
+        "comment": "RemoveImage removes the specified rbd image.\n\nImplements:\n int rbd_remove(rados_ioctx_t io, const char *name);\n"
+      },
+      {
+        "name": "CloneImage",
+        "comment": "CloneImage creates a clone of the image from the named snapshot in the\nprovided io-context with the given name and image options.\n\nImplements:\n  int rbd_clone3(rados_ioctx_t p_ioctx, const char *p_name,\n                 const char *p_snapname, rados_ioctx_t c_ioctx,\n                 const char *c_name, rbd_image_options_t c_opts);\n"
+      },
+      {
+        "name": "CloneFromImage",
+        "comment": "CloneFromImage creates a clone of the image from the named snapshot in the\nprovided io-context with the given name and image options.\nThis function is a convenience wrapper around CloneImage to support cloning\nfrom an existing Image.\n"
+      },
+      {
+        "name": "GetImageNames",
+        "comment": "GetImageNames returns the list of current RBD images.\n"
+      },
+      {
+        "name": "Image.GetCreateTimestamp",
+        "comment": "GetCreateTimestamp returns the time the rbd image was created.\n\nImplements:\n int rbd_get_create_timestamp(rbd_image_t image, struct timespec *timestamp);\n"
+      },
+      {
+        "name": "Image.GetAccessTimestamp",
+        "comment": "GetAccessTimestamp returns the time the rbd image was last accessed.\n\nImplements:\n int rbd_get_access_timestamp(rbd_image_t image, struct timespec *timestamp);\n"
+      },
+      {
+        "name": "Image.GetModifyTimestamp",
+        "comment": "GetModifyTimestamp returns the time the rbd image was last modified.\n\nImplements:\n int rbd_get_modify_timestamp(rbd_image_t image, struct timespec *timestamp);\n"
+      },
+      {
+        "name": "Image.Sparsify",
+        "comment": "Sparsify makes an image sparse by deallocating runs of zeros.\nThe sparseSize value will be used to find runs of zeros and must be\na power of two no less than 4096 and no larger than the image size.\n\nImplements:\n int rbd_sparsify(rbd_image_t image, size_t sparse_size);\n"
+      },
+      {
+        "name": "Image.CreateSnapshot",
+        "comment": "CreateSnapshot returns a new Snapshot objects after creating\na snapshot of the rbd image.\n\nImplements:\n int rbd_snap_create(rbd_image_t image, const char *snapname);\n"
+      },
+      {
+        "name": "Image.GetSnapshot",
+        "comment": "GetSnapshot constructs a snapshot object for the image given\nthe snap name. It does not validate that this snapshot exists.\n"
+      },
+      {
+        "name": "Snapshot.Remove",
+        "comment": "Remove the snapshot from the connected rbd image.\n\nImplements:\n int rbd_snap_remove(rbd_image_t image, const char *snapname);\n"
+      },
+      {
+        "name": "Snapshot.Rollback",
+        "comment": "Rollback the image to the snapshot.\n\nImplements:\n int rbd_snap_rollback(rbd_image_t image, const char *snapname);\n"
+      },
+      {
+        "name": "Snapshot.Protect",
+        "comment": "Protect a snapshot from unwanted deletion.\n\nImplements:\n int rbd_snap_protect(rbd_image_t image, const char *snap_name);\n"
+      },
+      {
+        "name": "Snapshot.Unprotect",
+        "comment": "Unprotect stops protecting the snapshot.\n\nImplements:\n int rbd_snap_unprotect(rbd_image_t image, const char *snap_name);\n"
+      },
+      {
+        "name": "Snapshot.IsProtected",
+        "comment": "IsProtected returns true if the snapshot is currently protected.\n\nImplements:\n int rbd_snap_is_protected(rbd_image_t image, const char *snap_name,\n              int *is_protected);\n"
+      },
+      {
+        "name": "Image.GetSnapTimestamp",
+        "comment": "GetSnapTimestamp returns the timestamp of a snapshot for an image.\nFor a non-existing snap ID, GetSnapTimestamp() may trigger an assertion\nand crash in the ceph library.\nCheck https://tracker.ceph.com/issues/47287 for details.\n\nImplements:\n int rbd_snap_get_timestamp(rbd_image_t image, uint64_t snap_id, struct timespec *timestamp)\n"
+      },
+      {
+        "name": "Image.GetSnapNamespaceType",
+        "comment": "GetSnapNamespaceType gets the type of namespace to which the snapshot belongs to,\nreturns error on failure.\n\nImplements:\n int rbd_snap_get_namespace_type(rbd_image_t image, uint64_t snap_id, rbd_snap_namespace_type_t *namespace_type)\n"
+      },
+      {
+        "name": "Image.GetSnapTrashNamespace",
+        "comment": "GetSnapTrashNamespace returns the original name of the snapshot which was\nmoved to the Trash. The caller should make sure that the snapshot ID passed in this\nfunction belongs to a snapshot already in the Trash.\n\nImplements:\n int rbd_snap_get_trash_namespace(rbd_image_t image, uint64_t snap_id, char *original_name, size_t max_length)\n"
+      },
+      {
+        "name": "Image.GetParentInfo",
+        "comment": "GetParentInfo looks for the parent of the image and stores the pool, name\nand snapshot-name in the byte-arrays that are passed as arguments.\n\nImplements:\n  int rbd_get_parent(rbd_image_t image,\n                     rbd_linked_image_spec_t *parent_image,\n                     rbd_snap_spec_t *parent_snap)\n"
+      },
+      {
+        "name": "Image.GetParent",
+        "comment": "GetParent looks for the parent of the image and returns the parent image\ninformation which includes the image name, the pool name and\nthe snapshot information.\n\nImplements:\nint rbd_get_parent(rbd_image_t image, rbd_linked_image_spec_t *parent_image, rbd_snap_spec_t *parent_snap)\n"
+      },
+      {
+        "name": "Image.ListChildren",
+        "comment": "ListChildren returns arrays with the pools and names of the images that are\nchildren of the given image. The index of the pools and images arrays can be\nused to link the two items together.\n\nImplements:\n  int rbd_list_children3(rbd_image_t image, rbd_linked_image_spec_t *images,\n                         size_t *max_images);\n"
+      },
+      {
+        "name": "Image.SetSnapByID",
+        "comment": "SetSnapByID updates the rbd image (not the Snapshot) such that the snapshot\nis the source of readable data.\n\nImplements:\n int rbd_snap_set_by_id(rbd_image_t image, uint64_t snap_id);\n"
+      },
+      {
+        "name": "Image.GetSnapID",
+        "comment": "GetSnapID returns the snapshot ID for the given snapshot name.\n\nImplements:\n int rbd_snap_get_id(rbd_image_t image, const char *snapname, uint64_t *snap_id)\n"
+      },
+      {
+        "name": "Image.GetSnapByID",
+        "comment": "GetSnapByID returns the snapshot name for the given snapshot ID.\n\nImplements:\n int rbd_snap_get_name(rbd_image_t image, uint64_t snap_id, char *snapname, size_t *name_len)\n"
+      },
+      {
+        "name": "Image.ListWatchers",
+        "comment": "ListWatchers returns the watchers on an RBD image. In case of an error, nil\nand an error are returned.\n\nNote:\n  Only supported in Ceph Mimic and newer.\n\nImplements:\n  int rbd_watchers_list(rbd_image_t image,\n                        rbd_image_watcher_t *watchers, size_t *max_watchers)\n"
+      },
+      {
+        "name": "Image.UpdateWatch",
+        "comment": "UpdateWatch updates the image object to watch metadata changes to the\nimage, returning a Watch object.\n\nImplements:\n int rbd_update_watch(rbd_image_t image, uint64_t *handle,\n                      rbd_update_callback_t watch_cb, void *arg);\n"
+      },
+      {
+        "name": "Watch.Unwatch",
+        "comment": "Unwatch un-registers the image watch.\n\nImplements:\n int rbd_update_unwatch(rbd_image_t image, uint64_t handle);\n"
+      }
+    ]
+  },
+  "rbd/admin": {
+    "stable_api": [
+      {
+        "name": "NewFromConn",
+        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n"
+      },
+      {
+        "name": "NewLevelSpec",
+        "comment": "NewLevelSpec is used to construct a LevelSpec given a pool and\noptional namespace and image names.\n"
+      },
+      {
+        "name": "NewRawLevelSpec",
+        "comment": "NewRawLevelSpec returns a LevelSpec directly based on the spec string\nargument without constructing it from component values. This should only be\nused if NewLevelSpec can not create the levelspec value you want to pass to\nceph.\n"
+      },
+      {
+        "name": "RBDAdmin.MirrorSnashotSchedule",
+        "comment": "MirrorSnashotSchedule returns a MirrorSnashotScheduleAdmin type for\nmanaging ceph rbd mirror snapshot schedules.\n"
+      },
+      {
+        "name": "MirrorSnashotScheduleAdmin.Add",
+        "comment": "Add a new snapshot schedule to the given pool/image based on the supplied\nlevel spec.\n\nSimilar To:\n rbd mirror snapshot schedule add <level_spec> <interval> <start_time>\n"
+      },
+      {
+        "name": "MirrorSnashotScheduleAdmin.List",
+        "comment": "List the snapshot schedules based on the supplied level spec.\n\nSimilar To:\n rbd mirror snapshot schedule list <level_spec>\n"
+      },
+      {
+        "name": "MirrorSnashotScheduleAdmin.Remove",
+        "comment": "Remove a snapshot schedule matching the supplied arguments.\n\nSimilar To:\n rbd mirror snapshot schedule remove <level_spec> <interval> <start_time>\n"
+      },
+      {
+        "name": "MirrorSnashotScheduleAdmin.Status",
+        "comment": "Status returns the status of the snapshot (eg. when it will next take place)\nmatching the supplied level spec.\n\nSimilar To:\n rbd mirror snapshot schedule status <level_spec>\n"
+      }
+    ]
+  },
+  "rgw/admin": {
+    "preview_api": [
+      {
+        "name": "API.AddUserCap",
+        "comment": "AddUserCap adds the capabilities for a user.\nOn Success, it returns the updated list of UserCaps for the user.\nPREVIEW\n",
+        "added_in_version": "v0.12.0",
+        "expected_stable_version": "v0.13.0"
+      },
+      {
+        "name": "API.RemoveUserCap",
+        "comment": "RemoveUserCap removes the capabilities from a user.\nOn Success, it returns the updated list of UserCaps for the user.\nPREVIEW\n",
+        "added_in_version": "v0.12.0",
+        "expected_stable_version": "v0.13.0"
+      }
+    ],
+    "stable_api": [
+      {
+        "name": "API.ListBuckets",
+        "comment": "ListBuckets will return the list of all buckets present in the object store\n"
+      },
+      {
+        "name": "API.GetBucketInfo",
+        "comment": "GetBucketInfo will return various information about a specific token\n"
+      },
+      {
+        "name": "API.GetBucketPolicy",
+        "comment": "GetBucketPolicy - http://docs.ceph.com/docs/mimic/radosgw/adminops/#get-bucket-or-object-policy\n"
+      },
+      {
+        "name": "API.RemoveBucket",
+        "comment": "RemoveBucket will remove a given token from the object store\n"
+      },
+      {
+        "name": "errorReason.Error"
+      },
+      {
+        "name": "statusError.Is",
+        "comment": "Is determines whether the error is known to be reported\n"
+      },
+      {
+        "name": "statusError.Error",
+        "comment": "Error returns non-empty string if there was an error.\n"
+      },
+      {
+        "name": "API.GetUserQuota",
+        "comment": "GetUserQuota will return the quota for a user\n"
+      },
+      {
+        "name": "API.SetUserQuota",
+        "comment": "SetUserQuota sets quota to a user\nGlobal quotas (https://docs.ceph.com/en/latest/radosgw/admin/#reading-writing-global-quotas) are not surfaced in the Admin Ops API\nSo this library cannot expose it yet\n"
+      },
+      {
+        "name": "New",
+        "comment": "New returns client for Ceph RGW\n"
+      },
+      {
+        "name": "API.GetUsage",
+        "comment": "GetUsage request bandwidth usage information on the object store\n"
+      },
+      {
+        "name": "API.TrimUsage",
+        "comment": "TrimUsage removes bandwidth usage information. With no dates specified, removes all usage information.\n"
+      },
+      {
+        "name": "API.GetUser",
+        "comment": "GetUser retrieves a given object store user\n"
+      },
+      {
+        "name": "API.GetUsers",
+        "comment": "GetUsers lists all object store users\n"
+      },
+      {
+        "name": "API.CreateUser",
+        "comment": "CreateUser creates a user in the object store\n"
+      },
+      {
+        "name": "API.RemoveUser",
+        "comment": "RemoveUser remove an user from the object store\n"
+      },
+      {
+        "name": "API.ModifyUser",
+        "comment": "ModifyUser - http://docs.ceph.com/docs/latest/radosgw/adminops/#modify-user\n"
+      }
+    ]
+  }
+}
