@@ -8,6 +8,12 @@
 
 ## Package: rados
 
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+WriteOp.CmpExt | v0.12.0 | v0.14.0 | 
+
 ## Package: rbd
 
 ### Deprecated APIs
@@ -20,10 +26,10 @@ Snapshot.Set | v0.10.0 |  |
 
 ## Package: rbd/admin
 
-### Preview APIs
-
 ## Package: rgw/admin
 
 ### Preview APIs
 
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
 

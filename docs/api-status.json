@@ -925,6 +925,14 @@
         "name": "WriteOp.WriteSame",
         "comment": "WriteSame write a given byte slice to the object multiple times, until\nwriteLen is satisfied.\n\nImplements:\n void rados_write_op_writesame(rados_write_op_t write_op,\n                               const char *buffer,\n                               size_t data_len,\n                               size_t write_len,\n                               uint64_t offset);\n"
       }
+    ],
+    "preview_api": [
+      {
+        "name": "WriteOp.CmpExt",
+        "comment": "CmpExt ensures that given object range (extent) satisfies comparison.\n PREVIEW\n\nImplements:\n void rados_write_op_cmpext(rados_write_op_t write_op,\n                            const char * cmp_buf,\n                            size_t cmp_len,\n                            uint64_t off,\n                            int * prval);\n",
+        "added_in_version": "v0.12.0",
+        "expected_stable_version": "v0.14.0"
+      }
     ]
   },
   "rbd": {
