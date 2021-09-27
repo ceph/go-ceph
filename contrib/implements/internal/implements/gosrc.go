@@ -190,6 +190,9 @@ func CephGoFunctions(source, packageName string, ii *Inspector) error {
 	toCheck := []string{}
 	toCheck = append(toCheck, p.GoFiles...)
 	toCheck = append(toCheck, p.CgoFiles...)
+	for _, fname := range p.IgnoredGoFiles {
+		logger.Printf("Ignored go file: %v\n", fname)
+	}
 	for _, fname := range toCheck {
 		logger.Printf("Reading go file: %v\n", fname)
 		src, err := ioutil.ReadFile(path.Join(p.Dir, fname))
@@ -208,4 +211,8 @@ func CephGoFunctions(source, packageName string, ii *Inspector) error {
 		ast.Walk(ii.visitor, f)
 	}
 	return nil
+}
+
+func init() {
+	build.Default.BuildTags = append(build.Default.BuildTags, "ceph_preview")
 }
