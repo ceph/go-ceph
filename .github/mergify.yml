@@ -22,7 +22,7 @@ pull_request_rules:
       - status-success=test-suite (pacific)
       - or:
         - and:
-          - label!=API
+          - label=no-API
           - "#approved-reviews-by>=1"
         - and:
           - label=API
