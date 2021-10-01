@@ -17,12 +17,13 @@ convention in the Go community.
 ## Deprecated
 
 This is a level for APIs that should not be used for new code. These are marked
-with _DEPRECATED_ in the documentation. During 0.x releases these APIs might get
-removed in a future release, especially the 1.0 release, so we recommend
-refactoring the code at the earliest convenience. After the 1.0 release,
-deprecated APIs will not be removed, however they are still deprecated and only
-in maintanence mode. We usually don't make improvements for these APIs and we
-can't guarantee optimal performance.
+as deprecated according to Go conventions in the documentation (that is, a
+paragraph beginning with _Deprecated:_). During 0.x releases these APIs
+might get removed in a future release, especially the 1.0 release, so we
+recommend refactoring the code at the earliest convenience. After the 1.0
+release, deprecated APIs will not be removed, however they are still deprecated
+and only in maintanence mode. We usually don't make improvements for these APIs
+and we can't guarantee optimal performance.
 
 ## Preview
 
