@@ -85,11 +85,11 @@ func readDocComment(fdec *ast.FuncDecl, gfunc *goFunction) {
 	gfunc.comment = fdec.Doc.Text()
 	lines := strings.Split(gfunc.comment, "\n")
 	for i := range lines {
-		if strings.Contains(lines[i], "DEPRECATED") {
+		if strings.HasPrefix(lines[i], "Deprecated: ") {
 			gfunc.isDeprecated = true
 			logger.Printf("marked deprecated: %s\n", fdec.Name.Name)
 		}
-		if strings.Contains(lines[i], "PREVIEW") {
+		if strings.HasPrefix(lines[i], " PREVIEW") {
 			gfunc.isPreview = true
 			logger.Printf("marked preview: %s\n", fdec.Name.Name)
 		}
