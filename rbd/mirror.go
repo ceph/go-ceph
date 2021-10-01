@@ -746,7 +746,9 @@ func (iter *MirrorImageGlobalStatusIter) Next() (*GlobalMirrorImageIDAndStatus, 
 }
 
 // Close terminates iteration regardless if iteration was completed and
-// frees any associated resources. (DEPRECATED)
+// frees any associated resources.
+//
+// Deprecated: not required
 func (*MirrorImageGlobalStatusIter) Close() error {
 	return nil
 }
