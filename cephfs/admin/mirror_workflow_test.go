@@ -1,3 +1,4 @@
+//go:build !nautilus && !octopus
 // +build !nautilus,!octopus
 
 package admin
