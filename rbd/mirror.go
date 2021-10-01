@@ -1,3 +1,4 @@
+//go:build !nautilus
 // +build !nautilus
 
 // Initially, we're only providing mirroring related functions for octopus as
