@@ -147,9 +147,10 @@ func (snapshot *Snapshot) IsProtected() (bool, error) {
 	return cIsProtected != 0, nil
 }
 
-// Set updates the rbd image (not the Snapshot) such that the snapshot
-// is the source of readable data (DEPRECATED).
-// Refer the SetSnapshot method of the Image type instead.
+// Set updates the rbd image (not the Snapshot) such that the snapshot is the
+// source of readable data.
+//
+// Deprecated: use the SetSnapshot method of the Image type instead
 //
 // Implements:
 //  int rbd_snap_set(rbd_image_t image, const char *snapname);

@@ -327,11 +327,9 @@ func (image *Image) Rename(destname string) error {
 	return err
 }
 
-// Open the rbd image (DEPRECATED).
+// Open the rbd image.
 //
-// Deprecated: The Open function was provided in earlier versions of the API
-// and now exists to support older code. The use of OpenImage and
-// OpenImageReadOnly is preferred.
+// Deprecated: use OpenImage and OpenImageReadOnly instead
 func (image *Image) Open(args ...interface{}) error {
 	if err := image.validate(imageNeedsIOContext | imageNeedsName); err != nil {
 		return err

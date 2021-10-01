@@ -10,8 +10,9 @@ import (
 )
 
 // AddUserCap adds the capabilities for a user.
+//  PREVIEW
+//
 // On Success, it returns the updated list of UserCaps for the user.
-// PREVIEW
 func (api *API) AddUserCap(ctx context.Context, uid, userCap string) ([]UserCapSpec, error) {
 	if uid == "" {
 		return nil, errMissingUserID
@@ -36,8 +37,9 @@ func (api *API) AddUserCap(ctx context.Context, uid, userCap string) ([]UserCapS
 }
 
 // RemoveUserCap removes the capabilities from a user.
+//  PREVIEW
+//
 // On Success, it returns the updated list of UserCaps for the user.
-// PREVIEW
 func (api *API) RemoveUserCap(ctx context.Context, uid, userCap string) ([]UserCapSpec, error) {
 	if uid == "" {
 		return nil, errMissingUserID
