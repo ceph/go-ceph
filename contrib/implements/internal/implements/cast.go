@@ -2,6 +2,7 @@ package implements
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -89,23 +90,16 @@ func parseCFunctionsFromCmd(args []string) (CFunctions, error) {
 
 	cmd := exec.Command(args[0], args[1:]...)
 	logger.Printf("will call: %v", cmd)
-	stdout, err := cmd.StdoutPipe()
+	stdout, err := cmd.Output()
 	if err != nil {
-		return nil, err
-	}
-	err = cmd.Start()
-	if err != nil {
-		return nil, err
-	}
-
-	xdec := xml.NewDecoder(stdout)
-	parseErr := xdec.Decode(&cf)
-
-	err = cmd.Wait()
-	if err != nil {
+		var ee *exec.ExitError
+		if errors.As(err, &ee) {
+			err = fmt.Errorf("%w, stderr:\n%s", err, ee.Stderr)
+		}
 		return nil, err
 	}
 
+	parseErr := xml.Unmarshal(stdout, &cf)
 	if parseErr != nil {
 		return nil, parseErr
 	}
