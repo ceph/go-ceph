@@ -188,6 +188,32 @@ def _setif(dct, key, value):
         dct[key] = value
 
 
+def _vfmt(x, y, z):
+    return f"v{x}.{y}.{z}"
+
+
+def tag_to_versions(cli, version_tag):
+    # first: parse the tag
+    if not version_tag.startswith("v"):
+        raise ValueError(f"unexpected tag: {version_tag}")
+    try:
+        x, y, z = [int(val) for val in version_tag[1:].split(".")]
+    except ValueError:
+        raise ValueError(f"unexpected tag: {version_tag}")
+    # set values according to the simple policy:
+    # where version is X.Y.Z
+    #  * added in: X+1
+    #  * expected stable in: X+1+2
+    #  * deprecated in: X+1
+    # if they weren't manually specified
+    if not cli.added_in_version:
+        cli.added_in_version = _vfmt(x, y + 1, z)
+    if not cli.stable_in_version:
+        cli.stable_in_version = _vfmt(x, y + 3, z)
+    if not cli.deprecated_in_version:
+        cli.deprecated_in_version = _vfmt(x, y + 1, z)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -239,10 +265,21 @@ def main():
         "-R",
         help="specify a version that this deprecated api is expected to be removed",
     )
+    parser.add_argument(
+        "--current-tag",
+        "-t",
+        help=(
+            "Specify the current VCS tag. This will be used to automatically"
+            " set version values if not otherwise specified."
+        ),
+    )
     cli = parser.parse_args()
 
     api_src = read_json(cli.source) if cli.source else {}
     api_tracked = read_json(cli.current) if cli.current else {}
+
+    if cli.current_tag:
+        tag_to_versions(cli, cli.current_tag)
 
     if cli.mode == "compare":
         # just compare the json files. useful for CI
