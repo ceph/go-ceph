@@ -210,6 +210,18 @@ implements:
 check-implements: implements
 	./implements $(IMPLEMENTS_OPTS) ./cephfs ./rados ./rbd
 
+
+api-check:
+	./contrib/apiage.py
+
+api-update:
+	./contrib/apiage.py --mode=update \
+		--current-tag="$$(git describe --tags --abbrev=0)"
+
+api-doc:
+	./contrib/apiage.py --mode=write-doc
+
+
 # force_go_build is phony and builds nothing, can be used for forcing
 # go toolchain commands to always run
-.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements
+.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements api-check api-update api-doc
