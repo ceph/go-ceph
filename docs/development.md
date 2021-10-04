@@ -139,6 +139,51 @@ record a simplified version of the command it most closely matches. Example:
 //  ceph fs subvolume ls <volume> --group-name=<group>
 ```
 
+Recently, go-ceph has adopted an [API Stability Policy](./api-stability.md) to
+help users of our library know what APIs are deprecated and what APIs are
+available for preview.  In short, APIs that are deprecated must contain a line
+starting with "Deprecated:" and APIs that are preview must contain a line
+starting with " PREVIEW".
+
+Deprecated function Example:
+
+```
+// AllocateBlocks pre-allocates the specified number of memory blocks
+// for caching.
+//
+// Deprecated: this API is no longer supported.
+//
+// Implements.
+//  int allocate_blocks(...)
+```
+
+Preview function example:
+
+```
+// Energize the particle buffers with anti-nutrinos. This can be used to
+// warm up the Heisenberg compensator.
+//  PREVIEW
+//
+// Implements:
+//  int energize(...)
+```
+
+### API Status
+
+In order to better track the status of our deprecated and preview APIs we have
+an [API Status document](./api-status.md). This document is generated from a
+JSON file in our `docs/` directory. When a new API is being added, one or more
+additional patches need to be provided to update the API status doc and JSON
+file. If you have no unusual requirements, you can run `make api-udpate` and
+commit the changes that have been made to the `docs/` directory.
+
+This command will automatically update the `api-status.*` files, indicating
+that the API is added in the next expected release and will become stable
+two release after that. If you need to, you can customize this behavior
+by editing the JSON file by hand, or running `./contib/apiage.py` with
+different options, followed by running `make api-doc` to update the generated
+markdown file.
+
 
 ## Testing
 
