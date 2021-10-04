@@ -33,7 +33,7 @@ only available, if the build tag `ceph_preview` is set. There might be breaking
 changes in future releases regarding preview APIs. Usually new exported APIs are
 introduced with this level first and become stable when there were no major
 changes to the API for two releases. The schedule for preview APIs becoming
-stable is tracked in a separate document (link TBD).
+stable is tracked in a [separate document](./api-status.md).
 
 Please note that while these APIs are still considered "unstable", this is not
 true for the quality of their implementations, which we regard as stable and
