@@ -1,49 +1,48 @@
 package implements
 
 import (
-	"encoding/xml"
-	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
+	"regexp"
+
+	"modernc.org/cc/v3"
 )
 
 var (
-	// CastXMLBin is the name/location of the castxml binary.
-	CastXMLBin = "castxml"
-
-	// Add a stub C function that goes nowhere and does nothing. Just
-	// to give castxml something to chew on. It may not be strictly
-	// needed but it worked for me.
-	// TODO Cleanup - The macro part is probably totally unnecessary but I wanted
-	// to see how much "extra stuff" castxml picked up.
-
-	gndn = `
-
-#define GNDN
-GNDN int foo(int x) {
-    return x;
-}
-`
-
 	// Individual "package" stubs. Add the needed headers to pick up the
-	// ceph lib<whatever> content plus the code stub for castxml.
+	// ceph lib<whatever> content.
 
 	cephfsCStub = `
-#define FILE_OFFSET_BITS 64
-#include <stdlib.h>
-#define __USE_FILE_OFFSET64
-#include <cephfs/libcephfs.h>
-` + gndn
+#include "cephfs/libcephfs.h"
+`
 	radosCStub = `
-#include <rados/librados.h>
-` + gndn
+#include "rados/librados.h"
+`
 	rbdCStub = `
-#include <rbd/librbd.h>
-#include <rbd/features.h>
-` + gndn
-
+#include "rbd/librbd.h"
+#include "rbd/features.h"
+`
+	typeStubs = `
+#define int8_t int
+#define int16_t int
+#define int32_t int
+#define int64_t int
+#define uint8_t int
+#define uint16_t int
+#define uint32_t int
+#define uint64_t int
+#define dev_t int
+#define size_t int
+#define ssize_t int
+#define mode_t int
+#define uid_t int
+#define gid_t int
+#define off_t int
+#define time_t int
+#define bool int
+#define __GNUC__ 4
+#define __x86_64__ 1
+#define __linux__ 1
+`
 	stubs = map[string]string{
 		"cephfs": cephfsCStub,
 		"rados":  radosCStub,
@@ -56,80 +55,49 @@ GNDN int foo(int x) {
 	}
 )
 
-type allCFunctions struct {
-	Functions CFunctions `xml:"Function"`
-}
-
-func parseCFunctions(xmlData []byte) ([]CFunction, error) {
-	cf := allCFunctions{}
-	if err := xml.Unmarshal(xmlData, &cf); err != nil {
-		return nil, err
-	}
-	return cf.Functions.ensure()
-}
-
-func parseCFunctionsFromFile(fname string) ([]CFunction, error) {
-	cf := allCFunctions{}
-
-	f, err := os.Open(fname)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	xdec := xml.NewDecoder(f)
-	err = xdec.Decode(&cf)
-	if err != nil {
-		return nil, err
-	}
-	return cf.Functions.ensure()
-}
-
-func parseCFunctionsFromCmd(args []string) (CFunctions, error) {
-	cf := allCFunctions{}
-
-	cmd := exec.Command(args[0], args[1:]...)
-	logger.Printf("will call: %v", cmd)
-	stdout, err := cmd.Output()
-	if err != nil {
-		var ee *exec.ExitError
-		if errors.As(err, &ee) {
-			err = fmt.Errorf("%w, stderr:\n%s", err, ee.Stderr)
-		}
-		return nil, err
-	}
-
-	parseErr := xml.Unmarshal(stdout, &cf)
-	if parseErr != nil {
-		return nil, parseErr
-	}
-	return cf.Functions.ensure()
-}
-
 func stubCFunctions(libname string) (CFunctions, error) {
 	cstub := stubs[libname]
 	if cstub == "" {
 		return nil, fmt.Errorf("no C stub available for '%s'", libname)
 	}
-
-	tfile, err := ioutil.TempFile("", "*-"+libname+".c")
+	var conf cc.Config
+	conf.PreprocessOnly = true
+	conf.IgnoreInclude = regexp.MustCompile(`^<.+>$`)
+	src := []cc.Source{
+		{Name: "typestubs", Value: typeStubs, DoNotCache: true},
+		{Name: libname, Value: cstub, DoNotCache: true},
+	}
+	inc := []string{"@", "/usr/local/include", "/usr/include"}
+	cAST, err := cc.Parse(&conf, inc, nil, src)
 	if err != nil {
 		return nil, err
 	}
-	defer os.Remove(tfile.Name())
-
-	_, err = tfile.Write([]byte(cstub))
-	if err != nil {
-		return nil, err
+	cfMap := map[cc.StringID]CFunction{}
+	deprecated := cc.String("deprecated")
+	for i := range cAST.Scope {
+		for _, n := range cAST.Scope[i] {
+			if n, ok := n.(*cc.Declarator); ok &&
+				!n.IsTypedefName &&
+				n.DirectDeclarator != nil &&
+				(n.DirectDeclarator.Case == cc.DirectDeclaratorFuncParam ||
+					n.DirectDeclarator.Case == cc.DirectDeclaratorFuncIdent) {
+				name := n.Name()
+				if _, exists := cfMap[name]; !exists {
+					_, isDeprecated := n.AttributeSpecifierList.Has(deprecated)
+					cf := CFunction{
+						Name:         name.String(),
+						IsDeprecated: isDeprecated,
+					}
+					cfMap[name] = cf
+				}
+			}
+		}
 	}
-
-	cmd := []string{
-		CastXMLBin,
-		"--castxml-output=1",
-		"-o", "-",
-		tfile.Name(),
+	cfs := make(CFunctions, 0, len(cfMap))
+	for _, cf := range cfMap {
+		cfs = append(cfs, cf)
 	}
-	return parseCFunctionsFromCmd(cmd)
+	return cfs, nil
 }
 
 // CephCFunctions will extract C functions from the supplied package name

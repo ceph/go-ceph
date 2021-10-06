@@ -2,19 +2,18 @@ package implements
 
 import (
 	"fmt"
-	"strings"
 )
 
 // CFunction represents a function in C code.
 type CFunction struct {
-	Name string `xml:"name,attr"`
-	Attr string `xml:"attributes,attr"`
+	Name         string
+	IsDeprecated bool
 }
 
 // isDeprecated will return true if the C function is marked deprecated
 // via attributes.
 func (cf CFunction) isDeprecated() bool {
-	return strings.Contains(cf.Attr, "deprecated")
+	return cf.IsDeprecated
 }
 
 // CFunctions is a sortable slice of CFunction.
