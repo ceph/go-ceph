@@ -82,7 +82,7 @@ func main() {
 		if err != nil {
 			abort(err.Error())
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		rpts = append(rpts, implements.NewJSONReport(o, f))
 	}
 	switch {
@@ -93,7 +93,7 @@ func main() {
 		if err != nil {
 			abort(err.Error())
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		rpts = append(rpts, implements.NewTextReport(o, f))
 	}
 	if len(rpts) == 0 {
@@ -136,6 +136,6 @@ func main() {
 		}
 	}
 	for _, r := range rpts {
-		r.Done()
+		_ = r.Done()
 	}
 }

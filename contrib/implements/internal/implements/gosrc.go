@@ -1,3 +1,4 @@
+// Package implements is internal
 package implements
 
 import (
@@ -37,7 +38,6 @@ type goFunction struct {
 	fullName        string
 	comment         string
 	implementsCFunc string
-	callsCFunc      string
 	isDeprecated    bool
 	isPreview       bool
 
@@ -114,7 +114,7 @@ func (v *visitor) checkCalled(s *ast.SelectorExpr) {
 	if !ok {
 		return
 	}
-	if "C" == ident.String() {
+	if ident.String() == "C" {
 		cname := s.Sel.String()
 		if ignoreCCalls[cname] {
 			return
