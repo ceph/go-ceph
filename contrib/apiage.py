@@ -278,6 +278,12 @@ def main():
     api_src = read_json(cli.source) if cli.source else {}
     api_tracked = read_json(cli.current) if cli.current else {}
 
+    if not api_src:
+        print(
+            f"error: no source data found (path: {cli.source})", file=sys.stderr
+        )
+        sys.exit(1)
+
     if cli.current_tag:
         tag_to_versions(cli, cli.current_tag)
 
