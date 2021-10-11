@@ -85,7 +85,8 @@ while true ; do
         ;;
         -h|--help)
             echo "Options:"
-            echo "  --test-run=VALUE    Run selected test or ALL, NONE"
+            echo "  --test-run=VALUE    Run selected test or ALL, NONE,"
+            echo "                      IMPLEMENTS"
             echo "                      ALL is the default"
             echo "  --test-bench=VALUE  Run selected benchmarks"
             echo "  --test-pkg=PKG      Run only tests from PKG"
@@ -239,19 +240,25 @@ pre_all_tests() {
     echo "mode: count" > "cover.out"
 }
 
-post_all_tests() {
-    if [[ ${COVERAGE} = yes ]]; then
-        mkdir -p "${RESULTS_DIR}/coverage"
-        show go tool cover -html=cover.out -o "${RESULTS_DIR}/coverage/go-ceph.html"
-    fi
-    if [[ ${COVERAGE} = yes ]] && command -v castxml >/dev/null ; then
-        mkdir -p "${RESULTS_DIR}/coverage"
+implements_tool() {
+    if command -v castxml >/dev/null ; then
+        mkdir -p "${RESULTS_DIR}"
         show ./implements --list \
             --report-json "${RESULTS_DIR}/implements.json" \
             --report-text "${RESULTS_DIR}/implements.txt" \
             cephfs rados rbd cephfs/admin rbd/admin rgw/admin
         # output the brief summary info onto stdout
         grep '^[A-Z]' "${RESULTS_DIR}/implements.txt"
+    fi
+}
+
+post_all_tests() {
+    if [[ ${COVERAGE} = yes ]]; then
+        mkdir -p "${RESULTS_DIR}/coverage"
+        show go tool cover -html=cover.out -o "${RESULTS_DIR}/coverage/go-ceph.html"
+    fi
+    if [[ ${COVERAGE} = yes ]]; then
+        implements_tool
     fi
 }
 
@@ -265,6 +272,12 @@ test_go_ceph() {
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"
         return 0
+    fi
+    if [[ ${TEST_RUN} == IMPLEMENTS ]]; then
+        echo "skipping tests, executing implements tool"
+        pre_all_tests
+        implements_tool
+        return $?
     fi
 
     PKG_PREFIX=github.com/ceph/go-ceph
