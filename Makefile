@@ -211,17 +211,27 @@ check-implements: implements
 	./implements $(IMPLEMENTS_OPTS) ./cephfs ./rados ./rbd
 
 
-api-check:
+api-check: implements-json
 	./contrib/apiage.py
 
-api-update:
+api-update: implements-json
 	./contrib/apiage.py --mode=update \
 		--current-tag="$$(git describe --tags --abbrev=0)"
 
 api-doc:
 	./contrib/apiage.py --mode=write-doc
 
+ifeq ($(RESULTS_DIR),)
+IMPLEMENTS_DIR:=$(PWD)/_results
+else
+IMPLEMENTS_DIR:=$(RESULTS_DIR)
+endif
+
+implements-json: $(IMPLEMENTS_DIR)/implements.json
+
+$(IMPLEMENTS_DIR)/implements.json: $(BUILDFILE)
+	$(MAKE) RESULTS_DIR="$(IMPLEMENTS_DIR)" ENTRYPOINT_ARGS="--test-run=IMPLEMENTS --micro-osd=/bin/true $(ENTRYPOINT_ARGS)" test-container
 
 # force_go_build is phony and builds nothing, can be used for forcing
 # go toolchain commands to always run
-.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements api-check api-update api-doc
+.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements api-check api-update api-doc implements-json
