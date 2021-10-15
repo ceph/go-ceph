@@ -58,8 +58,15 @@ type UserStat struct {
 
 // GetUser retrieves a given object store user
 func (api *API) GetUser(ctx context.Context, user User) (User, error) {
-	if user.ID == "" {
+	if user.ID == "" && len(user.Keys) == 0 {
 		return User{}, errMissingUserID
+	}
+	if len(user.Keys) > 0 {
+		for _, key := range user.Keys {
+			if key.AccessKey == "" {
+				return User{}, errMissingUserAccessKey
+			}
+		}
 	}
 
 	body, err := api.call(ctx, http.MethodGet, "/user", valueToURLParams(user))

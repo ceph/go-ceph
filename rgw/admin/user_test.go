@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -101,12 +102,20 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 	})
 
-	suite.T().Run("get user leseb", func(t *testing.T) {
+	suite.T().Run("get user leseb by uid", func(t *testing.T) {
 		user, err := co.GetUser(context.Background(), User{ID: "leseb"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 		assert.Equal(suite.T(), "users", user.Caps[0].Type)
 		assert.Equal(suite.T(), "read", user.Caps[0].Perm)
+		os.Setenv("LESEB_ACCESS_KEY", user.Keys[0].AccessKey)
+	})
+
+	suite.T().Run("get user leseb by key", func(t *testing.T) {
+		user, err := co.GetUser(context.Background(), User{Keys: []UserKeySpec{{AccessKey: os.Getenv("LESEB_ACCESS_KEY")}}})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), "leseb@example.com", user.Email)
+		os.Unsetenv("LESEB_ACCESS_KEY")
 	})
 
 	suite.T().Run("modify user email", func(t *testing.T) {
@@ -162,10 +171,41 @@ func (suite *RadosGWTestSuite) TestUser() {
 }
 
 func TestGetUserMockAPI(t *testing.T) {
+	t.Run("test simple api mock", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
+		assert.NoError(t, err)
+		assert.Equal(t, "dashboard-admin", u.DisplayName, u)
+	})
+	t.Run("test get user with access key", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		u, err := api.GetUser(context.TODO(), User{Keys: []UserKeySpec{{AccessKey: "4WD1FGM5PXKLC97YC0SZ"}}})
+		assert.NoError(t, err)
+		assert.Equal(t, "dashboard-admin", u.DisplayName, u)
+	})
+	t.Run("test get user with nothing", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{})
+		assert.Error(t, err)
+		assert.EqualError(t, err, "missing user ID")
+	})
+	t.Run("test get user with missing correct key", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{Keys: []UserKeySpec{{SecretKey: "4WD1FGM5PXKLC97YC0SZ"}}})
+		assert.Error(t, err)
+		assert.EqualError(t, err, "missing user access key")
+	})
+}
+
+func returnMockClient() *mockClient {
 	r := ioutil.NopCloser(bytes.NewReader(fakeUserResponse))
-	mockClient := &mockClient{
+	return &mockClient{
 		mockDo: func(req *http.Request) (*http.Response, error) {
-			if req.URL.RawQuery == "format=json&uid=dashboard-admin" && req.Method == http.MethodGet && req.URL.Path == "127.0.0.1/admin/user" {
+			if req.Method == http.MethodGet && req.URL.Path == "127.0.0.1/admin/user" {
 				return &http.Response{
 					StatusCode: 200,
 					Body:       r,
@@ -174,10 +214,4 @@ func TestGetUserMockAPI(t *testing.T) {
 			return nil, fmt.Errorf("unexpected request: %q. method %q. path %q", req.URL.RawQuery, req.Method, req.URL.Path)
 		},
 	}
-
-	api, err := New("127.0.0.1", "accessKey", "secretKey", mockClient)
-	assert.NoError(t, err)
-	u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
-	assert.NoError(t, err)
-	assert.Equal(t, "dashboard-admin", u.DisplayName, u)
 }
