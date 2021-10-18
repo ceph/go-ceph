@@ -210,6 +210,9 @@ implements:
 check-implements: implements
 	./implements $(IMPLEMENTS_OPTS) ./cephfs ./rados ./rbd
 
+clean-implements:
+	$(RM) ./implements
+
 
 api-check: implements-json
 	./contrib/apiage.py
@@ -234,4 +237,4 @@ $(IMPLEMENTS_DIR)/implements.json: $(BUILDFILE)
 
 # force_go_build is phony and builds nothing, can be used for forcing
 # go toolchain commands to always run
-.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements api-check api-update api-doc implements-json
+.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements clean-implements api-check api-update api-doc implements-json
