@@ -234,7 +234,7 @@ pre_all_tests() {
     # Prepare Go code
     go get -t -v ${BUILD_TAGS} ./...
     diff -u <(echo -n) <(gofmt -d -s .)
-    make implements
+    make clean-implements implements
 
     # Reset whole-module coverage file
     echo "mode: count" > "cover.out"
