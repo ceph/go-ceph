@@ -50,16 +50,17 @@ work with non-current versions of Ceph, it is required to pass build-tags to
 the `go` command line. A tag with the named Ceph release will enable/disable
 certain features of the go-ceph packages, and prevent warnings or compile
 problems. For example, to ensure you select the library features that match
-the "nautilus" release, use:
+the "pacific" release, use:
 ```sh
-go build -tags nautilus ....
-go test -tags nautilus ....
+go build -tags pacific ....
+go test -tags pacific ....
 ```
 
 ### Supported Ceph Versions
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.12.0         | octopus, pacific        | nautilus                 |
 | v0.11.0         | nautilus, octopus, pacific  |                      |
 | v0.10.0         | nautilus, octopus, pacific  |                      |
 | v0.9.0          | nautilus, octopus       |                          |
