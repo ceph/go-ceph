@@ -242,7 +242,7 @@ require `gofmt` as well as [revive](https://github.com/mgechev/revive).
 A custom tool called `implements` is available under `contrib/implements`. This
 tool is designed to help compare what is available in ceph vs. go-ceph. It
 checks both the "Implements" sections in the comments as well as the code
-itself. It requires the [castxml](https://github.com/CastXML/CastXML) CLI tool.
+itself.
 
 
 ## Contribution Guidelines
