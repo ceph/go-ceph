@@ -38,8 +38,4 @@ TaskAdmin.Cancel | v0.12.0 | v0.13.0 |
 
 ### Preview APIs
 
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-API.AddUserCap | v0.12.0 | v0.13.0 | 
-API.RemoveUserCap | v0.12.0 | v0.13.0 | 
 

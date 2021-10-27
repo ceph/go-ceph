@@ -1646,20 +1646,7 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [
-      {
-        "name": "API.AddUserCap",
-        "comment": "AddUserCap adds the capabilities for a user.\nOn Success, it returns the updated list of UserCaps for the user.\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
-      },
-      {
-        "name": "API.RemoveUserCap",
-        "comment": "RemoveUserCap removes the capabilities from a user.\nOn Success, it returns the updated list of UserCaps for the user.\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
-      }
-    ],
+    "preview_api": [],
     "stable_api": [
       {
         "name": "API.ListBuckets",
@@ -1727,6 +1714,14 @@
       {
         "name": "API.ModifyUser",
         "comment": "ModifyUser - http://docs.ceph.com/docs/latest/radosgw/adminops/#modify-user\n"
+      },
+      {
+        "name": "API.AddUserCap",
+        "comment": "AddUserCap adds the capabilities for a user.\nOn Success, it returns the updated list of UserCaps for the user.\n"
+      },
+      {
+        "name": "API.RemoveUserCap",
+        "comment": "RemoveUserCap removes the capabilities from a user.\nOn Success, it returns the updated list of UserCaps for the user.\n"
       }
     ]
   }

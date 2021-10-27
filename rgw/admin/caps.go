@@ -1,6 +1,3 @@
-//go:build ceph_preview
-// +build ceph_preview
-
 package admin
 
 import (
@@ -11,7 +8,6 @@ import (
 )
 
 // AddUserCap adds the capabilities for a user.
-//  PREVIEW
 //
 // On Success, it returns the updated list of UserCaps for the user.
 func (api *API) AddUserCap(ctx context.Context, uid, userCap string) ([]UserCapSpec, error) {
@@ -38,7 +34,6 @@ func (api *API) AddUserCap(ctx context.Context, uid, userCap string) ([]UserCapS
 }
 
 // RemoveUserCap removes the capabilities from a user.
-//  PREVIEW
 //
 // On Success, it returns the updated list of UserCaps for the user.
 func (api *API) RemoveUserCap(ctx context.Context, uid, userCap string) ([]UserCapSpec, error) {
