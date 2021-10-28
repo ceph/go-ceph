@@ -41,6 +41,7 @@ func TestMirroring(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 	require.NoError(t, err)
+	time.Sleep(500 * time.Millisecond) // TODO: improve this
 
 	smadmin1 := fsa1.SnapshotMirror()
 	err = smadmin1.Enable(fsname)
@@ -49,6 +50,7 @@ func TestMirroring(t *testing.T) {
 		err := smadmin1.Disable(fsname)
 		require.NoError(t, err)
 	}()
+	time.Sleep(500 * time.Millisecond) // TODO: improve this
 
 	fsa2 := newFSAdmin(t, mirrorConfig())
 	err = fsa2.EnableMirroringModule(noForce)
