@@ -218,3 +218,28 @@ func (suite *RadosTestSuite) TestMonCommandTargetMalformedCommand() {
 	assert.NotEqual(suite.T(), info, "")
 	assert.Len(suite.T(), buf, 0)
 }
+
+// Does not work on ceph luminous, but we do not support ceph luminous.
+func (suite *RadosTestSuite) TestMgrCommandWithInputBuffer() {
+	suite.SetupConnection()
+
+	command, err := json.Marshal(
+		map[string]string{"prefix": "crash post", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err := suite.conn.MgrCommandWithInputBuffer(
+		[][]byte{command}, []byte(`{"crash_id": "foobar", "timestamp": "2020-04-10 15:08:34.659679Z"}`))
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+	assert.Len(suite.T(), buf, 0)
+
+	command, err = json.Marshal(
+		map[string]string{"prefix": "crash rm", "id": "foobar", "format": "json"})
+	assert.NoError(suite.T(), err)
+
+	buf, info, err = suite.conn.MgrCommandWithInputBuffer(
+		[][]byte{command}, nil)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), info, "")
+	assert.Len(suite.T(), buf, 0)
+}
