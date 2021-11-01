@@ -1,6 +1,3 @@
-//go:build !luminous
-// +build !luminous
-
 package rbd
 
 import (
