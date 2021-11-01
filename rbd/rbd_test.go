@@ -1641,6 +1641,14 @@ func TestGetId(t *testing.T) {
 	conn.Shutdown()
 }
 
+func TestGetName(t *testing.T) {
+	image := Image{
+		name: "testImg",
+	}
+	imgName := image.GetName()
+	assert.Equal(t, image.name, imgName)
+}
+
 func TestOpenImageById(t *testing.T) {
 	conn := radosConnect(t)
 
