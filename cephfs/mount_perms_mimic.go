@@ -1,6 +1,3 @@
-//go:build !luminous
-// +build !luminous
-
 //
 // ceph_mount_perms_set available in mimic & later
 
