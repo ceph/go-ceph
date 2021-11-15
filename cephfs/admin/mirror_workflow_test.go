@@ -25,6 +25,20 @@ const (
 	mirrorClient = "client.mirror_remote"
 )
 
+func waitForMirroring(t *testing.T, fsa *FSAdmin) {
+	for i := 0; i < 20; i++ {
+		modinfo, err := fsa.listModules()
+		require.NoError(t, err)
+		for _, emod := range modinfo.EnabledModules {
+			if emod == "mirroring" {
+				return
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	t.Fatalf("timed out waiting for mirroring module")
+}
+
 func TestMirroring(t *testing.T) {
 	if mirrorConfig() == "" {
 		t.Skip("no mirror config available")
@@ -41,7 +55,7 @@ func TestMirroring(t *testing.T) {
 		assert.NoError(t, err)
 	}()
 	require.NoError(t, err)
-	time.Sleep(500 * time.Millisecond) // TODO: improve this
+	waitForMirroring(t, fsa1)
 
 	smadmin1 := fsa1.SnapshotMirror()
 	err = smadmin1.Enable(fsname)
@@ -50,7 +64,6 @@ func TestMirroring(t *testing.T) {
 		err := smadmin1.Disable(fsname)
 		require.NoError(t, err)
 	}()
-	time.Sleep(500 * time.Millisecond) // TODO: improve this
 
 	fsa2 := newFSAdmin(t, mirrorConfig())
 	err = fsa2.EnableMirroringModule(noForce)
@@ -59,6 +72,7 @@ func TestMirroring(t *testing.T) {
 		err := fsa2.DisableMirroringModule()
 		assert.NoError(t, err)
 	}()
+	waitForMirroring(t, fsa2)
 
 	smadmin2 := fsa2.SnapshotMirror()
 	err = smadmin2.Enable(fsname)
