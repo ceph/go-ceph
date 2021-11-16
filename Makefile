@@ -209,7 +209,7 @@ implements:
 	$(GO_CMD) build -o implements ./contrib/implements
 
 check-implements: implements
-	./implements $(IMPLEMENTS_OPTS) ./cephfs ./rados ./rbd
+	./implements $(IMPLEMENTS_OPTS) cephfs rados rbd
 
 clean-implements:
 	$(RM) ./implements
