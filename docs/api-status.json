@@ -1590,62 +1590,42 @@
       {
         "name": "MirrorSnashotScheduleAdmin.Status",
         "comment": "Status returns the status of the snapshot (eg. when it will next take place)\nmatching the supplied level spec.\n\nSimilar To:\n rbd mirror snapshot schedule status <level_spec>\n"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "NewImageSpec",
-        "comment": "NewImageSpec is used to construct an ImageSpec given an image name/id\nand optional namespace and pool names.\nNewImageSpec constructs an ImageSpec to identify an RBD image and thus\nrequires image name/id, whereas NewLevelSpec constructs LevelSpec to\nidentify entire pool, pool namespace or single RBD image, all of which\nrequires pool name.\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "NewImageSpec is used to construct an ImageSpec given an image name/id\nand optional namespace and pool names.\nNewImageSpec constructs an ImageSpec to identify an RBD image and thus\nrequires image name/id, whereas NewLevelSpec constructs LevelSpec to\nidentify entire pool, pool namespace or single RBD image, all of which\nrequires pool name.\n"
       },
       {
         "name": "NewRawImageSpec",
-        "comment": "NewRawImageSpec returns a ImageSpec directly based on the spec string\nargument without constructing it from component values. This should only be\nused if NewImageSpec can not create the imagespec value you want to pass to\nceph.\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "NewRawImageSpec returns a ImageSpec directly based on the spec string\nargument without constructing it from component values. This should only be\nused if NewImageSpec can not create the imagespec value you want to pass to\nceph.\n"
       },
       {
         "name": "RBDAdmin.Task",
-        "comment": "Task returns a TaskAdmin type for\nmanaging ceph rbd task operations.\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "Task returns a TaskAdmin type for\nmanaging ceph rbd task operations.\n"
       },
       {
         "name": "TaskAdmin.AddFlatten",
-        "comment": "AddFlatten adds a background task to flatten a cloned image based on the supplied image spec.\n\nSimilar To:\n rbd task add flatten <image_spec>\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "AddFlatten adds a background task to flatten a cloned image based on the supplied image spec.\n\nSimilar To:\n rbd task add flatten <image_spec>\n"
       },
       {
         "name": "TaskAdmin.AddRemove",
-        "comment": "AddRemove adds a background task to remove an image based on the supplied image spec.\n\nSimilar To:\n rbd task add remove <image_spec>\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "AddRemove adds a background task to remove an image based on the supplied image spec.\n\nSimilar To:\n rbd task add remove <image_spec>\n"
       },
       {
         "name": "TaskAdmin.AddTrashRemove",
-        "comment": "AddTrashRemove adds a background task to remove an image from the trash based on the\nsupplied image id spec.\n\nSimilar To:\n rbd task add trash remove <image_id_spec>\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "AddTrashRemove adds a background task to remove an image from the trash based on the\nsupplied image id spec.\n\nSimilar To:\n rbd task add trash remove <image_id_spec>\n"
       },
       {
         "name": "TaskAdmin.List",
-        "comment": "List pending or running asynchronous tasks.\n\nSimilar To:\n rbd task list\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "List pending or running asynchronous tasks.\n\nSimilar To:\n rbd task list\n"
       },
       {
         "name": "TaskAdmin.GetTaskByID",
-        "comment": "GetTaskByID returns pending or running asynchronous task using id.\n\nSimilar To:\n rbd task list <task_id>\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "GetTaskByID returns pending or running asynchronous task using id.\n\nSimilar To:\n rbd task list <task_id>\n"
       },
       {
         "name": "TaskAdmin.Cancel",
-        "comment": "Cancel a pending or running asynchronous task.\n\nSimilar To:\n rbd task cancel <task_id>\nPREVIEW\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.13.0"
+        "comment": "Cancel a pending or running asynchronous task.\n\nSimilar To:\n rbd task cancel <task_id>\n"
       }
     ]
   },
