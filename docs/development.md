@@ -174,7 +174,7 @@ In order to better track the status of our deprecated and preview APIs we have
 an [API Status document](./api-status.md). This document is generated from a
 JSON file in our `docs/` directory. When a new API is being added, one or more
 additional patches need to be provided to update the API status doc and JSON
-file. If you have no unusual requirements, you can run `make api-udpate` and
+file. If you have no unusual requirements, you can run `make api-update` and
 commit the changes that have been made to the `docs/` directory.
 
 This command will automatically update the `api-status.*` files, indicating
