@@ -25,7 +25,7 @@ func main() {
     }
 
     // Get the "admin" user
-    user, err := co.GetUser(context.Background(), "admin")
+    user, err := co.GetUser(context.Background(), admin.User{ID: "admin"})
     if err != nil {
         panic(err)
     }
