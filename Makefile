@@ -192,6 +192,7 @@ check-revive:
 test-binaries: \
 	cephfs.test \
 	cephfs/admin.test \
+	common/admin/manager.test \
 	internal/callbacks.test \
 	internal/cutil.test \
 	internal/errutil.test \
