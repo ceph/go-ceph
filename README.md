@@ -60,6 +60,7 @@ go test -tags pacific ....
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.13.0         | octopus, pacific        | nautilus                 |
 | v0.12.0         | octopus, pacific        | nautilus                 |
 | v0.11.0         | nautilus, octopus, pacific  |                      |
 | v0.10.0         | nautilus, octopus, pacific  |                      |
