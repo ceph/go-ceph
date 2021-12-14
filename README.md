@@ -34,6 +34,13 @@ On rpm based systems (dnf, yum, etc) these may be:
 libcephfs-devel librbd-devel librados-devel
 ```
 
+NOTE: CentOS users may want to use a
+[CentOS Storage SIG](https://wiki.centos.org/SpecialInterestGroup/Storage/Ceph)
+repository to enable packages for a supported ceph version.
+Example: `dnf -y install centos-release-ceph-pacific`.
+(CentOS 7 users should use "yum" rather than "dnf")
+
+
 To quickly test if one can build with go-ceph on your system, run:
 ```sh
 go get github.com/ceph/go-ceph
