@@ -4,16 +4,11 @@
 package admin
 
 import (
-	"errors"
-	"os"
-	"strconv"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
-	ccom "github.com/ceph/go-ceph/common/commands"
-	"github.com/ceph/go-ceph/internal/commands"
+	"github.com/ceph/go-ceph/internal/admintest"
 	"github.com/ceph/go-ceph/rados"
 	"github.com/ceph/go-ceph/rbd"
 )
@@ -24,60 +19,15 @@ var (
 	testImageOrder  = 22
 	alreadyExists   = -0x11
 
-	cachedRadosConn *rados.Conn
-	cachedRBDAdmin  *RBDAdmin
-	debugTrace      bool
+	radosConnector = admintest.NewConnector()
 )
 
-func init() {
-	dt := os.Getenv("GO_CEPH_TEST_DEBUG_TRACE")
-	if ok, err := strconv.ParseBool(dt); ok && err == nil {
-		debugTrace = true
-	}
-}
-
 func getConn(t *testing.T) *rados.Conn {
-	if cachedRadosConn != nil {
-		return cachedRadosConn
-	}
-
-	conn, err := rados.NewConn()
-	require.NoError(t, err)
-	require.NotNil(t, conn)
-	err = conn.ReadDefaultConfigFile()
-	require.NoError(t, err)
-
-	timeout := time.After(time.Second * 5)
-	ch := make(chan error)
-	go func(conn *rados.Conn) {
-		ch <- conn.Connect()
-	}(conn)
-	select {
-	case err = <-ch:
-	case <-timeout:
-		err = errors.New("timed out waiting for connect")
-	}
-	require.NoError(t, err)
-
-	cachedRadosConn = conn
-	return cachedRadosConn
+	return radosConnector.GetConn(t)
 }
 
 func getAdmin(t *testing.T) *RBDAdmin {
-	if cachedRBDAdmin != nil {
-		return cachedRBDAdmin
-	}
-
-	var c ccom.RadosCommander = getConn(t)
-	if debugTrace {
-		c = commands.NewTraceCommander(c)
-	}
-	cachedRBDAdmin := NewFromConn(c)
-	require.NotNil(t, cachedRBDAdmin)
-	// We sleep briefly before returning in order to ensure we have a mgr map
-	// before we start executing the tests.
-	time.Sleep(50 * time.Millisecond)
-	return cachedRBDAdmin
+	return NewFromConn(radosConnector.Get(t))
 }
 
 func ensureDefaultPool(t *testing.T) {
