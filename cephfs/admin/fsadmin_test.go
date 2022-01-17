@@ -3,22 +3,15 @@ package admin
 import (
 	"errors"
 	"os"
-	"strconv"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
-	"github.com/ceph/go-ceph/internal/commands"
-	"github.com/ceph/go-ceph/rados"
+	"github.com/ceph/go-ceph/internal/admintest"
 )
 
 var (
-	cachedFSAdmin *FSAdmin
-
-	// set debugTrace to true to use tracing in tests
-	debugTrace = false
+	radosConnector = admintest.NewConnector()
 
 	// some tests are sensitive to the server version
 	serverVersion string
@@ -31,10 +24,6 @@ const (
 )
 
 func init() {
-	dt := os.Getenv("GO_CEPH_TEST_DEBUG_TRACE")
-	if ok, err := strconv.ParseBool(dt); ok && err == nil {
-		debugTrace = true
-	}
 	switch vname := os.Getenv("CEPH_VERSION"); vname {
 	case cephNautilus, cephOctopus, cephPacfic:
 		serverVersion = vname
@@ -57,37 +46,12 @@ func TestServerSentinel(t *testing.T) {
 }
 
 func getFSAdmin(t *testing.T) *FSAdmin {
-	if cachedFSAdmin != nil {
-		return cachedFSAdmin
-	}
-	cachedFSAdmin = newFSAdmin(t, "")
-	return cachedFSAdmin
+	return NewFromConn(radosConnector.Get(t))
 }
 
 func newFSAdmin(t *testing.T, configFile string) *FSAdmin {
-	conn, err := rados.NewConn()
-	require.NoError(t, err)
-	if configFile == "" {
-		err = conn.ReadDefaultConfigFile()
-		require.NoError(t, err)
-	} else {
-		err = conn.ReadConfigFile(configFile)
-		require.NoError(t, err)
-	}
-	err = conn.Connect()
-	require.NoError(t, err)
-
-	var cmdr RadosCommander = conn
-	if debugTrace {
-		// We wrap the "real" connection, which meets the RadosCommander interface,
-		// with a trace commander when debugTrace is set.
-		cmdr = commands.NewTraceCommander(conn)
-	}
-
-	// We sleep briefly before returning in order to ensure we have a mgr map
-	// before we start executing the tests.
-	time.Sleep(50 * time.Millisecond)
-	return NewFromConn(cmdr)
+	return NewFromConn(
+		admintest.WrapConn(admintest.NewConnFromConfig(t, configFile)))
 }
 
 func TestInvalidFSAdmin(t *testing.T) {
