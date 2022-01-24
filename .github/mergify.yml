@@ -1,5 +1,27 @@
 ---
+defaults:
+  actions:
+    queue:
+      name: default
+      method: rebase
+      rebase_fallback: merge
+      update_method: rebase
+
+# each test should be listed separately, do not use regular expressions:
+# https://docs.mergify.io/conditions.html#validating-all-status-check
+# Until mergify allows us to have default conditions, we will need to
+# repeat this list in a few places.
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=check
+      - check-success=dpulls
+      - check-success=test-suite (nautilus)
+      - check-success=test-suite (octopus)
+      - check-success=test-suite (pacific)
+
 pull_request_rules:
+  # Clearing approvals after content changes
   - name: remove outdated approvals
     conditions:
       - base=master
@@ -7,6 +29,7 @@ pull_request_rules:
       dismiss_reviews:
         approved: true
         changes_requested: false
+  # Our auto merge rules
   - name: automatic merge
     conditions:
       - label!=do-not-merge
@@ -15,8 +38,7 @@ pull_request_rules:
       - "#changes-requested-reviews-by=0"
       - status-success=check
       - status-success=dpulls
-      # each test should be listed separately, do not use regular expressions:
-      # https://docs.mergify.io/conditions.html#validating-all-status-check
+      # See above
       - status-success=test-suite (nautilus)
       - status-success=test-suite (octopus)
       - status-success=test-suite (pacific)
@@ -32,13 +54,10 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - "updated-at<10 days ago"
     actions:
-      merge:
-        method: rebase
-        rebase_fallback: merge
-        strict: smart
-        strict_method: rebase
+      queue: {}
       dismiss_reviews: {}
       delete_head_branch: {}
+  # Conflict resolution prompt
   - name: ask to resolve conflict
     conditions:
       - conflict
