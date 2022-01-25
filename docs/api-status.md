@@ -37,3 +37,5 @@ Snapshot.Set | v0.10.0 |  |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 
+## Package: common/admin/manager
+
