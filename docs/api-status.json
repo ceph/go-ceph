@@ -1740,5 +1740,32 @@
         "comment": "RemoveUserCap removes the capabilities from a user.\nOn Success, it returns the updated list of UserCaps for the user.\n"
       }
     ]
+  },
+  "common/admin/manager": {
+    "name": "common/admin/manager",
+    "summary": {
+      "total": 0,
+      "found": 0,
+      "missing": 0,
+      "deprecated": 0
+    },
+    "stable_api": [
+      {
+        "name": "NewFromConn",
+        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n"
+      },
+      {
+        "name": "MgrAdmin.EnableModule",
+        "comment": "EnableModule will enable the specified manager module.\n\nSimilar To:\n ceph mgr module enable <module> [--force]\n"
+      },
+      {
+        "name": "MgrAdmin.DisableModule",
+        "comment": "DisableModule will disable the specified manager module.\n\nSimilar To:\n ceph mgr module disable <module>\n"
+      },
+      {
+        "name": "MgrAdmin.ListModules",
+        "comment": "ListModules returns a module info struct reporting the lists of\nenabled, disabled, and always-on modules in the Ceph mgr.\n"
+      }
+    ]
   }
 }
