@@ -246,7 +246,7 @@ implements_tool() {
         show ./implements --list \
             --report-json "${RESULTS_DIR}/implements.json" \
             --report-text "${RESULTS_DIR}/implements.txt" \
-            cephfs rados rbd cephfs/admin rbd/admin rgw/admin
+            cephfs rados rbd cephfs/admin rbd/admin rgw/admin common/admin/manager
         # output the brief summary info onto stdout
         grep '^[A-Z]' "${RESULTS_DIR}/implements.txt"
     fi

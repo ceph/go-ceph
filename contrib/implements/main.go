@@ -110,7 +110,7 @@ func main() {
 			if verbose {
 				logger.Printf("Processing package (with C): %s\n", pkg)
 			}
-		case "cephfs/admin", "rbd/admin", "rgw/admin":
+		case "cephfs/admin", "rbd/admin", "rgw/admin", "common/admin/manager":
 			if verbose {
 				logger.Printf("Processing package: %s\n", pkg)
 			}
