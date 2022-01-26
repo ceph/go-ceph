@@ -24,6 +24,7 @@ ReadOp.Read | v0.14.0 | v0.16.0 |
 WriteOp.Remove | v0.14.0 | v0.16.0 | 
 ReadOp.AssertVersion | v0.14.0 | v0.16.0 | 
 WriteOp.AssertVersion | v0.14.0 | v0.16.0 | 
+WriteOp.SetXattr | v0.14.0 | v0.16.0 | 
 
 ## Package: rbd
 
