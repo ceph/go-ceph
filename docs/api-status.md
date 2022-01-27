@@ -14,6 +14,7 @@ Name | Added in Version | Expected Stable Version |
 ---- | ---------------- | ----------------------- | 
 WriteOp.CmpExt | v0.12.0 | v0.14.0 | 
 ReadOp.Read | v0.14.0 | v0.16.0 | 
+WriteOp.Remove | v0.14.0 | v0.16.0 | 
 
 ## Package: rbd
 
