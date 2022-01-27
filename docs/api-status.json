@@ -944,6 +944,18 @@
         "comment": "Remove object.\n PREVIEW\n\nImplements:\n void rados_write_op_remove(rados_write_op_t write_op)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "ReadOp.AssertVersion",
+        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before reading. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n PREVIEW\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "WriteOp.AssertVersion",
+        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before writing. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n PREVIEW\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
       }
     ]
   },
