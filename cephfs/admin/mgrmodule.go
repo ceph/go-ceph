@@ -8,6 +8,8 @@ const mirroring = "mirroring"
 
 // EnableModule will enable the specified manager module.
 //
+// Deprecated: use the equivalent function in cluster/admin/manager.
+//
 // Similar To:
 //  ceph mgr module enable <module> [--force]
 func (fsa *FSAdmin) EnableModule(module string, force bool) error {
@@ -16,6 +18,8 @@ func (fsa *FSAdmin) EnableModule(module string, force bool) error {
 }
 
 // DisableModule will disable the specified manager module.
+//
+// Deprecated: use the equivalent function in cluster/admin/manager.
 //
 // Similar To:
 //  ceph mgr module disable <module>
