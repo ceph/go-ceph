@@ -6,6 +6,13 @@
 
 ## Package: cephfs/admin
 
+### Deprecated APIs
+
+Name | Deprecated in Version | Expected Removal Version | 
+---- | --------------------- | ------------------------ | 
+FSAdmin.EnableModule | v0.14.0 | v0.16.0 | 
+FSAdmin.DisableModule | v0.14.0 | v0.16.0 | 
+
 ## Package: rados
 
 ### Preview APIs
