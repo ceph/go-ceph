@@ -28,7 +28,7 @@ const (
 
 func waitForMirroring(t *testing.T, fsa *FSAdmin) {
 	mgradmin := manager.NewFromConn(fsa.conn)
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 30; i++ {
 		modinfo, err := mgradmin.ListModules()
 		require.NoError(t, err)
 		for _, emod := range modinfo.EnabledModules {
