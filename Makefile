@@ -230,9 +230,7 @@ else
 IMPLEMENTS_DIR:=$(RESULTS_DIR)
 endif
 
-implements-json: $(IMPLEMENTS_DIR)/implements.json
-
-$(IMPLEMENTS_DIR)/implements.json: $(BUILDFILE)
+implements-json: $(BUILDFILE)
 	$(MAKE) RESULTS_DIR="$(IMPLEMENTS_DIR)" ENTRYPOINT_ARGS="--test-run=IMPLEMENTS --micro-osd=/bin/true $(ENTRYPOINT_ARGS)" test-container
 
 # force_go_build is phony and builds nothing, can be used for forcing
