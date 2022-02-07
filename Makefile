@@ -185,7 +185,7 @@ check-format:
 check-revive:
 	# Configure project's revive checks using .revive.toml
 	# See: https://github.com/mgechev/revive
-	revive -config .revive.toml $$($(GO_CMD) list ./... | grep -v /vendor/)
+	revive -config .revive.toml $$(find . -name '*.go')
 
 # Do a quick compile only check of the tests and impliclity the
 # library code as well.
