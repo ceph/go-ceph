@@ -9,9 +9,9 @@ package rados
 //
 import "C"
 
-// Ensure that the object exists and that its internal version number is equal
-// to "ver" before writing. "ver" should be a version number previously
-// obtained with IOContext.GetLastVersion().
+// AssertVersion ensures that the object exists and that its internal version
+// number is equal to "ver" before writing. "ver" should be a version number
+// previously obtained with IOContext.GetLastVersion().
 //  PREVIEW
 //
 // Implements:
