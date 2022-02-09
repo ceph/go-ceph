@@ -27,6 +27,17 @@ WriteOp.AssertVersion | v0.14.0 | v0.16.0 |
 WriteOp.SetXattr | v0.14.0 | v0.16.0 | 
 ReadOpOmapGetValsByKeysStep.Next | v0.14.0 | v0.16.0 | 
 ReadOp.GetOmapValuesByKeys | v0.14.0 | v0.16.0 | 
+IOContext.Watch | v0.14.0 | v0.16.0 | 
+IOContext.WatchWithTimeout | v0.14.0 | v0.16.0 | 
+Watcher.ID | v0.14.0 | v0.16.0 | 
+Watcher.Events | v0.14.0 | v0.16.0 | 
+Watcher.Errors | v0.14.0 | v0.16.0 | 
+Watcher.Check | v0.14.0 | v0.16.0 | 
+Watcher.Delete | v0.14.0 | v0.16.0 | 
+IOContext.Notify | v0.14.0 | v0.16.0 | 
+IOContext.NotifyWithTimeout | v0.14.0 | v0.16.0 | 
+NotifyEvent.Ack | v0.14.0 | v0.16.0 | 
+Conn.WatcherFlush | v0.14.0 | v0.16.0 | 
 
 ## Package: rbd
 

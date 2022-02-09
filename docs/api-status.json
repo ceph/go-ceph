@@ -988,6 +988,72 @@
         "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n PREVIEW\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys(rados_read_op_t read_op,\n                                          char const * const * keys,\n                                          size_t keys_len,\n                                          rados_omap_iter_t * iter,\n                                          int * prval)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "IOContext.Watch",
+        "comment": "Watch creates a Watcher for the specified object.\n PREVIEW\n\nA Watcher receives all notifications that are sent to the object on which it\nhas been created. It exposes two read-only channels: Events() receives all\nthe NotifyEvents and Errors() receives all occuring errors. A typical code\ncreating a Watcher could look like this:\n\n watcher, err := ioctx.Watch(oid)\n go func() { // event handler\n   for ne := range watcher.Events() {\n     ...\n     ne.Ack([]byte(\"response data...\"))\n     ...\n   }\n }()\n go func() { // error handler\n   for err := range watcher.Errors() {\n     ... handle err ...\n   }\n }()\n\nCAUTION: the Watcher references the IOContext in which it has been created.\nTherefore all watchers must be deleted with the Delete() method before the\nIOContext is being destroyed.\n\nImplements:\n int rados_watch2(rados_ioctx_t io, const char* o, uint64_t* cookie,\n   rados_watchcb2_t watchcb, rados_watcherrcb_t watcherrcb, void* arg)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "IOContext.WatchWithTimeout",
+        "comment": "WatchWithTimeout creates a watcher on an object. Same as Watcher(), but\ndifferent timeout than the default can be specified.\n PREVIEW\n\nImplements:\n int rados_watch3(rados_ioctx_t io, const char *o, uint64_t *cookie,\n\t  rados_watchcb2_t watchcb, rados_watcherrcb_t watcherrcb, uint32_t timeout,\n\t  void *arg);\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "Watcher.ID",
+        "comment": "ID returns the WatcherId of the Watcher\n PREVIEW\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "Watcher.Events",
+        "comment": "Events returns a read-only channel, that receives all notifications that are\nsent to the object of the Watcher.\n PREVIEW\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "Watcher.Errors",
+        "comment": "Errors returns a read-only channel, that receives all errors for the Watcher.\n PREVIEW\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "Watcher.Check",
+        "comment": "Check on the status of a Watcher.\n PREVIEW\n\nReturns the time since it was last confirmed. If there is an error, the\nWatcher is no longer valid, and should be destroyed with the Delete() method.\n\nImplements:\n int rados_watch_check(rados_ioctx_t io, uint64_t cookie)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "Watcher.Delete",
+        "comment": "Delete the watcher. This closes both the event and error channel.\n PREVIEW\n\nImplements:\n int rados_unwatch2(rados_ioctx_t io, uint64_t cookie)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "IOContext.Notify",
+        "comment": "Notify sends a notification with the provided data to all Watchers of the\nspecified object.\n PREVIEW\n\nCAUTION: even if the error is not nil. the returned slices\nmight still contain data.\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "IOContext.NotifyWithTimeout",
+        "comment": "NotifyWithTimeout is like Notify() but with a different timeout than the\ndefault.\n PREVIEW\n\nImplements:\n int rados_notify2(rados_ioctx_t io, const char* o, const char* buf, int buf_len,\n   uint64_t timeout_ms, char** reply_buffer, size_t* reply_buffer_len)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "NotifyEvent.Ack",
+        "comment": "Ack sends an acknowledgement with the specified response data to the notfier\nof the NotifyEvent. If a notify is not ack'ed, the originating Notify() call\nblocks and eventiually times out.\n PREVIEW\n\nImplements:\n int rados_notify_ack(rados_ioctx_t io, const char *o, uint64_t notify_id,\n   uint64_t cookie, const char *buf, int buf_len)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
+      },
+      {
+        "name": "Conn.WatcherFlush",
+        "comment": "WatcherFlush flushes all pending notifications of the cluster.\n PREVIEW\n\nImplements:\n int rados_watch_flush(rados_t cluster)\n",
+        "added_in_version": "v0.14.0",
+        "expected_stable_version": "v0.16.0"
       }
     ]
   },
