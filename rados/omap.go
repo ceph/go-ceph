@@ -88,15 +88,6 @@ type OmapKeyValue struct {
 // Release method is called the public methods of the step must no longer be
 // used and may return errors.
 type GetOmapStep struct {
-	// inputs:
-	startAfter   string
-	filterPrefix string
-	maxReturn    uint64
-
-	// arguments:
-	cStartAfter   *C.char
-	cFilterPrefix *C.char
-
 	// C returned data:
 	iter C.rados_omap_iter_t
 	more *C.uchar
@@ -109,15 +100,10 @@ type GetOmapStep struct {
 	canIterate bool
 }
 
-func newGetOmapStep(startAfter, filterPrefix string, maxReturn uint64) *GetOmapStep {
+func newGetOmapStep() *GetOmapStep {
 	gos := &GetOmapStep{
-		startAfter:    startAfter,
-		filterPrefix:  filterPrefix,
-		maxReturn:     maxReturn,
-		cStartAfter:   C.CString(startAfter),
-		cFilterPrefix: C.CString(filterPrefix),
-		more:          (*C.uchar)(C.malloc(C.sizeof_uchar)),
-		rval:          (*C.int)(C.malloc(C.sizeof_int)),
+		more: (*C.uchar)(C.malloc(C.sizeof_uchar)),
+		rval: (*C.int)(C.malloc(C.sizeof_int)),
 	}
 	runtime.SetFinalizer(gos, opStepFinalizer)
 	return gos
@@ -133,10 +119,6 @@ func (gos *GetOmapStep) free() {
 	gos.more = nil
 	C.free(unsafe.Pointer(gos.rval))
 	gos.rval = nil
-	C.free(unsafe.Pointer(gos.cStartAfter))
-	gos.cStartAfter = nil
-	C.free(unsafe.Pointer(gos.cFilterPrefix))
-	gos.cFilterPrefix = nil
 }
 
 func (gos *GetOmapStep) update() error {
