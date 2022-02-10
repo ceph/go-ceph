@@ -97,40 +97,6 @@ func (gos *GetOmapStep) More() bool {
 	return *gos.more != 0
 }
 
-// removeOmapKeysStep is a write operation step used to track state, especially
-// C memory, across the setup and use of a WriteOp.
-type removeOmapKeysStep struct {
-	withRefs
-	withoutUpdate
-
-	// arguments:
-	cKeys cutil.CPtrCSlice
-	cNum  C.size_t
-}
-
-func newRemoveOmapKeysStep(keys []string) *removeOmapKeysStep {
-	cKeys := cutil.NewCPtrCSlice(len(keys))
-	roks := &removeOmapKeysStep{
-		cKeys: cKeys,
-		cNum:  C.size_t(len(keys)),
-	}
-
-	i := 0
-	for _, key := range keys {
-		cKeys[i] = cutil.CPtr(C.CString(key))
-		roks.add(unsafe.Pointer(cKeys[i]))
-		i++
-	}
-
-	runtime.SetFinalizer(roks, opStepFinalizer)
-	return roks
-}
-
-func (roks *removeOmapKeysStep) free() {
-	roks.cKeys.Free()
-	roks.withRefs.free()
-}
-
 // SetOmap appends the map `pairs` to the omap `oid`
 func (ioctx *IOContext) SetOmap(oid string, pairs map[string][]byte) error {
 	op := CreateWriteOp()
