@@ -983,7 +983,7 @@
       },
       {
         "name": "ReadOp.GetOmapValuesByKeys",
-        "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n PREVIEW\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys(rados_read_op_t read_op,\n                                          char const * const * keys,\n                                          size_t keys_len,\n                                          rados_omap_iter_t * iter,\n                                          int * prval)\n",
+        "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n PREVIEW\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys2(rados_read_op_t read_op,\n                                           char const * const * keys,\n                                           size_t num_keys,\n                                           const size_t * key_lens,\n                                           rados_omap_iter_t * iter,\n                                           int * prval)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
