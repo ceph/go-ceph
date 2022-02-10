@@ -151,11 +151,12 @@ func (gos *GetOmapStep) Next() (*OmapKeyValue, error) {
 		return nil, ErrOperationIncomplete
 	}
 	var (
-		cKey *C.char
-		cVal *C.char
-		cLen C.size_t
+		cKey    *C.char
+		cVal    *C.char
+		cKeyLen C.size_t
+		cValLen C.size_t
 	)
-	ret := C.rados_omap_get_next(gos.iter, &cKey, &cVal, &cLen)
+	ret := C.rados_omap_get_next2(gos.iter, &cKey, &cVal, &cKeyLen, &cValLen)
 	if ret != 0 {
 		return nil, getError(ret)
 	}
@@ -163,8 +164,8 @@ func (gos *GetOmapStep) Next() (*OmapKeyValue, error) {
 		return nil, nil
 	}
 	return &OmapKeyValue{
-		Key:   C.GoString(cKey),
-		Value: C.GoBytes(unsafe.Pointer(cVal), C.int(cLen)),
+		Key:   string(C.GoBytes(unsafe.Pointer(cKey), C.int(cKeyLen))),
+		Value: C.GoBytes(unsafe.Pointer(cVal), C.int(cValLen)),
 	}, nil
 }
 

@@ -65,10 +65,11 @@ func (s *ReadOpOmapGetValsByKeysStep) Next() (*OmapKeyValue, error) {
 	var (
 		cKey    *C.char
 		cVal    *C.char
+		cKeyLen C.size_t
 		cValLen C.size_t
 	)
 
-	ret := C.rados_omap_get_next(s.iter, &cKey, &cVal, &cValLen)
+	ret := C.rados_omap_get_next2(s.iter, &cKey, &cVal, &cKeyLen, &cValLen)
 	if ret != 0 {
 		return nil, getError(ret)
 	}
@@ -79,7 +80,7 @@ func (s *ReadOpOmapGetValsByKeysStep) Next() (*OmapKeyValue, error) {
 	}
 
 	return &OmapKeyValue{
-		Key:   C.GoString(cKey),
+		Key:   string(C.GoBytes(unsafe.Pointer(cKey), C.int(cKeyLen))),
 		Value: C.GoBytes(unsafe.Pointer(cVal), C.int(cValLen)),
 	}, nil
 }
