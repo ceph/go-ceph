@@ -118,12 +118,14 @@ func (w *WriteOp) SetOmap(pairs map[string][]byte) {
 
 // RmOmapKeys removes the specified `keys` from the omap `oid`.
 func (w *WriteOp) RmOmapKeys(keys []string) {
-	roks := newRemoveOmapKeysStep(keys)
-	w.steps = append(w.steps, roks)
-	C.rados_write_op_omap_rm_keys(
+	cKeys := cutil.NewBufferGroupStrings(keys)
+	defer cKeys.Free()
+
+	C.rados_write_op_omap_rm_keys2(
 		w.op,
-		(**C.char)(roks.cKeys.Ptr()),
-		roks.cNum)
+		(**C.char)(cKeys.BuffersPtr()),
+		(*C.size_t)(cKeys.LengthsPtr()),
+		(C.size_t)(len(keys)))
 }
 
 // CleanOmap clears the omap `oid`.
