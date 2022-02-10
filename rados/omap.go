@@ -10,68 +10,7 @@ import "C"
 import (
 	"runtime"
 	"unsafe"
-
-	"github.com/ceph/go-ceph/internal/cutil"
 )
-
-// setOmapStep is a write op step. It holds C memory used in the operation.
-type setOmapStep struct {
-	withRefs
-	withoutUpdate
-
-	// C arguments
-	cKeys    cutil.CPtrCSlice
-	cValues  cutil.CPtrCSlice
-	cLengths cutil.SizeTCSlice
-	cNum     C.size_t
-}
-
-func newSetOmapStep(pairs map[string][]byte) *setOmapStep {
-
-	maplen := len(pairs)
-	cKeys := cutil.NewCPtrCSlice(maplen)
-	cValues := cutil.NewCPtrCSlice(maplen)
-	cLengths := cutil.NewSizeTCSlice(maplen)
-
-	sos := &setOmapStep{
-		cKeys:    cKeys,
-		cValues:  cValues,
-		cLengths: cLengths,
-		cNum:     C.size_t(maplen),
-	}
-
-	var i uintptr
-	for key, value := range pairs {
-		// key
-		ck := C.CString(key)
-		sos.add(unsafe.Pointer(ck))
-		cKeys[i] = cutil.CPtr(ck)
-
-		// value and its length
-		vlen := cutil.SizeT(len(value))
-		if vlen > 0 {
-			cv := C.CBytes(value)
-			sos.add(cv)
-			cValues[i] = cutil.CPtr(cv)
-		} else {
-			cValues[i] = nil
-		}
-
-		cLengths[i] = vlen
-
-		i++
-	}
-
-	runtime.SetFinalizer(sos, opStepFinalizer)
-	return sos
-}
-
-func (sos *setOmapStep) free() {
-	sos.cKeys.Free()
-	sos.cValues.Free()
-	sos.cLengths.Free()
-	sos.withRefs.free()
-}
 
 // OmapKeyValue items are returned by the GetOmapStep's Next call.
 type OmapKeyValue struct {
