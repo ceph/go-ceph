@@ -18,6 +18,9 @@ func getDefaultValue() url.Values {
 func TestBuildQueryPath(t *testing.T) {
 	queryPath := buildQueryPath("http://192.168.0.1", "/user", getDefaultValue().Encode())
 	assert.Equal(t, "http://192.168.0.1/admin/user?format=json", queryPath)
+
+	queryPath = buildQueryPath("http://192.168.0.1", "/user?foo", getDefaultValue().Encode())
+	assert.Equal(t, "http://192.168.0.1/admin/user?foo&format=json", queryPath)
 }
 
 func TestValueToURLParams(t *testing.T) {
