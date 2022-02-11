@@ -87,6 +87,7 @@ const (
 
 var (
 	errMissingUserID          = errors.New("missing user ID")
+	errMissingSubuserID       = errors.New("missing subuser ID")
 	errMissingUserAccessKey   = errors.New("missing user access key")
 	errMissingUserDisplayName = errors.New("missing user display name")
 	errMissingUserCap         = errors.New("missing user capabilities")
