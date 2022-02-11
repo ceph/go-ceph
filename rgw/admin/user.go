@@ -69,7 +69,9 @@ func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 		}
 	}
 
-	body, err := api.call(ctx, http.MethodGet, "/user", valueToURLParams(user))
+	//  valid parameters not supported by go-ceph: sync
+	body, err := api.call(ctx, http.MethodGet, "/user", valueToURLParams(user, []string{"uid", "access-key", "stats"}))
+
 	if err != nil {
 		return User{}, err
 	}
@@ -107,8 +109,8 @@ func (api *API) CreateUser(ctx context.Context, user User) (User, error) {
 		return User{}, errMissingUserDisplayName
 	}
 
-	// Send request
-	body, err := api.call(ctx, http.MethodPut, "/user", valueToURLParams(user))
+	//  valid parameters not supported by go-ceph: system, exclusive, default-placement, placement-tags
+	body, err := api.call(ctx, http.MethodPut, "/user", valueToURLParams(user, []string{"uid", "display-name", "email", "key-type", "access-key", "secret-key", "user-caps", "tenant", "generate-key", "max-buckets", "suspended", "op-mask"}))
 	if err != nil {
 		return User{}, err
 	}
@@ -129,7 +131,7 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 		return errMissingUserID
 	}
 
-	_, err := api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user))
+	_, err := api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user, []string{"uid", "purge-data"}))
 	if err != nil {
 		return err
 	}
@@ -143,7 +145,8 @@ func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 		return User{}, errMissingUserID
 	}
 
-	body, err := api.call(ctx, http.MethodPost, "/user", valueToURLParams(user))
+	// valid parameters not supported by go-ceph: system, default-placement, placement-tags
+	body, err := api.call(ctx, http.MethodPost, "/user", valueToURLParams(user, []string{"uid", "display-name", "email", "generate-key", "access-key", "secret-key", "key-type", "max-buckets", "suspended", "op-mask"}))
 	if err != nil {
 		return User{}, err
 	}

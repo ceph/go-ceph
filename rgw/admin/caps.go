@@ -19,7 +19,7 @@ func (api *API) AddUserCap(ctx context.Context, uid, userCap string) ([]UserCapS
 	}
 
 	user := User{ID: uid, UserCaps: userCap}
-	body, err := api.call(ctx, http.MethodPut, "/user?caps", valueToURLParams(user))
+	body, err := api.call(ctx, http.MethodPut, "/user?caps", valueToURLParams(user, []string{"uid", "user-caps"}))
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (api *API) RemoveUserCap(ctx context.Context, uid, userCap string) ([]UserC
 	}
 
 	user := User{ID: uid, UserCaps: userCap}
-	body, err := api.call(ctx, http.MethodDelete, "/user?caps", valueToURLParams(user))
+	body, err := api.call(ctx, http.MethodDelete, "/user?caps", valueToURLParams(user, []string{"uid", "user-caps"}))
 	if err != nil {
 		return nil, err
 	}

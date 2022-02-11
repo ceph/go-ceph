@@ -25,7 +25,7 @@ func (api *API) UnlinkBucket(ctx context.Context, link BucketLinkInput) error {
 	if link.Bucket == "" {
 		return errMissingBucket
 	}
-	_, err := api.call(ctx, http.MethodPost, "/bucket", valueToURLParams(link))
+	_, err := api.call(ctx, http.MethodPost, "/bucket", valueToURLParams(link, []string{"uid", "bucket"}))
 	return err
 }
 
@@ -39,6 +39,7 @@ func (api *API) LinkBucket(ctx context.Context, link BucketLinkInput) error {
 	if link.Bucket == "" {
 		return errMissingBucket
 	}
-	_, err := api.call(ctx, http.MethodPut, "/bucket", valueToURLParams(link))
+	//  valid parameters not supported by go-ceph: new-bucket-name
+	_, err := api.call(ctx, http.MethodPut, "/bucket", valueToURLParams(link, []string{"uid", "bucket-id", "bucket"}))
 	return err
 }
