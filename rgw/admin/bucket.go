@@ -98,7 +98,7 @@ func (api *API) ListBuckets(ctx context.Context) ([]string, error) {
 
 // GetBucketInfo will return various information about a specific token
 func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (Bucket, error) {
-	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket))
+	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket, []string{"bucket", "uid", "stats"}))
 	if err != nil {
 		return Bucket{}, err
 	}
@@ -116,7 +116,9 @@ func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (Bucket, error
 func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (Policy, error) {
 	policy := true
 	bucket.Policy = &policy
-	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket))
+
+	// valid parameters not supported by go-ceph: object
+	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket, []string{"bucket"}))
 	if err != nil {
 		return Policy{}, err
 	}
@@ -132,7 +134,7 @@ func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (Policy, err
 
 // RemoveBucket will remove a given token from the object store
 func (api *API) RemoveBucket(ctx context.Context, bucket Bucket) error {
-	_, err := api.call(ctx, http.MethodDelete, "/bucket", valueToURLParams(bucket))
+	_, err := api.call(ctx, http.MethodDelete, "/bucket", valueToURLParams(bucket, []string{"bucket", "purge-objects"}))
 	if err != nil {
 		return err
 	}

@@ -29,11 +29,11 @@ func TestValueToURLParams(t *testing.T) {
 		args args
 		want string
 	}{
-		{"default", args{User{ID: "leseb"}}, "format=json&uid=leseb"},
+		{"default", args{User{ID: "leseb", Email: "leseb@example.com"}}, "format=json&uid=leseb"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := valueToURLParams(tt.args.i)
+			got := valueToURLParams(tt.args.i, []string{"uid"})
 			if !reflect.DeepEqual(got.Encode(), tt.want) {
 				t.Errorf("valueToURLParams() = %v, want %v", got.Encode(), tt.want)
 			}

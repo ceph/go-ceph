@@ -50,7 +50,8 @@ type Usage struct {
 
 // GetUsage request bandwidth usage information on the object store
 func (api *API) GetUsage(ctx context.Context, usage Usage) (Usage, error) {
-	body, err := api.call(ctx, http.MethodGet, "/usage", valueToURLParams(usage))
+	// valid parameters not supported by go-ceph: category, bucket
+	body, err := api.call(ctx, http.MethodGet, "/usage", valueToURLParams(usage, []string{"uid", "start", "end", "show-entries", "show-summary"}))
 	if err != nil {
 		return Usage{}, err
 	}
@@ -65,6 +66,7 @@ func (api *API) GetUsage(ctx context.Context, usage Usage) (Usage, error) {
 
 // TrimUsage removes bandwidth usage information. With no dates specified, removes all usage information.
 func (api *API) TrimUsage(ctx context.Context, usage Usage) error {
-	_, err := api.call(ctx, http.MethodDelete, "/usage", valueToURLParams(usage))
+	// valid parameters not supported by go-ceph: bucket
+	_, err := api.call(ctx, http.MethodDelete, "/usage", valueToURLParams(usage, []string{"uid", "start", "end", "remove-all"}))
 	return err
 }

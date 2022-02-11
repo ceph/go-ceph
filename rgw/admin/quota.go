@@ -28,7 +28,7 @@ func (api *API) GetUserQuota(ctx context.Context, quota QuotaSpec) (QuotaSpec, e
 		return QuotaSpec{}, errMissingUserID
 	}
 
-	body, err := api.call(ctx, http.MethodGet, "/user?quota", valueToURLParams(quota))
+	body, err := api.call(ctx, http.MethodGet, "/user?quota", valueToURLParams(quota, []string{"uid", "quota-type"}))
 	if err != nil {
 		return QuotaSpec{}, err
 	}
@@ -53,7 +53,7 @@ func (api *API) SetUserQuota(ctx context.Context, quota QuotaSpec) error {
 		return errMissingUserID
 	}
 
-	_, err := api.call(ctx, http.MethodPut, "/user?quota", valueToURLParams(quota))
+	_, err := api.call(ctx, http.MethodPut, "/user?quota", valueToURLParams(quota, []string{"uid", "quota-type", "enabled", "max-size", "max-size-kb", "max-objects"}))
 	if err != nil {
 		return err
 	}

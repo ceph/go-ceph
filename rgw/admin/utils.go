@@ -27,50 +27,79 @@ func buildQueryPath(endpoint, path, args string) string {
 }
 
 // valueToURLParams encodes structs into URL query parameters.
-func valueToURLParams(i interface{}) url.Values {
+func valueToURLParams(i interface{}, accpetableFields []string) url.Values {
 	values := url.Values{}
 
 	// Always return json
 	values.Add("format", "json")
 
-	getReflect(i, &values)
+	getReflect(i, accpetableFields, &values)
 	return values
 }
 
-func getReflect(i interface{}, values *url.Values) {
+func addToURLParams(v *url.Values, i interface{}, acceptableFields []string) {
+	getReflect(i, acceptableFields, v)
+}
+
+// NOTE: we use linear search here, as none of the API endpoints
+// supports more than 10 parameters, in this case asymptotics don't
+// matter and we are likely faster this way (even when compared to a
+// map).
+func contains(tagList []string, tag string) bool {
+	for _, tag2 := range tagList {
+		if tag == tag2 {
+			return true
+		}
+	}
+	return false
+}
+
+func getReflect(i interface{}, acceptableFields []string, values *url.Values) {
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i)
 
 	for b := 0; b < v.NumField(); b++ {
 		v2 := v.Field(b)
-		name := t.Field(b).Tag.Get("url")
+		tag := t.Field(b).Tag.Get("url")
+		if tag == "-" {
+			continue
+		}
+		tagList := strings.Split(tag, ",")
+		name := tagList[0]
+		if len(name) == 0 {
+			name = t.Field(b).Name
+		}
 
-		for _, name := range strings.Split(name, ",") {
-			if v2.Kind() == reflect.Struct {
-				getReflect(v2.Interface(), values)
+		if v2.Kind() == reflect.Struct {
+			getReflect(v2.Interface(), acceptableFields, values)
+			continue
+		}
+
+		if v2.Kind() == reflect.Slice {
+			for i := 0; i < v2.Len(); i++ {
+				item := v2.Index(i)
+				getReflect(item.Interface(), acceptableFields, values)
 			}
+			continue
+		}
 
-			if v2.Kind() == reflect.Slice {
-				for i := 0; i < v2.Len(); i++ {
-					item := v2.Index(i)
-					getReflect(item.Interface(), values)
-				}
-			}
+		if v2.Kind() == reflect.String ||
+			v2.Kind() == reflect.Bool ||
+			v2.Kind() == reflect.Int {
 
-			if v2.Kind() == reflect.String ||
-				v2.Kind() == reflect.Bool ||
-				v2.Kind() == reflect.Int {
-
-				_v2 := fmt.Sprint(v2)
-				if len(_v2) > 0 && len(name) > 0 {
-					values.Add(name, _v2)
-				}
-			}
-
-			if v2.Kind() == reflect.Ptr && v2.IsValid() && !v2.IsNil() {
-				_v2 := fmt.Sprint(v2.Elem())
+			_v2 := fmt.Sprint(v2)
+			if len(_v2) > 0 && contains(acceptableFields, name) {
 				values.Add(name, _v2)
 			}
+			continue
+		}
+
+		if v2.Kind() == reflect.Ptr && v2.IsValid() && !v2.IsNil() {
+			_v2 := fmt.Sprint(v2.Elem())
+			if len(_v2) > 0 && contains(acceptableFields, name) {
+				values.Add(name, _v2)
+			}
+			continue
 		}
 	}
 }
