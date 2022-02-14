@@ -206,7 +206,7 @@ test-bins: test-binaries
 	$(GO_CMD) test -c -tags $(BUILD_TAGS) ./$<
 
 implements:
-	$(GO_CMD) build -o implements ./contrib/implements
+	cd contrib/implements && $(GO_CMD) build -o ../../implements
 
 check-implements: implements
 	./implements $(IMPLEMENTS_OPTS) cephfs rados rbd

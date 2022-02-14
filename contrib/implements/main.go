@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ceph/go-ceph/contrib/implements/internal/implements"
+	"implements/internal/implements"
 )
 
 var (
