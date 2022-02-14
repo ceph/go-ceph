@@ -938,15 +938,13 @@
       {
         "name": "WriteOp.WriteSame",
         "comment": "WriteSame write a given byte slice to the object multiple times, until\nwriteLen is satisfied.\n\nImplements:\n void rados_write_op_writesame(rados_write_op_t write_op,\n                               const char *buffer,\n                               size_t data_len,\n                               size_t write_len,\n                               uint64_t offset);\n"
+      },
+      {
+        "name": "WriteOp.CmpExt",
+        "comment": "CmpExt ensures that given object range (extent) satisfies comparison.\n\nImplements:\n void rados_write_op_cmpext(rados_write_op_t write_op,\n                            const char * cmp_buf,\n                            size_t cmp_len,\n                            uint64_t off,\n                            int * prval);\n"
       }
     ],
     "preview_api": [
-      {
-        "name": "WriteOp.CmpExt",
-        "comment": "CmpExt ensures that given object range (extent) satisfies comparison.\n PREVIEW\n\nImplements:\n void rados_write_op_cmpext(rados_write_op_t write_op,\n                            const char * cmp_buf,\n                            size_t cmp_len,\n                            uint64_t off,\n                            int * prval);\n",
-        "added_in_version": "v0.12.0",
-        "expected_stable_version": "v0.14.0"
-      },
       {
         "name": "ReadOp.Read",
         "comment": "Read bytes from offset into buffer.\nlen(buffer) is the maximum number of bytes read from the object.\nbuffer[:ReadOpReadStep.BytesRead] then contains object data.\n PREVIEW\n\nImplements:\n void rados_read_op_read(rados_read_op_t read_op,\n                         uint64_t offset,\n                         size_t len,\n                         char * buffer,\n                         size_t * bytes_read,\n                         int * prval)\n",
