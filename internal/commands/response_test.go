@@ -137,6 +137,43 @@ func TestResponse(t *testing.T) {
 			assert.Contains(t, err.Error(), "not implemented")
 		}
 	})
+
+	t.Run("filterBodyPrefix", func(t *testing.T) {
+		rtemp := Response{
+			body: []byte("No way, no how"),
+		}
+		if assert.True(t, rtemp.Ok()) {
+			r2 := rtemp.FilterBodyPrefix("No way")
+			assert.True(t, r2.Ok())
+			assert.Equal(t, []byte(""), r2.body)
+			err := r2.NoBody().End()
+			assert.NoError(t, err)
+		}
+	})
+	t.Run("filterBodyPrefixEmpty", func(t *testing.T) {
+		rtemp := Response{
+			body: []byte(""),
+		}
+		if assert.True(t, rtemp.Ok()) {
+			r2 := rtemp.FilterBodyPrefix("No way")
+			assert.True(t, r2.Ok())
+			assert.Equal(t, []byte(""), r2.body)
+			err := r2.NoBody().End()
+			assert.NoError(t, err)
+		}
+	})
+	t.Run("filterBodyPrefixNoMatch", func(t *testing.T) {
+		rtemp := Response{
+			body: []byte("No way, no how"),
+		}
+		if assert.True(t, rtemp.Ok()) {
+			r2 := rtemp.FilterBodyPrefix("No foolin")
+			assert.True(t, r2.Ok())
+			assert.Equal(t, []byte("No way, no how"), r2.body)
+			err := r2.NoBody().End()
+			assert.Error(t, err)
+		}
+	})
 }
 
 type myCephError int
