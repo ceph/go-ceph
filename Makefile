@@ -194,6 +194,7 @@ test-binaries: \
 	cephfs/admin.test \
 	common/admin/manager.test \
 	internal/callbacks.test \
+	internal/commands.test \
 	internal/cutil.test \
 	internal/errutil.test \
 	internal/retry.test \
