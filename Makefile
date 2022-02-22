@@ -193,6 +193,7 @@ test-binaries: \
 	cephfs.test \
 	cephfs/admin.test \
 	common/admin/manager.test \
+	common/admin/nfs.test \
 	internal/callbacks.test \
 	internal/commands.test \
 	internal/cutil.test \
