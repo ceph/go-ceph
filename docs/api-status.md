@@ -59,6 +59,9 @@ Name | Added in Version | Expected Stable Version |
 ---- | ---------------- | ----------------------- | 
 API.UnlinkBucket | v0.15.0 | v0.17.0 | 
 API.LinkBucket | v0.15.0 | v0.17.0 | 
+API.CreateSubuser | v0.15.0 | v0.17.0 | 
+API.RemoveSubuser | v0.15.0 | v0.17.0 | 
+API.ModifySubuser | v0.15.0 | v0.17.0 | 
 
 ## Package: common/admin/manager
 
