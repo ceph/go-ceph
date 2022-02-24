@@ -1776,6 +1776,24 @@
         "comment": "LinkBucket will link a bucket to a specified user\nunlinking the bucket from any previous user\n PREVIEW\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "API.CreateSubuser",
+        "comment": "CreateSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#create-subuser\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "API.RemoveSubuser",
+        "comment": "RemoveSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#remove-subuser\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "API.ModifySubuser",
+        "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
       }
     ],
     "stable_api": [
