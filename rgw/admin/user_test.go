@@ -36,7 +36,12 @@ var (
   "email": "",
   "suspended": 0,
   "max_buckets": 1000,
-  "subusers": [],
+  "subusers": [
+     {
+        "id": "dashboard-admin:swift",
+        "permissions": "read"
+     }
+  ],
   "keys": [
     {
       "user": "dashboard-admin",
@@ -44,7 +49,12 @@ var (
       "secret_key": "YSaT5bEcJTjBJCDG5yvr2NhGQ9xzoTIg8B1gQHa3"
     }
   ],
-  "swift_keys": [],
+  "swift_keys": [
+    {
+      "user": "dashboard-admin:swift",
+      "secret_key": "VERY_SECRET"
+    }
+  ],
   "caps": [],
   "op_mask": "read, write, delete",
   "system": "true",
@@ -162,6 +172,42 @@ func (suite *RadosGWTestSuite) TestUser() {
 		user, err := co.GetUser(context.Background(), User{ID: "leseb", GenerateStat: &statEnable})
 		assert.NoError(suite.T(), err)
 		assert.NotNil(suite.T(), user.Stat.Size)
+	})
+
+	suite.T().Run("create a subuser", func(t *testing.T) {
+		err := co.CreateSubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo", Access: SubuserAccessReadWrite})
+		assert.NoError(suite.T(), err)
+
+		user, err := co.GetUser(context.Background(), User{ID: "leseb"})
+		assert.NoError(suite.T(), err)
+		if err == nil {
+			assert.Equal(suite.T(), user.Subusers[0].Name, "leseb:foo")
+			// Note: the returned values are not equal to the input values ...
+			assert.Equal(suite.T(), user.Subusers[0].Access, SubuserAccess("read-write"))
+		}
+	})
+
+	suite.T().Run("modify a subuser", func(t *testing.T) {
+		err := co.ModifySubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo", Access: SubuserAccessRead})
+		assert.NoError(suite.T(), err)
+
+		user, err := co.GetUser(context.Background(), User{ID: "leseb"})
+		assert.NoError(suite.T(), err)
+		if err == nil {
+			assert.Equal(suite.T(), user.Subusers[0].Name, "leseb:foo")
+			assert.Equal(suite.T(), user.Subusers[0].Access, SubuserAccess("read"))
+		}
+	})
+
+	suite.T().Run("remove a subuser", func(t *testing.T) {
+		err := co.RemoveSubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo"})
+		assert.NoError(suite.T(), err)
+
+		user, err := co.GetUser(context.Background(), User{ID: "leseb"})
+		assert.NoError(suite.T(), err)
+		if err == nil {
+			assert.Equal(suite.T(), len(user.Subusers), 0)
+		}
 	})
 
 	suite.T().Run("remove user", func(t *testing.T) {
