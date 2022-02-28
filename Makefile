@@ -26,6 +26,9 @@ endif
 ifeq ($(CEPH_VERSION),pacific)
 	CEPH_TAG := v16
 endif
+ifeq ($(CEPH_VERSION),quincy)
+	CEPH_TAG := v17
+endif
 
 GO_CMD:=go
 GOFMT_CMD:=gofmt
