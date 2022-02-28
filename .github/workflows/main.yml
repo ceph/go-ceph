@@ -38,6 +38,7 @@ jobs:
         - "nautilus"
         - "octopus"
         - "pacific"
+        - "quincy"
     steps:
     - uses: actions/checkout@v2
     - name: Run tests
