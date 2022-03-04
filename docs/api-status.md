@@ -37,6 +37,7 @@ IOContext.Notify | v0.14.0 | v0.16.0 |
 IOContext.NotifyWithTimeout | v0.14.0 | v0.16.0 | 
 NotifyEvent.Ack | v0.14.0 | v0.16.0 | 
 Conn.WatcherFlush | v0.14.0 | v0.16.0 | 
+IOContext.SetLocator | v0.15.0 | v0.17.0 | 
 
 ## Package: rbd
 
