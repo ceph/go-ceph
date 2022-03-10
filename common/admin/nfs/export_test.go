@@ -5,6 +5,9 @@ package nfs
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +15,7 @@ import (
 
 	"github.com/ceph/go-ceph/internal/admintest"
 	"github.com/ceph/go-ceph/internal/commands"
+	"github.com/ceph/go-ceph/rados"
 )
 
 var radosConnector = admintest.NewConnector()
@@ -31,11 +35,43 @@ type NFSAdminSuite struct {
 
 	fileSystemName string
 	clusterID      string
+	mockConfig     bool
 }
 
 func (suite *NFSAdminSuite) SetupSuite() {
 	suite.fileSystemName = "cephfs"
 	suite.clusterID = "goceph"
+	suite.mockConfig = true
+
+	mock := os.Getenv("GO_CEPH_TEST_MOCK_NFS")
+	if ok, err := strconv.ParseBool(mock); err == nil {
+		suite.mockConfig = ok
+	}
+
+	if suite.mockConfig {
+		suite.setupMockNFSConfig()
+	}
+}
+
+func (suite *NFSAdminSuite) setupMockNFSConfig() {
+	require := suite.Require()
+	conn := radosConnector.GetConn(suite.T())
+
+	err := conn.MakePool(".nfs")
+	if err != nil && !errors.Is(err, rados.ErrObjectExists) {
+		suite.T().Fatalf("failed to make pool: %v", err)
+	}
+
+	ioctx, err := conn.OpenIOContext(".nfs")
+	require.NoError(err)
+	defer ioctx.Destroy()
+
+	ioctx.SetNamespace(suite.clusterID)
+
+	err = ioctx.Create(
+		fmt.Sprintf("conf-nfs.%s", suite.clusterID),
+		rados.CreateIdempotent)
+	require.NoError(err)
 }
 
 func (suite *NFSAdminSuite) TestCreateDeleteCephFSExport() {
