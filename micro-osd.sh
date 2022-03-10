@@ -72,6 +72,9 @@ osd objectstore = memstore
 osd class load list = *
 osd class default list = *
 
+[mgr.${MGR_NAME}]
+log_file = ${LOG_DIR}/mgr.log
+
 [client.rgw.${RGW_ID}]
 rgw dns name = ${HOSTNAME}
 rgw enable usage log = true
