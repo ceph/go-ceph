@@ -57,6 +57,8 @@ Snapshot.Set | v0.10.0 |  |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
+API.UnlinkBucket | v0.15.0 | v0.17.0 | 
+API.LinkBucket | v0.15.0 | v0.17.0 | 
 
 ## Package: common/admin/manager
 
