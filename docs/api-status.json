@@ -1764,7 +1764,20 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "API.UnlinkBucket",
+        "comment": "UnlinkBucket unlink a bucket from a specified user\nPrimarily useful for changing bucket ownership.\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "API.LinkBucket",
+        "comment": "LinkBucket will link a bucket to a specified user\nunlinking the bucket from any previous user\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
+      }
+    ],
     "stable_api": [
       {
         "name": "API.ListBuckets",

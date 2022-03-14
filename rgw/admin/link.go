@@ -1,0 +1,44 @@
+//go:build ceph_preview
+// +build ceph_preview
+
+package admin
+
+import (
+	"context"
+	"net/http"
+)
+
+// BucketLinkInput the bucket link/unlink input parameters
+type BucketLinkInput struct {
+	Bucket   string `url:"bucket" json:"bucket"`
+	BucketID string `url:"bucket-id" json:"bucket_id"`
+	UID      string `url:"uid" json:"uid"`
+}
+
+// UnlinkBucket unlink a bucket from a specified user
+// Primarily useful for changing bucket ownership.
+//  PREVIEW
+func (api *API) UnlinkBucket(ctx context.Context, link BucketLinkInput) error {
+	if link.UID == "" {
+		return errMissingUserID
+	}
+	if link.Bucket == "" {
+		return errMissingBucket
+	}
+	_, err := api.call(ctx, http.MethodPost, "/bucket", valueToURLParams(link))
+	return err
+}
+
+// LinkBucket will link a bucket to a specified user
+// unlinking the bucket from any previous user
+//  PREVIEW
+func (api *API) LinkBucket(ctx context.Context, link BucketLinkInput) error {
+	if link.UID == "" {
+		return errMissingUserID
+	}
+	if link.Bucket == "" {
+		return errMissingBucket
+	}
+	_, err := api.call(ctx, http.MethodPut, "/bucket", valueToURLParams(link))
+	return err
+}
