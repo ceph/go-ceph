@@ -89,6 +89,7 @@ rgw usage max shards = 32
 rgw usage max user shards = 1
 log file = ${LOG_DIR}/client.rgw.${RGW_ID}.log
 rgw frontends = beast port=80
+ms mon client mode = crc
 EOF
 }
 
