@@ -208,6 +208,10 @@ var sampleVolumeStatus1 = []byte(`
 }
 `)
 
+var sampleVolumeStatusQ = []byte(`
+{"clients": [{"clients": 3, "fs": "cephfs"}], "mds_version": [{"daemon": ["Z"], "version": "ceph version 17.1.0 (c675060073a05d40ef404d5921c81178a52af6e0) quincy (dev)"}], "mdsmap": [{"caps": 11, "dirs": 26, "dns": 49, "inos": 30, "name": "Z", "rank": 0, "rate": 0, "state": "active"}], "pools": [{"avail": 1018405056, "id": 2, "name": "cephfs_metadata", "type": "metadata", "used": 467690}, {"avail": 1018405056, "id": 1, "name": "cephfs_data", "type": "data", "used": 8}]}
+`)
+
 var sampleVolumeStatusTextJunk = []byte(`cephfs - 2 clients
 ======
 +------+--------+-----+---------------+-------+-------+
@@ -244,8 +248,9 @@ func TestParseVolumeStatus(t *testing.T) {
 		assert.Error(t, err)
 	})
 	t.Run("ok", func(t *testing.T) {
-		s, err := parseVolumeStatus(R(sampleVolumeStatus1, "", nil))
+		v, err := parseVolumeStatus(R(sampleVolumeStatus1, "", nil))
 		assert.NoError(t, err)
+		s := v.volumeStatus()
 		if assert.NotNil(t, s) {
 			assert.Contains(t, s.MDSVersion, "ceph version 15.2.4")
 			assert.Contains(t, s.MDSVersion, "octopus")
@@ -256,6 +261,15 @@ func TestParseVolumeStatus(t *testing.T) {
 		if assert.Error(t, err) {
 			var notImpl NotImplementedError
 			assert.True(t, errors.As(err, &notImpl))
+		}
+	})
+	t.Run("quincy", func(t *testing.T) {
+		v, err := parseVolumeStatus(R(sampleVolumeStatusQ, "", nil))
+		assert.NoError(t, err)
+		s := v.volumeStatus()
+		if assert.NotNil(t, s) {
+			assert.Contains(t, s.MDSVersion, "ceph version 17.1.0")
+			assert.Contains(t, s.MDSVersion, "quincy")
 		}
 	})
 
