@@ -106,7 +106,7 @@ func readDocComment(fdec *ast.FuncDecl, gfunc *goFunction) {
 }
 
 func isPublic(gfunc *goFunction) bool {
-	return ast.IsExported(gfunc.shortName)
+	return ast.IsExported(gfunc.shortName) && ast.IsExported(gfunc.fullName)
 }
 
 func (v *visitor) checkCalled(s *ast.SelectorExpr) {
