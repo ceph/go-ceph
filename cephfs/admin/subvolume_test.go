@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var shortDuration = 50 * time.Millisecond
+
 func delay() {
 	// ceph seems to do this (partly?) async. So for now, we cheat
 	// and sleep a little to make subsequent tests more reliable
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(shortDuration)
 }
 
 func TestCreateSubVolume(t *testing.T) {
@@ -198,24 +200,26 @@ func TestRemoveSubVolume(t *testing.T) {
 
 		err = fsa.RemoveSubVolumeSnapshot(volume, NoGroup, subname, snapname)
 		assert.NoError(t, err)
-		err = fsa.RemoveSubVolumeWithFlags(
-			volume, NoGroup, subname, SubVolRmFlags{Force: true})
-		assert.NoError(t, err)
 
-		// this seems to take longer than other removals. Try a few times to
-		// verify the subvolume is gone before asserting that the test failed
-		removed := false
-		for i := 0; i < 100; i++ {
-			delay()
-			lsv, err = fsa.ListSubVolumes(volume, NoGroup)
-			assert.NoError(t, err)
-			nowCount := len(lsv)
-			if nowCount == beforeCount {
-				removed = true
-				break
-			}
-		}
-		assert.True(t, removed, "volume count did not return to previous value")
+		// The deletion of a subvolume in snapshot-retained state is triggered
+		// by the deletion of the last snapshot. It does not need to be
+		// explicitly deleted.
+		// This may also be why we need to wait longer for the subvolume
+		// to be removed from the listing.
+		// See also: https://tracker.ceph.com/issues/54625
+
+		assert.Eventually(t,
+			func() bool {
+				lsv, err := fsa.ListSubVolumes(volume, NoGroup)
+				if !assert.NoError(t, err) {
+					return false
+				}
+				return len(lsv) == beforeCount
+			},
+			2*time.Minute,
+			shortDuration,
+			"subvolume count did not return to previous value")
+
 	})
 }
 
