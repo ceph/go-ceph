@@ -579,6 +579,13 @@ func (suite *RadosTestSuite) TestObjectStat() {
 	assert.NotNil(suite.T(), stat.ModTime)
 }
 
+func (suite *RadosTestSuite) TestGetConn() {
+	suite.SetupConnection()
+
+	conn := suite.ioctx.GetConn()
+	assert.Equal(suite.T(), suite.conn, conn)
+}
+
 func (suite *RadosTestSuite) TestGetPoolStats() {
 	suite.SetupConnection()
 

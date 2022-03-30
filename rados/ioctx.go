@@ -93,6 +93,7 @@ type LockInfo struct {
 
 // IOContext represents a context for performing I/O within a pool.
 type IOContext struct {
+	conn  *Conn
 	ioctx C.rados_ioctx_t
 }
 
@@ -231,6 +232,11 @@ func (ioctx *IOContext) Truncate(oid string, size uint64) error {
 // context should not be used again after calling this method.
 func (ioctx *IOContext) Destroy() {
 	C.rados_ioctx_destroy(ioctx.ioctx)
+}
+
+// GetConn returns connection used for IOContext
+func (ioctx *IOContext) GetConn() *Conn {
+	return ioctx.conn
 }
 
 // GetPoolStats returns a set of statistics about the pool associated with this I/O
