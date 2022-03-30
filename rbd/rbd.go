@@ -960,6 +960,11 @@ func (image *Image) GetName() string {
 	return image.name
 }
 
+// GetRadosIOContext returns the image rados IOContext
+func (image *Image) GetRadosIOContext() *rados.IOContext {
+	return image.ioctx
+}
+
 // SetSnapshot updates the rbd image (not the Snapshot) such that the snapshot
 // is the source of readable data.
 //

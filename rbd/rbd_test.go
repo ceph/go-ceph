@@ -1649,6 +1649,26 @@ func TestGetName(t *testing.T) {
 	assert.Equal(t, image.name, imgName)
 }
 
+func TestGetRadosIOContext(t *testing.T) {
+	conn := radosConnect(t)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	image := Image{
+		ioctx: ioctx,
+	}
+	imgIOCtx := image.GetRadosIOContext()
+	assert.Equal(t, imgIOCtx, ioctx)
+}
+
 func TestOpenImageById(t *testing.T) {
 	conn := radosConnect(t)
 

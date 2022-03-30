@@ -1546,6 +1546,10 @@
         "comment": "GetName returns the image name."
       },
       {
+        "name": "Image.GetRadosIOContext",
+        "comment": "GetRadosIOContext returns the image rados IOContext."
+      },
+      {
         "name": "Image.SetSnapshot",
         "comment": "SetSnapshot updates the rbd image (not the Snapshot) such that the snapshot\nis the source of readable data.\n\nImplements:\n int rbd_snap_set(rbd_image_t image, const char *snapname);\n"
       },
