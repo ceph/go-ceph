@@ -143,6 +143,10 @@ func TestCloneSubVolumeSnapshot(t *testing.T) {
 }
 
 func TestCancelClone(t *testing.T) {
+	if serverVersion == cephQuincy {
+		t.Skipf("temporarily disabled on quincy: very flaky")
+	}
+
 	fsa := getFSAdmin(t)
 	volume := "cephfs"
 	group := "Park"
