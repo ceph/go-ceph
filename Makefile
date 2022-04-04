@@ -29,6 +29,14 @@ endif
 ifeq ($(CEPH_VERSION),quincy)
 	CEPH_TAG := v17
 endif
+# ci-<codename> indicates we want to consume pre-release versions of ceph from
+# the ceph ci. This way we can start testing on ceph versions before they hit
+# quay.io/ceph/ceph
+ifeq ($(CEPH_VERSION),ci-quincy)
+	CEPH_TAG := quincy
+	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	GO_CEPH_VERSION := quincy
+endif
 
 GO_CMD:=go
 GOFMT_CMD:=gofmt
@@ -71,6 +79,20 @@ endif
 ifneq ($(USE_GOCO),)
 	GO_CMD:=$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm $(GOCACHE_VOLUME) -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) --entrypoint $(GO_CMD) $(CI_IMAGE_TAG)
 	GOFMT_CMD:=$(CONTAINER_CMD) run $(CONTAINER_OPTS) --rm $(GOCACHE_VOLUME) -v $(CURDIR):/go/src/github.com/ceph/go-ceph$(VOLUME_FLAGS) --entrypoint $(GOFMT_CMD) $(CI_IMAGE_TAG)
+endif
+
+# Assemble the various build args that will be passed container build command(s)
+CONTAINER_BUILD_ARGS:=$(DEFAULT_BUILD_ARGS)
+ifdef CEPH_IMG
+	CONTAINER_BUILD_ARGS += --build-arg CEPH_IMG=$(CEPH_IMG)
+endif
+ifdef CEPH_TAG
+	CONTAINER_BUILD_ARGS += --build-arg CEPH_TAG=$(CEPH_TAG)
+endif
+ifdef GO_CEPH_VERSION
+	CONTAINER_BUILD_ARGS += --build-arg GO_CEPH_VERSION=$(GO_CEPH_VERSION)
+else
+	CONTAINER_BUILD_ARGS += --build-arg GO_CEPH_VERSION=$(CEPH_VERSION)
 endif
 
 build:
@@ -172,8 +194,7 @@ endif
 ci-image: $(BUILDFILE)
 $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
 	$(CONTAINER_CMD) build \
-		--build-arg GO_CEPH_VERSION=$(CEPH_VERSION) \
-		--build-arg CEPH_TAG=$(CEPH_TAG) \
+		$(CONTAINER_BUILD_ARGS) \
 		$(CONTAINER_BUILD_OPTS) \
 		-t $(CI_IMAGE_TAG) \
 		-f $(CONTAINER_CONFIG_DIR)/Dockerfile .
