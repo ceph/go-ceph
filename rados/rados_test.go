@@ -892,6 +892,7 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 		"key1":          []byte("value1"),
 		"key2":          []byte("value2"),
 		"prefixed-key3": []byte("value3"),
+		"null\x00key4":  []byte("value4"),
 		"empty":         []byte(""),
 	}
 
@@ -905,7 +906,7 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 		remaining[k] = v
 	}
 
-	err = suite.ioctx.ListOmapValues(oid, "", "", 4, func(key string, value []byte) {
+	err = suite.ioctx.ListOmapValues(oid, "", "", 5, func(key string, value []byte) {
 		assert.Equal(suite.T(), remaining[key], value)
 		delete(remaining, key)
 	})
@@ -914,7 +915,7 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 	assert.Equal(suite.T(), len(remaining), 0)
 
 	// Get (with a fixed number of keys)
-	fetched, err := suite.ioctx.GetOmapValues(oid, "", "", 4)
+	fetched, err := suite.ioctx.GetOmapValues(oid, "", "", 5)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), orig, fetched)
 
@@ -924,15 +925,15 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 	assert.Equal(suite.T(), orig, fetched)
 
 	// Get All (with an iterator size smaller than the map size)
-	fetched, err = suite.ioctx.GetAllOmapValues(oid, "", "", 1)
+	fetched, err = suite.ioctx.GetAllOmapValues(oid, "", "", 2)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), orig, fetched)
 
 	// Remove
-	err = suite.ioctx.RmOmapKeys(oid, []string{"key1", "prefixed-key3"})
+	err = suite.ioctx.RmOmapKeys(oid, []string{"key1", "prefixed-key3", "null\x00key4"})
 	assert.NoError(suite.T(), err)
 
-	fetched, err = suite.ioctx.GetOmapValues(oid, "", "", 4)
+	fetched, err = suite.ioctx.GetOmapValues(oid, "", "", 5)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), map[string][]byte{
 		"key2":  []byte("value2"),
