@@ -12,6 +12,7 @@ BUILD_TAGS=""
 RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
 MIRROR_STATE=/dev/null
+PKG_PREFIX=github.com/ceph/go-ceph
 
 
 # Default env vars that are not currently changed by this script
@@ -242,10 +243,12 @@ pre_all_tests() {
 
 implements_tool() {
     mkdir -p "${RESULTS_DIR}"
+    pkgs=$(go list ${BUILD_TAGS} ./... | sed -e "s,^${PKG_PREFIX}/\?,," | \
+        grep -v ^contrib | grep -v ^internal)
     show ./implements --list \
         --report-json "${RESULTS_DIR}/implements.json" \
         --report-text "${RESULTS_DIR}/implements.txt" \
-        cephfs rados rbd cephfs/admin rbd/admin rgw/admin common/admin/manager
+        ${pkgs}
     # output the brief summary info onto stdout
     grep '^[A-Z]' "${RESULTS_DIR}/implements.txt"
 }
@@ -278,8 +281,7 @@ test_go_ceph() {
         return $?
     fi
 
-    PKG_PREFIX=github.com/ceph/go-ceph
-    pkgs=$(go list ./... | sed -e "s,^${PKG_PREFIX}/\?,," | grep -v ^contrib)
+    pkgs=$(go list ${BUILD_TAGS} ./... | sed -e "s,^${PKG_PREFIX}/\?,," | grep -v ^contrib)
     pre_all_tests
     if [[ ${WAIT_FILES} ]]; then
         wait_for_files ${WAIT_FILES//:/ }

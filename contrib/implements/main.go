@@ -17,10 +17,9 @@ package main
 
 import (
 	"flag"
+	"implements/internal/implements"
 	"log"
 	"os"
-
-	"implements/internal/implements"
 )
 
 var (
@@ -110,12 +109,10 @@ func main() {
 			if verbose {
 				logger.Printf("Processing package (with C): %s\n", pkg)
 			}
-		case "cephfs/admin", "rbd/admin", "rgw/admin", "common/admin/manager":
+		default:
 			if verbose {
 				logger.Printf("Processing package: %s\n", pkg)
 			}
-		default:
-			abort("unknown package name: " + pkg)
 		}
 		if source == "" {
 			source = "."

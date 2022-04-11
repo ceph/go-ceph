@@ -54,7 +54,7 @@ def copy_api(tracked, keys, src, defaults=None):
 def compare_and_update(tracked, pkg, pkg_api, defaults=None):
     if defaults is None:
         defaults = {}
-    new_deprecated = new_preview = []
+    new_deprecated = new_preview = new_stable = []
     if "deprecated_api" in pkg_api:
         new_deprecated = copy_api(
             tracked=tracked,
