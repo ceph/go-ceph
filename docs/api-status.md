@@ -65,3 +65,12 @@ API.ModifySubuser | v0.15.0 | v0.17.0 |
 
 ## Package: common/admin/manager
 
+## Package: common/log
+
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+SetWarnf | v0.15.0 | v0.17.0 | 
+SetDebugf | v0.15.0 | v0.17.0 | 
+
