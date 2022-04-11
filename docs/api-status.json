@@ -1900,5 +1900,21 @@
         "comment": "ListModules returns a module info struct reporting the lists of\nenabled, disabled, and always-on modules in the Ceph mgr.\n"
       }
     ]
+  },
+  "common/log": {
+    "preview_api": [
+      {
+        "name": "SetWarnf",
+        "comment": "SetWarnf sets the log.Printf compatible receiver for warning logs.\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "SetDebugf",
+        "comment": "SetDebugf sets the log.Printf compatible receiver for debug logs.\n PREVIEW\n",
+        "added_in_version": "v0.15.0",
+        "expected_stable_version": "v0.17.0"
+      }
+    ]
   }
 }
