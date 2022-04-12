@@ -32,6 +32,7 @@ jobs:
   test-suite:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         ceph_version:
         - "nautilus"
