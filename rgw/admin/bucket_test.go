@@ -4,12 +4,21 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func skipIfQuincy(t *testing.T) {
+	vname := os.Getenv("CEPH_VERSION")
+	if vname == "quincy" {
+		t.Skipf("disabled on ceph %s", vname)
+	}
+}
+
 func (suite *RadosGWTestSuite) TestBucket() {
+	skipIfQuincy(suite.T())
 	suite.SetupConnection()
 	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
