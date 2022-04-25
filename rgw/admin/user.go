@@ -102,7 +102,7 @@ type UserStat struct {
 
 // GetUser retrieves a given object store user
 func (api *API) GetUser(ctx context.Context, user User) (User, error) {
-	if user.ID == "" && len(user.Keys) == 0 {
+	if user.ID == "" || len(user.Keys) == 0 {
 		return User{}, errMissingUserID
 	}
 	if len(user.Keys) > 0 {
