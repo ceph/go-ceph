@@ -308,8 +308,8 @@ if [ -n "${CEPH_VERSION}" ]; then
     add_build_tag "${CEPH_VERSION}"
 fi
 
-if [ -n "${USE_PTRGUARD}" ]; then
-    add_build_tag "ptrguard"
+if [ -n "${NO_PTRGUARD}" ]; then
+    add_build_tag "no_ptrguard"
 fi
 
 if [ -z "${NO_PREVIEW}" ]; then

@@ -42,8 +42,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run tests
       run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
-    - name: Run tests with ptrguard
-      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "USE_PTRGUARD=true" "RESULTS_DIR=$PWD/_results"
+    - name: Run tests without ptrguard
+      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "NO_PTRGUARD=true" "RESULTS_DIR=$PWD/_results"
     - name: Clean up test containers
       run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"
     - name: Archive coverage results

@@ -41,9 +41,9 @@ TEST_CTR_NET=.run.test_ceph_net
 # the name of the image plus ceph version as tag
 CI_IMAGE_TAG=$(CI_IMAGE_NAME):$(CEPH_VERSION)
 
-ifneq ($(USE_PTRGUARD),)
-	CONTAINER_OPTS += -e USE_PTRGUARD=true
-	BUILD_TAGS := $(BUILD_TAGS),ptrguard
+ifneq ($(NO_PTRGUARD),)
+	CONTAINER_OPTS += -e NO_PTRGUARD=true
+	BUILD_TAGS := $(BUILD_TAGS),no_ptrguard
 endif
 
 ifneq ($(NO_PREVIEW),)
