@@ -22,8 +22,8 @@
             "GODEBUG": "cgocheck=2",
             "CEPH_CONF": "/ceph_a/ceph.conf",
         },
-        "go.buildTags": "ptrguard",
-        "go.testTags": "ptrguard",
+        "go.buildTags": "",
+        "go.testTags": "",
         "go.testFlags": [
             "-v",
             "-count=1"
