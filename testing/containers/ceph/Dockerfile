@@ -22,7 +22,7 @@ RUN true && \
     yum clean all && \
     true
 
-ARG GO_VERSION=1.16.7
+ARG GO_VERSION=1.17.9
 ENV GO_VERSION=${GO_VERSION}
 RUN true && \
     gotar=go${GO_VERSION}.linux-amd64.tar.gz && \
