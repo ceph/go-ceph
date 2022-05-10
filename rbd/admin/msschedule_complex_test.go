@@ -22,7 +22,6 @@ func skipIfQuincy(t *testing.T) {
 }
 
 func TestMirrorSnapshotScheduleStatus(t *testing.T) {
-	skipIfQuincy(t)
 	// note: the status function doesn't return anything "useful" unless
 	// there's an image in the pool. thus we require an image first.
 	ensureDefaultPool(t)
