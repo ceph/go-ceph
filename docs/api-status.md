@@ -74,3 +74,15 @@ Name | Added in Version | Expected Stable Version |
 SetWarnf | v0.15.0 | v0.17.0 | 
 SetDebugf | v0.15.0 | v0.17.0 | 
 
+## Package: common/admin/nfs
+
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+NewFromConn | v0.16.0 | v0.18.0 | 
+Admin.CreateCephFSExport | v0.16.0 | v0.18.0 | 
+Admin.RemoveExport | v0.16.0 | v0.18.0 | 
+Admin.ListDetailedExports | v0.16.0 | v0.18.0 | 
+Admin.ExportInfo | v0.16.0 | v0.18.0 | 
+
