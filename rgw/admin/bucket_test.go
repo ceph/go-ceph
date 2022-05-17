@@ -4,21 +4,13 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 	"testing"
 
+	"github.com/ceph/go-ceph/internal/util"
 	"github.com/stretchr/testify/assert"
 )
 
-func skipIfQuincy(t *testing.T) {
-	vname := os.Getenv("CEPH_VERSION")
-	if vname == "quincy" {
-		t.Skipf("disabled on ceph %s", vname)
-	}
-}
-
 func (suite *RadosGWTestSuite) TestBucket() {
-	skipIfQuincy(suite.T())
 	suite.SetupConnection()
 	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
@@ -60,7 +52,10 @@ func (suite *RadosGWTestSuite) TestBucket() {
 	suite.T().Run("remove non-existing bucket", func(t *testing.T) {
 		err := co.RemoveBucket(context.Background(), Bucket{Bucket: "foo"})
 		assert.Error(suite.T(), err)
-		// TODO: report to rgw team, this should return NoSuchBucket?
-		assert.True(suite.T(), errors.Is(err, ErrNoSuchKey))
+		if util.CurrentCephVersion() <= util.CephOctopus {
+			assert.True(suite.T(), errors.Is(err, ErrNoSuchKey))
+		} else {
+			assert.True(suite.T(), errors.Is(err, ErrNoSuchBucket))
+		}
 	})
 }
