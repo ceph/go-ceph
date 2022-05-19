@@ -947,115 +947,115 @@
     "preview_api": [
       {
         "name": "ReadOp.Read",
-        "comment": "Read bytes from offset into buffer.\nlen(buffer) is the maximum number of bytes read from the object.\nbuffer[:ReadOpReadStep.BytesRead] then contains object data.\n PREVIEW\n\nImplements:\n void rados_read_op_read(rados_read_op_t read_op,\n                         uint64_t offset,\n                         size_t len,\n                         char * buffer,\n                         size_t * bytes_read,\n                         int * prval)\n",
+        "comment": "Read bytes from offset into buffer.\nlen(buffer) is the maximum number of bytes read from the object.\nbuffer[:ReadOpReadStep.BytesRead] then contains object data.\n\nImplements:\n void rados_read_op_read(rados_read_op_t read_op,\n                         uint64_t offset,\n                         size_t len,\n                         char * buffer,\n                         size_t * bytes_read,\n                         int * prval)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "WriteOp.Remove",
-        "comment": "Remove object.\n PREVIEW\n\nImplements:\n void rados_write_op_remove(rados_write_op_t write_op)\n",
+        "comment": "Remove object.\n\nImplements:\n void rados_write_op_remove(rados_write_op_t write_op)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "ReadOp.AssertVersion",
-        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before reading. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n PREVIEW\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
+        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before reading. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "WriteOp.AssertVersion",
-        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before writing. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n PREVIEW\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
+        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before writing. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "WriteOp.SetXattr",
-        "comment": "Set an xattr.\n PREVIEW\n\nImplements:\n void rados_write_op_setxattr(rados_write_op_t write_op,\n                              const char * name,\n                              const char * value,\n                              size_t value_len)\n",
+        "comment": "Set an xattr.\n\nImplements:\n void rados_write_op_setxattr(rados_write_op_t write_op,\n                              const char * name,\n                              const char * value,\n                              size_t value_len)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "ReadOpOmapGetValsByKeysStep.Next",
-        "comment": "Next gets the next omap key/value pair referenced by\nReadOpOmapGetValsByKeysStep's internal iterator.\nIf there are no more elements to retrieve, (nil, nil) is returned.\nMay be called only after Operate() finished.\n PREVIEW\n",
+        "comment": "Next gets the next omap key/value pair referenced by\nReadOpOmapGetValsByKeysStep's internal iterator.\nIf there are no more elements to retrieve, (nil, nil) is returned.\nMay be called only after Operate() finished.\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "ReadOp.GetOmapValuesByKeys",
-        "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n PREVIEW\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys2(rados_read_op_t read_op,\n                                           char const * const * keys,\n                                           size_t num_keys,\n                                           const size_t * key_lens,\n                                           rados_omap_iter_t * iter,\n                                           int * prval)\n",
+        "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys2(rados_read_op_t read_op,\n                                           char const * const * keys,\n                                           size_t num_keys,\n                                           const size_t * key_lens,\n                                           rados_omap_iter_t * iter,\n                                           int * prval)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "IOContext.Watch",
-        "comment": "Watch creates a Watcher for the specified object.\n PREVIEW\n\nA Watcher receives all notifications that are sent to the object on which it\nhas been created. It exposes two read-only channels: Events() receives all\nthe NotifyEvents and Errors() receives all occuring errors. A typical code\ncreating a Watcher could look like this:\n\n watcher, err := ioctx.Watch(oid)\n go func() { // event handler\n   for ne := range watcher.Events() {\n     ...\n     ne.Ack([]byte(\"response data...\"))\n     ...\n   }\n }()\n go func() { // error handler\n   for err := range watcher.Errors() {\n     ... handle err ...\n   }\n }()\n\nCAUTION: the Watcher references the IOContext in which it has been created.\nTherefore all watchers must be deleted with the Delete() method before the\nIOContext is being destroyed.\n\nImplements:\n int rados_watch2(rados_ioctx_t io, const char* o, uint64_t* cookie,\n   rados_watchcb2_t watchcb, rados_watcherrcb_t watcherrcb, void* arg)\n",
+        "comment": "Watch creates a Watcher for the specified object.\n\nA Watcher receives all notifications that are sent to the object on which it\nhas been created. It exposes two read-only channels: Events() receives all\nthe NotifyEvents and Errors() receives all occuring errors. A typical code\ncreating a Watcher could look like this:\n\n watcher, err := ioctx.Watch(oid)\n go func() { // event handler\n   for ne := range watcher.Events() {\n     ...\n     ne.Ack([]byte(\"response data...\"))\n     ...\n   }\n }()\n go func() { // error handler\n   for err := range watcher.Errors() {\n     ... handle err ...\n   }\n }()\n\nCAUTION: the Watcher references the IOContext in which it has been created.\nTherefore all watchers must be deleted with the Delete() method before the\nIOContext is being destroyed.\n\nImplements:\n int rados_watch2(rados_ioctx_t io, const char* o, uint64_t* cookie,\n   rados_watchcb2_t watchcb, rados_watcherrcb_t watcherrcb, void* arg)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "IOContext.WatchWithTimeout",
-        "comment": "WatchWithTimeout creates a watcher on an object. Same as Watcher(), but\ndifferent timeout than the default can be specified.\n PREVIEW\n\nImplements:\n int rados_watch3(rados_ioctx_t io, const char *o, uint64_t *cookie,\n\t  rados_watchcb2_t watchcb, rados_watcherrcb_t watcherrcb, uint32_t timeout,\n\t  void *arg);\n",
+        "comment": "WatchWithTimeout creates a watcher on an object. Same as Watcher(), but\ndifferent timeout than the default can be specified.\n\nImplements:\n int rados_watch3(rados_ioctx_t io, const char *o, uint64_t *cookie,\n\t  rados_watchcb2_t watchcb, rados_watcherrcb_t watcherrcb, uint32_t timeout,\n\t  void *arg);\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "Watcher.ID",
-        "comment": "ID returns the WatcherId of the Watcher\n PREVIEW\n",
+        "comment": "ID returns the WatcherId of the Watcher\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "Watcher.Events",
-        "comment": "Events returns a read-only channel, that receives all notifications that are\nsent to the object of the Watcher.\n PREVIEW\n",
+        "comment": "Events returns a read-only channel, that receives all notifications that are\nsent to the object of the Watcher.\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "Watcher.Errors",
-        "comment": "Errors returns a read-only channel, that receives all errors for the Watcher.\n PREVIEW\n",
+        "comment": "Errors returns a read-only channel, that receives all errors for the Watcher.\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "Watcher.Check",
-        "comment": "Check on the status of a Watcher.\n PREVIEW\n\nReturns the time since it was last confirmed. If there is an error, the\nWatcher is no longer valid, and should be destroyed with the Delete() method.\n\nImplements:\n int rados_watch_check(rados_ioctx_t io, uint64_t cookie)\n",
+        "comment": "Check on the status of a Watcher.\n\nReturns the time since it was last confirmed. If there is an error, the\nWatcher is no longer valid, and should be destroyed with the Delete() method.\n\nImplements:\n int rados_watch_check(rados_ioctx_t io, uint64_t cookie)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "Watcher.Delete",
-        "comment": "Delete the watcher. This closes both the event and error channel.\n PREVIEW\n\nImplements:\n int rados_unwatch2(rados_ioctx_t io, uint64_t cookie)\n",
+        "comment": "Delete the watcher. This closes both the event and error channel.\n\nImplements:\n int rados_unwatch2(rados_ioctx_t io, uint64_t cookie)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "IOContext.Notify",
-        "comment": "Notify sends a notification with the provided data to all Watchers of the\nspecified object.\n PREVIEW\n\nCAUTION: even if the error is not nil. the returned slices\nmight still contain data.\n",
+        "comment": "Notify sends a notification with the provided data to all Watchers of the\nspecified object.\n\nCAUTION: even if the error is not nil. the returned slices\nmight still contain data.\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "IOContext.NotifyWithTimeout",
-        "comment": "NotifyWithTimeout is like Notify() but with a different timeout than the\ndefault.\n PREVIEW\n\nImplements:\n int rados_notify2(rados_ioctx_t io, const char* o, const char* buf, int buf_len,\n   uint64_t timeout_ms, char** reply_buffer, size_t* reply_buffer_len)\n",
+        "comment": "NotifyWithTimeout is like Notify() but with a different timeout than the\ndefault.\n\nImplements:\n int rados_notify2(rados_ioctx_t io, const char* o, const char* buf, int buf_len,\n   uint64_t timeout_ms, char** reply_buffer, size_t* reply_buffer_len)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "NotifyEvent.Ack",
-        "comment": "Ack sends an acknowledgement with the specified response data to the notfier\nof the NotifyEvent. If a notify is not ack'ed, the originating Notify() call\nblocks and eventiually times out.\n PREVIEW\n\nImplements:\n int rados_notify_ack(rados_ioctx_t io, const char *o, uint64_t notify_id,\n   uint64_t cookie, const char *buf, int buf_len)\n",
+        "comment": "Ack sends an acknowledgement with the specified response data to the notfier\nof the NotifyEvent. If a notify is not ack'ed, the originating Notify() call\nblocks and eventiually times out.\n\nImplements:\n int rados_notify_ack(rados_ioctx_t io, const char *o, uint64_t notify_id,\n   uint64_t cookie, const char *buf, int buf_len)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "Conn.WatcherFlush",
-        "comment": "WatcherFlush flushes all pending notifications of the cluster.\n PREVIEW\n\nImplements:\n int rados_watch_flush(rados_t cluster)\n",
+        "comment": "WatcherFlush flushes all pending notifications of the cluster.\n\nImplements:\n int rados_watch_flush(rados_t cluster)\n",
         "added_in_version": "v0.14.0",
         "expected_stable_version": "v0.16.0"
       },
       {
         "name": "IOContext.SetLocator",
-        "comment": "SetLocator sets the key for mapping objects to pgs within an io context.\nUntil a different locator key is set, all objects in this io context will be placed in the same pg.\nTo reset the locator, an empty string must be set.\n PREVIEW\n\nImplements:\n void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);\n",
+        "comment": "SetLocator sets the key for mapping objects to pgs within an io context.\nUntil a different locator key is set, all objects in this io context will be placed in the same pg.\nTo reset the locator, an empty string must be set.\n\nImplements:\n void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       }
@@ -1693,7 +1693,7 @@
     "preview_api": [
       {
         "name": "Snapshot.Rename",
-        "comment": "Rename a snapshot.\n PREVIEW\n\nImplements:\n int rbd_snap_rename(rbd_image_t image, const char *snapname, const char* dstsnapsname);\n",
+        "comment": "Rename a snapshot.\n\nImplements:\n int rbd_snap_rename(rbd_image_t image, const char *snapname, const char* dstsnapsname);\n",
         "added_in_version": "v0.16.0",
         "expected_stable_version": "v0.18.0"
       }
@@ -1775,31 +1775,31 @@
     "preview_api": [
       {
         "name": "API.UnlinkBucket",
-        "comment": "UnlinkBucket unlink a bucket from a specified user\nPrimarily useful for changing bucket ownership.\n PREVIEW\n",
+        "comment": "UnlinkBucket unlink a bucket from a specified user\nPrimarily useful for changing bucket ownership.\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       },
       {
         "name": "API.LinkBucket",
-        "comment": "LinkBucket will link a bucket to a specified user\nunlinking the bucket from any previous user\n PREVIEW\n",
+        "comment": "LinkBucket will link a bucket to a specified user\nunlinking the bucket from any previous user\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       },
       {
         "name": "API.CreateSubuser",
-        "comment": "CreateSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#create-subuser\n PREVIEW\n",
+        "comment": "CreateSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#create-subuser\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       },
       {
         "name": "API.RemoveSubuser",
-        "comment": "RemoveSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#remove-subuser\n PREVIEW\n",
+        "comment": "RemoveSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#remove-subuser\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       },
       {
         "name": "API.ModifySubuser",
-        "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n PREVIEW\n",
+        "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       }
@@ -1913,13 +1913,13 @@
     "preview_api": [
       {
         "name": "SetWarnf",
-        "comment": "SetWarnf sets the log.Printf compatible receiver for warning logs.\n PREVIEW\n",
+        "comment": "SetWarnf sets the log.Printf compatible receiver for warning logs.\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       },
       {
         "name": "SetDebugf",
-        "comment": "SetDebugf sets the log.Printf compatible receiver for debug logs.\n PREVIEW\n",
+        "comment": "SetDebugf sets the log.Printf compatible receiver for debug logs.\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
       }
