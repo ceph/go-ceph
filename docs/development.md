@@ -142,8 +142,8 @@ record a simplified version of the command it most closely matches. Example:
 Recently, go-ceph has adopted an [API Stability Policy](./api-stability.md) to
 help users of our library know what APIs are deprecated and what APIs are
 available for preview.  In short, APIs that are deprecated must contain a line
-starting with "Deprecated:" and APIs that are preview must contain a line
-starting with " PREVIEW".
+starting with "Deprecated:" and APIs that are preview must be in files that
+contain a build constraint for the `ceph_preview` tag.
 
 Deprecated function Example:
 
@@ -160,9 +160,12 @@ Deprecated function Example:
 Preview function example:
 
 ```
+//go:build ceph_preview
+
+...
+
 // Energize the particle buffers with anti-nutrinos. This can be used to
 // warm up the Heisenberg compensator.
-//  PREVIEW
 //
 // Implements:
 //  int energize(...)

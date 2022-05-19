@@ -22,4 +22,4 @@ Thank you for opening a pull request. Please provide:
 - [ ] Added tests for features and functional changes
 - [ ] Public functions and types are documented
 - [ ] Standard formatting is applied to Go code
-- [ ] Is this a new API? Is this new API marked PREVIEW?
+- [ ] Is this a new API? Added a new file that begins with `//go:build ceph_preview`

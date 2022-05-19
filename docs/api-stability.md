@@ -28,7 +28,7 @@ and we can't guarantee optimal performance.
 ## Preview
 
 This is a level for APIs that are fresh and might need further refinements in
-following releases. These are marked with _PREVIEW_ in the documentation and are
+following releases. These are not included in the documentation and are
 only available, if the build tag `ceph_preview` is set. There might be breaking
 changes in future releases regarding preview APIs. Usually new exported APIs are
 introduced with this level first and become stable when there were no major
