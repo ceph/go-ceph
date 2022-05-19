@@ -49,7 +49,6 @@ func newReadOpReadStep() *ReadOpReadStep {
 // Read bytes from offset into buffer.
 // len(buffer) is the maximum number of bytes read from the object.
 // buffer[:ReadOpReadStep.BytesRead] then contains object data.
-//  PREVIEW
 //
 // Implements:
 //  void rados_read_op_read(rados_read_op_t read_op,

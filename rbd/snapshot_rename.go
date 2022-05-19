@@ -13,7 +13,6 @@ import (
 )
 
 // Rename a snapshot.
-//  PREVIEW
 //
 // Implements:
 // 	int rbd_snap_rename(rbd_image_t image, const char *snapname,

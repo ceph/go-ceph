@@ -10,13 +10,11 @@ import (
 )
 
 // SetWarnf sets the log.Printf compatible receiver for warning logs.
-//  PREVIEW
 func SetWarnf(f func(format string, v ...interface{})) {
 	intLog.Warnf = f
 }
 
 // SetDebugf sets the log.Printf compatible receiver for debug logs.
-//  PREVIEW
 func SetDebugf(f func(format string, v ...interface{})) {
 	intLog.Debugf = f
 }
