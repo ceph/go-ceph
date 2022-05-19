@@ -10,7 +10,6 @@ package rados
 import "C"
 
 // Remove object.
-//  PREVIEW
 //
 // Implements:
 //  void rados_write_op_remove(rados_write_op_t write_op)

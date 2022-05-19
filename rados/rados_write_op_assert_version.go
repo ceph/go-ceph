@@ -12,7 +12,6 @@ import "C"
 // AssertVersion ensures that the object exists and that its internal version
 // number is equal to "ver" before writing. "ver" should be a version number
 // previously obtained with IOContext.GetLastVersion().
-//  PREVIEW
 //
 // Implements:
 //  void rados_read_op_assert_version(rados_read_op_t read_op,

@@ -15,7 +15,6 @@ type Admin struct {
 // NewFromConn creates an new management object from a preexisting
 // rados connection. The existing connection can be rados.Conn or any
 // type implementing the RadosCommander interface.
-//  PREVIEW
 func NewFromConn(conn ccom.RadosCommander) *Admin {
 	return &Admin{conn}
 }
