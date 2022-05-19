@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/build"
+	"go/build/constraint"
 	"go/parser"
 	"go/token"
 	"io/ioutil"
@@ -39,13 +40,13 @@ type goFunction struct {
 	comment         string
 	implementsCFunc string
 	isDeprecated    bool
-	isPreview       bool
 
 	endPos token.Pos
 }
 
 type visitor struct {
-	currentFunc *goFunction
+	currentFunc   *goFunction
+	inPreviewFile bool
 
 	callMap    map[string]*goFunction
 	docMap     map[string]*goFunction
@@ -89,11 +90,6 @@ func readDocComment(fdec *ast.FuncDecl, gfunc *goFunction) {
 			gfunc.isDeprecated = true
 			logger.Printf("marked deprecated: %s\n", fdec.Name.Name)
 		}
-		if strings.HasPrefix(lines[i], " PREVIEW") {
-			gfunc.isPreview = true
-			logger.Printf("marked preview: %s\n", fdec.Name.Name)
-		}
-
 		if lines[i] == "Implements:" {
 			cfunc := cfuncFromComment(lines[i+1])
 			if cfunc == "" {
@@ -107,6 +103,32 @@ func readDocComment(fdec *ast.FuncDecl, gfunc *goFunction) {
 
 func isPublic(gfunc *goFunction) bool {
 	return ast.IsExported(gfunc.shortName) && ast.IsExported(gfunc.fullName)
+}
+
+func dependsOnPreviewTag(expr constraint.Expr) bool {
+	const previewTag = "ceph_preview"
+	switch e := expr.(type) {
+	case *constraint.TagExpr:
+		return e.Tag == previewTag
+	case *constraint.AndExpr:
+		return dependsOnPreviewTag(e.X) || dependsOnPreviewTag(e.Y)
+	}
+	return false
+}
+
+func isPreviewFile(file *ast.File) bool {
+	if len(file.Comments) == 0 {
+		return false
+	}
+	for _, c := range file.Comments[0].List {
+		if c == nil {
+			continue
+		}
+		if expr, err := constraint.Parse(c.Text); err == nil {
+			return dependsOnPreviewTag(expr)
+		}
+	}
+	return false
 }
 
 func (v *visitor) checkCalled(s *ast.SelectorExpr) {
@@ -137,6 +159,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.File:
 		v.currentFunc = nil
+		v.inPreviewFile = isPreviewFile(n)
 		return v
 	case *ast.FuncDecl:
 		logger.Printf("checking function: %v\n", n.Name.Name)
@@ -150,7 +173,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 		if isPublic(gfunc) {
 			if gfunc.isDeprecated {
 				v.deprecated = append(v.deprecated, gfunc)
-			} else if gfunc.isPreview {
+			} else if v.inPreviewFile {
 				v.preview = append(v.preview, gfunc)
 			} else {
 				v.stable = append(v.stable, gfunc)
