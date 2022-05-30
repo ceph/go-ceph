@@ -509,6 +509,14 @@
         "deprecated_in_version": "v0.14.0",
         "expected_remove_version": "v0.16.0"
       }
+    ],
+    "preview_api": [
+      {
+        "name": "CloneStatus.GetFailure",
+        "comment": "GetFailure returns details about the CloneStatus when in CloneFailed state.\n\nSimilar To:\n Reading the .failure object from the JSON returned by \"ceph fs subvolume\n snapshot clone\"\n",
+        "added_in_version": "v0.16.0",
+        "expected_stable_version": "v0.18.0"
+      }
     ]
   },
   "rados": {

@@ -6,6 +6,12 @@
 
 ## Package: cephfs/admin
 
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+CloneStatus.GetFailure | v0.16.0 | v0.18.0 | 
+
 ### Deprecated APIs
 
 Name | Deprecated in Version | Expected Removal Version | 
@@ -40,6 +46,12 @@ Conn.WatcherFlush | v0.14.0 | v0.16.0 |
 IOContext.SetLocator | v0.15.0 | v0.17.0 | 
 
 ## Package: rbd
+
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Snapshot.Rename | v0.16.0 | v0.18.0 | 
 
 ### Deprecated APIs
 
