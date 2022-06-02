@@ -13,28 +13,14 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/ceph/go-ceph/internal/retry"
 	ts "github.com/ceph/go-ceph/internal/timespec"
 	"github.com/ceph/go-ceph/rados"
 )
 
 // GetImageNames returns the list of current RBD images.
 func GetImageNames(ioctx *rados.IOContext) ([]string, error) {
-	var (
-		err    error
-		images []C.rbd_image_spec_t
-		size   C.size_t
-	)
-	retry.WithSizes(32, 4096, func(s int) retry.Hint {
-		size = C.size_t(s)
-		images = make([]C.rbd_image_spec_t, size)
-		ret := C.rbd_list2(
-			cephIoctx(ioctx),
-			(*C.rbd_image_spec_t)(unsafe.Pointer(&images[0])),
-			&size)
-		err = getErrorIfNegative(ret)
-		return retry.Size(int(size)).If(err == errRange)
-	})
+	size := C.size_t(4096)
+	images, err := getImageNames(ioctx, &size)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +31,22 @@ func GetImageNames(ioctx *rados.IOContext) ([]string, error) {
 		names[i] = C.GoString(image.name)
 	}
 	return names, nil
+}
+
+func getImageNames(ioctx *rados.IOContext, size *C.size_t) ([]C.rbd_image_spec_t, error) {
+	images := make([]C.rbd_image_spec_t, *size)
+	ret := C.rbd_list2(
+		cephIoctx(ioctx),
+		(*C.rbd_image_spec_t)(unsafe.Pointer(&images[0])),
+		size)
+	err := getErrorIfNegative(ret)
+	if err != nil {
+		if err == errRange {
+			return getImageNames(ioctx, size)
+		}
+		return nil, err
+	}
+	return images, nil
 }
 
 // GetCreateTimestamp returns the time the rbd image was created.
