@@ -496,20 +496,7 @@
         "comment": "VolumeStatus returns a VolumeStatus object for the given volume name.\n\nSimilar To:\n ceph fs status cephfs <name>\n"
       }
     ],
-    "deprecated_api": [
-      {
-        "name": "FSAdmin.EnableModule",
-        "comment": "EnableModule will enable the specified manager module.\n\nDeprecated: use the equivalent function in cluster/admin/manager.\n\nSimilar To:\n ceph mgr module enable <module> [--force]\n",
-        "deprecated_in_version": "v0.14.0",
-        "expected_remove_version": "v0.16.0"
-      },
-      {
-        "name": "FSAdmin.DisableModule",
-        "comment": "DisableModule will disable the specified manager module.\n\nDeprecated: use the equivalent function in cluster/admin/manager.\n\nSimilar To:\n ceph mgr module disable <module>\n",
-        "deprecated_in_version": "v0.14.0",
-        "expected_remove_version": "v0.16.0"
-      }
-    ],
+    "deprecated_api": [],
     "preview_api": [
       {
         "name": "CloneStatus.GetFailure",
