@@ -981,51 +981,37 @@
       {
         "name": "Conn.WatcherFlush",
         "comment": "WatcherFlush flushes all pending notifications of the cluster.\n\nImplements:\n int rados_watch_flush(rados_t cluster)\n"
-      }
-    ],
-    "preview_api": [
-      {
-        "name": "ReadOp.Read",
-        "comment": "Read bytes from offset into buffer.\nlen(buffer) is the maximum number of bytes read from the object.\nbuffer[:ReadOpReadStep.BytesRead] then contains object data.\n\nImplements:\n void rados_read_op_read(rados_read_op_t read_op,\n                         uint64_t offset,\n                         size_t len,\n                         char * buffer,\n                         size_t * bytes_read,\n                         int * prval)\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
-      },
-      {
-        "name": "WriteOp.Remove",
-        "comment": "Remove object.\n\nImplements:\n void rados_write_op_remove(rados_write_op_t write_op)\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
       },
       {
         "name": "ReadOp.AssertVersion",
-        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before reading. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
+        "comment": "AssertVersion ensures that the object exists and that its internal version\nnumber is equal to \"ver\" before reading. \"ver\" should be a version number\npreviously obtained with IOContext.GetLastVersion().\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n"
       },
       {
         "name": "WriteOp.AssertVersion",
-        "comment": "Ensure that the object exists and that its internal version number is equal\nto \"ver\" before writing. \"ver\" should be a version number previously\nobtained with IOContext.GetLastVersion().\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
+        "comment": "AssertVersion ensures that the object exists and that its internal version\nnumber is equal to \"ver\" before writing. \"ver\" should be a version number\npreviously obtained with IOContext.GetLastVersion().\n\nImplements:\n void rados_read_op_assert_version(rados_read_op_t read_op,\n                                   uint64_t ver)\n"
+      },
+      {
+        "name": "WriteOp.Remove",
+        "comment": "Remove object.\n\nImplements:\n void rados_write_op_remove(rados_write_op_t write_op)\n"
       },
       {
         "name": "WriteOp.SetXattr",
-        "comment": "Set an xattr.\n\nImplements:\n void rados_write_op_setxattr(rados_write_op_t write_op,\n                              const char * name,\n                              const char * value,\n                              size_t value_len)\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
+        "comment": "SetXattr sets an xattr.\n\nImplements:\n void rados_write_op_setxattr(rados_write_op_t write_op,\n                              const char * name,\n                              const char * value,\n                              size_t value_len)\n"
       },
       {
         "name": "ReadOpOmapGetValsByKeysStep.Next",
-        "comment": "Next gets the next omap key/value pair referenced by\nReadOpOmapGetValsByKeysStep's internal iterator.\nIf there are no more elements to retrieve, (nil, nil) is returned.\nMay be called only after Operate() finished.\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
+        "comment": "Next gets the next omap key/value pair referenced by\nReadOpOmapGetValsByKeysStep's internal iterator.\nIf there are no more elements to retrieve, (nil, nil) is returned.\nMay be called only after Operate() finished.\n"
       },
       {
         "name": "ReadOp.GetOmapValuesByKeys",
-        "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys2(rados_read_op_t read_op,\n                                           char const * const * keys,\n                                           size_t num_keys,\n                                           const size_t * key_lens,\n                                           rados_omap_iter_t * iter,\n                                           int * prval)\n",
-        "added_in_version": "v0.14.0",
-        "expected_stable_version": "v0.16.0"
+        "comment": "GetOmapValuesByKeys starts iterating over specific key/value pairs.\n\nImplements:\n void rados_read_op_omap_get_vals_by_keys2(rados_read_op_t read_op,\n                                           char const * const * keys,\n                                           size_t num_keys,\n                                           const size_t * key_lens,\n                                           rados_omap_iter_t * iter,\n                                           int * prval)\n"
       },
+      {
+        "name": "ReadOp.Read",
+        "comment": "Read bytes from offset into buffer.\nlen(buffer) is the maximum number of bytes read from the object.\nbuffer[:ReadOpReadStep.BytesRead] then contains object data.\n\nImplements:\n void rados_read_op_read(rados_read_op_t read_op,\n                         uint64_t offset,\n                         size_t len,\n                         char * buffer,\n                         size_t * bytes_read,\n                         int * prval)\n"
+      }
+    ],
+    "preview_api": [
       {
         "name": "IOContext.SetLocator",
         "comment": "SetLocator sets the key for mapping objects to pgs within an io context.\nUntil a different locator key is set, all objects in this io context will be placed in the same pg.\nTo reset the locator, an empty string must be set.\n\nImplements:\n void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);\n",
