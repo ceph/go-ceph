@@ -25,13 +25,6 @@ FSAdmin.DisableModule | v0.14.0 | v0.16.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-ReadOp.Read | v0.14.0 | v0.16.0 | 
-WriteOp.Remove | v0.14.0 | v0.16.0 | 
-ReadOp.AssertVersion | v0.14.0 | v0.16.0 | 
-WriteOp.AssertVersion | v0.14.0 | v0.16.0 | 
-WriteOp.SetXattr | v0.14.0 | v0.16.0 | 
-ReadOpOmapGetValsByKeysStep.Next | v0.14.0 | v0.16.0 | 
-ReadOp.GetOmapValuesByKeys | v0.14.0 | v0.16.0 | 
 IOContext.SetLocator | v0.15.0 | v0.17.0 | 
 
 ## Package: rbd
