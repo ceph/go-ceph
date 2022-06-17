@@ -26,6 +26,8 @@ FSAdmin.DisableModule | v0.14.0 | v0.16.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 IOContext.SetLocator | v0.15.0 | v0.17.0 | 
+IOContext.SetAllocationHint | v0.17.0 | v0.19.0 | 
+WriteOp.SetAllocationHint | v0.17.0 | v0.19.0 | 
 
 ## Package: rbd
 
