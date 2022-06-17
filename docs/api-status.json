@@ -1017,6 +1017,18 @@
         "comment": "SetLocator sets the key for mapping objects to pgs within an io context.\nUntil a different locator key is set, all objects in this io context will be placed in the same pg.\nTo reset the locator, an empty string must be set.\n\nImplements:\n void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "IOContext.SetAllocationHint",
+        "comment": "SetAllocationHint sets allocation hint for an object. This is an advisory\noperation, it will always succeed (as if it was submitted with a\nLIBRADOS_OP_FLAG_FAILOK flag set) and is not guaranteed to do anything on\nthe backend.\n\nImplements:\n int rados_set_alloc_hint2(rados_ioctx_t io,\n                           const char *o,\n                           uint64_t expected_object_size,\n                           uint64_t expected_write_size,\n                           uint32_t flags);\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
+      },
+      {
+        "name": "WriteOp.SetAllocationHint",
+        "comment": "SetAllocationHint sets allocation hint for an object. This is an advisory\noperation, it will always succeed (as if it was submitted with a\nLIBRADOS_OP_FLAG_FAILOK flag set) and is not guaranteed to do anything on\nthe backend.\n\nImplements:\n void rados_write_op_set_alloc_hint2(rados_write_op_t write_op,\n                                     uint64_t expected_object_size,\n                                     uint64_t expected_write_size,\n                                     uint32_t flags);\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
       }
     ]
   },
