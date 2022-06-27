@@ -5,10 +5,8 @@ FROM ${CEPH_IMG}:${CEPH_TAG}
 # A CEPH_VERSION env var is already set in the base image.
 # We save our build arg as GO_CEPH_VERSION and later ensure that
 # the values agree to ensure we're building what we meant to build.
-ARG CEPH_TAG
 ARG GO_CEPH_VERSION
-ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION} \
-    CEPH_TAG=${CEPH_TAG}
+ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION}
 
 RUN true && \
     echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" && \
