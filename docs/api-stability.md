@@ -3,7 +3,7 @@
 This library offers Go API bindings for ceph libraries and interfaces. In order
 to provide a stable exported API and at the same time be able to get early
 feedback for new and possibly immature API designs, we maintain three levels of
-API stablity:
+API stability:
 
 ## Stable
 
@@ -22,7 +22,7 @@ paragraph beginning with _Deprecated:_). During 0.x releases these APIs
 might get removed in a future release, especially the 1.0 release, so we
 recommend refactoring the code at the earliest convenience. After the 1.0
 release, deprecated APIs will not be removed, however they are still deprecated
-and only in maintanence mode. We usually don't make improvements for these APIs
+and only in maintenance mode. We usually don't make improvements for these APIs
 and we can't guarantee optimal performance.
 
 ## Preview
