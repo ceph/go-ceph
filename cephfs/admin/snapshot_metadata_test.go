@@ -28,7 +28,7 @@ func TestSetSnapshotMetadata(t *testing.T) {
 	err = fsa.SetSnapshotMetadata(volume, group, subname, snapname, key, value)
 	assert.NoError(t, err)
 
-	err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
+	err = fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
 	assert.NoError(t, err)
 	err = fsa.RemoveSubVolume(volume, group, subname)
 	assert.NoError(t, err)
@@ -59,7 +59,7 @@ func TestGetSnapshotMetadata(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, metaValue, value)
 
-	err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
+	err = fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
 	assert.NoError(t, err)
 	err = fsa.RemoveSubVolume(volume, group, subname)
 	assert.NoError(t, err)
@@ -96,7 +96,7 @@ func TestRemoveSnapshotMetadata(t *testing.T) {
 	metaValue, err = fsa.GetSnapshotMetadata(volume, group, subname, snapname, key)
 	assert.Error(t, err)
 
-	err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
+	err = fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
 	assert.NoError(t, err)
 	err = fsa.RemoveSubVolume(volume, group, subname)
 	assert.NoError(t, err)
@@ -133,7 +133,7 @@ func TestForceRemoveSnapshotMetadata(t *testing.T) {
 	metaValue, err = fsa.GetSnapshotMetadata(volume, group, subname, snapname, key)
 	assert.Error(t, err)
 
-	err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
+	err = fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
 	assert.NoError(t, err)
 	err = fsa.RemoveSubVolume(volume, group, subname)
 	assert.NoError(t, err)
@@ -170,7 +170,7 @@ func TestListSnapshotMetadata(t *testing.T) {
 	assert.Contains(t, metaList, key1)
 	assert.Contains(t, metaList, key2)
 
-	err := fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
+	err = fsa.RemoveSubVolumeSnapshot(volume, group, subname, snapname)
 	assert.NoError(t, err)
 	err = fsa.RemoveSubVolume(volume, group, subname)
 	assert.NoError(t, err)
