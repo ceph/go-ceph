@@ -1,14 +1,14 @@
-CI_IMAGE_NAME = go-ceph-ci
+CI_IMAGE_NAME ?= go-ceph-ci
 CONTAINER_CMD ?=
-CONTAINER_OPTS := --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
-CONTAINER_BUILD_OPTS :=
-CONTAINER_CONFIG_DIR := testing/containers/ceph
-VOLUME_FLAGS :=
-CEPH_VERSION := pacific
-RESULTS_DIR :=
-CHECK_GOFMT_FLAGS := -e -s -l
-IMPLEMENTS_OPTS :=
-BUILD_TAGS := $(CEPH_VERSION)
+CONTAINER_OPTS ?= --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
+CONTAINER_BUILD_OPTS ?=
+CONTAINER_CONFIG_DIR ?= testing/containers/ceph
+VOLUME_FLAGS ?=
+CEPH_VERSION ?= pacific
+RESULTS_DIR ?=
+CHECK_GOFMT_FLAGS ?= -e -s -l
+IMPLEMENTS_OPTS ?=
+BUILD_TAGS ?= $(CEPH_VERSION)
 
 ifeq ($(CONTAINER_CMD),)
 	CONTAINER_CMD:=$(shell docker version >/dev/null 2>&1 && echo docker)
