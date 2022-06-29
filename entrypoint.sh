@@ -8,7 +8,7 @@ COVERAGE=yes
 CPUPROFILE=no
 MEMPROFILE=no
 MICRO_OSD_PATH="/micro-osd.sh"
-BUILD_TAGS=""
+BUILD_TAGS=${BUILD_TAGS:-}
 RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
 MIRROR_STATE=/dev/null
@@ -325,17 +325,18 @@ pause_if_needed() {
     fi
 }
 
+if [ -z "${BUILD_TAGS}" ]; then
+    if [ -n "${CEPH_VERSION}" ]; then
+        add_build_tag "${CEPH_VERSION}"
+    fi
 
-if [ -n "${CEPH_VERSION}" ]; then
-    add_build_tag "${CEPH_VERSION}"
-fi
+    if [ -n "${NO_PTRGUARD}" ]; then
+        add_build_tag "no_ptrguard"
+    fi
 
-if [ -n "${NO_PTRGUARD}" ]; then
-    add_build_tag "no_ptrguard"
-fi
-
-if [ -z "${NO_PREVIEW}" ]; then
-    add_build_tag "ceph_preview"
+    if [ -z "${NO_PREVIEW}" ]; then
+        add_build_tag "ceph_preview"
+    fi
 fi
 
 if [ -n "${BUILD_TAGS}" ]; then
