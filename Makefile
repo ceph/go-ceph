@@ -63,6 +63,8 @@ else
 	BUILD_TAGS := $(BUILD_TAGS),ceph_preview
 endif
 
+CONTAINER_OPTS += -e BUILD_TAGS=$(BUILD_TAGS)
+
 ifneq ($(USE_CACHE),)
 	GOCACHE_VOLUME := -v test_ceph_go_cache:/go
 endif
