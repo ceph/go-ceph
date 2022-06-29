@@ -143,8 +143,8 @@ func TestCloneSubVolumeSnapshot(t *testing.T) {
 }
 
 func TestCancelClone(t *testing.T) {
-	if serverVersion == cephQuincy {
-		t.Skipf("temporarily disabled on quincy: very flaky")
+	if serverVersion == cephQuincy || serverVersion == cephPacfic {
+		t.Skipf("temporarily disabled on quincy and pacific: very flaky")
 	}
 
 	fsa := getFSAdmin(t)
