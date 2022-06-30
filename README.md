@@ -34,6 +34,12 @@ On rpm based systems (dnf, yum, etc) these may be:
 libcephfs-devel librbd-devel librados-devel
 ```
 
+On MacOS you can use brew to install the libraries:
+```sh
+brew tap mulbc/ceph-client
+brew install ceph-client
+```
+
 NOTE: CentOS users may want to use a
 [CentOS Storage SIG](https://wiki.centos.org/SpecialInterestGroup/Storage/Ceph)
 repository to enable packages for a supported ceph version.
