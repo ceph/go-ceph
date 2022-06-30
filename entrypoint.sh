@@ -177,14 +177,35 @@ setup_mirroring() {
     rbd -c $CONF_A rm mirror_test 2>/dev/null || true
     rbd -c $CONF_B rm mirror_test 2>/dev/null || true
     (echo "Mirror Test"; dd if=/dev/zero bs=1 count=500K) | rbd -c $CONF_A import - mirror_test
-    rbd -c $CONF_A mirror image enable mirror_test snapshot
-    echo -n "Waiting for mirroring activation..."
-    while ! rbd -c $CONF_A mirror image status mirror_test \
-      | grep -q "state: \+up+replaying" ; do
-        sleep 1
-    done
-    echo "done"
-    rbd -c $CONF_A mirror image snapshot mirror_test
+
+    if [[ ${CEPH_VERSION} != nautilus ]]; then
+        rbd -c $CONF_A mirror image enable mirror_test snapshot
+        echo -n "Waiting for mirroring activation..."
+        while ! rbd -c $CONF_A mirror image status mirror_test \
+          | grep -q "state: \+up+replaying" ; do
+            sleep 1
+        done
+        echo "done"
+        rbd -c $CONF_A mirror image snapshot mirror_test
+    else
+        rbd -c $CONF_A feature enable mirror_test journaling
+        rbd -c $CONF_A mirror image enable mirror_test
+        echo -n "Waiting for mirroring activation..."
+        while ! rbd -c $CONF_B mirror image status mirror_test \
+          | grep -q "state: \+up+replaying" ; do
+            sleep 1
+        done
+        echo "done"
+        rbd -c $CONF_A mirror image demote mirror_test
+        while ! rbd -c $CONF_B mirror image status mirror_test \
+          | grep -q "state: \+up+stopped" ; do
+            sleep 1
+        done
+        rbd -c $CONF_B mirror image status mirror_test
+        rbd -c $CONF_B mirror image promote mirror_test
+        rbd -c $CONF_B mirror image disable mirror_test
+    fi
+
     echo -n "Waiting for mirror sync..."
     while ! rbd -c $CONF_B export mirror_test - 2>/dev/null | grep -q "Mirror Test" ; do
         sleep 1
@@ -287,9 +308,9 @@ test_go_ceph() {
     if [[ ${WAIT_FILES} ]]; then
         wait_for_files ${WAIT_FILES//:/ }
     fi
-    if [[ ${MIRROR_CONF} && ${CEPH_VERSION} != nautilus ]]; then
-        setup_mirroring
-        export MIRROR_CONF
+    if [[ ${MIRROR_CONF} ]]; then
+      setup_mirroring
+      export MIRROR_CONF
     fi
     for pkg in ${pkgs}; do
         test_pkg "${pkg}" || test_failed "${pkg}"
