@@ -9,9 +9,10 @@ import (
 
 // Bucket describes an object store bucket
 type Bucket struct {
-	Bucket            string `json:"bucket" url:"bucket"`
-	Zonegroup         string `json:"zonegroup"`
-	PlacementRule     string `json:"placement_rule"`
+	Bucket            string  `json:"bucket" url:"bucket"`
+	NumShards         *uint64 `json:"num_shards"`
+	Zonegroup         string  `json:"zonegroup"`
+	PlacementRule     string  `json:"placement_rule"`
 	ExplicitPlacement struct {
 		DataPool      string `json:"data_pool"`
 		DataExtraPool string `json:"data_extra_pool"`
