@@ -44,6 +44,12 @@ ifeq ($(CEPH_VERSION),pre-pacific)
 	GO_CEPH_VERSION := pacific
 	BUILD_TAGS := pacific,ceph_pre_pacific
 endif
+ifeq ($(CEPH_VERSION),main)
+	CEPH_TAG := main
+	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	GO_CEPH_VERSION := main
+	BUILD_TAGS := main,ceph_main
+endif
 
 GO_CMD:=go
 GOFMT_CMD:=gofmt
