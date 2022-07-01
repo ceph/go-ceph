@@ -29,13 +29,14 @@ endif
 ifeq ($(CEPH_VERSION),quincy)
 	CEPH_TAG := v17
 endif
-# ci-<codename> indicates we want to consume pre-release versions of ceph from
+# pre-<codename> indicates we want to consume pre-release versions of ceph from
 # the ceph ci. This way we can start testing on ceph versions before they hit
 # quay.io/ceph/ceph
-ifeq ($(CEPH_VERSION),ci-quincy)
+ifeq ($(CEPH_VERSION),pre-quincy)
 	CEPH_TAG := quincy
 	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := quincy
+	BUILD_TAGS := quincy,ceph_pre_quincy
 endif
 
 GO_CMD:=go
