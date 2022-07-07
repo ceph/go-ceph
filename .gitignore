@@ -2,6 +2,7 @@
 .build.*
 .run.*
 *.swp
+*~
 *.out
 *.test
 /*.json
