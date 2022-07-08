@@ -169,8 +169,9 @@ setup_mirroring() {
     rbd -c $CONF_B pool init
     rbd -c $CONF_A mirror pool enable rbd image
     rbd -c $CONF_B mirror pool enable rbd image
-    rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd > token
-    rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd token
+    token=$(rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd)
+    echo "bootstrap token: ${token}"
+    echo ${token} | rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd -
 
     echo "enabled" > "${MIRROR_STATE}"
     rbd -c $CONF_A rm mirror_test 2>/dev/null || true
