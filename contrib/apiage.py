@@ -149,6 +149,7 @@ def format_markdown(tracked, outfh):
                     ("Added in Version", "added_in_version"),
                     ("Expected Stable Version", "expected_stable_version"),
                 ],
+                pkg=pkg,
                 outfh=outfh,
             )
             print("", file=outfh)
@@ -162,12 +163,13 @@ def format_markdown(tracked, outfh):
                     ("Deprecated in Version", "deprecated_in_version"),
                     ("Expected Removal Version", "expected_remove_version"),
                 ],
+                pkg=pkg,
                 outfh=outfh,
             )
             print("", file=outfh)
 
 
-def _table(data, columns, outfh):
+def _table(data, columns, pkg, outfh):
     for key, _ in columns:
         outfh.write(key)
         outfh.write(" | ")
@@ -178,7 +180,10 @@ def _table(data, columns, outfh):
     outfh.write("\n")
     for entry in data:
         for _, dname in columns:
-            outfh.write(entry[dname])
+            if dname == "name":
+                outfh.write(f"[{entry[dname]}](https://pkg.go.dev/github.com/ceph/go-ceph/{pkg}#{entry[dname]})")
+            else:
+                outfh.write(entry[dname])
             outfh.write(" | ")
         outfh.write("\n")
 
