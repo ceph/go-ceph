@@ -306,6 +306,8 @@ test_go_ceph() {
     pkgs=$(go list ${BUILD_TAGS} ./... | sed -e "s,^${PKG_PREFIX}/\?,," | grep -v ^contrib)
     pre_all_tests
     if [[ ${WAIT_FILES} ]]; then
+        # this is less gross looking than any other bash-native split-to-array code
+        # shellcheck disable=SC2086
         wait_for_files ${WAIT_FILES//:/ }
     fi
     if [[ ${MIRROR_CONF} ]]; then
