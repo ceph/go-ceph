@@ -10,6 +10,8 @@ import "C"
 import (
 	"runtime"
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/log"
 )
 
 // UserPerm types may be used to get or change the credentials used by the
@@ -68,5 +70,8 @@ func (p *UserPerm) Destroy() {
 }
 
 func destroyUserPerm(p *UserPerm) {
+	if p.userPerm != nil && p.managed {
+		log.Warnf("unreachable UserPerm object has not been destroyed. Cleaning up.")
+	}
 	p.Destroy()
 }
