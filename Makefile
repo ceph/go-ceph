@@ -205,9 +205,11 @@ $(RESULTS_DIR):
 	mkdir -p $(RESULTS_DIR)
 endif
 
+SHELL_SOURCES=entrypoint.sh micro-osd.sh
+
 .PHONY: ci-image
 ci-image: $(BUILDFILE)
-$(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
+$(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile $(SHELL_SOURCES)
 	$(CONTAINER_CMD) build \
 		$(CONTAINER_BUILD_ARGS) \
 		$(CONTAINER_BUILD_OPTS) \
@@ -216,7 +218,7 @@ $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile entrypoint.sh micro-osd.sh
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
 	echo $(CEPH_VERSION) >> $(BUILDFILE)
 
-check: check-revive check-format
+check: check-revive check-format check-shell
 
 check-format:
 	! $(GOFMT_CMD) $(CHECK_GOFMT_FLAGS) . | sed 's,^,formatting error: ,' | grep 'go$$'
@@ -225,6 +227,10 @@ check-revive:
 	# Configure project's revive checks using .revive.toml
 	# See: https://github.com/mgechev/revive
 	revive -config .revive.toml $$(find . -name '*.go')
+
+check-shell:
+	shellcheck -fgcc $(SHELL_SOURCES)
+
 
 # Do a quick compile only check of the tests and impliclity the
 # library code as well.
