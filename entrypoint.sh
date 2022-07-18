@@ -263,14 +263,25 @@ pre_all_tests() {
     echo "mode: count" > "cover.out"
 }
 
+find_pkgs() {
+    if [[ $1 = "--public" ]] ; then
+        skip='^(contrib|internal)'
+    else
+        skip='^contrib'
+    fi
+    # saves results in array named `pkgs`
+    readarray -t pkgs < <(go list ${BUILD_TAGS} ./... | \
+        sed -e "s,^${PKG_PREFIX}/\?,," | \
+        grep -vE "${skip}" | grep '.' )
+}
+
 implements_tool() {
     mkdir -p "${RESULTS_DIR}"
-    pkgs=$(go list ${BUILD_TAGS} ./... | sed -e "s,^${PKG_PREFIX}/\?,," | \
-        grep -v ^contrib | grep -v ^internal)
+    find_pkgs --public
     show ./implements --list \
         --report-json "${RESULTS_DIR}/implements.json" \
         --report-text "${RESULTS_DIR}/implements.txt" \
-        ${pkgs}
+        "${pkgs[@]}"
     # output the brief summary info onto stdout
     grep '^[A-Z]' "${RESULTS_DIR}/implements.txt"
 }
@@ -303,7 +314,7 @@ test_go_ceph() {
         return $?
     fi
 
-    pkgs=$(go list ${BUILD_TAGS} ./... | sed -e "s,^${PKG_PREFIX}/\?,," | grep -v ^contrib)
+    find_pkgs
     pre_all_tests
     if [[ ${WAIT_FILES} ]]; then
         # this is less gross looking than any other bash-native split-to-array code
@@ -314,7 +325,7 @@ test_go_ceph() {
       setup_mirroring
       export MIRROR_CONF
     fi
-    for pkg in ${pkgs}; do
+    for pkg in "${pkgs[@]}"; do
         test_pkg "${pkg}" || test_failed "${pkg}"
     done
     post_all_tests
