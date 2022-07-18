@@ -163,51 +163,51 @@ setup_mirroring() {
     echo "Setting up mirroring..."
     local CONF_A=${CEPH_CONF}
     local CONF_B=${MIRROR_CONF}
-    ceph -c $CONF_A osd pool create rbd 8
-    ceph -c $CONF_B osd pool create rbd 8
-    rbd -c $CONF_A pool init
-    rbd -c $CONF_B pool init
-    rbd -c $CONF_A mirror pool enable rbd image
-    rbd -c $CONF_B mirror pool enable rbd image
-    token=$(rbd -c $CONF_A mirror pool peer bootstrap create --site-name ceph_a rbd)
+    ceph -c "$CONF_A" osd pool create rbd 8
+    ceph -c "$CONF_B" osd pool create rbd 8
+    rbd -c "$CONF_A" pool init
+    rbd -c "$CONF_B" pool init
+    rbd -c "$CONF_A" mirror pool enable rbd image
+    rbd -c "$CONF_B" mirror pool enable rbd image
+    token=$(rbd -c "$CONF_A" mirror pool peer bootstrap create --site-name ceph_a rbd)
     echo "bootstrap token: ${token}"
-    echo ${token} | rbd -c $CONF_B mirror pool peer bootstrap import --site-name ceph_b rbd -
+    echo "${token}" | rbd -c "$CONF_B" mirror pool peer bootstrap import --site-name ceph_b rbd -
 
     echo "enabled" > "${MIRROR_STATE}"
-    rbd -c $CONF_A rm mirror_test 2>/dev/null || true
-    rbd -c $CONF_B rm mirror_test 2>/dev/null || true
-    (echo "Mirror Test"; dd if=/dev/zero bs=1 count=500K) | rbd -c $CONF_A import - mirror_test
+    rbd -c "$CONF_A" rm mirror_test 2>/dev/null || true
+    rbd -c "$CONF_B" rm mirror_test 2>/dev/null || true
+    (echo "Mirror Test"; dd if=/dev/zero bs=1 count=500K) | rbd -c "$CONF_A" import - mirror_test
 
     if [[ ${CEPH_VERSION} != nautilus ]]; then
-        rbd -c $CONF_A mirror image enable mirror_test snapshot
+        rbd -c "$CONF_A" mirror image enable mirror_test snapshot
         echo -n "Waiting for mirroring activation..."
-        while ! rbd -c $CONF_A mirror image status mirror_test \
+        while ! rbd -c "$CONF_A" mirror image status mirror_test \
           | grep -q "state: \+up+replaying" ; do
             sleep 1
         done
         echo "done"
-        rbd -c $CONF_A mirror image snapshot mirror_test
+        rbd -c "$CONF_A" mirror image snapshot mirror_test
     else
-        rbd -c $CONF_A feature enable mirror_test journaling
-        rbd -c $CONF_A mirror image enable mirror_test
+        rbd -c "$CONF_A" feature enable mirror_test journaling
+        rbd -c "$CONF_A" mirror image enable mirror_test
         echo -n "Waiting for mirroring activation..."
-        while ! rbd -c $CONF_B mirror image status mirror_test \
+        while ! rbd -c "$CONF_B" mirror image status mirror_test \
           | grep -q "state: \+up+replaying" ; do
             sleep 1
         done
         echo "done"
-        rbd -c $CONF_A mirror image demote mirror_test
-        while ! rbd -c $CONF_B mirror image status mirror_test \
+        rbd -c "$CONF_A" mirror image demote mirror_test
+        while ! rbd -c "$CONF_B" mirror image status mirror_test \
           | grep -q "state: \+up+stopped" ; do
             sleep 1
         done
-        rbd -c $CONF_B mirror image status mirror_test
-        rbd -c $CONF_B mirror image promote mirror_test
-        rbd -c $CONF_B mirror image disable mirror_test
+        rbd -c "$CONF_B" mirror image status mirror_test
+        rbd -c "$CONF_B" mirror image promote mirror_test
+        rbd -c "$CONF_B" mirror image disable mirror_test
     fi
 
     echo -n "Waiting for mirror sync..."
-    while ! rbd -c $CONF_B export mirror_test - 2>/dev/null | grep -q "Mirror Test" ; do
+    while ! rbd -c "$CONF_B" export mirror_test - 2>/dev/null | grep -q "Mirror Test" ; do
         sleep 1
     done
     echo "functional" > "${MIRROR_STATE}"
@@ -248,7 +248,7 @@ test_pkg() {
     fi
 
     show go test -v "${testargs[@]}" "./${pkg}"
-    ret=$(($?+${ret}))
+    ret=$(($?+ret))
     grep -v "^mode: count" "${pkg}.cover.out" >> "cover.out"
     return ${ret}
 }
