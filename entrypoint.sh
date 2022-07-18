@@ -126,6 +126,10 @@ add_build_tag() {
     fi
 }
 
+build_tags_arg() {
+    echo "-tags=${BUILD_TAGS}"
+}
+
 show() {
     local ret
     echo "*** running:" "$@"
@@ -222,12 +226,12 @@ test_pkg() {
 
     # run go vet and capture the result for the package, but still execute the
     # test suite anyway
-    show go vet ${BUILD_TAGS} "./${pkg}"
+    show go vet "$(build_tags_arg)" "./${pkg}"
     ret=$?
 
     # disable caching of tests results
     testargs=("-count=1"\
-            ${BUILD_TAGS})
+            "$(build_tags_arg)")
     if [[ ${TEST_RUN} != ALL ]]; then
         testargs+=("-run" "${TEST_RUN}")
     fi
@@ -255,7 +259,7 @@ test_pkg() {
 
 pre_all_tests() {
     # Prepare Go code
-    go get -t -v ${BUILD_TAGS} ./...
+    go get -t -v "$(build_tags_arg)" ./...
     diff -u <(echo -n) <(gofmt -d -s .)
     make clean-implements implements
 
@@ -270,7 +274,7 @@ find_pkgs() {
         skip='^contrib'
     fi
     # saves results in array named `pkgs`
-    readarray -t pkgs < <(go list ${BUILD_TAGS} ./... | \
+    readarray -t pkgs < <(go list "$(build_tags_arg)" ./... | \
         sed -e "s,^${PKG_PREFIX}/\?,," | \
         grep -vE "${skip}" | grep '.' )
 }
@@ -350,10 +354,6 @@ if [ -z "${BUILD_TAGS}" ]; then
     if [ -z "${NO_PREVIEW}" ]; then
         add_build_tag "ceph_preview"
     fi
-fi
-
-if [ -n "${BUILD_TAGS}" ]; then
-    BUILD_TAGS="-tags ${BUILD_TAGS}"
 fi
 
 test_go_ceph
