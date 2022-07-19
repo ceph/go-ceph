@@ -39,6 +39,9 @@ jobs:
         - "octopus"
         - "pacific"
         - "quincy"
+        - "pre-pacific"
+        - "pre-quincy"
+        - "main"
     steps:
     - uses: actions/checkout@v2
     - name: Run tests
