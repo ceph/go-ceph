@@ -16,8 +16,6 @@ CloneStatus.GetFailure | v0.16.0 | v0.18.0 |
 
 Name | Deprecated in Version | Expected Removal Version | 
 ---- | --------------------- | ------------------------ | 
-FSAdmin.EnableModule | v0.14.0 | v0.16.0 | 
-FSAdmin.DisableModule | v0.14.0 | v0.16.0 | 
 
 ## Package: rados
 
@@ -28,6 +26,8 @@ Name | Added in Version | Expected Stable Version |
 IOContext.SetLocator | v0.15.0 | v0.17.0 | 
 IOContext.SetAllocationHint | v0.17.0 | v0.19.0 | 
 WriteOp.SetAllocationHint | v0.17.0 | v0.19.0 | 
+IOContext.Alignment | v0.17.0 | v0.19.0 | 
+IOContext.RequiresAlignment | v0.17.0 | v0.19.0 | 
 
 ## Package: rbd
 
