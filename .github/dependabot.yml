@@ -4,9 +4,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     rebase-strategy: "disabled"
     labels:
-      - rebase
+      - "no-API"
     commit-message:
-      prefix: "rebase"
+      prefix: "go-ceph"
