@@ -91,6 +91,11 @@ type UserKeySpec struct {
 	User      string `json:"user"`
 	AccessKey string `json:"access_key" url:"access-key"`
 	SecretKey string `json:"secret_key" url:"secret-key"`
+	// Request fields
+	UID         string `url:"uid"`     // The user ID to receive the new key
+	SubUser     string `url:"subuser"` // The subuser ID to receive the new key
+	KeyType     string `url:"key-type"`
+	GenerateKey *bool  `url:"generate-key"` // Generate a new key pair and add to the existing keyring
 }
 
 // UserStat contains information about storage consumption by the ceph user
@@ -183,7 +188,7 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 	return nil
 }
 
-// ModifyUser - http://docs.ceph.com/docs/latest/radosgw/adminops/#modify-user
+// ModifyUser - http://docs.ceph.com/en/latest/radosgw/adminops/#modify-user
 func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" {
 		return User{}, errMissingUserID

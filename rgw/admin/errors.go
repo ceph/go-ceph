@@ -94,6 +94,7 @@ var (
 	errMissingBucketID        = errors.New("missing bucket ID")
 	errMissingBucket          = errors.New("missing bucket")
 	errMissingUserBucket      = errors.New("missing bucket")
+	errUnsupportedKeyType     = errors.New("unsupported key type")
 )
 
 // errorReason is the reason of the error
