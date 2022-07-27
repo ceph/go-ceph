@@ -11,6 +11,7 @@ import (
 // Only user's quota are supported
 type QuotaSpec struct {
 	UID        string `json:"user_id" url:"uid"`
+	Bucket     string `json:"bucket" url:"bucket"`
 	QuotaType  string `url:"quota-type"`
 	Enabled    *bool  `json:"enabled" url:"enabled"`
 	CheckOnRaw bool   `json:"check_on_raw"`
