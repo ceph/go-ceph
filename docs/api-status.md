@@ -58,6 +58,11 @@ API.LinkBucket | v0.15.0 | v0.17.0 |
 API.CreateSubuser | v0.15.0 | v0.17.0 | 
 API.RemoveSubuser | v0.15.0 | v0.17.0 | 
 API.ModifySubuser | v0.15.0 | v0.17.0 | 
+API.ListUsersBuckets | v0.17.0 | v0.19.0 | 
+API.ListUsersBucketsWithStat | v0.17.0 | v0.19.0 | 
+API.CreateKey | v0.17.0 | v0.19.0 | 
+API.RemoveKey | v0.17.0 | v0.19.0 | 
+API.SetIndividualBucketQuota | v0.17.0 | v0.19.0 | 
 
 ## Package: common/admin/manager
 
@@ -81,4 +86,3 @@ Admin.CreateCephFSExport | v0.16.0 | v0.18.0 |
 Admin.RemoveExport | v0.16.0 | v0.18.0 | 
 Admin.ListDetailedExports | v0.16.0 | v0.18.0 | 
 Admin.ExportInfo | v0.16.0 | v0.18.0 | 
-

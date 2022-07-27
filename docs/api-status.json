@@ -1785,6 +1785,36 @@
         "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n",
         "added_in_version": "v0.15.0",
         "expected_stable_version": "v0.17.0"
+      },
+      {
+        "name": "API.ListUsersBuckets",
+        "comment": "ListUsersBuckets will return the list of all users buckets without stat.\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
+      },
+      {
+        "name": "API.ListUsersBucketsWithStat",
+        "comment": "ListUsersBucketsWithStat will return the list of all users buckets with stat.\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
+      },
+      {
+        "name": "API.CreateKey",
+        "comment": "CreateKey will generate new keys or add specified to keyring.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#create-key.\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
+      },
+      {
+        "name": "API.RemoveKey",
+        "comment": "RemoveKey will remove an existing key.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#remove-key\nKeySpec.SecretKey parameter shouldn't be provided and will be ignored.\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
+      },
+      {
+        "name": "API.SetIndividualBucketQuota",
+        "comment": "SetIndividualBucketQuota sets quota to a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-quota-for-an-individual-bucket.\n",
+        "added_in_version": "v0.17.0",
+        "expected_stable_version": "v0.19.0"
       }
     ],
     "stable_api": [
