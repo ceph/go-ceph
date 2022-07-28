@@ -4,6 +4,10 @@ package cephfs
 #cgo LDFLAGS: -lcephfs
 #cgo CPPFLAGS: -D_FILE_OFFSET_BITS=64
 #include <cephfs/libcephfs.h>
+#ifndef AT_STATX_DONT_SYNC
+// for versions earlier than Pacific
+#define AT_STATX_DONT_SYNC AT_NO_ATTR_SYNC
+#endif
 */
 import "C"
 
@@ -53,9 +57,14 @@ const (
 type AtFlags uint
 
 const (
+	// AtStatxDontSync requests that the stat call only fetch locally-cached
+	// values if possible, avoiding round trips to a back-end server.
+	AtStatxDontSync = AtFlags(C.AT_STATX_DONT_SYNC)
 	// AtNoAttrSync requests that the stat call only fetch locally-cached
 	// values if possible, avoiding round trips to a back-end server.
-	AtNoAttrSync = AtFlags(C.AT_NO_ATTR_SYNC)
+	//
+	// Deprecated: replaced by AtStatxDontSync
+	AtNoAttrSync = AtStatxDontSync
 	// AtSymlinkNofollow indicates the call should not follow symlinks
 	// but operate on the symlink itself.
 	AtSymlinkNofollow = AtFlags(C.AT_SYMLINK_NOFOLLOW)
