@@ -9,6 +9,7 @@ PDX-License-Identifier: MIT
 import argparse
 import copy
 import json
+import re
 import sys
 
 
@@ -131,6 +132,24 @@ def api_compare(tracked, src):
     return problems
 
 
+def api_fix_versions(tracked, values, pred=None):
+    """Walks through tracked API and fixes any placeholder versions to real version numbers.
+    """
+    for pkg, pkg_api in tracked.items():
+        for api in pkg_api.get("deprecated_api", []):
+            if pred and not pred(pkg, api["name"]):
+                print(f"Skipping {pkg}:{api['name']} due to filter")
+                continue
+            _vfix(pkg, "deprecated_in_version", api, values)
+            _vfix(pkg, "expected_remove_version", api, values)
+        for api in pkg_api.get("preview_api", []):
+            if pred and not pred(pkg, api["name"]):
+                print(f"Skipping {pkg}:{api['name']} due to filter")
+                continue
+            _vfix(pkg, "added_in_version", api, values)
+            _vfix(pkg, "expected_stable_version", api, values)
+
+
 def format_markdown(tracked, outfh):
     print("<!-- GENERATED FILE: DO NOT EDIT DIRECTLY -->", file=outfh)
     print("", file=outfh)
@@ -192,6 +211,33 @@ def _vfmt(x, y, z):
     return f"v{x}.{y}.{z}"
 
 
+def _vfix(pkg, key, api, values):
+    if api.get(key, "").startswith("$"):
+        try:
+            val = values[key]
+        except KeyError:
+            raise ValueError(f"missing {key} in values: {key} must be provided to fix apis")
+        api[key] = val
+        print(f"Updated {pkg}:{api['name']} {key}={values[key]}")
+
+
+def _make_fix_filter(cli):
+    pkgre = namere = None
+    if cli.fix_filter_pkg:
+        pkgre = re.compile(cli.fix_filter_pkg)
+    if cli.fix_filter_func:
+        namere = re.compile(cli.fix_filter_func)
+
+    def f(pkg, fname):
+        if pkgre and not pkgre.match(pkg):
+            return False
+        if namere and not namere.match(fname):
+            return False
+        return True
+
+    return f
+
+
 def tag_to_versions(cli, version_tag):
     # first: parse the tag
     if not version_tag.startswith("v"):
@@ -212,6 +258,15 @@ def tag_to_versions(cli, version_tag):
         cli.stable_in_version = _vfmt(x, y + 3, z)
     if not cli.deprecated_in_version:
         cli.deprecated_in_version = _vfmt(x, y + 1, z)
+
+
+def placeholder_versions(cli):
+    if not cli.added_in_version:
+        cli.added_in_version = "$NEXT_RELEASE"
+    if not cli.stable_in_version:
+        cli.stable_in_version = "$NEXT_RELEASE_STABLE"
+    if not cli.deprecated_in_version:
+        cli.deprecated_in_version = "$NEXT_RELEASE"
 
 
 def main():
@@ -236,7 +291,7 @@ def main():
     )
     parser.add_argument(
         "--mode",
-        choices=("compare", "update", "write-doc"),
+        choices=("compare", "update", "write-doc", "fix-versions"),
         default="compare",
         help="either update current state or compare current state to source",
     )
@@ -273,6 +328,19 @@ def main():
             " set version values if not otherwise specified."
         ),
     )
+    parser.add_argument(
+        "--placeholder-versions",
+        action="store_true",
+        help="Specify special placeholder values for version numbers.",
+    )
+    parser.add_argument(
+        "--fix-filter-pkg",
+        help="Specify a regular expression to filter on package names.",
+    )
+    parser.add_argument(
+        "--fix-filter-func",
+        help="Specify a regular expression to filter on function names.",
+    )
     cli = parser.parse_args()
 
     api_src = read_json(cli.source) if cli.source else {}
@@ -286,6 +354,10 @@ def main():
 
     if cli.current_tag:
         tag_to_versions(cli, cli.current_tag)
+    elif cli.placeholder_versions:
+        if cli.mode == "fix-versions":
+            raise ValueError("fix-versions requires real version numbers")
+        placeholder_versions(cli)
 
     if cli.mode == "compare":
         # just compare the json files. useful for CI
@@ -311,6 +383,14 @@ def main():
             sys.exit(1)
         write_json(cli.current, api_tracked)
         write_markdown(cli.document, api_tracked)
+    elif cli.mode == "fix-versions":
+        values = {}
+        _setif(values, "added_in_version", cli.added_in_version)
+        _setif(values, "expected_stable_version", cli.stable_in_version)
+        _setif(values, "deprecated_in_version", cli.deprecated_in_version)
+        _setif(values, "expected_remove_version", cli.remove_in_version)
+        api_fix_versions(api_tracked, values=values, pred=_make_fix_filter(cli))
+        write_json(cli.current, api_tracked)
     elif cli.mode == "write-doc":
         write_markdown(cli.document, api_tracked)
 
