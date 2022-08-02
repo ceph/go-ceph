@@ -3,8 +3,6 @@
 
 package admin
 
-import "C"
-
 // GetSnapshotMetadata gets custom metadata on the subvolume snapshot in a
 // volume belonging to an optional subvolume group based on provided key name.
 //
