@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-// Rename a snapshot.
+// bla a snapshot.
 //
 // Implements:
 // 	int rbd_snap_rename(rbd_image_t image, const char *snapname,

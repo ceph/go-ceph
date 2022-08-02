@@ -89,7 +89,6 @@ type Image struct {
 	image  C.rbd_image_t
 }
 
-// TrashInfo contains information about trashed RBDs.
 type TrashInfo struct {
 	Id               string    // Id string, required to remove / restore trashed RBDs.
 	Name             string    // Original name of trashed RBD.
@@ -154,7 +153,8 @@ func GetImage(ioctx *rados.IOContext, name string) *Image {
 //        uint64_t features, int *order,
 //        uint64_t stripe_unit, uint64_t stripe_count);
 func Create(ioctx *rados.IOContext, name string, size uint64, order int,
-	args ...uint64) (image *Image, err error) {
+	args ...uint64,
+) (image *Image, err error) {
 	var ret C.int
 
 	switch len(args) {
@@ -191,7 +191,8 @@ func Create(ioctx *rados.IOContext, name string, size uint64, order int,
 //  int rbd_create2(rados_ioctx_t io, const char *name, uint64_t size,
 //          uint64_t features, int *order);
 func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
-	order int) (image *Image, err error) {
+	order int,
+) (image *Image, err error) {
 	var ret C.int
 
 	cOrder := C.int(order)
@@ -219,7 +220,8 @@ func Create2(ioctx *rados.IOContext, name string, size uint64, features uint64,
 //        uint64_t features, int *order,
 //        uint64_t stripe_unit, uint64_t stripe_count);
 func Create3(ioctx *rados.IOContext, name string, size uint64, features uint64,
-	order int, stripeUnit uint64, stripeCount uint64) (image *Image, err error) {
+	order int, stripeUnit uint64, stripeCount uint64,
+) (image *Image, err error) {
 	var ret C.int
 
 	cOrder := C.int(order)
@@ -416,7 +418,8 @@ func (image *Image) Stat() (info *ImageInfo, err error) {
 		Obj_size:          uint64(cStat.obj_size),
 		Num_objs:          uint64(cStat.num_objs),
 		Order:             int(cStat.order),
-		Block_name_prefix: C.GoString((*C.char)(&cStat.block_name_prefix[0]))}, nil
+		Block_name_prefix: C.GoString((*C.char)(&cStat.block_name_prefix[0])),
+	}, nil
 }
 
 // IsOldFormat returns true if the rbd image uses the old format.
@@ -634,9 +637,11 @@ func (image *Image) ListLockers() (tag string, lockers []Locker, err error) {
 
 	lockers = make([]Locker, cLockerCount)
 	for i := 0; i < int(cLockerCount); i++ {
-		lockers[i] = Locker{Client: clients[i],
+		lockers[i] = Locker{
+			Client: clients[i],
 			Cookie: cookies[i],
-			Addr:   addrs[i]}
+			Addr:   addrs[i],
+		}
 	}
 
 	return string(tagBuf), lockers, nil
@@ -917,9 +922,11 @@ func (image *Image) GetSnapshotNames() (snaps []SnapInfo, err error) {
 	}
 
 	for i, s := range cSnaps {
-		snaps[i] = SnapInfo{Id: uint64(s.id),
+		snaps[i] = SnapInfo{
+			Id:   uint64(s.id),
 			Size: uint64(s.size),
-			Name: C.GoString(s.name)}
+			Name: C.GoString(s.name),
+		}
 	}
 
 	C.rbd_snap_list_end(&cSnaps[0])
@@ -952,7 +959,6 @@ func (image *Image) GetId() (string, error) {
 	}
 	id := C.GoString((*C.char)(unsafe.Pointer(&buf[0])))
 	return id, nil
-
 }
 
 // GetName returns the image name.
@@ -1249,8 +1255,8 @@ func RemoveImage(ioctx *rados.IOContext, name string) error {
 //                  const char *p_snapname, rados_ioctx_t c_ioctx,
 //                  const char *c_name, rbd_image_options_t c_opts);
 func CloneImage(ioctx *rados.IOContext, parentName, snapName string,
-	destctx *rados.IOContext, name string, rio *ImageOptions) error {
-
+	destctx *rados.IOContext, name string, rio *ImageOptions,
+) error {
 	if rio == nil {
 		return rbdError(C.EINVAL)
 	}
@@ -1277,8 +1283,8 @@ func CloneImage(ioctx *rados.IOContext, parentName, snapName string,
 // This function is a convenience wrapper around CloneImage to support cloning
 // from an existing Image.
 func CloneFromImage(parent *Image, snapName string,
-	destctx *rados.IOContext, name string, rio *ImageOptions) error {
-
+	destctx *rados.IOContext, name string, rio *ImageOptions,
+) error {
 	if err := parent.validate(imageNeedsIOContext); err != nil {
 		return err
 	}
