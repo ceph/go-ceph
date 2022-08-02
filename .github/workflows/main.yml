@@ -17,48 +17,79 @@ on:
 jobs:
   # Run static/code-quality checks
   check:
+    name: lint
     runs-on: ubuntu-latest
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     ceph_version:
+    #     # - "nautilus"
+    #     # - "octopus"
+    #     - "pacific"
+    #     # - "quincy"
     steps:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.18
     - uses: actions/checkout@v3
-    - name: Install revive
-      run: go install github.com/mgechev/revive@latest
-    - name: Run checks
-      run: make check
+    - run: go mod download # workaround for bug in golangci-lint
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+        version: v1.47.3
+
+        # Optional: working directory, useful for monorepos
+        # working-directory: somedir
+
+        # Optional: golangci-lint command line arguments.
+        # args: --issues-exit-code=0
+        args: --max-same-issues=0 --max-issues-per-linter=0
+
+        # Optional: show only new issues if it's a pull request. The default value is `false`.
+        only-new-issues: false
+
+        # Optional: if set to true then the all caching functionality will be complete disabled,
+        #           takes precedence over all other caching options.
+        skip-cache: true
+
+        # Optional: if set to true then the action don't cache or restore ~/go/pkg.
+        # skip-pkg-cache: true
+
+        # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
+        # skip-build-cache: true
 
   # Run the test suite in a container per-ceph-codename
-  test-suite:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ceph_version:
-        - "nautilus"
-        - "octopus"
-        - "pacific"
-        - "quincy"
-        - "pre-pacific"
-        - "pre-quincy"
-        - "main"
-    steps:
-    - uses: actions/checkout@v3
-    - name: Run tests
-      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
-    - name: Clean up test containers
-      run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"
-    - name: Archive test results
-      uses: actions/upload-artifact@v3
-      with:
-        name: "go-ceph-results-${{ matrix.ceph_version }}"
-        path: |
-          _results/
-        retention-days: 30
-    - name: Check API Versions and Aging
-      run: |
-        if [ -f _results/implements.json ]; then
-          ./contrib/apiage.py
-        else
-          echo "Skipping apiage check"
-        fi
+  # test-suite:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       ceph_version:
+  #       - "nautilus"
+  #       - "octopus"
+  #       - "pacific"
+  #       - "quincy"
+  #       - "pre-pacific"
+  #       - "pre-quincy"
+  #       - "main"
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Run tests
+  #     run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
+  #   - name: Clean up test containers
+  #     run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"
+  #   - name: Archive test results
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: "go-ceph-results-${{ matrix.ceph_version }}"
+  #       path: |
+  #         _results/
+  #       retention-days: 30
+  #   - name: Check API Versions and Aging
+  #     run: |
+  #       if [ -f _results/implements.json ]; then
+  #         ./contrib/apiage.py
+  #       else
+  #         echo "Skipping apiage check"
+  #       fi
