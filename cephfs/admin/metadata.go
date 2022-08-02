@@ -3,8 +3,6 @@
 
 package admin
 
-import "C"
-
 // GetMetadata gets custom metadata on the subvolume in a volume belonging to
 // an optional subvolume group based on provided key name.
 //
