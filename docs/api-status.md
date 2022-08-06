@@ -4,6 +4,8 @@
 
 ## Package: cephfs
 
+No Preview/Deprecated APIs found. All APIs are considered stable.
+
 ## Package: cephfs/admin
 
 ### Preview APIs
@@ -47,6 +49,8 @@ Snapshot.Set | v0.10.0 |  |
 
 ## Package: rbd/admin
 
+No Preview/Deprecated APIs found. All APIs are considered stable.
+
 ## Package: rgw/admin
 
 ### Preview APIs
@@ -65,6 +69,8 @@ API.RemoveKey | v0.17.0 | v0.19.0 |
 API.SetIndividualBucketQuota | v0.17.0 | v0.19.0 | 
 
 ## Package: common/admin/manager
+
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/log
 
