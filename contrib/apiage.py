@@ -184,6 +184,10 @@ def format_markdown(tracked, outfh):
                 outfh=outfh,
             )
             print("", file=outfh)
+        if all(x not in pkg_api for x in ("preview_api", "deprecated_api")):
+            print("No Preview/Deprecated APIs found. "
+                  "All APIs are considered stable.", file=outfh)
+            print("", file=outfh)
 
 
 def _table(data, columns, outfh):
