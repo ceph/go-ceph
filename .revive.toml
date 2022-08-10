@@ -20,7 +20,13 @@ warningCode = 0
 [rule.var-naming]
   arguments = [["ID", "UID"]]
 [rule.var-declaration]
+# We need to disable the package-comments check because we check all the .go
+# files in the repo individually. This appears to confuse the new
+# pacakge-comments implementation as it works correctly with ./... or ./a/b/c
+# but not ./a/b/c/*.go. We need the latter input style as we have files with
+# build tags we want to check, as well as multiple modules, within the repo.
 [rule.package-comments]
+  disabled = true
 [rule.range]
 [rule.receiver-naming]
 [rule.time-naming]
