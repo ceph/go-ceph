@@ -19,12 +19,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-go@v2
+    - uses: actions/setup-go@v3
       with:
-        go-version: 1.14
+        go-version: 1.18
     - uses: actions/checkout@v2
     - name: Install revive
-      run: go get github.com/mgechev/revive
+      run: go install github.com/mgechev/revive@latest
     - name: Run checks
       run: make check
 
