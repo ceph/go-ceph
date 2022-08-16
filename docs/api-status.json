@@ -1009,15 +1009,13 @@
       {
         "name": "ReadOp.Read",
         "comment": "Read bytes from offset into buffer.\nlen(buffer) is the maximum number of bytes read from the object.\nbuffer[:ReadOpReadStep.BytesRead] then contains object data.\n\nImplements:\n void rados_read_op_read(rados_read_op_t read_op,\n                         uint64_t offset,\n                         size_t len,\n                         char * buffer,\n                         size_t * bytes_read,\n                         int * prval)\n"
+      },
+      {
+        "name": "IOContext.SetLocator",
+        "comment": "SetLocator sets the key for mapping objects to pgs within an io context.\nUntil a different locator key is set, all objects in this io context will be placed in the same pg.\nTo reset the locator, an empty string must be set.\n\nImplements:\n void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);\n"
       }
     ],
     "preview_api": [
-      {
-        "name": "IOContext.SetLocator",
-        "comment": "SetLocator sets the key for mapping objects to pgs within an io context.\nUntil a different locator key is set, all objects in this io context will be placed in the same pg.\nTo reset the locator, an empty string must be set.\n\nImplements:\n void rados_ioctx_locator_set_key(rados_ioctx_t io, const char *key);\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
-      },
       {
         "name": "IOContext.SetAllocationHint",
         "comment": "SetAllocationHint sets allocation hint for an object. This is an advisory\noperation, it will always succeed (as if it was submitted with a\nLIBRADOS_OP_FLAG_FAILOK flag set) and is not guaranteed to do anything on\nthe backend.\n\nImplements:\n int rados_set_alloc_hint2(rados_ioctx_t io,\n                           const char *o,\n                           uint64_t expected_object_size,\n                           uint64_t expected_write_size,\n                           uint32_t flags);\n",
@@ -1757,36 +1755,6 @@
   "rgw/admin": {
     "preview_api": [
       {
-        "name": "API.UnlinkBucket",
-        "comment": "UnlinkBucket unlink a bucket from a specified user\nPrimarily useful for changing bucket ownership.\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
-      },
-      {
-        "name": "API.LinkBucket",
-        "comment": "LinkBucket will link a bucket to a specified user\nunlinking the bucket from any previous user\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
-      },
-      {
-        "name": "API.CreateSubuser",
-        "comment": "CreateSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#create-subuser\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
-      },
-      {
-        "name": "API.RemoveSubuser",
-        "comment": "RemoveSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#remove-subuser\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
-      },
-      {
-        "name": "API.ModifySubuser",
-        "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
-      },
-      {
         "name": "API.ListUsersBuckets",
         "comment": "ListUsersBuckets will return the list of all users buckets without stat.\n",
         "added_in_version": "v0.17.0",
@@ -1892,6 +1860,26 @@
       {
         "name": "API.RemoveUserCap",
         "comment": "RemoveUserCap removes the capabilities from a user.\nOn Success, it returns the updated list of UserCaps for the user.\n"
+      },
+      {
+        "name": "API.UnlinkBucket",
+        "comment": "UnlinkBucket unlink a bucket from a specified user\nPrimarily useful for changing bucket ownership.\n"
+      },
+      {
+        "name": "API.LinkBucket",
+        "comment": "LinkBucket will link a bucket to a specified user\nunlinking the bucket from any previous user\n"
+      },
+      {
+        "name": "API.CreateSubuser",
+        "comment": "CreateSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#create-subuser\n"
+      },
+      {
+        "name": "API.RemoveSubuser",
+        "comment": "RemoveSubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#remove-subuser\n"
+      },
+      {
+        "name": "API.ModifySubuser",
+        "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n"
       }
     ]
   },
@@ -1923,18 +1911,14 @@
     ]
   },
   "common/log": {
-    "preview_api": [
+    "stable_api": [
       {
         "name": "SetWarnf",
-        "comment": "SetWarnf sets the log.Printf compatible receiver for warning logs.\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
+        "comment": "SetWarnf sets the log.Printf compatible receiver for warning logs.\n"
       },
       {
         "name": "SetDebugf",
-        "comment": "SetDebugf sets the log.Printf compatible receiver for debug logs.\n",
-        "added_in_version": "v0.15.0",
-        "expected_stable_version": "v0.17.0"
+        "comment": "SetDebugf sets the log.Printf compatible receiver for debug logs.\n"
       }
     ]
   },
