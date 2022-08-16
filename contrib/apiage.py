@@ -150,6 +150,28 @@ def api_fix_versions(tracked, values, pred=None):
             _vfix(pkg, "expected_stable_version", api, values)
 
 
+def api_find_updates(tracked, values):
+    found = {"preview": [], "deprecated": []}
+    for pkg, pkg_api in tracked.items():
+        for api in pkg_api.get("deprecated_api", []):
+            erversion = api.get("expected_remove_version", "")
+            if erversion == values.get("next_version"):
+                found["deprecated"].append({
+                    "package": pkg,
+                    "name": api.get("name", ""),
+                    "expected_remove_version": erversion,
+                })
+        for api in pkg_api.get("preview_api", []):
+            esversion = api.get("expected_stable_version", "")
+            if esversion == values.get("next_version"):
+                found["preview"].append({
+                    "package": pkg,
+                    "name": api.get("name", ""),
+                    "expected_stable_version": esversion,
+                })
+    return found
+
+
 def format_markdown(tracked, outfh):
     print("<!-- GENERATED FILE: DO NOT EDIT DIRECTLY -->", file=outfh)
     print("", file=outfh)
@@ -188,6 +210,23 @@ def format_markdown(tracked, outfh):
             print("No Preview/Deprecated APIs found. "
                   "All APIs are considered stable.", file=outfh)
             print("", file=outfh)
+
+
+def format_updates_markdown(updates, outfh):
+    print("## Preview APIs due to become stable", file=outfh)
+    if not updates.get("preview"):
+        print("n/a", file=outfh)
+    for api in updates.get("preview", []):
+        print(f"* {api['package']}: {api['name']}", file=outfh)
+    print("", file=outfh)
+    print("", file=outfh)
+    print("## Deprecated APIs due to be removed", file=outfh)
+    if not updates.get("deprecated"):
+        print("n/a", file=outfh)
+    for api in updates.get("deprecated", []):
+        print(f"* {api['package']}/{api['name']}", file=outfh)
+    print("", file=outfh)
+    print("", file=outfh)
 
 
 def _table(data, columns, outfh):
@@ -295,7 +334,14 @@ def main():
     )
     parser.add_argument(
         "--mode",
-        choices=("compare", "update", "write-doc", "fix-versions"),
+        choices=(
+            "compare",
+            "update",
+            "write-doc",
+            "fix-versions",
+            "find-updates",
+            "updates-to-markdown",
+        ),
         default="compare",
         help="either update current state or compare current state to source",
     )
@@ -395,8 +441,19 @@ def main():
         _setif(values, "expected_remove_version", cli.remove_in_version)
         api_fix_versions(api_tracked, values=values, pred=_make_fix_filter(cli))
         write_json(cli.current, api_tracked)
+    elif cli.mode == "find-updates":
+        values = {}
+        _setif(values, "next_version", cli.added_in_version)
+        updates_needed = api_find_updates(api_tracked, values=values)
+        json.dump(updates_needed, sys.stdout, indent=2)
+        print()
+        if not (updates_needed.get("preview") or updates_needed.get("deprecated")):
+            sys.exit(1)
     elif cli.mode == "write-doc":
         write_markdown(cli.document, api_tracked)
+    elif cli.mode == "updates-to-markdown":
+        updates_needed = json.load(sys.stdin)
+        format_updates_markdown(updates_needed, sys.stdout)
 
 
 if __name__ == "__main__":
