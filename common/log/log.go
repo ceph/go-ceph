@@ -1,6 +1,3 @@
-//go:build ceph_preview
-// +build ceph_preview
-
 // Package log allows to enable go-ceph logging and integrate it with the
 // logging of the go-ceph consuming code.
 package log

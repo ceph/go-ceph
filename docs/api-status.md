@@ -25,7 +25,6 @@ Name | Deprecated in Version | Expected Removal Version |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-IOContext.SetLocator | v0.15.0 | v0.17.0 | 
 IOContext.SetAllocationHint | v0.17.0 | v0.19.0 | 
 WriteOp.SetAllocationHint | v0.17.0 | v0.19.0 | 
 IOContext.Alignment | v0.17.0 | v0.19.0 | 
@@ -57,11 +56,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.UnlinkBucket | v0.15.0 | v0.17.0 | 
-API.LinkBucket | v0.15.0 | v0.17.0 | 
-API.CreateSubuser | v0.15.0 | v0.17.0 | 
-API.RemoveSubuser | v0.15.0 | v0.17.0 | 
-API.ModifySubuser | v0.15.0 | v0.17.0 | 
 API.ListUsersBuckets | v0.17.0 | v0.19.0 | 
 API.ListUsersBucketsWithStat | v0.17.0 | v0.19.0 | 
 API.CreateKey | v0.17.0 | v0.19.0 | 
@@ -74,12 +68,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/log
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-SetWarnf | v0.15.0 | v0.17.0 | 
-SetDebugf | v0.15.0 | v0.17.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/nfs
 
@@ -92,3 +81,4 @@ Admin.CreateCephFSExport | v0.16.0 | v0.18.0 |
 Admin.RemoveExport | v0.16.0 | v0.18.0 | 
 Admin.ListDetailedExports | v0.16.0 | v0.18.0 | 
 Admin.ExportInfo | v0.16.0 | v0.18.0 | 
+
