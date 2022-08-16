@@ -1,0 +1,24 @@
+
+name: Report-API-Updates
+
+# Run tests on pull requests and when changes are directly
+# commited to master.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  find-updates:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run makefile
+      run: make api-report-updates  RESULTS_DIR=_results
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: "go-ceph-api-updates"
+        path: |
+          _results/
+        retention-days: 30
+
+  # TODO: teach this thing how to file an issue automatically
