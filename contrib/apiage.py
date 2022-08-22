@@ -172,6 +172,39 @@ def api_find_updates(tracked, values):
     return found
 
 
+def api_promote(tracked, src, values):
+    changes = problems = 0
+    for pkg, pkg_api in src.items():
+        src_stable = pkg_api.get("stable_api", [])
+        src_preview = pkg_api.get("preview_api", [])
+        tracked_stable = tracked.get(pkg, {}).get("stable_api", [])
+        tracked_preview = tracked.get(pkg, {}).get("preview_api", [])
+        indexed_stable = {a.get("name", ""): a for a in tracked_stable}
+        indexed_preview = {a.get("name", ""): a for a in tracked_preview}
+        for api in src_stable:
+            name = api.get("name", "")
+            if name in indexed_preview and name not in indexed_stable:
+                # need to promote this api
+                if values.get("added_in_version"):
+                    # track some metadata. why not right?
+                    api["added_in_version"] = indexed_preview[name].get("added_in_version", "")
+                    api["became_stable_version"] = values["added_in_version"]
+                tracked_preview[:] = [a for n, a in indexed_preview.items() if n != name]
+                tracked_stable.append(api)
+                print("promoting to stable: {}:{}".format(pkg, name))
+                changes += 1
+            elif name in indexed_preview and name in indexed_preview:
+                print("bad state: {}:{} found in both preview and stable"
+                      .format(pkg, name))
+                problems += 1
+            elif name not in indexed_preview and name not in indexed_stable:
+                print("api not found in preview: {}:{}".format(pkg, name))
+                problems += 1
+            # else api is already stable. do nothing.
+    return changes, problems
+
+
+
 def format_markdown(tracked, outfh):
     print("<!-- GENERATED FILE: DO NOT EDIT DIRECTLY -->", file=outfh)
     print("", file=outfh)
@@ -341,6 +374,7 @@ def main():
             "fix-versions",
             "find-updates",
             "updates-to-markdown",
+            "promote",
         ),
         default="compare",
         help="either update current state or compare current state to source",
@@ -453,6 +487,19 @@ def main():
         print()
         if not (updates_needed.get("preview") or updates_needed.get("deprecated")):
             sys.exit(1)
+    elif cli.mode == "promote":
+        values = {}
+        _setif(values, "added_in_version", cli.added_in_version)
+        ccount, pcount = api_promote(
+            api_tracked,
+            api_src,
+            values,
+        )
+        print("found {} apis to promote".format(ccount))
+        if pcount:
+            print(f"error: {pcount} problems detected", file=sys.stderr)
+            sys.exit(1)
+        write_json(cli.current, api_tracked)
     elif cli.mode == "write-doc":
         write_markdown(cli.document, api_tracked)
     elif cli.mode == "updates-to-markdown":
