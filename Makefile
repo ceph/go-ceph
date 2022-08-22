@@ -268,6 +268,11 @@ api-check: implements-json
 api-update: implements-json
 	./contrib/apiage.py --mode=update --placeholder-versions
 
+api-promote: implements-json
+	./contrib/apiage.py --mode=promote \
+		--current-tag="$$(git describe --tags --abbrev=0)"
+	./contrib/apiage.py --mode=write-doc
+
 api-fix-versions:
 	./contrib/apiage.py --mode=fix-versions \
 		--current-tag="$$(git describe --tags --abbrev=0)"
