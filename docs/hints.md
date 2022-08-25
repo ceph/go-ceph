@@ -82,3 +82,86 @@ delete a pool with the given name. The following will delete the pool named
 ```go
 conn.DeletePool("new_pool")
 ```
+
+### Error Handling
+
+As typical of Go codebases, a large number of functions in go-ceph return `error`s.
+Some of these errors are based on non-exported types. This is deliberate choice.
+However, much of the relevant data these types can contain are available. One
+does not have to resort to the somewhat brittle approach of converting errors
+to strings and matching on (parts of) said string.
+
+In some cases the errors returned by calls are considered "sentinel" errors.
+These errors can be matched to exported values in the package using the
+`errors.Is` function from the Go standard library.
+
+Example:
+```go
+// we want to delete a pool, but oops, conn is disconnected
+err := conn.DeletePool("foo")
+if err != nil {
+    if errors.Is(err, rados.ErrNotConnected) {
+        // ... do something specific when not connected ...
+    } else {
+        // ... handle generic error ...
+    }
+}
+```
+
+Example:
+```go
+err := rgw.MyAPICall()
+if err != nil {
+    if errors.Is(err, rgw.ErrInvalidAccessKey) {
+       // ... do something specific to access errors ...
+    } else if errors.Is(err, rgw.ErrNoSuchUser) {
+       // ... do something specific to user not existing ...
+    } else {
+       // ... handle generic error ...
+    }
+}
+```
+
+In other cases the returned error doesn't match a specific error value but
+rather is implemented by a type that may carry additional data. Specifically,
+many errors in go-ceph implement an `ErrorCode() int` method. If this is the
+case you can use ErrorCode to access a numeric error code provided by calls to
+Ceph. Note that the error codes returned by Ceph often match unix/linux
+`errno`s - but the exact meaning of the values returned by `ErrorCode()` are
+determined by the Ceph APIs and go-ceph is just making them accessible.
+
+
+Example:
+```go
+type errorWithCode interface {
+    ErrorCode() int
+}
+
+err := rados.SomeRadosFunc()
+if err != nil {
+    var ec errorWithCode
+    if errors.As(err, &ec) {
+        errCode := ec.ErrorCode()
+        // ... do something with errCode ...
+    } else {
+        // ... handle generic error ...
+    }
+}
+```
+
+Note that Go allows type definitions inline so you can even write:
+```go
+err := rados.SomeRadosFunc()
+if err != nil {
+    var ec interface { ErrorCode() int }
+    if errors.As(err, &ec) {
+        errCode := ec.ErrorCode()
+        // ... do something with errCode ...
+    } else {
+        // ... handle generic error ...
+    }
+}
+```
+
+Newer packages in go-ceph generally prefer to latter approach to avoid creating
+lots of sentinels that are only used rarely.
