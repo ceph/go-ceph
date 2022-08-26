@@ -59,7 +59,7 @@ if !bytes.Equal(bytesIn, bytesOut) {
 
 ### Pool maintenance
 
-The list of pools in a cluster can be retreived using the `ListPools` method
+The list of pools in a cluster can be retrieved using the `ListPools` method
 on the connection object. On a new cluster the following code snippet:
 
 ```go
