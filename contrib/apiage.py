@@ -393,14 +393,16 @@ def main():
     )
     cli = parser.parse_args()
 
-    api_src = read_json(cli.source) if cli.source else {}
     api_tracked = read_json(cli.current) if cli.current else {}
 
-    if not api_src:
-        print(
-            f"error: no source data found (path: {cli.source})", file=sys.stderr
-        )
-        sys.exit(1)
+    def _get_api_src():
+        api_src = read_json(cli.source) if cli.source else {}
+        if not api_src:
+            print(
+                f"error: no source data found (path: {cli.source})", file=sys.stderr
+            )
+            sys.exit(1)
+        return api_src
 
     if cli.current_tag:
         tag_to_versions(cli, cli.current_tag)
@@ -411,12 +413,14 @@ def main():
 
     if cli.mode == "compare":
         # just compare the json files. useful for CI
+        api_src = _get_api_src()
         pcount = api_compare(api_tracked, api_src)
         if pcount:
             print(f"error: {pcount} problems detected", file=sys.stderr)
             sys.exit(1)
     elif cli.mode == "update":
         # update the current/tracked apis with those from the source
+        api_src = _get_api_src()
         defaults = {}
         _setif(defaults, "added_in_version", cli.added_in_version)
         _setif(defaults, "expected_stable_version", cli.stable_in_version)
