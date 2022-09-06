@@ -148,12 +148,17 @@ Contributions are welcome & greatly appreciated, every little bit helps. Make co
 make test-docker
 ```
 
-### Interactive "Office Hours"
+### Getting in Touch
 
-The maintenance team plans to be available regularly for questions, comments,
-pings, etc for about an hour twice a week. The current schedule is:
-
-* 2:00pm EDT (currently 18:00 UTC) Mondays
-* 9:00am EDT (currently 13:00 UTC) Thursdays
-
-We will use the [#ceph-devel IRC channel](https://ceph.io/irc/)
+Want to get in touch with the go-ceph team? We're available through a few
+different channels:
+* Have a question, comment, or feedback:
+  [Use the Discussions Board](https://github.com/ceph/go-ceph/discussions)
+* Report an issue or request a feature:
+  [Issues Tracker](https://github.com/ceph/go-ceph/issues)
+* We participate in the Ceph
+  [user's mailing list](https://lists.ceph.io/hyperkitty/list/ceph-users@ceph.io/)
+  and [dev list](https://lists.ceph.io/hyperkitty/list/dev@ceph.io/)
+  and we also announce our releases on those lists
+* You can sometimes find us in the
+  [#ceph-devel IRC channel](https://ceph.io/irc/) - hours may vary
