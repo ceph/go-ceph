@@ -33,6 +33,8 @@ func waitForMirroring(t *testing.T, fsa *FSAdmin) {
 		require.NoError(t, err)
 		for _, emod := range modinfo.EnabledModules {
 			if emod == "mirroring" {
+				// give additional time for mgr to restart(?)
+				time.Sleep(200 * time.Millisecond)
 				return
 			}
 		}
