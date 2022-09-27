@@ -337,7 +337,7 @@ const (
 	// LockEX places an exclusive lock.
 	// Only one process may hold an exclusive lock for a given file at a given time.
 	LockEX = LockOp(C.LOCK_EX)
-	// LockUN removes and existing lock held by this process.
+	// LockUN removes an existing lock held by this process.
 	LockUN = LockOp(C.LOCK_UN)
 	// LockNB can be ORed with any of the above to make a nonblocking call.
 	LockNB = LockOp(C.LOCK_NB)
