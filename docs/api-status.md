@@ -35,7 +35,6 @@ IOContext.RequiresAlignment | v0.17.0 | v0.19.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Snapshot.Rename | v0.16.0 | v0.18.0 | 
 
 ### Deprecated APIs
 
