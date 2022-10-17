@@ -177,11 +177,20 @@ def api_promote(tracked, src, values):
     for pkg, pkg_api in src.items():
         src_stable = pkg_api.get("stable_api", [])
         src_preview = pkg_api.get("preview_api", [])
-        tracked_stable = tracked.get(pkg, {}).get("stable_api", [])
-        tracked_preview = tracked.get(pkg, {}).get("preview_api", [])
-        indexed_stable = {a.get("name", ""): a for a in tracked_stable}
-        indexed_preview = {a.get("name", ""): a for a in tracked_preview}
+        new_tracked_stable = new_tracked_preview = False
+        try:
+            tracked_stable = tracked.get(pkg, {})["stable_api"]
+        except KeyError:
+            tracked_stable = []
+            new_tracked_stable = True
+        try:
+            tracked_preview = tracked.get(pkg, {})["preview_api"]
+        except KeyError:
+            tracked_preview = []
+            new_tracked_preview = True
         for api in src_stable:
+            indexed_stable = {a.get("name", ""): a for a in tracked_stable}
+            indexed_preview = {a.get("name", ""): a for a in tracked_preview}
             name = api.get("name", "")
             if name in indexed_preview and name not in indexed_stable:
                 # need to promote this api
@@ -201,6 +210,10 @@ def api_promote(tracked, src, values):
                 print("api not found in preview: {}:{}".format(pkg, name))
                 problems += 1
             # else api is already stable. do nothing.
+        if new_tracked_stable and tracked_stable:
+            tracked[pkg]["stable_api"] = tracked_stable
+        if new_tracked_preview and tracked_preview:
+            tracked[pkg]["preview_api"] = tracked_preview
     return changes, problems
 
 
