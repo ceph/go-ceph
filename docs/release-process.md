@@ -16,11 +16,14 @@ The sections below go into more detail about these steps in no particular order.
 
 ## Tagging a Major-Minor release
 
+First, make sure your local git tree has the latest changes.
 Tag master branch with a vX.Y.Z version. This should be an annotated tag (it
 will have a commit message).
 
 Example:
 ```shell
+git checkout master
+git pull --ff-only
 git tag -a v0.2.0 -m 'Release v0.2.0'
 ```
 
