@@ -489,6 +489,7 @@ def main():
             sys.exit(1)
     elif cli.mode == "promote":
         values = {}
+        api_src = _get_api_src()
         _setif(values, "added_in_version", cli.added_in_version)
         ccount, pcount = api_promote(
             api_tracked,
