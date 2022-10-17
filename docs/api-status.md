@@ -12,7 +12,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-CloneStatus.GetFailure | v0.16.0 | v0.18.0 | 
 
 ### Deprecated APIs
 

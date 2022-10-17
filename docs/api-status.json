@@ -494,17 +494,16 @@
       {
         "name": "FSAdmin.VolumeStatus",
         "comment": "VolumeStatus returns a VolumeStatus object for the given volume name.\n\nSimilar To:\n ceph fs status cephfs <name>\n"
-      }
-    ],
-    "deprecated_api": [],
-    "preview_api": [
+      },
       {
         "name": "CloneStatus.GetFailure",
         "comment": "GetFailure returns details about the CloneStatus when in CloneFailed state.\n\nSimilar To:\n Reading the .failure object from the JSON returned by \"ceph fs subvolume\n snapshot clone\"\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       }
-    ]
+    ],
+    "deprecated_api": [],
+    "preview_api": []
   },
   "rados": {
     "stable_api": [
