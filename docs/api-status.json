@@ -1668,16 +1668,15 @@
       {
         "name": "Watch.Unwatch",
         "comment": "Unwatch un-registers the image watch.\n\nImplements:\n int rbd_update_unwatch(rbd_image_t image, uint64_t handle);\n"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Snapshot.Rename",
-        "comment": "Rename a snapshot.\n\nImplements:\n int rbd_snap_rename(rbd_image_t image, const char *snapname, const char* dstsnapsname);\n",
+        "comment": "Rename a snapshot.\n\nImplements:\n\tint rbd_snap_rename(rbd_image_t image, const char *snapname,\n\t\t\t\t const char* dstsnapsname);\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       }
-    ]
+    ],
+    "preview_api": []
   },
   "rbd/admin": {
     "stable_api": [
