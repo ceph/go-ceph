@@ -1921,36 +1921,37 @@
     ]
   },
   "common/admin/nfs": {
-    "preview_api": [
+    "preview_api": [],
+    "stable_api": [
       {
         "name": "NewFromConn",
-        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n PREVIEW\n",
+        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       },
       {
         "name": "Admin.CreateCephFSExport",
-        "comment": "CreateCephFSExport will create a new NFS export for a CephFS file system.\n PREVIEW\n\nSimilar To:\n ceph nfs export create cephfs\n",
+        "comment": "CreateCephFSExport will create a new NFS export for a CephFS file system.\n\nSimilar To:\n ceph nfs export create cephfs\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       },
       {
         "name": "Admin.RemoveExport",
-        "comment": "RemoveExport will remove an NFS export based on the pseudo-path of the export.\n PREVIEW\n\nSimilar To:\n ceph nfs export rm\n",
+        "comment": "RemoveExport will remove an NFS export based on the pseudo-path of the export.\n\nSimilar To:\n ceph nfs export rm\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       },
       {
         "name": "Admin.ListDetailedExports",
-        "comment": "ListDetailedExports will return a list of exports with details.\n PREVIEW\n\nSimilar To:\n ceph nfs export ls --detailed\n",
+        "comment": "ListDetailedExports will return a list of exports with details.\n\nSimilar To:\n ceph nfs export ls --detailed\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       },
       {
         "name": "Admin.ExportInfo",
-        "comment": "ExportInfo will return a structure describing the export specified by it's\npseudo-path.\n PREVIEW\n\nSimilar To:\n ceph nfs export info\n",
+        "comment": "ExportInfo will return a structure describing the export specified by it's\npseudo-path.\n\nSimilar To:\n ceph nfs export info\n",
         "added_in_version": "v0.16.0",
-        "expected_stable_version": "v0.18.0"
+        "became_stable_version": "v0.18.0"
       }
     ]
   }
