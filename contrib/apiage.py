@@ -226,7 +226,7 @@ def format_markdown(tracked, outfh):
     for pkg, pkg_api in tracked.items():
         print(f"## Package: {pkg}", file=outfh)
         print("", file=outfh)
-        if "preview_api" in pkg_api:
+        if "preview_api" in pkg_api and pkg_api["preview_api"]:
             print("### Preview APIs", file=outfh)
             print("", file=outfh)
             _table(
@@ -239,7 +239,7 @@ def format_markdown(tracked, outfh):
                 outfh=outfh,
             )
             print("", file=outfh)
-        if "deprecated_api" in pkg_api:
+        if "deprecated_api" in pkg_api and pkg_api["deprecated_api"]:
             print("### Deprecated APIs", file=outfh)
             print("", file=outfh)
             _table(
@@ -252,7 +252,8 @@ def format_markdown(tracked, outfh):
                 outfh=outfh,
             )
             print("", file=outfh)
-        if all(x not in pkg_api for x in ("preview_api", "deprecated_api")):
+        if (all(x not in pkg_api for x in ("preview_api", "deprecated_api")) or
+            all(x in pkg_api and not pkg_api[x] for x in ("preview_api", "deprecated_api"))):
             print("No Preview/Deprecated APIs found. "
                   "All APIs are considered stable.", file=outfh)
             print("", file=outfh)

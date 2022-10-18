@@ -8,15 +8,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: cephfs/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-
-### Deprecated APIs
-
-Name | Deprecated in Version | Expected Removal Version | 
----- | --------------------- | ------------------------ | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados
 
@@ -30,11 +22,6 @@ IOContext.Alignment | v0.17.0 | v0.19.0 |
 IOContext.RequiresAlignment | v0.17.0 | v0.19.0 | 
 
 ## Package: rbd
-
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
 
 ### Deprecated APIs
 
@@ -69,9 +56,4 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/nfs
-
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
 
