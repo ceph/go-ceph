@@ -259,7 +259,11 @@ def format_markdown(tracked, outfh):
             print("", file=outfh)
 
 
-def format_updates_markdown(updates, outfh):
+def format_updates_markdown(updates, outfh, issuetemplate=False, next_ver=""):
+    if issuetemplate:
+        print("---", file=outfh)
+        print(f"title: APIs pending stability updates in {next_ver}", file=outfh)
+        print("---", file=outfh)
     print("## Preview APIs due to become stable", file=outfh)
     if not updates.get("preview"):
         print("n/a", file=outfh)
@@ -274,6 +278,9 @@ def format_updates_markdown(updates, outfh):
         print(f"* {api['package']}/{api['name']}", file=outfh)
     print("", file=outfh)
     print("", file=outfh)
+    if issuetemplate:
+        print("> NOTE: This issue was automatically filed by a script.", file=outfh)
+        print("", file=outfh)
 
 
 def _table(data, columns, outfh):
@@ -388,6 +395,7 @@ def main():
             "fix-versions",
             "find-updates",
             "updates-to-markdown",
+            "updates-to-issuetemplate",
             "promote",
         ),
         default="compare",
@@ -520,6 +528,14 @@ def main():
     elif cli.mode == "updates-to-markdown":
         updates_needed = json.load(sys.stdin)
         format_updates_markdown(updates_needed, sys.stdout)
+    elif cli.mode == "updates-to-issuetemplate":
+        updates_needed = json.load(sys.stdin)
+        format_updates_markdown(
+            updates_needed,
+            sys.stdout,
+            issuetemplate=True,
+            next_ver=cli.added_in_version,
+        )
 
 
 if __name__ == "__main__":
