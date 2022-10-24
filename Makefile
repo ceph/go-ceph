@@ -281,12 +281,23 @@ api-fix-versions:
 api-doc:
 	./contrib/apiage.py --mode=write-doc
 
-api-report-updates: $(RESULTS_DIR)
+.PHONY: api-check-updates
+api-check-updates: $(RESULTS_DIR)
 	./contrib/apiage.py --mode=find-updates \
 		--current-tag="$$(git describe --tags --abbrev=0)" \
 		> $(RESULTS_DIR)/updates-found.json
+
+.PHONY: api-report-updates
+api-report-updates: api-check-updates
 	./contrib/apiage.py --mode=updates-to-markdown \
 		< $(RESULTS_DIR)/updates-found.json > $(RESULTS_DIR)/updates-found.md
+
+.PHONY: api-report-issuetemplate
+api-report-issuetemplate: api-check-updates
+	./contrib/apiage.py --mode=updates-to-issuetemplate \
+		--current-tag="$$(git describe --tags --abbrev=0)" \
+		< $(RESULTS_DIR)/updates-found.json \
+		> $(RESULTS_DIR)/issue.md
 
 ifeq ($(RESULTS_DIR),)
 IMPLEMENTS_DIR:=$(PWD)/_results
