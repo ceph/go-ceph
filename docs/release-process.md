@@ -90,81 +90,53 @@ the current release is done.
 
 ## Creating release notes
 
-The go-ceph release notes have the following structure. Some of the boilerplate
+As of release v0.15.0 the method of writing release notes is largely based on
+using the automatically generated list of PRs generated at GitHub's Release UI
+and then sorting some of the items into categories. Some of the boilerplate
 language in each section can be copied from the previous release notes and then
-updated:
-* Introduction
-* Highlights
-* Stability caveat
-* New features
-* Now stable
-* Deprecations and Removals
-* Other
+updated.
 
+Remember, one of the easiest things to do is to look at previous releases and
+largely mimic what they do.
+
+#### Introduction
 The "Introduction" is a paragraph noting that this is a new version
 of go-ceph. It can be copied and the version updated.
 
-The "Highlights" are one or two paragraphs that highlight notable new feature(s)
-in the library. This includes a sentence or two describing the feature with a
-large impact to users of the library or one consumers were waiting for.
-If the contribution comes from someone who is not a project maintainer the
-paragraph should include a "shout out" to the contributor by name (usually
-taken from the contributor's signed-off-by line). We prefer to highlight changes
-from outside contributors whenever possible.
+#### Highlights
+Thank new contributors to the project. This can be derived from the GitHub
+notes.  Additional paragraphs can be added to highlight a particularly
+important feature or change.
 
+#### Stability Caveat
 The "Stability caveat" is a reminder about go-ceph's stability (non)guarantees.
 It can be copied from previous releases.
 
-The "New Features" section is a bullet list of of the sub packages that make up
-go-ceph and then sub-lists for each new API call. If the feature is a C binding
-the line should be in the form `Add [GoApiName] implementing [c_api_name]`.
-Other calls and types can be listed like `Add [GoApiName] function` or `Add
-[GoTypeName] method [GoFuncName]`. If a method name is unambiguous feel free to
-skip documenting the type it recives, but if the name is not unique it may be
-best to include both the type and method like `Add [GoTypeName] method
-[GoApiName] implementing [c_api_name]`.
+#### New Features
+Sort new features by package (cephfs, rados, rbd/admin, etc). Each
+PR/change-list is a bullet point under the package. For every PR that adds an
+API add a sub-bullet describing new methods and what methods in Ceph it wraps
+(if it wraps something).
 
-Example:
-```
-# New Features
+#### API Stability Updates
+Sort changes by package. For each changed API make a bullet point and describe
+the state of the API ("x is now stable", etc).
 
-* In the rados package:
-  * Add RambleOn implementing rados_ramble_on
+#### Deprecations and Removals
+Sort API function changes by package. Note what APIs that are deprecated and/or
+what is removed. Add a short paragraph describing any changes to what versions
+of Ceph is being deprecated or removed.
 
-* In the cephfs admin package:
-  * Add SuperSecretSnapshot function
-```
+#### Internal
+The internal changes list is a flat bulleted list of changes (PRs) that do not
+add or remove Go-package-visible features. Things like changes to the build
+scripts or unit tests, for example.
 
-The "Now Stable" section consists of bulleted lists much like "New features".
-However, it lists lists APIs that were previously in the "preview" state and are now
-considered stable. The structure is the same as the "New Features" section but
-instead of `Add [api]` write `The [api]`.
 
-The "Deprecations and Removals" section can consist of API lists like the "New
-features" section when individual API calls are being deprecated. Lines take
-the form `Deprecate [ApiName`. It can also consist of free form paragraphs
-deprecating something like a ceph release or explaining a deprecation and it's
-expected replacements.
+> NOTE: For context on how previous versions of the release notes were authored
+please review older versions of this file from version control history.
 
-The "Other" section is a bulleted list containing short descriptions of changes
-to the codebase that don't fit the other categories. This include bugfixes,
-workflow/process changes, and minor non-API-visible improvements. Because most of
-these items are not visisble to codebases that make use of go-ceph, these lines
-can and should be short and avoid going into details. Eight commits to the code
-that make many changes can be summarized as "organizational changes to the code
-layout" for example. Parties interested in more can use git to explore the
-project history in detail.
 
-### Authoring process - A personal note
-
-Generally, I use `git log --reverse --oneline vX.Y.Z...` to generate a summary
-of changes from the last release. I concatenate that to a copy of the previous
-release notes and then remove all the "old stuff". Then I go line by line
-through the "change log" removing the lines from git and adding a release note
-equivalent.  One I've filled in the new features, deprecations, and now stable
-sections, I write the highlight. I then send it, as a draft, to the other
-maintainers and a few trusted colleagues for a brief review. I usually try to
-write the notes the day before the release.
 
 ## Announcing the release
 
