@@ -4,13 +4,23 @@
 Regular releases are planned starting mid-February 2020. Until the API is
 stable we will be issuing v0.y versions.
 
-Today, the release process includes the following steps:
-* Creating release notes
-* Tagging the code
-* Creating the release using github
-* Announcing the release
-* Scheduling the next release
-* Documenting the release
+Today, the release process includes the following stages:
+
+### Pre-release
+- [ ] Complete any API stability updates
+- [ ] Check milestone for any incomplete issues
+
+### Release Tasks
+- [ ] Update the releases table in the README
+- [ ] Tag the code
+- [ ] Create release notes
+- [ ] Finalize the release on GitHub
+
+### Post-release
+- [ ] Announce the release
+- [ ] Create/verify a milestone for next release
+- [ ] Prepare API stability update issue for next release
+
 
 The sections below go into more detail about these steps in no particular order.
 
