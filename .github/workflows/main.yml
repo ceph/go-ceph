@@ -22,7 +22,7 @@ jobs:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.18
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install revive
       run: go install github.com/mgechev/revive@latest
     - name: Run checks
@@ -43,7 +43,7 @@ jobs:
         - "pre-quincy"
         - "main"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Run tests
       run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
     - name: Clean up test containers
