@@ -262,22 +262,27 @@ clean-implements:
 	$(RM) ./implements
 
 
+.PHONY: api-check
 api-check: implements-json
 	./contrib/apiage.py
 
+.PHONY: api-update
 api-update: implements-json
 	./contrib/apiage.py --mode=update --placeholder-versions
 
+.PHONY: api-promote
 api-promote: implements-json
 	./contrib/apiage.py --mode=promote \
 		--current-tag="$$(git describe --tags --abbrev=0)"
 	./contrib/apiage.py --mode=write-doc
 
+.PHONY: api-fix-versions
 api-fix-versions:
 	./contrib/apiage.py --mode=fix-versions \
 		--current-tag="$$(git describe --tags --abbrev=0)"
 	./contrib/apiage.py --mode=write-doc
 
+.PHONY: api-doc
 api-doc:
 	./contrib/apiage.py --mode=write-doc
 
@@ -310,4 +315,4 @@ implements-json: $(BUILDFILE)
 
 # force_go_build is phony and builds nothing, can be used for forcing
 # go toolchain commands to always run
-.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements clean-implements api-check api-update api-doc implements-json
+.PHONY: build fmt test test-docker check test-binaries test-bins force_go_build check-implements clean-implements implements-json
