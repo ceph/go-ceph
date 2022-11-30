@@ -4,11 +4,10 @@ run:
     - ceph_ci_untested
 
 linters:
-  # disable-all: true
+  disable-all: true
   # enable-all: true
   enable:
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]
-
     # Enabled by default linters:
     # - deadcode # Finds unused code [fast: false, auto-fix: false]
     # - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases [fast: false, auto-fix: false]
