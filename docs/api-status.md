@@ -30,11 +30,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rgw/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-API.SetIndividualBucketQuota | v0.17.0 | v0.19.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/manager
 
