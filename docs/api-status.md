@@ -16,7 +16,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-IOContext.Alignment | v0.17.0 | v0.19.0 | 
 IOContext.RequiresAlignment | v0.17.0 | v0.19.0 | 
 
 ## Package: rbd
