@@ -1752,18 +1752,6 @@
   "rgw/admin": {
     "preview_api": [
       {
-        "name": "API.ListUsersBuckets",
-        "comment": "ListUsersBuckets will return the list of all users buckets without stat.\n",
-        "added_in_version": "v0.17.0",
-        "expected_stable_version": "v0.19.0"
-      },
-      {
-        "name": "API.ListUsersBucketsWithStat",
-        "comment": "ListUsersBucketsWithStat will return the list of all users buckets with stat.\n",
-        "added_in_version": "v0.17.0",
-        "expected_stable_version": "v0.19.0"
-      },
-      {
         "name": "API.CreateKey",
         "comment": "CreateKey will generate new keys or add specified to keyring.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#create-key.\n",
         "added_in_version": "v0.17.0",
@@ -1877,6 +1865,18 @@
       {
         "name": "API.ModifySubuser",
         "comment": "ModifySubuser - https://docs.ceph.com/en/latest/radosgw/adminops/#modify-subuser\n"
+      },
+      {
+        "name": "API.ListUsersBuckets",
+        "comment": "ListUsersBuckets will return the list of all users buckets without stat\n",
+        "added_in_version": "v0.17.0",
+        "became_stable_version": "v0.19.0"
+      },
+      {
+        "name": "API.ListUsersBucketsWithStat",
+        "comment": "ListUsersBucketsWithStat will return the list of all users buckets with stat\n",
+        "added_in_version": "v0.17.0",
+        "became_stable_version": "v0.19.0"
       }
     ]
   },
