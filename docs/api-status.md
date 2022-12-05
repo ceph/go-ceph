@@ -34,8 +34,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.ListUsersBuckets | v0.17.0 | v0.19.0 | 
-API.ListUsersBucketsWithStat | v0.17.0 | v0.19.0 | 
 API.CreateKey | v0.17.0 | v0.19.0 | 
 API.RemoveKey | v0.17.0 | v0.19.0 | 
 API.SetIndividualBucketQuota | v0.17.0 | v0.19.0 | 
