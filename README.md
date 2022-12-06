@@ -97,10 +97,8 @@ These tags affect what is supported at compile time. What version of the Ceph
 cluster the client libraries support, and vice versa, is determined entirely
 by what version of the Ceph C libraries go-ceph is compiled with.
 
-† Preliminary support for Ceph Quincy is available in this release. Due to
-Quincy specific issues in our test suite some APIs can not be tested against
-Quincy at the moment. Thus, go-ceph should work with Quincy but we are not
-declaring it fully supported until all APIs can be tested on Quincy.
+† Preliminary support for Ceph Quincy was available, but not fully tested, in
+this release.
 
 NOTE: Prior to 2020 the project did not make versioned releases. The ability to
 compile with a particular Ceph version before go-ceph v0.2.0 is not guaranteed.
