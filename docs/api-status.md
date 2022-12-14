@@ -16,6 +16,17 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rbd
 
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+MigrationPrepare | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MigrationPrepareImport | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MigrationExecute | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MigrationCommit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MigrationAbort | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MigrationStatus | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
 ### Deprecated APIs
 
 Name | Deprecated in Version | Expected Removal Version | 
