@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.151
 	github.com/gofrs/uuid v4.3.1+incompatible
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/sys v0.2.0
+	golang.org/x/sys v0.3.0
 )
 
 require (
