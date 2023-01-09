@@ -13,6 +13,16 @@ import re
 import sys
 
 
+def warning(*args, **kwargs):
+    """Print a warning message."""
+    print(*args, **kwargs)
+
+
+def info(*args, **kwargs):
+    """Print an informational message."""
+    print(*args, **kwargs)
+
+
 def read_json(path):
     try:
         with open(path, "r") as fh:
@@ -97,7 +107,7 @@ def api_update(tracked, src, copy_stable=False, defaults=None):
             tracked, pkg, pkg_api, defaults=defaults
         )
         if new_stable and not copy_stable:
-            print(
+            warning(
                 "found new unexpected stable apis:",
                 ", ".join(a["name"] for a in new_stable),
             )
@@ -113,25 +123,25 @@ def api_compare(tracked, src):
             tmp, pkg, pkg_api
         )
         for dapi in new_deprecated:
-            print("not tracked (deprecated):", pkg, dapi["name"])
+            warning("not tracked (deprecated):", pkg, dapi["name"])
             problems += 1
         for papi in new_preview:
-            print("not tracked (preview):", pkg, papi["name"])
+            warning("not tracked (preview):", pkg, papi["name"])
             problems += 1
         for sapi in new_stable:
-            print("not tracked (stable):", pkg, sapi["name"])
+            warning("not tracked (stable):", pkg, sapi["name"])
             problems += 1
     for pkg, pkg_api in tmp.items():
         for api in pkg_api.get("deprecated_api", []):
             if not api.get("deprecated_in_version"):
-                print("no deprecated_in_version set:", pkg, api["name"])
+                warning("no deprecated_in_version set:", pkg, api["name"])
                 problems += 1
         for api in pkg_api.get("preview_api", []):
             if not api.get("added_in_version"):
-                print("no added_in_version set:", pkg, api["name"])
+                warning("no added_in_version set:", pkg, api["name"])
                 problems += 1
             if not api.get("expected_stable_version"):
-                print("no expected_stable_version set:", pkg, api["name"])
+                warning("no expected_stable_version set:", pkg, api["name"])
                 problems += 1
     return problems
 
@@ -142,13 +152,13 @@ def api_fix_versions(tracked, values, pred=None):
     for pkg, pkg_api in tracked.items():
         for api in pkg_api.get("deprecated_api", []):
             if pred and not pred(pkg, api["name"]):
-                print(f"Skipping {pkg}:{api['name']} due to filter")
+                info(f"Skipping {pkg}:{api['name']} due to filter")
                 continue
             _vfix(pkg, "deprecated_in_version", api, values)
             _vfix(pkg, "expected_remove_version", api, values)
         for api in pkg_api.get("preview_api", []):
             if pred and not pred(pkg, api["name"]):
-                print(f"Skipping {pkg}:{api['name']} due to filter")
+                info(f"Skipping {pkg}:{api['name']} due to filter")
                 continue
             _vfix(pkg, "added_in_version", api, values)
             _vfix(pkg, "expected_stable_version", api, values)
@@ -212,17 +222,17 @@ def api_promote(tracked, src, values):
                     a for n, a in indexed_preview.items() if n != name
                 ]
                 tracked_stable.append(api)
-                print("promoting to stable: {}:{}".format(pkg, name))
+                info("promoting to stable: {}:{}".format(pkg, name))
                 changes += 1
             elif name in indexed_preview and name in indexed_preview:
-                print(
+                warning(
                     "bad state: {}:{} found in both preview and stable".format(
                         pkg, name
                     )
                 )
                 problems += 1
             elif name not in indexed_preview and name not in indexed_stable:
-                print("api not found in preview: {}:{}".format(pkg, name))
+                warning("api not found in preview: {}:{}".format(pkg, name))
                 problems += 1
             # else api is already stable. do nothing.
         if new_tracked_stable and tracked_stable:
@@ -343,7 +353,7 @@ def _vfix(pkg, key, api, values):
                 f"missing {key} in values: {key} must be provided to fix apis"
             )
         api[key] = val
-        print(f"Updated {pkg}:{api['name']} {key}={values[key]}")
+        info(f"Updated {pkg}:{api['name']} {key}={values[key]}")
 
 
 def _make_fix_filter(cli):
@@ -551,7 +561,7 @@ def main():
             api_src,
             values,
         )
-        print("found {} apis to promote".format(ccount))
+        info("found {} apis to promote".format(ccount))
         if pcount:
             print(f"error: {pcount} problems detected", file=sys.stderr)
             sys.exit(1)
