@@ -97,6 +97,10 @@ def api_update(tracked, src, copy_stable=False, defaults=None):
             tracked, pkg, pkg_api, defaults=defaults
         )
         if new_stable and not copy_stable:
+            print(
+                "found new unexpected stable apis:",
+                ", ".join(a["name"] for a in new_stable),
+            )
             return len(new_stable)
     return 0
 
