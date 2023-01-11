@@ -277,10 +277,7 @@ def format_markdown(tracked, outfh):
             )
             print("", file=outfh)
         if all(
-            x not in pkg_api for x in ("preview_api", "deprecated_api")
-        ) or all(
-            x in pkg_api and not pkg_api[x]
-            for x in ("preview_api", "deprecated_api")
+            not pkg_api.get(x, []) for x in ("preview_api", "deprecated_api")
         ):
             print(
                 "No Preview/Deprecated APIs found. "
