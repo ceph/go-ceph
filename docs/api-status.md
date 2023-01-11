@@ -20,12 +20,12 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-MigrationPrepare | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MigrationPrepareImport | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MigrationExecute | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MigrationCommit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MigrationAbort | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MigrationStatus | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MigrationPrepare | v0.20.0 | v0.22.0 | 
+MigrationPrepareImport | v0.20.0 | v0.22.0 | 
+MigrationExecute | v0.20.0 | v0.22.0 | 
+MigrationCommit | v0.20.0 | v0.22.0 | 
+MigrationAbort | v0.20.0 | v0.22.0 | 
+MigrationStatus | v0.20.0 | v0.22.0 | 
 
 ### Deprecated APIs
 
