@@ -1848,7 +1848,14 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "API.ListBucketsWithStat",
+        "comment": "ListBucketsWithStat will return the list of all buckets with stat (system admin API only)\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ],
     "stable_api": [
       {
         "name": "API.ListBuckets",
