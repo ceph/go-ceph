@@ -22,8 +22,10 @@ RUN true && \
 
 ARG GO_VERSION=1.17.9
 ENV GO_VERSION=${GO_VERSION}
+ARG GOARCH
+ENV GOARCH=${GOARCH}
 RUN true && \
-    gotar=go${GO_VERSION}.linux-amd64.tar.gz && \
+    gotar=go${GO_VERSION}.linux-${GOARCH}.tar.gz && \
     gourl="https://dl.google.com/go/${gotar}" && \
     curl -o /tmp/${gotar} "${gourl}" && \
     tar -x -C /opt/ -f /tmp/${gotar} && \
