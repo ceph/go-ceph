@@ -53,6 +53,7 @@ endif
 
 GO_CMD:=go
 GOFMT_CMD:=gofmt
+GOARCH:=$(shell $(GO_CMD) env GOARCH)
 
 # the full name of the marker file including the ceph version
 BUILDFILE=.build.$(CEPH_VERSION)
@@ -98,6 +99,7 @@ endif
 
 # Assemble the various build args that will be passed container build command(s)
 CONTAINER_BUILD_ARGS:=$(DEFAULT_BUILD_ARGS)
+CONTAINER_BUILD_ARGS += --build-arg GOARCH=$(GOARCH)
 ifdef CEPH_IMG
 	CONTAINER_BUILD_ARGS += --build-arg CEPH_IMG=$(CEPH_IMG)
 endif
