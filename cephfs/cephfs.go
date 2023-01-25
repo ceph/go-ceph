@@ -234,3 +234,12 @@ func (mount *MountInfo) IsMounted() bool {
 	ret := C.ceph_is_mounted(mount.mount)
 	return ret == 1
 }
+
+// select filesystem by name
+func (mount *MountInfo) SelectFilesystem(name string) error {
+	nameC := C.CString(name)
+	defer C.free(unsafe.Pointer(nameC))
+
+	ret := C.ceph_select_filesystem(mount.mount, nameC)
+	return getError(ret)
+}
