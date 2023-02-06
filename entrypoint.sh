@@ -13,13 +13,13 @@ RESULTS_DIR=/results
 CEPH_CONF=/tmp/ceph/ceph.conf
 MIRROR_STATE=/dev/null
 PKG_PREFIX=github.com/ceph/go-ceph
-
+ALT_FS="@/tmp/ceph/altfs.txt"
 
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
 # GO_CEPH_TEST_MDS_NAME
 
-CLI="$(getopt -o h --long test-run:,test-bench:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,mirror-state:,help -n "${0}" -- "$@")"
+CLI="$(getopt -o h --long test-run:,test-bench:,test-pkg:,pause,cpuprofile,memprofile,no-cover,micro-osd:,wait-for:,results:,ceph-conf:,mirror:,mirror-state:,altfs:,help -n "${0}" -- "$@")"
 eval set -- "${CLI}"
 while true ; do
     case "${1}" in
@@ -69,6 +69,11 @@ while true ; do
         ;;
         --mirror-state)
             MIRROR_STATE="${2}"
+            shift
+            shift
+        ;;
+        --altfs)
+            ALT_FS="${2}"
             shift
             shift
         ;;
@@ -329,6 +334,23 @@ test_go_ceph() {
       setup_mirroring
       export MIRROR_CONF
     fi
+    # Borrow a page from CURL's cli and use a prefixed @ to mean read the
+    # value from a filename after the at-sign.
+    case "$ALT_FS" in
+        @*)
+            # it is ok for the file not to exist. that's expected on some
+            # older versions
+            GO_CEPH_TEST_ALT_FS_NAME="$(cat "${ALT_FS:1}" 2>/dev/null; true)"
+        ;;
+        "")
+            GO_CEPH_TEST_ALT_FS_NAME=""
+        ;;
+        *)
+            GO_CEPH_TEST_ALT_FS_NAME="$ALT_FS"
+        ;;
+    esac
+    export GO_CEPH_TEST_ALT_FS_NAME
+
     for pkg in "${pkgs[@]}"; do
         test_pkg "${pkg}" || test_failed "${pkg}"
     done
