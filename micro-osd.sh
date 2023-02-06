@@ -32,6 +32,9 @@ OSD_DATA="${DIR}/osd"
 RGW_DATA="${DIR}/radosgw"
 mkdir "${LOG_DIR}" "${MON_DATA}" "${OSD_DATA}" "${MDS_DATA}" "${MOUNTPT}" "${RGW_DATA}"
 MDS_NAME="Z"
+FS_NAME="cephfs"
+ALT_MDS_NAME="Y"
+ALT_FS_NAME="altfs"
 MON_NAME="a"
 MGR_NAME="x"
 MIRROR_ID="m"
@@ -106,15 +109,28 @@ launch_osd() {
     ceph-osd --id "${OSD_ID}" || ceph-osd --id "${OSD_ID}" || ceph-osd --id "${OSD_ID}"
 }
 
-launch_mds() {
-    ceph auth get-or-create mds.${MDS_NAME} mon 'profile mds' mgr 'profile mds' mds 'allow *' osd 'allow *' > "${MDS_DATA}/keyring"
-    ceph osd pool create cephfs_data 8
-    ceph osd pool create cephfs_metadata 8
-    ceph fs new cephfs cephfs_metadata cephfs_data
+launch_mds_server() {
+    local mds="$1"
+    local fs="$2"
+
+    ceph auth get-or-create "mds.${mds}" mon 'profile mds' mgr 'profile mds' mds 'allow *' osd 'allow *' >> "${MDS_DATA}/keyring"
+    ceph osd pool create "${fs}_data" 8
+    ceph osd pool create "${fs}_metadata" 8
+    ceph fs new "${fs}" "${fs}_metadata" "${fs}_data"
     ceph fs ls
-    ceph-mds -i ${MDS_NAME}
+    ceph-mds -i "${mds}"
     ceph status
     while ! ceph mds stat | grep -q "up:active"; do sleep 1; done
+
+}
+
+launch_mds() {
+    launch_mds_server "${MDS_NAME}" "${FS_NAME}"
+}
+
+launch_mds2() {
+    launch_mds_server "${ALT_MDS_NAME}" "${ALT_FS_NAME}"
+    echo "${ALT_FS_NAME}" > "${DIR}/altfs.txt"
 }
 
 launch_mgr() {
@@ -167,7 +183,7 @@ if [ -z "$FEATURESET" ] ; then
             FEATURESET="mon osd mgr mds rbd-mirror rgw selftest"
         ;;
         *)
-            FEATURESET="mon osd mgr mds rbd-mirror cephfs-mirror rgw selftest"
+            FEATURESET="mon osd mgr mds mds2 rbd-mirror cephfs-mirror rgw selftest"
         ;;
     esac
 fi
@@ -178,6 +194,7 @@ for fname in ${FEATURESET} ; do
         mon) launch_mon ;;
         osd) launch_osd ;;
         mds) launch_mds ;;
+        mds2) launch_mds2 ;;
         mgr) launch_mgr ;;
         rbd-mirror) launch_rbd_mirror ;;
         cephfs-mirror) launch_cephfs_mirror ;;
