@@ -200,7 +200,9 @@ test-containers-test: $(BUILDFILE) $(TEST_CTR_A) $(TEST_CTR_B)
 		--wait-for=/ceph_a/.ready:/ceph_b/.ready \
 		--mirror-state=/ceph_b/.mstate \
 		--ceph-conf=/ceph_a/ceph.conf \
-		--mirror=/ceph_b/ceph.conf $(ENTRYPOINT_ARGS)
+		--mirror=/ceph_b/ceph.conf \
+		--altfs=@/ceph_a/altfs.txt \
+		$(ENTRYPOINT_ARGS)
 
 ifdef RESULTS_DIR
 $(RESULTS_DIR):
