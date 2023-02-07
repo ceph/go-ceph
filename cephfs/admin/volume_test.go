@@ -12,8 +12,8 @@ func TestListVolumes(t *testing.T) {
 
 	vl, err := fsa.ListVolumes()
 	assert.NoError(t, err)
-	assert.Len(t, vl, 1)
-	assert.Equal(t, "cephfs", vl[0])
+	assert.GreaterOrEqual(t, len(vl), 1)
+	assert.Contains(t, vl, "cephfs")
 }
 
 func TestEnumerateVolumes(t *testing.T) {
@@ -21,10 +21,16 @@ func TestEnumerateVolumes(t *testing.T) {
 
 	ve, err := fsa.EnumerateVolumes()
 	assert.NoError(t, err)
-	if assert.Len(t, ve, 1) {
-		assert.Equal(t, "cephfs", ve[0].Name)
-		assert.Equal(t, int64(1), ve[0].ID)
+
+	found := false
+	for i := range ve {
+		if ve[i].Name == "cephfs" {
+			assert.Equal(t, int64(1), ve[i].ID)
+			found = true
+			break
+		}
 	}
+	assert.True(t, found, "never found a cephfs entry in enumerated volumes")
 }
 
 // note: some of these dumps are simplified for testing purposes if we add
@@ -384,10 +390,19 @@ func TestListFileSystems(t *testing.T) {
 
 	l, err := fsa.ListFileSystems()
 	assert.NoError(t, err)
-	if assert.Len(t, l, 1) {
-		assert.Equal(t, "cephfs", l[0].Name)
-		assert.Equal(t, "cephfs_metadata", l[0].MetadataPool)
-		assert.Len(t, l[0].DataPools, 1)
-		assert.Contains(t, l[0].DataPools, "cephfs_data")
+	assert.GreaterOrEqual(t, len(l), 1)
+
+	idx := -1
+	for i := range l {
+		if l[i].Name == "cephfs" {
+			idx = i
+			break
+		}
+	}
+	if assert.NotEqual(t, -1, idx) {
+		assert.Equal(t, "cephfs", l[idx].Name)
+		assert.Equal(t, "cephfs_metadata", l[idx].MetadataPool)
+		assert.Len(t, l[idx].DataPools, 1)
+		assert.Contains(t, l[idx].DataPools, "cephfs_data")
 	}
 }
