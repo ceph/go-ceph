@@ -23,7 +23,8 @@ import (
 // valid then only the subsequent mount call will fail.
 //
 // Implements:
-//  int ceph_select_filesystem(struct ceph_mount_info *cmount, const char *fs_name);
+//
+//	int ceph_select_filesystem(struct ceph_mount_info *cmount, const char *fs_name);
 func (mount *MountInfo) SelectFilesystem(name string) error {
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))

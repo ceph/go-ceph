@@ -18,6 +18,7 @@ import (
 // MakeDirs creates multiple directories at once.
 //
 // Implements:
+//
 //	int ceph_mkdirs(struct ceph_mount_info *cmount, const char *path, mode_t mode);
 func (mount *MountInfo) MakeDirs(path string, mode uint32) error {
 	if err := mount.validate(); err != nil {
