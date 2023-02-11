@@ -4,7 +4,11 @@
 
 ## Package: cephfs
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+MountInfo.SelectFilesystem | v0.20.0 | v0.22.0 | 
 
 ## Package: cephfs/admin
 
