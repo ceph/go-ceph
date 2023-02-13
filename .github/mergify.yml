@@ -4,7 +4,6 @@ defaults:
     queue:
       name: default
       method: rebase
-      rebase_fallback: merge
       update_method: rebase
 
 # each test should be listed separately, do not use regular expressions:
