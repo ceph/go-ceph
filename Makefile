@@ -54,6 +54,7 @@ endif
 GO_CMD:=go
 GOFMT_CMD:=gofmt
 GOARCH:=$(shell $(GO_CMD) env GOARCH)
+GOPROXY:=$(shell $(GO_CMD) env GOPROXY)
 
 # the full name of the marker file including the ceph version
 BUILDFILE=.build.$(CEPH_VERSION)
@@ -78,6 +79,9 @@ else
 endif
 
 CONTAINER_OPTS += -e BUILD_TAGS=$(BUILD_TAGS)
+ifdef GOPROXY
+	CONTAINER_OPTS += --env GOPROXY=$(GOPROXY)
+endif
 
 ifneq ($(USE_CACHE),)
 	GOCACHE_VOLUME := -v test_ceph_go_cache:/go
@@ -110,6 +114,9 @@ ifdef GO_CEPH_VERSION
 	CONTAINER_BUILD_ARGS += --build-arg GO_CEPH_VERSION=$(GO_CEPH_VERSION)
 else
 	CONTAINER_BUILD_ARGS += --build-arg GO_CEPH_VERSION=$(CEPH_VERSION)
+endif
+ifdef GOPROXY
+	CONTAINER_BUILD_ARGS += --build-arg GOPROXY=$(GOPROXY)
 endif
 
 build:
