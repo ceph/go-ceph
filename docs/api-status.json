@@ -1860,8 +1860,8 @@
       {
         "name": "API.ListBucketsWithStat",
         "comment": "ListBucketsWithStat will return the list of all buckets with stat (system admin API only)\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.20.0",
+        "expected_stable_version": "v0.22.0"
       }
     ],
     "stable_api": [
