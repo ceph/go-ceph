@@ -62,7 +62,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.ListBucketsWithStat | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.ListBucketsWithStat | v0.20.0 | v0.22.0 | 
 
 ## Package: common/admin/manager
 
