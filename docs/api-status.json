@@ -2101,5 +2101,27 @@
         "became_stable_version": "v0.18.0"
       }
     ]
+  },
+  "common/admin/telemetry": {
+    "preview_api": [
+      {
+        "name": "NewFromConn",
+        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Admin.Status",
+        "comment": "Status returns the output of \"ceph telemetry status\"\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Admin.Data",
+        "comment": "Data returns the output of the telemetry module\nFor this is either uses \"preview-all\" or \"show-all\"\n\n\tdepending if the module if activated or not\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   }
 }

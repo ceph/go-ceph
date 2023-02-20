@@ -82,3 +82,13 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 No Preview/Deprecated APIs found. All APIs are considered stable.
 
+## Package: common/admin/telemetry
+
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+NewFromConn | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Admin.Status | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Admin.Data | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
