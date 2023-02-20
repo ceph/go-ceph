@@ -14,6 +14,7 @@ CEPH_CONF=/tmp/ceph/ceph.conf
 MIRROR_STATE=/dev/null
 PKG_PREFIX=github.com/ceph/go-ceph
 ALT_FS="@/tmp/ceph/altfs.txt"
+GOFLAGS="-buildvcs=false ${GOFLAGS}"
 
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
@@ -311,6 +312,7 @@ test_go_ceph() {
         show "${MICRO_OSD_PATH}" /tmp/ceph
     fi
     export CEPH_CONF
+    export GOFLAGS
 
     if [[ ${TEST_RUN} == NONE ]]; then
         echo "skipping test execution"
