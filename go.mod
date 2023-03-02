@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/aws/aws-sdk-go v1.44.212
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/sys v0.5.0
 )
 
