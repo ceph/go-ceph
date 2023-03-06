@@ -448,6 +448,7 @@ func TestGetGlobalMirrorStatusMirroredPool(t *testing.T) {
 			assert.Contains(t, ss2.Description, "replaying,")
 			assert.Greater(t, ss2.LastUpdate, int64(0))
 			assert.True(t, ss2.Up)
+			testDescriptionReplayStatus(t, ss2)
 		}
 	}()
 
@@ -491,6 +492,7 @@ func TestGetGlobalMirrorStatusMirroredPool(t *testing.T) {
 			assert.Contains(t, ls.Description, "replaying,")
 			assert.Greater(t, ls.LastUpdate, int64(0))
 			assert.True(t, ls.Up)
+			testDescriptionReplayStatus(t, ls)
 
 			assert.Equal(t, ls, gms.SiteStatuses[0])
 
