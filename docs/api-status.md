@@ -44,6 +44,8 @@ MigrationExecute | v0.20.0 | v0.22.0 |
 MigrationCommit | v0.20.0 | v0.22.0 | 
 MigrationAbort | v0.20.0 | v0.22.0 | 
 MigrationStatus | v0.20.0 | v0.22.0 | 
+SiteMirrorImageStatus.UnmarshalDescriptionJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+SiteMirrorImageStatus.DescriptionReplayStatus | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 
