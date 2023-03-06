@@ -1786,6 +1786,18 @@
         "comment": "MigrationStatus retrieve status of a live migration\nfor the specified image.\n\nImplements:\n int rbd_migration_status(rados_ioctx_t ioctx,\n                          const char *image_name,\n                          rbd_image_migration_status_t *status,\n                          size_t status_size);\n",
         "added_in_version": "v0.20.0",
         "expected_stable_version": "v0.22.0"
+      },
+      {
+        "name": "SiteMirrorImageStatus.UnmarshalDescriptionJSON",
+        "comment": "UnmarshalDescriptionJSON parses an embedded JSON string that may be found in\nthe description of the SiteMirrorImageStatus. It will store the result in\nthe value pointed to by v.  If no embedded JSON string is found an\nErrNotExist error is returned. An error may also be returned if the contents\ncan not be parsed.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SiteMirrorImageStatus.DescriptionReplayStatus",
+        "comment": "DescriptionReplayStatus parses a MirrorDescriptionReplayStatus result out of\nthe image status description field if available. If the embedded status JSON\nis not found or fails to parse and error will be returned.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
