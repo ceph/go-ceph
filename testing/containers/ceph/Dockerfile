@@ -24,6 +24,8 @@ ARG GO_VERSION=1.19.5
 ENV GO_VERSION=${GO_VERSION}
 ARG GOARCH
 ENV GOARCH=${GOARCH}
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
 RUN true && \
     gotar=go${GO_VERSION}.linux-${GOARCH}.tar.gz && \
     gourl="https://dl.google.com/go/${gotar}" && \
