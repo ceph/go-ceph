@@ -577,6 +577,18 @@
         "comment": "ListSnapshotMetadata lists custom metadata (key-value pairs) set on the subvolume\nsnapshot in a volume belonging to an optional subvolume group.\n\nSimilar To:\n ceph fs subvolume snapshot metadata ls <vol_name> <sub_name> <snap_name> [--group_name <subvol_group_name>]\n",
         "added_in_version": "v0.20.0",
         "expected_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.PinSubVolume",
+        "comment": "PinSubVolume pins subvolume to ranks according to policies. A valid pin\nsetting value depends on the type of pin as described in the docs from\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#cephfs-pinning and\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#setting-subtree-partitioning-policies\n\nSimilar To:\n\n\tceph fs subvolume pin <vol_name> <sub_name> <pin_type> <pin_setting>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FSAdmin.PinSubVolumeGroup",
+        "comment": "PinSubVolumeGroup pins subvolume to ranks according to policies. A valid pin\nsetting value depends on the type of pin as described in the docs from\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#cephfs-pinning and\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#setting-subtree-partitioning-policies\n\nSimilar To:\n\n\tceph fs subvolumegroup pin <vol_name> <group_name> <pin_type> <pin_setting>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },

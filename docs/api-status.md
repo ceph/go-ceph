@@ -27,6 +27,8 @@ FSAdmin.SetSnapshotMetadata | v0.20.0 | v0.22.0 |
 FSAdmin.RemoveSnapshotMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.ForceRemoveSnapshotMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.ListSnapshotMetadata | v0.20.0 | v0.22.0 | 
+FSAdmin.PinSubVolume | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FSAdmin.PinSubVolumeGroup | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rados
 
