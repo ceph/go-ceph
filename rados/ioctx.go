@@ -332,7 +332,8 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 	defer C.rados_object_list_cursor_free(ioctx.ioctx, finish)
 
 	for {
-		ret := C.rados_object_list(ioctx.ioctx, next, finish, pageResults, nil, filterLen, (*C.rados_object_list_item)(unsafe.Pointer(&results[0])), &next)
+		res := (*C.rados_object_list_item)(unsafe.Pointer(&results[0]))
+		ret := C.rados_object_list(ioctx.ioctx, next, finish, pageResults, nil, filterLen, res, &next)
 		if ret < 0 {
 			return getError(ret)
 		}
@@ -342,6 +343,7 @@ func (ioctx *IOContext) ListObjects(listFn ObjectListFunc) error {
 			item := results[i]
 			listFn(C.GoStringN(item.oid, (C.int)(item.oid_length)))
 		}
+		C.rados_object_list_free(C.size_t(ret), res)
 
 		if C.rados_object_list_is_end(ioctx.ioctx, next) == listEndSentinel {
 			return nil
