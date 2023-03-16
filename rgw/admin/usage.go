@@ -41,6 +41,7 @@ type Usage struct {
 			SuccessfulOps uint64 `json:"successful_ops"`
 		} `json:"total"`
 	} `json:"summary"`
+	UserID      string `url:"uid"`
 	Start       string `url:"start"` //Example:	2012-09-25 16:00:00
 	End         string `url:"end"`
 	ShowEntries *bool  `url:"show-entries"`
