@@ -31,6 +31,12 @@ FSAdmin.PinSubVolume | v0.21.0 | v0.23.0 |
 FSAdmin.PinSubVolumeGroup | v0.21.0 | v0.23.0 | 
 FSAdmin.FetchVolumeInfo | v0.21.0 | v0.23.0 | 
 
+### Deprecated APIs
+
+Name | Deprecated in Version | Expected Removal Version | 
+---- | --------------------- | ------------------------ | 
+New | v0.21.0 | v0.24.0 | 
+
 ## Package: rados
 
 No Preview/Deprecated APIs found. All APIs are considered stable.

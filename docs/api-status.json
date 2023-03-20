@@ -346,10 +346,6 @@
         "comment": "CancelClone stops the background processes that populate a clone.\nCancelClone does not delete the clone.\n\nSimilar To:\n ceph fs clone cancel <volume> --group_name=<group> <clone>\n"
       },
       {
-        "name": "New",
-        "comment": "New creates an FSAdmin automatically based on the default ceph\nconfiguration file. If more customization is needed, create a\n*rados.Conn as you see fit and use NewFromConn to use that\nconnection with these administrative functions.\n"
-      },
-      {
         "name": "NewFromConn",
         "comment": "NewFromConn creates an FSAdmin management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface. This may be useful\nif the calling layer needs to inject additional logging, error handling,\nfault injection, etc.\n"
       },
@@ -516,7 +512,14 @@
         "became_stable_version": "v0.18.0"
       }
     ],
-    "deprecated_api": [],
+    "deprecated_api": [
+      {
+        "name": "New",
+        "comment": "New creates an FSAdmin automatically based on the default ceph\nconfiguration file. If more customization is needed, create a\n*rados.Conn as you see fit and use NewFromConn to use that\nconnection with these administrative functions.\n\nDeprecated: Use NewFromConn instead of New. The New function does not expose\nthe rados connection and therefore can not be deterministically cleaned up.\n",
+        "deprecated_in_version": "v0.21.0",
+        "expected_remove_version": "v0.24.0"
+      }
+    ],
     "preview_api": [
       {
         "name": "FSAdmin.GetMetadata",
