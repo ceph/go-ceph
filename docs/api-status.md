@@ -9,7 +9,7 @@
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 MountInfo.SelectFilesystem | v0.20.0 | v0.22.0 | 
-MountInfo.MakeDirs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MountInfo.MakeDirs | v0.21.0 | v0.23.0 | 
 
 ## Package: cephfs/admin
 
@@ -27,9 +27,9 @@ FSAdmin.SetSnapshotMetadata | v0.20.0 | v0.22.0 |
 FSAdmin.RemoveSnapshotMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.ForceRemoveSnapshotMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.ListSnapshotMetadata | v0.20.0 | v0.22.0 | 
-FSAdmin.PinSubVolume | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-FSAdmin.PinSubVolumeGroup | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-FSAdmin.FetchVolumeInfo | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FSAdmin.PinSubVolume | v0.21.0 | v0.23.0 | 
+FSAdmin.PinSubVolumeGroup | v0.21.0 | v0.23.0 | 
+FSAdmin.FetchVolumeInfo | v0.21.0 | v0.23.0 | 
 
 ## Package: rados
 
@@ -47,8 +47,8 @@ MigrationExecute | v0.20.0 | v0.22.0 |
 MigrationCommit | v0.20.0 | v0.22.0 | 
 MigrationAbort | v0.20.0 | v0.22.0 | 
 MigrationStatus | v0.20.0 | v0.22.0 | 
-SiteMirrorImageStatus.UnmarshalDescriptionJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SiteMirrorImageStatus.DescriptionReplayStatus | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+SiteMirrorImageStatus.UnmarshalDescriptionJSON | v0.21.0 | v0.23.0 | 
+SiteMirrorImageStatus.DescriptionReplayStatus | v0.21.0 | v0.23.0 | 
 AddMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 RemoveMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 GetAttributesMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
