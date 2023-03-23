@@ -1816,6 +1816,54 @@
         "comment": "DescriptionReplayStatus parses a MirrorDescriptionReplayStatus result out of\nthe image status description field if available. If the embedded status JSON\nis not found or fails to parse and error will be returned.\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "AddMirrorPeerSite",
+        "comment": "AddMirrorPeerSite adds a peer site to the list of existing sites.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "RemoveMirrorPeerSite",
+        "comment": "RemoveMirrorPeerSite removes the site with the provided uuid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GetAttributesMirrorPeerSite",
+        "comment": "GetAttributesMirrorPeerSite fetches the list of key,value pair of attributes of a peer site.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SetAttributesMirrorPeerSite",
+        "comment": "SetAttributesMirrorPeerSite sets the attributes for the site with the given uuid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ListMirrorPeerSite",
+        "comment": "ListMirrorPeerSite returns the list of peer sites.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SetMirrorPeerSiteClientName",
+        "comment": "SetMirrorPeerSiteClientName sets the client name of a mirror peer site.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SetMirrorPeerSiteName",
+        "comment": "SetMirrorPeerSiteName sets the site name of a mirror peer site.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SetMirrorPeerSiteDirection",
+        "comment": "SetMirrorPeerSiteDirection sets the direction of a mirror peer site.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
