@@ -1867,6 +1867,12 @@
         "comment": "SetMirrorPeerSiteDirection sets the direction of a mirror peer site.\n",
         "added_in_version": "v0.21.0",
         "expected_stable_version": "v0.23.0"
+      },
+      {
+        "name": "Image.SparsifyWithProgress",
+        "comment": "SparsifyWithProgress makes an image sparse by deallocating runs of zeros.\nThe sparseSize value will be used to find runs of zeros and must be\na power of two no less than 4096 and no larger than the image size.\nThe given progress callback will be called to report on the progress\nof sparse. The operation will be aborted if the progress callback returns\na non-zero value.\n\nImplements:\n\n\tint rbd_sparsify_with_progress(rbd_image_t image, size_t sparse_size,\n\t\t\t\t\t\t\t\t   librbd_progress_fn_t cb, void *cbdata);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
