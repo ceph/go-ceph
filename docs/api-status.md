@@ -64,6 +64,11 @@ SetMirrorPeerSiteClientName | v0.21.0 | v0.23.0 |
 SetMirrorPeerSiteName | v0.21.0 | v0.23.0 | 
 SetMirrorPeerSiteDirection | v0.21.0 | v0.23.0 | 
 Image.SparsifyWithProgress | v0.21.0 | v0.23.0 | 
+Image.LockAcquire | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.LockBreak | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.LockGetOwners | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.LockIsExclusiveOwner | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.LockRelease | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 
