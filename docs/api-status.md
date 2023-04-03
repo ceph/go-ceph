@@ -55,14 +55,14 @@ MigrationAbort | v0.20.0 | v0.22.0 |
 MigrationStatus | v0.20.0 | v0.22.0 | 
 SiteMirrorImageStatus.UnmarshalDescriptionJSON | v0.21.0 | v0.23.0 | 
 SiteMirrorImageStatus.DescriptionReplayStatus | v0.21.0 | v0.23.0 | 
-AddMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-RemoveMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-GetAttributesMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SetAttributesMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-ListMirrorPeerSite | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SetMirrorPeerSiteClientName | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SetMirrorPeerSiteName | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SetMirrorPeerSiteDirection | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+AddMirrorPeerSite | v0.21.0 | v0.23.0 | 
+RemoveMirrorPeerSite | v0.21.0 | v0.23.0 | 
+GetAttributesMirrorPeerSite | v0.21.0 | v0.23.0 | 
+SetAttributesMirrorPeerSite | v0.21.0 | v0.23.0 | 
+ListMirrorPeerSite | v0.21.0 | v0.23.0 | 
+SetMirrorPeerSiteClientName | v0.21.0 | v0.23.0 | 
+SetMirrorPeerSiteName | v0.21.0 | v0.23.0 | 
+SetMirrorPeerSiteDirection | v0.21.0 | v0.23.0 | 
 
 ### Deprecated APIs
 

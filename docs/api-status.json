@@ -1823,50 +1823,50 @@
       {
         "name": "AddMirrorPeerSite",
         "comment": "AddMirrorPeerSite adds a peer site to the list of existing sites.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "RemoveMirrorPeerSite",
         "comment": "RemoveMirrorPeerSite removes the site with the provided uuid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "GetAttributesMirrorPeerSite",
         "comment": "GetAttributesMirrorPeerSite fetches the list of key,value pair of attributes of a peer site.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "SetAttributesMirrorPeerSite",
         "comment": "SetAttributesMirrorPeerSite sets the attributes for the site with the given uuid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "ListMirrorPeerSite",
         "comment": "ListMirrorPeerSite returns the list of peer sites.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "SetMirrorPeerSiteClientName",
         "comment": "SetMirrorPeerSiteClientName sets the client name of a mirror peer site.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "SetMirrorPeerSiteName",
         "comment": "SetMirrorPeerSiteName sets the site name of a mirror peer site.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       },
       {
         "name": "SetMirrorPeerSiteDirection",
         "comment": "SetMirrorPeerSiteDirection sets the direction of a mirror peer site.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.21.0",
+        "expected_stable_version": "v0.23.0"
       }
     ]
   },
