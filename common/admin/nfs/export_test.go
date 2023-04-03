@@ -13,12 +13,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	tsuite "github.com/stretchr/testify/suite"
 
+	"github.com/ceph/go-ceph/cephfs"
 	"github.com/ceph/go-ceph/internal/admintest"
 	"github.com/ceph/go-ceph/internal/commands"
 	"github.com/ceph/go-ceph/rados"
 )
 
-var radosConnector = admintest.NewConnector()
+var (
+	radosConnector = admintest.NewConnector()
+	usableDirNames = []string{"january", "february", "march", "sept"}
+)
 
 func TestNFSAdmin(t *testing.T) {
 	tsuite.Run(t, new(NFSAdminSuite))
@@ -51,6 +55,11 @@ func (suite *NFSAdminSuite) SetupSuite() {
 	if suite.mockConfig {
 		suite.setupMockNFSConfig()
 	}
+	suite.setupDirs()
+}
+
+func (suite *NFSAdminSuite) TearDownSuite() {
+	suite.removeDirs()
 }
 
 func (suite *NFSAdminSuite) setupMockNFSConfig() {
@@ -72,6 +81,48 @@ func (suite *NFSAdminSuite) setupMockNFSConfig() {
 		fmt.Sprintf("conf-nfs.%s", suite.clusterID),
 		rados.CreateIdempotent)
 	require.NoError(err)
+}
+
+func (suite *NFSAdminSuite) setupDirs() {
+	require := suite.Require()
+	conn := radosConnector.GetConn(suite.T())
+	fs, err := cephfs.CreateFromRados(conn)
+	require.NoError(err)
+	defer func() {
+		require.NoError(fs.Release())
+	}()
+	err = fs.Mount()
+	require.NoError(err)
+	defer func() {
+		require.NoError(fs.Unmount())
+	}()
+
+	// establish a "random" list of dir names to work with
+	for _, name := range usableDirNames {
+		err = fs.MakeDir(name, 0777)
+		require.NoError(err, "failed to make dir "+name)
+	}
+}
+
+func (suite *NFSAdminSuite) removeDirs() {
+	require := suite.Require()
+	conn := radosConnector.GetConn(suite.T())
+	fs, err := cephfs.CreateFromRados(conn)
+	require.NoError(err)
+	defer func() {
+		require.NoError(fs.Release())
+	}()
+	err = fs.Mount()
+	require.NoError(err)
+	defer func() {
+		require.NoError(fs.Unmount())
+	}()
+
+	// establish a "random" list of dir names to work with
+	for _, name := range usableDirNames {
+		err = fs.RemoveDir(name)
+		require.NoError(err, "failed to remove dir "+name)
+	}
 }
 
 func (suite *NFSAdminSuite) TestCreateDeleteCephFSExport() {
