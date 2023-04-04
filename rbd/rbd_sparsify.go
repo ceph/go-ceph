@@ -27,8 +27,14 @@ import (
 // SparsifyCallback defines the function signature needed for the
 // SparsifyWithProgress callback.
 //
-// This callback will be called by SparsifyWithProgress when it
-// wishes to report progress on sparse.
+// This callback will be called by SparsifyWithProgress when it wishes to
+// report progress on sparse. The callback function will be called with the
+// first argument containing the current offset within the image being made
+// sparse and the second argument containing the total size of the image. The
+// third argument is an opaque value that is passed to the SparsifyWithProgress
+// function's data argument and every call to the callback will receive the
+// same object. The sparsify operation will be aborted if the progress
+// callback returns a non-zero value.
 type SparsifyCallback func(uint64, uint64, interface{}) int
 
 var sparsifyCallbacks = callbacks.New()
