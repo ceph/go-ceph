@@ -1,5 +1,5 @@
-//go:build !nautilus
-// +build !nautilus
+//go:build octopus
+// +build octopus
 
 package rados
 
