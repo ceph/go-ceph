@@ -63,7 +63,7 @@ ListMirrorPeerSite | v0.21.0 | v0.23.0 |
 SetMirrorPeerSiteClientName | v0.21.0 | v0.23.0 | 
 SetMirrorPeerSiteName | v0.21.0 | v0.23.0 | 
 SetMirrorPeerSiteDirection | v0.21.0 | v0.23.0 | 
-Image.SparsifyWithProgress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.SparsifyWithProgress | v0.21.0 | v0.23.0 | 
 
 ### Deprecated APIs
 
