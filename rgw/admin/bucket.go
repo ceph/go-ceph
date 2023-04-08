@@ -24,6 +24,7 @@ type Bucket struct {
 	Owner     string `json:"owner"`
 	Ver       string `json:"ver"`
 	MasterVer string `json:"master_ver"`
+	CreationTime string `json:"creation_time"`
 	Mtime     string `json:"mtime"`
 	MaxMarker string `json:"max_marker"`
 	Usage     struct {
