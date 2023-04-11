@@ -10,6 +10,7 @@ Name | Added in Version | Expected Stable Version |
 ---- | ---------------- | ----------------------- | 
 MountInfo.SelectFilesystem | v0.20.0 | v0.22.0 | 
 MountInfo.MakeDirs | v0.21.0 | v0.23.0 | 
+MountInfo.Mknod | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: cephfs/admin
 

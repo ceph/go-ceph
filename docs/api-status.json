@@ -325,6 +325,12 @@
         "comment": "MakeDirs creates multiple directories at once.\n\nImplements:\n\n\tint ceph_mkdirs(struct ceph_mount_info *cmount, const char *path, mode_t mode);\n",
         "added_in_version": "v0.21.0",
         "expected_stable_version": "v0.23.0"
+      },
+      {
+        "name": "MountInfo.Mknod",
+        "comment": "Mknod creates a regular, block or character special file.\n\nImplements:\n\n\tint ceph_mknod(struct ceph_mount_info *cmount, const char *path, mode_t mode,\n\t\t\t\t   dev_t rdev);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
