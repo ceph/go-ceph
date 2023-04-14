@@ -331,6 +331,12 @@
         "comment": "Mknod creates a regular, block or character special file.\n\nImplements:\n\n\tint ceph_mknod(struct ceph_mount_info *cmount, const char *path, mode_t mode,\n\t\t\t\t   dev_t rdev);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "MountInfo.Futime",
+        "comment": "Futime changes file/directory last access and modification times.\n\nImplements:\n\n\tint ceph_futime(struct ceph_mount_info *cmount, int fd, struct utimbuf *buf);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
