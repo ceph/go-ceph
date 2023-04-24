@@ -5,6 +5,94 @@ in go-ceph work together. This is not meant to cover every possible use
 case but are recorded here as a quick way to get familiar with these
 calls.
 
+
+## General
+
+### Finding an API
+
+The go-ceph project wraps existing APIs that are part of Ceph. There are two
+kinds of APIs that are wrapped. The first style of API is based on functions
+Ceph exports as client libraries in C. The three packages in go-ceph `cephfs`,
+`rados`, and `rbd` map to `libcephfs`, `librados`, and `librbd` respectively.
+
+The go-ceph packages that wrap Ceph C APIs follow a documentation convention
+that aims to make it easier to map between the APIs. In functions that are
+implemented using a certain C API function a line with the term `Implements:`
+will be followed by the C function's declaration - matching what can be found
+in the C library's header file. For example, if you knew you wanted to wrap the
+rbd function to get an image's metadata, `rbd_metadata_get`, you could search
+within the source code or https://pkg.go.dev/github.com/ceph/go-ceph/rbd for
+`rbd_metadata_get` which would lead you to the `GetMetadata` method of the
+`Image` type.
+
+The second style of API is based on functions implemented within Ceph services
+based on Ceph's "command" system. These functions are primarily accessed using
+the `ceph` command. Many of the functions within the ceph command
+are implemented by sending a structured JSON message to either the Ceph MON or
+MGR. Packages in go-ceph that wrap these sorts of APIs are found in
+`cephfs/admin`, `rbd/admin`, and `common/admin/manager` for example.
+
+The command/JSON based API packages follow a different, but similar
+documentation convention to the C based APIs. Functions that roughly map to a
+particular `ceph` CLI command will contain a line with the term `Similar To:`
+followed by the `ceph` command it is similar to. For example, if
+you knew you wanted to create a CephFS subvolume group and would normally use
+the command `ceph fs subvolumegroup create` to do so, you could search within
+the source code or https://pkg.go.dev/github.com/ceph/go-ceph/cephfs/admin for
+`ceph fs subvolumegroup create` which would lead you to the
+`CreateSubVolumeGroup` property of the `FSAdmin` type.
+
+#### Can't find the API you want?
+
+The go-ceph project is maintained separately from Ceph and it is common for
+APIs to be added to Ceph that are not present in go-ceph. Sometimes we resolve
+the differences quickly but not always.
+
+Generally, there is no simple way to access a C based API from Go without
+updates to the code. If there's an API that you need that doesn't appear to be
+wrapped by go-ceph, please [file an
+issue](https://github.com/ceph/go-ceph/issues). If you are comfortable writing
+Go and would like to try writing a wrapper function we're more than happy to
+[welcome contributions](./development.md#contribution-guidelines) as well.
+
+The command/JSON based APIs can be accessed without directly wrapping them.
+The large majority of these functions are based on either
+[rados.MgrCommand](https://pkg.go.dev/github.com/ceph/go-ceph@v0.21.0/rados#Conn.MgrCommand)
+or
+[rados.MonCommand](https://pkg.go.dev/github.com/ceph/go-ceph@v0.21.0/rados#Conn.MonCommand).
+Both these functions accept a formatted JSON object that maps to a command line
+constant prefix and the variable argument values. Determining the JSON prefix
+and accepted arguments can be done using a special JSON-command: `{"prefix":
+"get_command_descriptions"}`. This will return a dump of all commands the
+service knows about.
+
+You can then use this information to construct your own JSON to send to
+the server. For example the prefix `fs subvolumegroup ls` takes an argument `vol_name`
+which is annotated as a CephString. Thus you can send the JSON
+`{"prefix": "fs subvolumegroup ls", "vol_name": "foobar":, "format": "json"}`.
+The last parameter `format` is a special general argument that *suggests* to the
+server that you want the reply data to be JSON formatted.
+
+That all said, while you can directly interact with the command/JSON based APIs we
+are also very happy to consider feature requests as well as contributions to make
+working with these API more Go-idiomatic, convenient, and common.
+
+#### Preview APIs
+
+When a new API is added to go-ceph we consider the API to be a "preview" API.
+This means that while we think the API is good enough to distribute we do not
+promise not to change it. We assume that most consumers of go-ceph want a
+stable API and so the preview APIs are "hidden" behind a go build tag. This
+tag, `ceph_preview`, can be passed to the Go build command such that when you
+import go-ceph packages the preview APIs will become "visible" to your code.
+Do be aware that if you use preview APIs in your code there is the chance
+they'll change between go-ceph releases.
+
+Preview APIs do not show up on pkg.go.dev but we do list all of them in
+our [API status document](./api-status.md). We track when each API was
+added and when the API is expected to become stable.
+
+
 ## rados Package
 
 ### Connecting to a cluster
