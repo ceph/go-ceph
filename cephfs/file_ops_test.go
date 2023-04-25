@@ -91,3 +91,47 @@ func TestFutime(t *testing.T) {
 	err = mount1.Futime(int(f1.fd), newTime)
 	assert.Error(t, err)
 }
+
+func TestFutimens(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "futimens_file.txt"
+	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	assert.NoError(t, err)
+	assert.NotNil(t, f1)
+	defer func() {
+		assert.NoError(t, f1.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	times := []Timespec{
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+	}
+	err = mount.Futimens(int(f1.fd), times)
+	assert.NoError(t, err)
+
+	sx, err := mount.Statx(fname, StatxBasicStats, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, times[0], sx.Atime)
+	assert.Equal(t, times[1], sx.Mtime)
+
+	// Test invalid mount value
+	mount1 := &MountInfo{}
+	times = []Timespec{
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+	}
+	err = mount1.Futimens(int(f1.fd), times)
+	assert.Error(t, err)
+
+	// Test times array length more than 2
+	times = []Timespec{
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+	}
+	err = mount.Futimens(int(f1.fd), times)
+	assert.Error(t, err)
+}
