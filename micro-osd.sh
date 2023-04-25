@@ -41,6 +41,7 @@ MIRROR_ID="m"
 RGW_ID="r"
 S3_ACCESS_KEY=2262XNX11FZRR44XWIRD
 S3_SECRET_KEY=rmtuS1Uj1bIC08QFYGW18GfSHAbkPqdsuYynNudw
+HOST_IP=$(getent ahostsv4 "${HOSTNAME}" | grep STREAM | head -n 1 | awk '{print $1}')
 
 FSID="$(uuidgen)"
 export CEPH_CONF=${DIR}/ceph.conf
@@ -67,7 +68,7 @@ chdir = ""
 mon cluster log file = ${LOG_DIR}/mon-cluster.log
 mon data = ${MON_DATA}
 mon data avail crit = 0
-mon addr = ${HOSTNAME}
+mon addr = ${HOST_IP}:6789
 mon allow pool delete = true
 
 [osd.0]
