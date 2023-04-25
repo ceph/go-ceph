@@ -135,3 +135,68 @@ func TestFutimens(t *testing.T) {
 	err = mount.Futimens(int(f1.fd), times)
 	assert.Error(t, err)
 }
+
+func TestFutimes(t *testing.T) {
+	mount := fsConnect(t)
+	defer fsDisconnect(t, mount)
+
+	fname := "futimes_file.txt"
+	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	assert.NoError(t, err)
+	assert.NotNil(t, f1)
+	defer func() {
+		assert.NoError(t, f1.Close())
+		assert.NoError(t, mount.Unlink(fname))
+	}()
+
+	times := []Timespec{
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+	}
+	newTimes := []Timeval{}
+	for _, val := range times {
+		newTimes = append(newTimes, Timeval{
+			Sec:  val.Sec,
+			USec: int64(val.Nsec / 1000),
+		})
+	}
+	err = mount.Futimes(int(f1.fd), newTimes)
+	assert.NoError(t, err)
+
+	sx, err := mount.Statx(fname, StatxBasicStats, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, times[0], sx.Atime)
+	assert.Equal(t, times[1], sx.Mtime)
+
+	// Test invalid mount value
+	mount1 := &MountInfo{}
+	times = []Timespec{
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+	}
+	newTimes = []Timeval{}
+	for _, val := range times {
+		newTimes = append(newTimes, Timeval{
+			Sec:  val.Sec,
+			USec: int64(val.Nsec / 1000),
+		})
+	}
+	err = mount1.Futimes(int(f1.fd), newTimes)
+	assert.Error(t, err)
+
+	// Test times array length more than 2
+	times = []Timespec{
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+		{int64(time.Now().Second()), 0},
+	}
+	newTimes = []Timeval{}
+	for _, val := range times {
+		newTimes = append(newTimes, Timeval{
+			Sec:  val.Sec,
+			USec: int64(val.Nsec / 1000),
+		})
+	}
+	err = mount.Futimes(int(f1.fd), newTimes)
+	assert.Error(t, err)
+}
