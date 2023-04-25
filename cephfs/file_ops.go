@@ -63,6 +63,14 @@ func (mount *MountInfo) Futime(fd int, times *Utime) error {
 	return getError(ret)
 }
 
+// Timeval struct is the go equivalent of C.struct_timeval type
+type Timeval struct {
+	// Sec represents seconds
+	Sec int64
+	// USec represents microseconds
+	USec int64
+}
+
 // Futimens changes file/directory last access and modification times, here times param
 // is an array of Timespec struct having length 2, where times[0] represents the access time
 // and times[1] represents the modification time.
@@ -91,5 +99,34 @@ func (mount *MountInfo) Futimens(fd int, times []Timespec) error {
 	}
 
 	ret := C.ceph_futimens(mount.mount, cFd, &cTimes[0])
+	return getError(ret)
+}
+
+// Futimes changes file/directory last access and modification times, here times param
+// is an array of Timeval struct type having length 2, where times[0] represents the access time
+// and times[1] represents the modification time.
+//
+// Implements:
+//
+//	int ceph_futimes(struct ceph_mount_info *cmount, int fd, struct timeval times[2]);
+func (mount *MountInfo) Futimes(fd int, times []Timeval) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+
+	if len(times) != 2 {
+		return getError(-C.EINVAL)
+	}
+
+	cFd := C.int(fd)
+	cTimes := []C.struct_timeval{}
+	for _, val := range times {
+		cTimes = append(cTimes, C.struct_timeval{
+			tv_sec:  C.time_t(val.Sec),
+			tv_usec: C.suseconds_t(val.USec),
+		})
+	}
+
+	ret := C.ceph_futimes(mount.mount, cFd, &cTimes[0])
 	return getError(ret)
 }

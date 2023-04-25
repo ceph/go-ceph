@@ -13,6 +13,7 @@ MountInfo.MakeDirs | v0.21.0 | v0.23.0 |
 MountInfo.Mknod | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 MountInfo.Futime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 MountInfo.Futimens | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MountInfo.Futimes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: cephfs/admin
 
