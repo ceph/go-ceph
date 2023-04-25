@@ -6,12 +6,14 @@ package cephfs
 /*
 #cgo LDFLAGS: -lcephfs
 #cgo CPPFLAGS: -D_FILE_OFFSET_BITS=64
+#include <errno.h>
 #include <stdlib.h>
 #include <cephfs/libcephfs.h>
 */
 import "C"
 
 import (
+	ts "github.com/ceph/go-ceph/internal/timespec"
 	"unsafe"
 )
 
@@ -58,5 +60,36 @@ func (mount *MountInfo) Futime(fd int, times *Utime) error {
 	}
 
 	ret := C.ceph_futime(mount.mount, cFd, uTimeBuf)
+	return getError(ret)
+}
+
+// Futimens changes file/directory last access and modification times, here times param
+// is an array of Timespec struct having length 2, where times[0] represents the access time
+// and times[1] represents the modification time.
+//
+// Implements:
+//
+//	int ceph_futimens(struct ceph_mount_info *cmount, int fd, struct timespec times[2]);
+func (mount *MountInfo) Futimens(fd int, times []Timespec) error {
+	if err := mount.validate(); err != nil {
+		return err
+	}
+
+	if len(times) != 2 {
+		return getError(-C.EINVAL)
+	}
+
+	cFd := C.int(fd)
+	cTimes := []C.struct_timespec{}
+	for _, val := range times {
+		cTs := &C.struct_timespec{}
+		ts.CopyToCStruct(
+			ts.Timespec(val),
+			ts.CTimespecPtr(cTs),
+		)
+		cTimes = append(cTimes, *cTs)
+	}
+
+	ret := C.ceph_futimens(mount.mount, cFd, &cTimes[0])
 	return getError(ret)
 }
