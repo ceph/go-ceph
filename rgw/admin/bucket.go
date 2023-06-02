@@ -113,13 +113,13 @@ func (api *API) GetBucketInfo(ctx context.Context, bucket Bucket) (Bucket, error
 	return ref, nil
 }
 
-// GetBucketPolicy - http://docs.ceph.com/docs/mimic/radosgw/adminops/#get-bucket-or-object-policy
+// GetBucketPolicy - https://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-or-object-policy
 func (api *API) GetBucketPolicy(ctx context.Context, bucket Bucket) (Policy, error) {
 	policy := true
 	bucket.Policy = &policy
 
 	// valid parameters not supported by go-ceph: object
-	body, err := api.call(ctx, http.MethodGet, "/bucket", valueToURLParams(bucket, []string{"bucket"}))
+	body, err := api.call(ctx, http.MethodGet, "/bucket?policy", valueToURLParams(bucket, []string{"bucket"}))
 	if err != nil {
 		return Policy{}, err
 	}
