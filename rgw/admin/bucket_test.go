@@ -38,6 +38,17 @@ func (suite *RadosGWTestSuite) TestBucket() {
 		assert.NoError(suite.T(), err)
 	})
 
+	suite.T().Run("get policy non-existing bucket", func(t *testing.T) {
+		_, err := co.GetBucketPolicy(context.Background(), Bucket{Bucket: "foo"})
+		assert.Error(suite.T(), err)
+		assert.True(suite.T(), errors.Is(err, ErrNoSuchKey), err)
+	})
+
+	suite.T().Run("get policy existing bucket", func(t *testing.T) {
+		_, err := co.GetBucketPolicy(context.Background(), Bucket{Bucket: suite.bucketTestName})
+		assert.NoError(suite.T(), err)
+	})
+
 	suite.T().Run("remove bucket", func(t *testing.T) {
 		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
 		assert.NoError(suite.T(), err)
