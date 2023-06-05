@@ -3,7 +3,7 @@ module github.com/ceph/go-ceph
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go v1.44.254
+	github.com/aws/aws-sdk-go v1.44.275
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/sys v0.8.0
