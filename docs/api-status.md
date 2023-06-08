@@ -40,12 +40,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-MigrationPrepare | v0.20.0 | v0.22.0 | 
-MigrationPrepareImport | v0.20.0 | v0.22.0 | 
-MigrationExecute | v0.20.0 | v0.22.0 | 
-MigrationCommit | v0.20.0 | v0.22.0 | 
-MigrationAbort | v0.20.0 | v0.22.0 | 
-MigrationStatus | v0.20.0 | v0.22.0 | 
 SiteMirrorImageStatus.UnmarshalDescriptionJSON | v0.21.0 | v0.23.0 | 
 SiteMirrorImageStatus.DescriptionReplayStatus | v0.21.0 | v0.23.0 | 
 AddMirrorPeerSite | v0.21.0 | v0.23.0 | 
