@@ -534,6 +534,36 @@
         "comment": "GetFailure returns details about the CloneStatus when in CloneFailed state.\n\nSimilar To:\n Reading the .failure object from the JSON returned by \"ceph fs subvolume\n snapshot clone\"\n",
         "added_in_version": "v0.16.0",
         "became_stable_version": "v0.18.0"
+      },
+      {
+        "name": "FSAdmin.GetMetadata",
+        "comment": "GetMetadata gets custom metadata on the subvolume in a volume belonging to\nan optional subvolume group based on provided key name.\n\nSimilar To:\n\n\tceph fs subvolume metadata get <vol_name> <sub_name> <key_name> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.SetMetadata",
+        "comment": "SetMetadata sets custom metadata on the subvolume in a volume belonging to\nan optional subvolume group as a key-value pair.\n\nSimilar To:\n\n\tceph fs subvolume metadata set <vol_name> <sub_name> <key_name> <value> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.RemoveMetadata",
+        "comment": "RemoveMetadata removes custom metadata set on the subvolume in a volume\nbelonging to an optional subvolume group using the metadata key.\n\nSimilar To:\n\n\tceph fs subvolume metadata rm <vol_name> <sub_name> <key_name> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.ForceRemoveMetadata",
+        "comment": "ForceRemoveMetadata attempt to forcefully remove custom metadata set on\nthe subvolume in a volume belonging to an optional subvolume group using\nthe metadata key.\n\nSimilar To:\n\n\tceph fs subvolume metadata rm <vol_name> <sub_name> <key_name> [--group_name <subvol_group_name>] --force\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.ListMetadata",
+        "comment": "ListMetadata lists custom metadata (key-value pairs) set on the subvolume\nin a volume belonging to an optional subvolume group.\n\nSimilar To:\n\n\tceph fs subvolume metadata ls <vol_name> <sub_name> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
       }
     ],
     "deprecated_api": [
@@ -545,36 +575,6 @@
       }
     ],
     "preview_api": [
-      {
-        "name": "FSAdmin.GetMetadata",
-        "comment": "GetMetadata gets custom metadata on the subvolume in a volume belonging to\nan optional subvolume group based on provided key name.\n\nSimilar To:\n ceph fs subvolume metadata get <vol_name> <sub_name> <key_name> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.SetMetadata",
-        "comment": "SetMetadata sets custom metadata on the subvolume in a volume belonging to\nan optional subvolume group as a key-value pair.\n\nSimilar To:\n ceph fs subvolume metadata set <vol_name> <sub_name> <key_name> <value> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.RemoveMetadata",
-        "comment": "RemoveMetadata removes custom metadata set on the subvolume in a volume\nbelonging to an optional subvolume group using the metadata key.\n\nSimilar To:\n ceph fs subvolume metadata rm <vol_name> <sub_name> <key_name> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.ForceRemoveMetadata",
-        "comment": "ForceRemoveMetadata attempt to forcefully remove custom metadata set on\nthe subvolume in a volume belonging to an optional subvolume group using\nthe metadata key.\n\nSimilar To:\n ceph fs subvolume metadata rm <vol_name> <sub_name> <key_name> [--group_name <subvol_group_name>] --force\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.ListMetadata",
-        "comment": "ListMetadata lists custom metadata (key-value pairs) set on the subvolume\nin a volume belonging to an optional subvolume group.\n\nSimilar To:\n ceph fs subvolume metadata ls <vol_name> <sub_name> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
       {
         "name": "FSAdmin.GetSnapshotMetadata",
         "comment": "GetSnapshotMetadata gets custom metadata on the subvolume snapshot in a\nvolume belonging to an optional subvolume group based on provided key name.\n\nSimilar To:\n ceph fs subvolume snapshot metadata get <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>]\n",

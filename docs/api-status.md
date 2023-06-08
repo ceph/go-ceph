@@ -20,11 +20,6 @@ MountInfo.Futimes | v0.22.0 | v0.24.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-FSAdmin.GetMetadata | v0.20.0 | v0.22.0 | 
-FSAdmin.SetMetadata | v0.20.0 | v0.22.0 | 
-FSAdmin.RemoveMetadata | v0.20.0 | v0.22.0 | 
-FSAdmin.ForceRemoveMetadata | v0.20.0 | v0.22.0 | 
-FSAdmin.ListMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.GetSnapshotMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.SetSnapshotMetadata | v0.20.0 | v0.22.0 | 
 FSAdmin.RemoveSnapshotMetadata | v0.20.0 | v0.22.0 | 
