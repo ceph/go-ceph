@@ -71,11 +71,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rgw/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-API.ListBucketsWithStat | v0.20.0 | v0.22.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/manager
 
