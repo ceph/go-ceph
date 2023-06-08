@@ -10,10 +10,10 @@ Name | Added in Version | Expected Stable Version |
 ---- | ---------------- | ----------------------- | 
 MountInfo.SelectFilesystem | v0.20.0 | v0.22.0 | 
 MountInfo.MakeDirs | v0.21.0 | v0.23.0 | 
-MountInfo.Mknod | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MountInfo.Futime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MountInfo.Futimens | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MountInfo.Futimes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MountInfo.Mknod | v0.22.0 | v0.24.0 | 
+MountInfo.Futime | v0.22.0 | v0.24.0 | 
+MountInfo.Futimens | v0.22.0 | v0.24.0 | 
+MountInfo.Futimes | v0.22.0 | v0.24.0 | 
 
 ## Package: cephfs/admin
 
@@ -68,11 +68,11 @@ SetMirrorPeerSiteClientName | v0.21.0 | v0.23.0 |
 SetMirrorPeerSiteName | v0.21.0 | v0.23.0 | 
 SetMirrorPeerSiteDirection | v0.21.0 | v0.23.0 | 
 Image.SparsifyWithProgress | v0.21.0 | v0.23.0 | 
-Image.LockAcquire | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Image.LockBreak | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Image.LockGetOwners | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Image.LockIsExclusiveOwner | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Image.LockRelease | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.LockAcquire | v0.22.0 | v0.24.0 | 
+Image.LockBreak | v0.22.0 | v0.24.0 | 
+Image.LockGetOwners | v0.22.0 | v0.24.0 | 
+Image.LockIsExclusiveOwner | v0.22.0 | v0.24.0 | 
+Image.LockRelease | v0.22.0 | v0.24.0 | 
 
 ### Deprecated APIs
 
