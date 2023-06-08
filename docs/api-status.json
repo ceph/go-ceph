@@ -1793,45 +1793,45 @@
         "comment": "Rename a snapshot.\n\nImplements:\n\tint rbd_snap_rename(rbd_image_t image, const char *snapname,\n\t\t\t\t const char* dstsnapsname);\n",
         "added_in_version": "v0.16.0",
         "became_stable_version": "v0.18.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "MigrationPrepare",
-        "comment": "MigrationPrepare prepares a migration\ncreating a target image with a link\nto source and making source read-only.\n\nImplements:\n int rbd_migration_prepare(rados_ioctx_t ioctx,\n                           const char *image_name,\n                           rados_ioctx_t dest_ioctx,\n                           const char *dest_image_name,\n                           rbd_image_options_t opts);\n",
+        "comment": "MigrationPrepare prepares a migration\ncreating a target image with a link\nto source and making source read-only.\n\nImplements:\n\n\tint rbd_migration_prepare(rados_ioctx_t ioctx,\n\t                          const char *image_name,\n\t                          rados_ioctx_t dest_ioctx,\n\t                          const char *dest_image_name,\n\t                          rbd_image_options_t opts);\n",
         "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
+        "became_stable_version": "v0.22.0"
       },
       {
         "name": "MigrationPrepareImport",
-        "comment": "MigrationPrepareImport prepares a migration for import\nfrom a specified source to a new target image.\n\nImplements:\n int rbd_migration_prepare_import(const char *source_spec,\n                                  rados_ioctx_t dest_ioctx,\n                                  const char *dest_image_name,\n                                  rbd_image_options_t opts);\n",
+        "comment": "MigrationPrepareImport prepares a migration for import\nfrom a specified source to a new target image.\n\nImplements:\n\n\tint rbd_migration_prepare_import(const char *source_spec,\n\t                                 rados_ioctx_t dest_ioctx,\n\t                                 const char *dest_image_name,\n\t                                 rbd_image_options_t opts);\n",
         "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
+        "became_stable_version": "v0.22.0"
       },
       {
         "name": "MigrationExecute",
-        "comment": "MigrationExecute starts copying the image blocks\nfrom the source image to the target image.\n\nImplements:\n int rbd_migration_execute(rados_ioctx_t ioctx,\n                           const char *image_name);\n",
+        "comment": "MigrationExecute starts copying the image blocks\nfrom the source image to the target image.\n\nImplements:\n\n\tint rbd_migration_execute(rados_ioctx_t ioctx,\n\t                          const char *image_name);\n",
         "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
+        "became_stable_version": "v0.22.0"
       },
       {
         "name": "MigrationCommit",
-        "comment": "MigrationCommit commits a migration after execution\nbreaking the relationship of image to the source.\n\nImplements:\n int rbd_migration_commit(rados_ioctx_t ioctx,\n                          const char *image_name);\n",
+        "comment": "MigrationCommit commits a migration after execution\nbreaking the relationship of image to the source.\n\nImplements:\n\n\tint rbd_migration_commit(rados_ioctx_t ioctx,\n\t                         const char *image_name);\n",
         "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
+        "became_stable_version": "v0.22.0"
       },
       {
         "name": "MigrationAbort",
-        "comment": "MigrationAbort aborts a migration in progress\nbreaking the relationship of image to the source.\n\nImplements:\n int rbd_migration_abort(rados_ioctx_t ioctx,\n                         const char *image_name);\n",
+        "comment": "MigrationAbort aborts a migration in progress\nbreaking the relationship of image to the source.\n\nImplements:\n\n\tint rbd_migration_abort(rados_ioctx_t ioctx,\n\t                        const char *image_name);\n",
         "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
+        "became_stable_version": "v0.22.0"
       },
       {
         "name": "MigrationStatus",
-        "comment": "MigrationStatus retrieve status of a live migration\nfor the specified image.\n\nImplements:\n int rbd_migration_status(rados_ioctx_t ioctx,\n                          const char *image_name,\n                          rbd_image_migration_status_t *status,\n                          size_t status_size);\n",
+        "comment": "MigrationStatus retrieve status of a live migration\nfor the specified image.\n\nImplements:\n\n\tint rbd_migration_status(rados_ioctx_t ioctx,\n\t                         const char *image_name,\n\t                         rbd_image_migration_status_t *status,\n\t                         size_t status_size);\n",
         "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
+        "became_stable_version": "v0.22.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "SiteMirrorImageStatus.UnmarshalDescriptionJSON",
         "comment": "UnmarshalDescriptionJSON parses an embedded JSON string that may be found in\nthe description of the SiteMirrorImageStatus. It will store the result in\nthe value pointed to by v.  If no embedded JSON string is found an\nErrNotExist error is returned. An error may also be returned if the contents\ncan not be parsed.\n",
