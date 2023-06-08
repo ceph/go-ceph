@@ -2003,14 +2003,7 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [
-      {
-        "name": "API.ListBucketsWithStat",
-        "comment": "ListBucketsWithStat will return the list of all buckets with stat (system admin API only)\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      }
-    ],
+    "preview_api": [],
     "stable_api": [
       {
         "name": "API.ListBuckets",
@@ -2136,6 +2129,12 @@
         "comment": "SetIndividualBucketQuota sets quota to a specific bucket\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-quota-for-an-individual-bucket\n",
         "added_in_version": "v0.17.0",
         "became_stable_version": "v0.19.0"
+      },
+      {
+        "name": "API.ListBucketsWithStat",
+        "comment": "ListBucketsWithStat will return the list of all buckets with stat (system admin API only)\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
       }
     ]
   },
