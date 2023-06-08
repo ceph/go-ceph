@@ -564,6 +564,36 @@
         "comment": "ListMetadata lists custom metadata (key-value pairs) set on the subvolume\nin a volume belonging to an optional subvolume group.\n\nSimilar To:\n\n\tceph fs subvolume metadata ls <vol_name> <sub_name> [--group_name <subvol_group_name>]\n",
         "added_in_version": "v0.20.0",
         "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.GetSnapshotMetadata",
+        "comment": "GetSnapshotMetadata gets custom metadata on the subvolume snapshot in a\nvolume belonging to an optional subvolume group based on provided key name.\n\nSimilar To:\n\n\tceph fs subvolume snapshot metadata get <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.SetSnapshotMetadata",
+        "comment": "SetSnapshotMetadata sets custom metadata on the subvolume snapshot in a\nvolume belonging to an optional subvolume group as a key-value pair.\n\nSimilar To:\n\n\tceph fs subvolume snapshot metadata set <vol_name> <sub_name> <snap_name> <key_name> <value> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.RemoveSnapshotMetadata",
+        "comment": "RemoveSnapshotMetadata removes custom metadata set on the subvolume\nsnapshot in a volume belonging to an optional subvolume group using the\nmetadata key.\n\nSimilar To:\n\n\tceph fs subvolume snapshot metadata rm <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.ForceRemoveSnapshotMetadata",
+        "comment": "ForceRemoveSnapshotMetadata attempt to forcefully remove custom metadata\nset on the subvolume snapshot in a volume belonging to an optional\nsubvolume group using the metadata key.\n\nSimilar To:\n\n\tceph fs subvolume snapshot metadata rm <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>] --force\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "FSAdmin.ListSnapshotMetadata",
+        "comment": "ListSnapshotMetadata lists custom metadata (key-value pairs) set on the subvolume\nsnapshot in a volume belonging to an optional subvolume group.\n\nSimilar To:\n\n\tceph fs subvolume snapshot metadata ls <vol_name> <sub_name> <snap_name> [--group_name <subvol_group_name>]\n",
+        "added_in_version": "v0.20.0",
+        "became_stable_version": "v0.22.0"
       }
     ],
     "deprecated_api": [
@@ -575,36 +605,6 @@
       }
     ],
     "preview_api": [
-      {
-        "name": "FSAdmin.GetSnapshotMetadata",
-        "comment": "GetSnapshotMetadata gets custom metadata on the subvolume snapshot in a\nvolume belonging to an optional subvolume group based on provided key name.\n\nSimilar To:\n ceph fs subvolume snapshot metadata get <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.SetSnapshotMetadata",
-        "comment": "SetSnapshotMetadata sets custom metadata on the subvolume snapshot in a\nvolume belonging to an optional subvolume group as a key-value pair.\n\nSimilar To:\n ceph fs subvolume snapshot metadata set <vol_name> <sub_name> <snap_name> <key_name> <value> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.RemoveSnapshotMetadata",
-        "comment": "RemoveSnapshotMetadata removes custom metadata set on the subvolume\nsnapshot in a volume belonging to an optional subvolume group using the\nmetadata key.\n\nSimilar To:\n ceph fs subvolume snapshot metadata rm <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.ForceRemoveSnapshotMetadata",
-        "comment": "ForceRemoveSnapshotMetadata attempt to forcefully remove custom metadata\nset on the subvolume snapshot in a volume belonging to an optional\nsubvolume group using the metadata key.\n\nSimilar To:\n ceph fs subvolume snapshot metadata rm <vol_name> <sub_name> <snap_name> <key_name> [--group_name <subvol_group_name>] --force\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
-      {
-        "name": "FSAdmin.ListSnapshotMetadata",
-        "comment": "ListSnapshotMetadata lists custom metadata (key-value pairs) set on the subvolume\nsnapshot in a volume belonging to an optional subvolume group.\n\nSimilar To:\n ceph fs subvolume snapshot metadata ls <vol_name> <sub_name> <snap_name> [--group_name <subvol_group_name>]\n",
-        "added_in_version": "v0.20.0",
-        "expected_stable_version": "v0.22.0"
-      },
       {
         "name": "FSAdmin.PinSubVolume",
         "comment": "PinSubVolume pins subvolume to ranks according to policies. A valid pin\nsetting value depends on the type of pin as described in the docs from\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#cephfs-pinning and\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#setting-subtree-partitioning-policies\n\nSimilar To:\n\n\tceph fs subvolume pin <vol_name> <sub_name> <pin_type> <pin_setting>\n",
