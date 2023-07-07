@@ -11,6 +11,7 @@ import (
 type Bucket struct {
 	Bucket            string  `json:"bucket" url:"bucket"`
 	NumShards         *uint64 `json:"num_shards"`
+	Tenant            string  `json:"tenant"`
 	Zonegroup         string  `json:"zonegroup"`
 	PlacementRule     string  `json:"placement_rule"`
 	ExplicitPlacement struct {
