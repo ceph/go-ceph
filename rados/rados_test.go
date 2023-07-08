@@ -3,7 +3,6 @@ package rados
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"sort"
@@ -216,7 +215,7 @@ func (suite *RadosTestSuite) TestReadConfigFile() {
 	assert.NoError(suite.T(), err)
 
 	// create conf file that changes log_file conf option
-	file, err := ioutil.TempFile("/tmp", "go-rados")
+	file, err := os.CreateTemp("/tmp", "go-rados")
 	require.NoError(suite.T(), err)
 	defer func() {
 		assert.NoError(suite.T(), file.Close())
