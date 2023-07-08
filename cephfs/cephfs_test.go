@@ -3,7 +3,6 @@ package cephfs
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -336,7 +335,7 @@ func TestValidate(t *testing.T) {
 }
 
 func TestReadConfigFile(t *testing.T) {
-	file, err := ioutil.TempFile("/tmp", "cephfs.conf")
+	file, err := os.CreateTemp("/tmp", "cephfs.conf")
 	require.NoError(t, err)
 	defer func() {
 		assert.NoError(t, file.Close())

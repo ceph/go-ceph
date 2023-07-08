@@ -3,7 +3,7 @@ package admin
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	pathpkg "path"
 	"testing"
@@ -57,7 +57,7 @@ func readFile(t *testing.T, mount *cephfs.MountInfo, path string) []byte {
 	f1, err := mount.Open(path, os.O_RDONLY, 0)
 	require.NoError(t, err)
 	defer f1.Close()
-	b, err := ioutil.ReadAll(f1)
+	b, err := io.ReadAll(f1)
 	require.NoError(t, err)
 	return b
 }
