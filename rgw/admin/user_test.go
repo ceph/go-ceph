@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -248,7 +248,7 @@ func TestGetUserMockAPI(t *testing.T) {
 }
 
 func returnMockClient() *mockClient {
-	r := ioutil.NopCloser(bytes.NewReader(fakeUserResponse))
+	r := io.NopCloser(bytes.NewReader(fakeUserResponse))
 	return &mockClient{
 		mockDo: func(req *http.Request) (*http.Response, error) {
 			if req.Method == http.MethodGet && req.URL.Path == "127.0.0.1/admin/user" {
