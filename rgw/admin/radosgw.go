@@ -3,7 +3,7 @@ package admin
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"time"
@@ -98,12 +98,12 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 	defer resp.Body.Close()
 
 	// Decode HTTP response
-	decodedResponse, err := ioutil.ReadAll(resp.Body)
+	decodedResponse, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(decodedResponse))
+	resp.Body = io.NopCloser(bytes.NewBuffer(decodedResponse))
 
 	// Handle error in response
 	if resp.StatusCode >= 300 {

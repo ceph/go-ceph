@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -57,7 +57,7 @@ func TestCreateSubuserMockAPI(t *testing.T) {
 
 // mockClient is defined in user_test.go
 func returnMockClientCreateSubuser() *mockClient {
-	r := ioutil.NopCloser(bytes.NewReader([]byte("")))
+	r := io.NopCloser(bytes.NewReader([]byte("")))
 	return &mockClient{
 		mockDo: func(req *http.Request) (*http.Response, error) {
 			if req.Method == http.MethodPut && req.URL.Path == "127.0.0.1/admin/user" {
