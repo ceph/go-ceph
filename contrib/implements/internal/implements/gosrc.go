@@ -8,7 +8,7 @@ import (
 	"go/build/constraint"
 	"go/parser"
 	"go/token"
-	"io/ioutil"
+	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -218,7 +218,7 @@ func CephGoFunctions(source, packageName string, ii *Inspector) error {
 	}
 	for _, fname := range toCheck {
 		logger.Printf("Reading go file: %v\n", fname)
-		src, err := ioutil.ReadFile(path.Join(p.Dir, fname))
+		src, err := os.ReadFile(path.Join(p.Dir, fname))
 		if err != nil {
 			return err
 		}
