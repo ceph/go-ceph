@@ -8,7 +8,6 @@ package rados
 import "C"
 
 import (
-	"runtime"
 	"unsafe"
 )
 
@@ -44,7 +43,7 @@ func newGetOmapStep() *GetOmapStep {
 		more: (*C.uchar)(C.malloc(C.sizeof_uchar)),
 		rval: (*C.int)(C.malloc(C.sizeof_int)),
 	}
-	runtime.SetFinalizer(gos, opStepFinalizer)
+
 	return gos
 }
 

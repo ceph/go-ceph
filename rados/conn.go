@@ -71,9 +71,6 @@ func (c *Conn) Connect() error {
 
 // Shutdown disconnects from the cluster.
 func (c *Conn) Shutdown() {
-	if err := c.ensureConnected(); err != nil {
-		return
-	}
 	freeConn(c)
 }
 

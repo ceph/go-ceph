@@ -8,7 +8,6 @@ package cephfs
 import "C"
 
 import (
-	"runtime"
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/log"
@@ -49,11 +48,7 @@ func NewUserPerm(uid, gid int, gidlist []int) *UserPerm {
 	}
 	p.userPerm = C.ceph_userperm_new(
 		p.uid, p.gid, C.int(len(p.gidList)), cgids)
-	// if the go object is unreachable, we would like to free the c-memory
-	// since this has no other resources than memory associated with it.
-	// This is only valid for UserPerm objects created by new, and thus have
-	// the managed var set.
-	runtime.SetFinalizer(p, destroyUserPerm)
+
 	return p
 }
 
