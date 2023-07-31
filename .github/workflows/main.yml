@@ -39,8 +39,10 @@ jobs:
         - "octopus"
         - "pacific"
         - "quincy"
+        - "reef"
         - "pre-pacific"
         - "pre-quincy"
+        - "pre-reef"
         - "main"
     steps:
     - uses: actions/checkout@v3
