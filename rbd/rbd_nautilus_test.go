@@ -2,6 +2,7 @@ package rbd
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -185,6 +186,55 @@ func TestGetParent(t *testing.T) {
 		assert.Equal(t, parentInfo.Image.ImageName, imgName)
 		assert.Equal(t, parentInfo.Snap.SnapName, snapName)
 		assert.Equal(t, parentInfo.Image.PoolName, poolName)
+		assert.False(t, parentInfo.Image.Trash)
+		// TODO: add a comaprison for snap ID
+	})
+
+	t.Run("ParentInTrash", func(t *testing.T) {
+		trashName := "trashed"
+		_, err := Create(ioctx, trashName, testImageSize, testImageOrder, 1)
+		assert.NoError(t, err)
+
+		imgTrash, err := OpenImage(ioctx, trashName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, imgTrash.Close()) }()
+		imgTrashID, err := imgTrash.GetId()
+		assert.NoError(t, err)
+
+		snapNameTrash := "snapTrash"
+		snapTrash, err := imgTrash.CreateSnapshot(snapNameTrash)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, snapTrash.Remove())
+		}()
+
+		cloneName := "childWithTrash"
+		optionsClone := NewRbdImageOptions()
+		defer optionsClone.Destroy()
+		err = optionsClone.SetUint64(ImageOptionCloneFormat, 2)
+		assert.NoError(t, err)
+
+		// Create a clone of the image.
+		err = CloneImage(ioctx, trashName, snapNameTrash, ioctx, cloneName, optionsClone)
+		assert.NoError(t, err)
+		defer func() { assert.NoError(t, RemoveImage(ioctx, cloneName)) }()
+
+		// Move the parent image to the trash, won't be deleted until the clone is removed.
+		assert.NoError(t, imgTrash.Trash(15*time.Second))
+
+		imgNew, err := OpenImage(ioctx, cloneName, NoSnapshot)
+		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, imgNew.Close())
+		}()
+
+		parentInfo, err := imgNew.GetParent()
+		assert.NoError(t, err)
+		assert.Equal(t, parentInfo.Image.ImageName, trashName)
+		assert.Equal(t, parentInfo.Image.ImageID, imgTrashID)
+		assert.Equal(t, parentInfo.Image.PoolName, poolName)
+		assert.True(t, parentInfo.Image.Trash)
+		assert.Equal(t, parentInfo.Snap.SnapName, snapNameTrash)
 		// TODO: add a comaprison for snap ID
 	})
 
