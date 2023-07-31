@@ -22,12 +22,13 @@ const (
 	cephOctopus  = "octopus"
 	cephPacfic   = "pacific"
 	cephQuincy   = "quincy"
+	cephReef     = "reef"
 	cephMain     = "main"
 )
 
 func init() {
 	switch vname := os.Getenv("CEPH_VERSION"); vname {
-	case cephNautilus, cephOctopus, cephPacfic, cephQuincy, cephMain:
+	case cephNautilus, cephOctopus, cephPacfic, cephQuincy, cephReef, cephMain:
 		serverVersion = vname
 	}
 }
@@ -43,7 +44,7 @@ func TestServerSentinel(t *testing.T) {
 	// server version it expects and force us to update the tests if a new
 	// version of ceph is added.
 	if serverVersion == "" {
-		t.Fatalf("server must be nautilus, octopus, pacific, or quincy (do the tests need updating?)")
+		t.Fatalf("server must be nautilus, octopus, pacific, quincy, or reef (do the tests need updating?)")
 	}
 }
 
