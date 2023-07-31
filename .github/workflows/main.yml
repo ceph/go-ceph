@@ -40,7 +40,6 @@ jobs:
         - "pacific"
         - "quincy"
         - "reef"
-        - "pre-pacific"
         - "pre-quincy"
         - "pre-reef"
         - "main"
