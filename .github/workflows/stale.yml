@@ -13,5 +13,8 @@ jobs:
         stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. It will be closed in 14 days if no further activity occurs. Thank you for your contribution.'
         days-before-stale: 30
         days-before-close: 14
-        only-labels: 'question'
-
+        only-issue-labels: 'question'
+        stale-pr-message: 'This Pull Request has been automatically marked as stale because it has not had recent activity. It will be closed in 21 days if no further activity occurs. Remember, a closed PR can always be reopened. Thank you for your contribution.'
+        close-pr-message: 'This Pull Request has been automatically closed due to inactivity. In the future, if you resume working on this again, the PR can be reopened. Additionally, if you are proposing a feature or fix that you think someone else could take up - please say so - and if there is no existing issue already, file an issue for the topic. Thank you for your contribution.'
+        days-before-pr-stale: 60
+        days-before-pr-close: 21
