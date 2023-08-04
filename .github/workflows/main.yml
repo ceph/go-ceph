@@ -15,13 +15,35 @@ on:
     - cron: 1 1 * * *
 
 jobs:
+  # Determine the latest go versions
+  go-versions:
+    runs-on: ubuntu-latest
+    steps:
+    - id: go-versions
+      run: |
+        curl -s 'https://go.dev/dl/?mode=json' -o go-latest.json
+        curl -s 'https://go.dev/dl/?mode=json&include=all' -o go-all.json
+
+        LATEST=$(jq -r '.[0]|.version' go-latest.json)
+        PREV=$(jq -r '.[1]|.version' go-latest.json)
+        UNSTABLE=$(jq -r '.[0]|.version' go-all.json)
+
+        echo "latest=${LATEST#go}" >> $GITHUB_OUTPUT
+        echo "prev=${PREV#go}" >> $GITHUB_OUTPUT
+        echo "unstable=${UNSTABLE#go}" >> $GITHUB_OUTPUT
+    outputs:
+      latest: ${{ steps.go-versions.outputs.latest }}
+      prev: ${{ steps.go-versions.outputs.prev }}
+      unstable: ${{ steps.go-versions.outputs.unstable }}
+
   # Run static/code-quality checks
   check:
+    needs: go-versions
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-go@v4
       with:
-        go-version: 1.19
+        go-version: ${{ needs.go-versions.outputs.latest }}
     - uses: actions/checkout@v3
     - name: Install revive
       run: go install github.com/mgechev/revive@latest
@@ -30,6 +52,8 @@ jobs:
 
   # Run the test suite in a container per-ceph-codename
   test-suite:
+    name: test-suite (${{ matrix.ceph_version }}${{ matrix.go_version != needs.go-versions.outputs.latest && format(', go{0}', matrix.go_version) || '' }})
+    needs: go-versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -43,16 +67,23 @@ jobs:
         - "pre-quincy"
         - "pre-reef"
         - "main"
+        go_version:
+        - ${{ needs.go-versions.outputs.latest }}
+        include:
+        - ceph_version: "reef"
+          go_version: ${{ needs.go-versions.outputs.prev }}
+        - ceph_version: "reef"
+          go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
     - uses: actions/checkout@v3
     - name: Run tests
-      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "RESULTS_DIR=$PWD/_results"
+      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results"
     - name: Clean up test containers
       run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"
     - name: Archive test results
       uses: actions/upload-artifact@v3
       with:
-        name: "go-ceph-results-${{ matrix.ceph_version }}"
+        name: "go-ceph-results-${{ matrix.ceph_version }}-${{ matrix.go_version }}"
         path: |
           _results/
         retention-days: 30
