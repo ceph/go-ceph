@@ -113,6 +113,9 @@ endif
 # Assemble the various build args that will be passed container build command(s)
 CONTAINER_BUILD_ARGS:=$(DEFAULT_BUILD_ARGS)
 CONTAINER_BUILD_ARGS += --build-arg GOARCH=$(GOARCH)
+ifneq ($(GO_VERSION),)
+	CONTAINER_BUILD_ARGS += --build-arg GO_VERSION=$(GO_VERSION)
+endif
 ifdef CEPH_IMG
 	CONTAINER_BUILD_ARGS += --build-arg CEPH_IMG=$(CEPH_IMG)
 endif
