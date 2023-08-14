@@ -8,7 +8,6 @@
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-MountInfo.MakeDirs | v0.21.0 | v0.23.0 | 
 MountInfo.Mknod | v0.22.0 | v0.24.0 | 
 MountInfo.Futime | v0.22.0 | v0.24.0 | 
 MountInfo.Futimens | v0.22.0 | v0.24.0 | 

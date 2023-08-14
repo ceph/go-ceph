@@ -317,15 +317,15 @@
         "comment": "SelectFilesystem selects a file system to be mounted. If the ceph cluster\nsupports more than one cephfs this optional function selects which one to\nuse. Can only be called prior to calling Mount. The name of the file system\nis not validated by this call - if the supplied file system name is not\nvalid then only the subsequent mount call will fail.\n\nImplements:\n\n\tint ceph_select_filesystem(struct ceph_mount_info *cmount, const char *fs_name);\n",
         "added_in_version": "v0.20.0",
         "became_stable_version": "v0.22.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "MountInfo.MakeDirs",
         "comment": "MakeDirs creates multiple directories at once.\n\nImplements:\n\n\tint ceph_mkdirs(struct ceph_mount_info *cmount, const char *path, mode_t mode);\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
-      },
+        "became_stable_version": "v0.23.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "MountInfo.Mknod",
         "comment": "Mknod creates a regular, block or character special file.\n\nImplements:\n\n\tint ceph_mknod(struct ceph_mount_info *cmount, const char *path, mode_t mode,\n\t\t\t\t   dev_t rdev);\n",
