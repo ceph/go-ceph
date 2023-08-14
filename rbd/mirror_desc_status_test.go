@@ -1,8 +1,5 @@
-//go:build !nautilus && ceph_preview
-// +build !nautilus,ceph_preview
-
-// IMPORTANT - when removing ceph_preview from this file also delete
-// rbd/mirror_stub_test.go as it will no longer serve a purpose.
+//go:build !nautilus
+// +build !nautilus
 
 package rbd
 

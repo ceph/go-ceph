@@ -31,17 +31,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-SiteMirrorImageStatus.UnmarshalDescriptionJSON | v0.21.0 | v0.23.0 | 
-SiteMirrorImageStatus.DescriptionReplayStatus | v0.21.0 | v0.23.0 | 
-AddMirrorPeerSite | v0.21.0 | v0.23.0 | 
-RemoveMirrorPeerSite | v0.21.0 | v0.23.0 | 
-GetAttributesMirrorPeerSite | v0.21.0 | v0.23.0 | 
-SetAttributesMirrorPeerSite | v0.21.0 | v0.23.0 | 
-ListMirrorPeerSite | v0.21.0 | v0.23.0 | 
-SetMirrorPeerSiteClientName | v0.21.0 | v0.23.0 | 
-SetMirrorPeerSiteName | v0.21.0 | v0.23.0 | 
-SetMirrorPeerSiteDirection | v0.21.0 | v0.23.0 | 
-Image.SparsifyWithProgress | v0.21.0 | v0.23.0 | 
 Image.LockAcquire | v0.22.0 | v0.24.0 | 
 Image.LockBreak | v0.22.0 | v0.24.0 | 
 Image.LockGetOwners | v0.22.0 | v0.24.0 | 
