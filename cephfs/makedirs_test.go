@@ -1,6 +1,3 @@
-//go:build ceph_preview
-// +build ceph_preview
-
 package cephfs
 
 import (
@@ -14,7 +11,7 @@ func TestMakeDirs(t *testing.T) {
 	defer fsDisconnect(t, mount)
 
 	dir1 := "/base/sub/way"
-	err := mount.MakeDirs(dir1, 0755)
+	err := mount.MakeDirs(dir1, 0o755)
 	assert.NoError(t, err)
 	defer func() {
 		assert.NoError(t, mount.RemoveDir("/base/sub/way"))
