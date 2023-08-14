@@ -1828,75 +1828,75 @@
         "comment": "MigrationStatus retrieve status of a live migration\nfor the specified image.\n\nImplements:\n\n\tint rbd_migration_status(rados_ioctx_t ioctx,\n\t                         const char *image_name,\n\t                         rbd_image_migration_status_t *status,\n\t                         size_t status_size);\n",
         "added_in_version": "v0.20.0",
         "became_stable_version": "v0.22.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "SiteMirrorImageStatus.UnmarshalDescriptionJSON",
         "comment": "UnmarshalDescriptionJSON parses an embedded JSON string that may be found in\nthe description of the SiteMirrorImageStatus. It will store the result in\nthe value pointed to by v.  If no embedded JSON string is found an\nErrNotExist error is returned. An error may also be returned if the contents\ncan not be parsed.\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "SiteMirrorImageStatus.DescriptionReplayStatus",
         "comment": "DescriptionReplayStatus parses a MirrorDescriptionReplayStatus result out of\nthe image status description field if available. If the embedded status JSON\nis not found or fails to parse and error will be returned.\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "AddMirrorPeerSite",
-        "comment": "AddMirrorPeerSite adds a peer site to the list of existing sites.\n",
+        "comment": "AddMirrorPeerSite adds a peer site to the list of existing sites\n\nImplements:\n\n\tint rbd_mirror_peer_site_add(rados_ioctx_t p, char *uuid, size_t uuid_max_length,\n\t\t\t\t\t\t\t\t rbd_mirror_peer_direction_t direction,\n\t\t\t\t\t\t\t\t const char *site_name,\n\t\t\t\t\t\t\t\t const char *client_name);\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "RemoveMirrorPeerSite",
-        "comment": "RemoveMirrorPeerSite removes the site with the provided uuid.\n",
+        "comment": "RemoveMirrorPeerSite removes the site with the provided uuid\n\nImplements:\n\n\tint rbd_mirror_peer_site_remove(rados_ioctx_t p, const char *uuid)\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "GetAttributesMirrorPeerSite",
-        "comment": "GetAttributesMirrorPeerSite fetches the list of key,value pair of attributes of a peer site.\n",
+        "comment": "GetAttributesMirrorPeerSite fetches the list of key,value pair of attributes of a peer site\n\nImplements:\n\n\tint rbd_mirror_peer_site_get_attributes(rados_ioctx_t p, const char *uuid, char *keys,\n\t\t\t\t\t\t\t\t\t\t\tsize_t *max_key_len, char *values, size_t *max_val_len,\n\t\t\t\t\t\t\t\t\t\t\tsize_t *key_value_count);\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "SetAttributesMirrorPeerSite",
-        "comment": "SetAttributesMirrorPeerSite sets the attributes for the site with the given uuid.\n",
+        "comment": "SetAttributesMirrorPeerSite sets the attributes for the site with the given uuid\n\nImplements:\n\n\tint rbd_mirror_peer_site_set_attributes(rados_ioctx_t p, const char *uuid,\n\t\t\t\t\t\t\t\t\t\t\tconst char *keys, const char *values,\n\t\t\t\t\t\t\t\t\t\t\tsize_t count) ;\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "ListMirrorPeerSite",
-        "comment": "ListMirrorPeerSite returns the list of peer sites.\n",
+        "comment": "ListMirrorPeerSite returns the list of peer sites\n\nImplements:\n\n\tint rbd_mirror_peer_site_list(rados_ioctx_t p, rbd_mirror_peer_site_t *peers, int *max_peers)\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "SetMirrorPeerSiteClientName",
-        "comment": "SetMirrorPeerSiteClientName sets the client name of a mirror peer site.\n",
+        "comment": "SetMirrorPeerSiteClientName sets the client name for a mirror peer site\n\nImplements:\n\n\tint rbd_mirror_peer_site_set_client_name(rados_ioctx_t p, const char *uuid,\n\t\t\t\t\t\t\t\t\t\t\t const char *client_name);\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
-      },
-      {
-        "name": "SetMirrorPeerSiteName",
-        "comment": "SetMirrorPeerSiteName sets the site name of a mirror peer site.\n",
-        "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "SetMirrorPeerSiteDirection",
-        "comment": "SetMirrorPeerSiteDirection sets the direction of a mirror peer site.\n",
+        "comment": "SetMirrorPeerSiteDirection sets the direction of a mirror peer site\n\nImplements:\n\n\tint rbd_mirror_peer_site_set_direction(rados_ioctx_t p, const char *uuid,\n\t\t\t\t\t\t\t\t\t\t   rbd_mirror_peer_direction_t direction);\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
+        "became_stable_version": "v0.23.0"
+      },
+      {
+        "name": "SetMirrorPeerSiteName",
+        "comment": "SetMirrorPeerSiteName sets the name of a mirror peer site\n\nImplements:\n\n\tint rbd_mirror_peer_site_set_name(rados_ioctx_t p, const char *uuid,\n\t\t\t\t\t\t\t\t\t  const char *site_name);\n",
+        "added_in_version": "v0.21.0",
+        "became_stable_version": "v0.23.0"
       },
       {
         "name": "Image.SparsifyWithProgress",
         "comment": "SparsifyWithProgress makes an image sparse by deallocating runs of zeros.\nThe sparseSize value will be used to find runs of zeros and must be\na power of two no less than 4096 and no larger than the image size.\nThe given progress callback will be called to report on the progress\nof sparse. The operation will be aborted if the progress callback returns\na non-zero value.\n\nImplements:\n\n\tint rbd_sparsify_with_progress(rbd_image_t image, size_t sparse_size,\n\t\t\t\t\t\t\t\t   librbd_progress_fn_t cb, void *cbdata);\n",
         "added_in_version": "v0.21.0",
-        "expected_stable_version": "v0.23.0"
-      },
+        "became_stable_version": "v0.23.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "Image.LockAcquire",
         "comment": "LockAcquire takes a lock on the given image as per the provided lock_mode.\n\nImplements:\n\n\tint rbd_lock_acquire(rbd_image_t image, rbd_lock_mode_t lock_mode);\n",
