@@ -15,14 +15,6 @@ MountInfo.Futimes | v0.22.0 | v0.24.0 |
 
 ## Package: cephfs/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-FSAdmin.PinSubVolume | v0.21.0 | v0.23.0 | 
-FSAdmin.PinSubVolumeGroup | v0.21.0 | v0.23.0 | 
-FSAdmin.FetchVolumeInfo | v0.21.0 | v0.23.0 | 
-
 ### Deprecated APIs
 
 Name | Deprecated in Version | Expected Removal Version | 
