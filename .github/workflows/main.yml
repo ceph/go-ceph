@@ -41,10 +41,10 @@ jobs:
     needs: go-versions
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     - uses: actions/setup-go@v4
       with:
         go-version: ${{ needs.go-versions.outputs.latest }}
-    - uses: actions/checkout@v3
     - name: Install revive
       run: go install github.com/mgechev/revive@latest
     - name: Run checks
