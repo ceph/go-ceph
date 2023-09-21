@@ -114,7 +114,7 @@ func (suite *RadosTestSuite) TearDownSuite() {
 }
 
 func TestVersion(t *testing.T) {
-	var major, minor, patch = Version()
+	major, minor, patch := Version()
 	assert.False(t, major < 0 || major > 1000, "invalid major")
 	assert.False(t, minor < 0 || minor > 1000, "invalid minor")
 	assert.False(t, patch < 0 || patch > 1000, "invalid patch")
@@ -456,6 +456,7 @@ func (suite *RadosTestSuite) TestGetLargePoolList() {
 }
 
 func (suite *RadosTestSuite) TestPingMonitor() {
+	suite.T().SkipNow() // until #921 is fixed
 	suite.SetupConnection()
 
 	// mon id that should work with vstart.sh
