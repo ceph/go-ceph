@@ -882,6 +882,7 @@ func TestMirrorImageLists(t *testing.T) {
 		assert.Len(t, lst, 10)
 		for i := 1; i < len(lst); i++ {
 			assert.NotEqual(t, lst[i-1].ID, lst[i].ID)
+			assert.NotEqual(t, lst[i-1].Status.Info.GlobalID, lst[i].Status.Info.GlobalID)
 		}
 		for i := 1; i <= iterBufSize; i++ {
 			lst, err := MirrorImageGlobalStatusList(ioctx, "", i)
