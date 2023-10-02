@@ -41,7 +41,7 @@ jobs:
     needs: go-versions
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-go@v4
       with:
         go-version: ${{ needs.go-versions.outputs.latest }}
@@ -75,7 +75,7 @@ jobs:
         - ceph_version: "reef"
           go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Run tests
       run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results"
     - name: Clean up test containers
