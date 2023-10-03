@@ -1894,40 +1894,39 @@
         "comment": "SparsifyWithProgress makes an image sparse by deallocating runs of zeros.\nThe sparseSize value will be used to find runs of zeros and must be\na power of two no less than 4096 and no larger than the image size.\nThe given progress callback will be called to report on the progress\nof sparse. The operation will be aborted if the progress callback returns\na non-zero value.\n\nImplements:\n\n\tint rbd_sparsify_with_progress(rbd_image_t image, size_t sparse_size,\n\t\t\t\t\t\t\t\t   librbd_progress_fn_t cb, void *cbdata);\n",
         "added_in_version": "v0.21.0",
         "became_stable_version": "v0.23.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Image.LockAcquire",
         "comment": "LockAcquire takes a lock on the given image as per the provided lock_mode.\n\nImplements:\n\n\tint rbd_lock_acquire(rbd_image_t image, rbd_lock_mode_t lock_mode);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "Image.LockBreak",
         "comment": "LockBreak breaks the lock of lock_mode on the provided lock_owner.\n\nImplements:\n\n\tint rbd_lock_break(rbd_image_t image, rbd_lock_mode_t lock_mode,\n\t\t\t\t\t   const char *lock_owner);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "Image.LockGetOwners",
         "comment": "LockGetOwners fetches the list of lock owners.\n\nImplements:\n\n\tint rbd_lock_get_owners(rbd_image_t image, rbd_lock_mode_t *lock_mode,\n\t\t\t\t\t\t\tchar **lock_owners, size_t *max_lock_owners);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "Image.LockIsExclusiveOwner",
         "comment": "LockIsExclusiveOwner gets the status of the image exclusive lock.\n\nImplements:\n\n\tint rbd_is_exclusive_lock_owner(rbd_image_t image, int *is_owner);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "Image.LockRelease",
         "comment": "LockRelease releases a lock on the image.\n\nImplements:\n\n\tint rbd_lock_release(rbd_image_t image);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       }
-    ]
+    ],
+    "preview_api": []
   },
   "rbd/admin": {
     "stable_api": [
