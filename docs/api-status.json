@@ -323,34 +323,33 @@
         "comment": "MakeDirs creates multiple directories at once.\n\nImplements:\n\n\tint ceph_mkdirs(struct ceph_mount_info *cmount, const char *path, mode_t mode);\n",
         "added_in_version": "v0.21.0",
         "became_stable_version": "v0.23.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "MountInfo.Mknod",
         "comment": "Mknod creates a regular, block or character special file.\n\nImplements:\n\n\tint ceph_mknod(struct ceph_mount_info *cmount, const char *path, mode_t mode,\n\t\t\t\t   dev_t rdev);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "MountInfo.Futime",
         "comment": "Futime changes file/directory last access and modification times.\n\nImplements:\n\n\tint ceph_futime(struct ceph_mount_info *cmount, int fd, struct utimbuf *buf);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "MountInfo.Futimens",
         "comment": "Futimens changes file/directory last access and modification times, here times param\nis an array of Timespec struct having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimens(struct ceph_mount_info *cmount, int fd, struct timespec times[2]);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       },
       {
         "name": "MountInfo.Futimes",
         "comment": "Futimes changes file/directory last access and modification times, here times param\nis an array of Timeval struct type having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimes(struct ceph_mount_info *cmount, int fd, struct timeval times[2]);\n",
         "added_in_version": "v0.22.0",
-        "expected_stable_version": "v0.24.0"
+        "became_stable_version": "v0.24.0"
       }
-    ]
+    ],
+    "preview_api": []
   },
   "cephfs/admin": {
     "stable_api": [

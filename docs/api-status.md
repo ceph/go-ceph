@@ -4,14 +4,7 @@
 
 ## Package: cephfs
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-MountInfo.Mknod | v0.22.0 | v0.24.0 | 
-MountInfo.Futime | v0.22.0 | v0.24.0 | 
-MountInfo.Futimens | v0.22.0 | v0.24.0 | 
-MountInfo.Futimes | v0.22.0 | v0.24.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: cephfs/admin
 
