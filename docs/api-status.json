@@ -613,14 +613,7 @@
         "became_stable_version": "v0.23.0"
       }
     ],
-    "deprecated_api": [
-      {
-        "name": "New",
-        "comment": "New creates an FSAdmin automatically based on the default ceph\nconfiguration file. If more customization is needed, create a\n*rados.Conn as you see fit and use NewFromConn to use that\nconnection with these administrative functions.\n\nDeprecated: Use NewFromConn instead of New. The New function does not expose\nthe rados connection and therefore can not be deterministically cleaned up.\n",
-        "deprecated_in_version": "v0.21.0",
-        "expected_remove_version": "v0.24.0"
-      }
-    ],
+    "deprecated_api": [],
     "preview_api": []
   },
   "rados": {

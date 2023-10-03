@@ -8,11 +8,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: cephfs/admin
 
-### Deprecated APIs
-
-Name | Deprecated in Version | Expected Removal Version | 
----- | --------------------- | ------------------------ | 
-New | v0.21.0 | v0.24.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados
 
