@@ -81,32 +81,13 @@ go test -tags pacific ....
 | v0.19.0         | pacific, quincy         | nautilus, octopus        |
 | v0.18.0         | octopus, pacific, quincy | nautilus                |
 | v0.17.0         | octopus, pacific, quincy | nautilus                |
-| v0.16.0         | octopus, pacific†       | nautilus                 |
-| v0.15.0         | octopus, pacific        | nautilus                 |
-| v0.14.0         | octopus, pacific        | nautilus                 |
-| v0.13.0         | octopus, pacific        | nautilus                 |
-| v0.12.0         | octopus, pacific        | nautilus                 |
-| v0.11.0         | nautilus, octopus, pacific  |                      |
-| v0.10.0         | nautilus, octopus, pacific  |                      |
-| v0.9.0          | nautilus, octopus       |                          |
-| v0.8.0          | nautilus, octopus       |                          |
-| v0.7.0          | nautilus, octopus       |                          |
-| v0.6.0          | nautilus, octopus       | mimic                    |
-| v0.5.0          | nautilus, octopus       | luminous, mimic          |
-| v0.4.0          | luminous, mimic, nautilus, octopus | |
-| v0.3.0          | luminous, mimic, nautilus, octopus | |
-| v0.2.0          | luminous, mimic, nautilus          | |
-| (pre release)   | luminous, mimic  (see note)        | |
 
-These tags affect what is supported at compile time. What version of the Ceph
+The tags affect what is supported at compile time. What version of the Ceph
 cluster the client libraries support, and vice versa, is determined entirely
 by what version of the Ceph C libraries go-ceph is compiled with.
 
-† Preliminary support for Ceph Quincy was available, but not fully tested, in
-this release.
-
-NOTE: Prior to 2020 the project did not make versioned releases. The ability to
-compile with a particular Ceph version before go-ceph v0.2.0 is not guaranteed.
+To see what older versions of go-ceph supported refer to the [older
+releases](./docs/older-releases.md) file in the documentation.
 
 
 ## Documentation
