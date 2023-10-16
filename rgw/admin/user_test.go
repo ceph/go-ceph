@@ -167,6 +167,19 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), int64(100), *q.MaxObjects)
 	})
 
+	suite.T().Run("set bucket quota", func(t *testing.T) {
+		quotaEnable := true
+		maxObjects := int64(101)
+		err := co.SetUserQuota(context.Background(), QuotaSpec{QuotaType: "bucket", UID: "leseb", MaxObjects: &maxObjects, Enabled: &quotaEnable})
+		assert.NoError(suite.T(), err)
+	})
+
+	suite.T().Run("get bucket quota", func(t *testing.T) {
+		q, err := co.GetUserQuota(context.Background(), QuotaSpec{QuotaType: "bucket", UID: "leseb"})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), int64(101), *q.MaxObjects)
+	})
+
 	suite.T().Run("get user stat", func(t *testing.T) {
 		statEnable := true
 		user, err := co.GetUser(context.Background(), User{ID: "leseb", GenerateStat: &statEnable})
