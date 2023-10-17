@@ -26,7 +26,6 @@ func (api *API) GetUserQuota(ctx context.Context, quota QuotaSpec) (QuotaSpec, e
 	if quota.QuotaType != "bucket" {
 		quota.QuotaType = "user"
 	}
-	
 
 	if quota.UID == "" {
 		return QuotaSpec{}, errMissingUserID
