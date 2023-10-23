@@ -8,7 +8,6 @@ import (
 )
 
 // QuotaSpec describes an object store quota for a user or a bucket
-// Only user's quota are supported
 type QuotaSpec struct {
 	UID        string `json:"user_id" url:"uid"`
 	Bucket     string `json:"bucket" url:"bucket"`
@@ -22,10 +21,8 @@ type QuotaSpec struct {
 
 // GetUserQuota will return the quota for a user
 func (api *API) GetUserQuota(ctx context.Context, quota QuotaSpec) (QuotaSpec, error) {
-	// Quota Type: The quota-type option sets the scope for the quota. The options are bucket and user
-	if quota.QuotaType != "bucket" {
-		quota.QuotaType = "user"
-	}
+	// Always for quota type to user
+	quota.QuotaType = "user"
 
 	if quota.UID == "" {
 		return QuotaSpec{}, errMissingUserID
@@ -49,10 +46,8 @@ func (api *API) GetUserQuota(ctx context.Context, quota QuotaSpec) (QuotaSpec, e
 // Global quotas (https://docs.ceph.com/en/latest/radosgw/admin/#reading-writing-global-quotas) are not surfaced in the Admin Ops API
 // So this library cannot expose it yet
 func (api *API) SetUserQuota(ctx context.Context, quota QuotaSpec) error {
-	// Quota Type: The quota-type option sets the scope for the quota. The options are bucket and user
-	if quota.QuotaType != "bucket" {
-		quota.QuotaType = "user"
-	}
+	// Always for quota type to user
+	quota.QuotaType = "user"
 
 	if quota.UID == "" {
 		return errMissingUserID
