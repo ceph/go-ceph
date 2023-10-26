@@ -1993,7 +1993,14 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "API.GetInfo",
+        "comment": "GetInfo - https://docs.ceph.com/en/latest/radosgw/adminops/#info\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ],
     "stable_api": [
       {
         "name": "API.ListBuckets",
