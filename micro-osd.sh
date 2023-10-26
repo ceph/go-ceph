@@ -164,6 +164,10 @@ launch_radosgw() {
     radosgw-admin user create --uid admin --display-name "Admin User" --caps "buckets=*;users=*;usage=read;metadata=read" --access-key="$S3_ACCESS_KEY" --secret-key="$S3_SECRET_KEY"
 }
 
+launch_radosgw2() {
+    radosgw-admin caps add --uid=admin --caps="info=read"
+}
+
 selftest() {
     ceph --version
     ceph status
@@ -183,8 +187,11 @@ if [ -z "$FEATURESET" ] ; then
         nautilus|octopus)
             FEATURESET="mon osd mgr mds rbd-mirror rgw selftest"
         ;;
-        *)
+        pacific)
             FEATURESET="mon osd mgr mds mds2 rbd-mirror cephfs-mirror rgw selftest"
+        ;;
+        *)
+            FEATURESET="mon osd mgr mds mds2 rbd-mirror cephfs-mirror rgw rgw2 selftest"
         ;;
     esac
 fi
@@ -200,6 +207,7 @@ for fname in ${FEATURESET} ; do
         rbd-mirror) launch_rbd_mirror ;;
         cephfs-mirror) launch_cephfs_mirror ;;
         rgw|radosgw) launch_radosgw ;;
+        rgw2|radosgw2) launch_radosgw2 ;;
         selftest) selftest ;;
         *)
             echo "Invalid feature: ${fname}"
