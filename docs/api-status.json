@@ -1918,7 +1918,14 @@
         "became_stable_version": "v0.24.0"
       }
     ],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "Image.Resize2",
+        "comment": "Resize2 resizes an rbd image and allows configuration of allow_shrink and a callback function. The callback\nfunction will be called with the first argument as the progress, the second argument as the total, and the third\nargument as an opaque value that is passed to the Resize2 function's data argument in each callback execution.\nThe resize operation will be aborted if the progress callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_resize(rbd_image_t image, uint64_t size, allow_shrink bool, librbd_progress_fn_t cb, void *cbdata);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rbd/admin": {
     "stable_api": [
