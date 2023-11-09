@@ -53,7 +53,7 @@ func TestRemoveDir(t *testing.T) {
 	assert.NoError(t, err)
 
 	_, err = mount.Statx(dirname, StatxBasicStats, 0)
-	assert.Equal(t, err, errNoEntry)
+	assert.Equal(t, err, ErrNotExist)
 }
 
 func TestLink(t *testing.T) {
@@ -367,7 +367,7 @@ func TestStatx(t *testing.T) {
 		st, err = mount.Statx(dirname, StatxBasicStats, 0)
 		assert.Error(t, err)
 		assert.Nil(t, st)
-		assert.Equal(t, errNoEntry, err)
+		assert.Equal(t, ErrNotExist, err)
 	})
 
 	t.Run("invalidMount", func(t *testing.T) {

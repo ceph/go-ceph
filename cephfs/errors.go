@@ -54,6 +54,8 @@ const (
 	// ErrNotConnected may be returned when client is not connected
 	// to a cluster.
 	ErrNotConnected = cephFSError(-C.ENOTCONN)
+	// ErrNotExist indicates a non-specific missing resource.
+	ErrNotExist = cephFSError(-C.ENOENT)
 )
 
 // Private errors:
@@ -61,6 +63,5 @@ const (
 const (
 	errInvalid     = cephFSError(-C.EINVAL)
 	errNameTooLong = cephFSError(-C.ENAMETOOLONG)
-	errNoEntry     = cephFSError(-C.ENOENT)
 	errRange       = cephFSError(-C.ERANGE)
 )
