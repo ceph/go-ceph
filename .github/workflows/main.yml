@@ -59,27 +59,30 @@ jobs:
       fail-fast: false
       matrix:
         ceph_version:
-        - "nautilus"
-        - "octopus"
+        # - "nautilus"
+        # - "octopus"
         - "pacific"
-        - "quincy"
-        - "reef"
-        - "pre-quincy"
-        - "pre-reef"
-        - "main"
+        # - "quincy"
+        # - "reef"
+        # - "pre-quincy"
+        # - "pre-reef"
+        # - "main"
         go_version:
         - ${{ needs.go-versions.outputs.latest }}
-        include:
-        - ceph_version: "reef"
-          go_version: ${{ needs.go-versions.outputs.prev }}
-        - ceph_version: "reef"
-          go_version: ${{ needs.go-versions.outputs.unstable }}
+        # include:
+        # - ceph_version: "reef"
+        #   go_version: ${{ needs.go-versions.outputs.prev }}
+        # - ceph_version: "reef"
+        #   go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
     - uses: actions/checkout@v4
     - name: Set cores to get stored as "core"
       run:  sudo bash -c 'echo "core" > /proc/sys/kernel/core_pattern'
     - name: Run tests
-      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results"
+      run: make test-container "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results" "ENTRYPOINT_ARGS=--no-cover --test-pkg rados --test-run TestRadosTestSuite/TestAAA"
+    # - name: Setup tmate session
+    #   if: failure()
+    #   uses: mxschmitt/action-tmate@v3
     - name: Clean up test containers
       if: always()
       run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"

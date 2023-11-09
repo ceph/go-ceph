@@ -7,7 +7,6 @@ package rados
 import "C"
 
 import (
-	"runtime"
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/log"
@@ -74,7 +73,7 @@ func newConn(user *C.char) (*Conn, error) {
 		return nil, getError(ret)
 	}
 
-	runtime.SetFinalizer(conn, freeConn)
+	// runtime.SetFinalizer(conn, freeConn)
 	return conn, nil
 }
 
@@ -107,7 +106,7 @@ func NewConnWithClusterAndUser(clusterName string, userName string) (*Conn, erro
 		return nil, getError(ret)
 	}
 
-	runtime.SetFinalizer(conn, freeConn)
+	// runtime.SetFinalizer(conn, freeConn)
 	return conn, nil
 }
 

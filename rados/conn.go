@@ -6,6 +6,7 @@ package rados
 import "C"
 
 import (
+	"runtime"
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/cutil"
@@ -47,14 +48,13 @@ func (c *Conn) PingMonitor(id string) (string, error) {
 
 	var strlen C.size_t
 	var strout *C.char
-
 	ret := C.rados_ping_monitor(c.cluster, cid, &strout, &strlen)
 	defer C.rados_buffer_free(strout)
-
 	if ret == 0 {
 		reply := C.GoStringN(strout, (C.int)(strlen))
 		return reply, nil
 	}
+	runtime.KeepAlive(c.cluster)
 	return "", getError(ret)
 }
 

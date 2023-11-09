@@ -455,19 +455,20 @@ func (suite *RadosTestSuite) TestGetLargePoolList() {
 	}
 }
 
-func (suite *RadosTestSuite) TestPingMonitor() {
-	suite.T().SkipNow() // until #921 is fixed
+func (suite *RadosTestSuite) TestAAAPingMonitor() {
 	suite.SetupConnection()
+	const N = 10000
+	for i := 0; i < N; i++ {
+		// mon id that should work with vstart.sh
+		reply, err := suite.conn.PingMonitor("a")
+		assert.NoError(suite.T(), err)
+		assert.NotEqual(suite.T(), reply, "")
 
-	// mon id that should work with vstart.sh
-	reply, err := suite.conn.PingMonitor("a")
-	assert.NoError(suite.T(), err)
-	assert.NotEqual(suite.T(), reply, "")
-
-	// invalid mon id
-	reply, err = suite.conn.PingMonitor("charlieB")
-	assert.Error(suite.T(), err)
-	assert.Equal(suite.T(), reply, "")
+		// invalid mon id
+		reply, err = suite.conn.PingMonitor("charlieB")
+		assert.Error(suite.T(), err)
+		assert.Equal(suite.T(), reply, "")
+	}
 }
 
 func (suite *RadosTestSuite) TestWaitForLatestOSDMap() {
