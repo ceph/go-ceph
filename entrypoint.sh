@@ -257,8 +257,21 @@ test_pkg() {
         testargs+=("-memprofile" "${pkg}.mem.out")
     fi
 
-    show go test -v "${testargs[@]}" "./${pkg}"
+    ulimit -c unlimited
+    testbin="./${pkg}/${pkg##*/}.test"
+    show go test -v "${testargs[@]}" -o "${testbin}" "./${pkg}"
     ret=$(($?+ret))
+    if ls "${pkg}"/core.* >/dev/null 2>&1; then
+        echo "Found coredump"
+        sleep 5
+        coredump="./${pkg}/${pkg##*/}.core"
+        mv "${pkg}"/core.* "${coredump}"
+        chmod 644 "${coredump}"
+        echo "set auto-load safe-path /" >>/root/.gdbinit
+        gdb "${testbin}" "${coredump}" -ex bt -ex q | cat
+        mkdir -p "${RESULTS_DIR}"
+        mv "${testbin}" "${coredump}" "${RESULTS_DIR}/"
+    fi
     grep -v "^mode: count" "${pkg}.cover.out" >> "cover.out"
     return ${ret}
 }

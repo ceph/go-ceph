@@ -16,7 +16,8 @@ RUN true && \
     yum install -y \
     git wget curl make \
     /usr/bin/cc /usr/bin/c++ \
-    "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" && \
+    "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" \
+    gdb libcephfs2-debuginfo librados2-debuginfo librbd1-debuginfo && \
     yum clean all && \
     true
 

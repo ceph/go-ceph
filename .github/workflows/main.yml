@@ -76,11 +76,15 @@ jobs:
           go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
     - uses: actions/checkout@v4
+    - name: Set cores to get stored as "core"
+      run:  sudo bash -c 'echo "core" > /proc/sys/kernel/core_pattern'
     - name: Run tests
       run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results"
     - name: Clean up test containers
+      if: always()
       run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"
     - name: Archive test results
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: "go-ceph-results-${{ matrix.ceph_version }}-${{ matrix.go_version }}"
@@ -88,6 +92,7 @@ jobs:
           _results/
         retention-days: 30
     - name: Check API Versions and Aging
+      if: always()
       run: |
         if [ -f _results/implements.json ]; then
           ./contrib/apiage.py
