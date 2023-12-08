@@ -39,10 +39,15 @@ MON_NAME="a"
 MGR_NAME="x"
 MIRROR_ID="m"
 RGW_ID="r"
-S3_ACCESS_KEY=2262XNX11FZRR44XWIRD
-S3_SECRET_KEY=rmtuS1Uj1bIC08QFYGW18GfSHAbkPqdsuYynNudw
-HOST_IP=$(getent ahostsv4 "${HOSTNAME}" | grep STREAM | head -n 1 | awk '{print $1}')
 
+# Following are examples for S3 credentials taken from official AWS docs:
+# https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html#access-keys-and-secret-access-keys
+# These does not represent real/valid credentials for AWS in any form.
+# They are exclusively used for testing S3 compatible API from Ceph RGW.
+S3_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE
+S3_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+HOST_IP=$(getent ahostsv4 "${HOSTNAME}" | grep STREAM | head -n 1 | awk '{print $1}')
 FSID="$(uuidgen)"
 export CEPH_CONF=${DIR}/ceph.conf
 

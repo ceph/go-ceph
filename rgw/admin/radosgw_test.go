@@ -114,8 +114,8 @@ func (s *S3Agent) createBucket(name string) error {
 }
 
 func (suite *RadosGWTestSuite) SetupConnection() {
-	suite.accessKey = "2262XNX11FZRR44XWIRD"
-	suite.secretKey = "rmtuS1Uj1bIC08QFYGW18GfSHAbkPqdsuYynNudw"
+	suite.accessKey = "AKIAIOSFODNN7EXAMPLE"
+	suite.secretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	hostname := os.Getenv("HOSTNAME")
 	endpoint := hostname
 	if hostname != "test_ceph_aio" {
