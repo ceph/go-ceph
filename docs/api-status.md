@@ -20,7 +20,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Image.Resize2 | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.Resize2 | v0.25.0 | v0.27.0 | 
 
 ### Deprecated APIs
 
@@ -40,7 +40,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.GetInfo | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.GetInfo | v0.25.0 | v0.27.0 | 
 
 ## Package: common/admin/manager
 
