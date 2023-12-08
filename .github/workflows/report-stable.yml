@@ -32,6 +32,3 @@ jobs:
       with:
         filename: _results/issue.md
         update_existing: true
-
-
-  # TODO: teach this thing how to file an issue automatically
