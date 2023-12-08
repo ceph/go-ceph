@@ -3,7 +3,7 @@
 You must create an admin user like so:
 
 ```
-radosgw-admin user create --uid admin --display-name "Admin User" --caps "buckets=*;users=*;usage=read;metadata=read;zone=read --access-key=2262XNX11FZRR44XWIRD --secret-key=rmtuS1Uj1bIC08QFYGW18GfSHAbkPqdsuYynNudw
+radosgw-admin user create --uid admin --display-name "Admin User" --caps "buckets=*;users=*;usage=read;metadata=read;zone=read --access-key=AKIAIOSFODNN7EXAMPLE --secret-key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 ```
 
 Then use the `access_key` and `secret_key` for authentication.
@@ -19,7 +19,7 @@ import (
 
 func main() {
     // Generate a connection object
-    co, err := admin.New("http://192.168.1.1", "2262XNX11FZRR44XWIRD", "rmtuS1Uj1bIC08QFYGW18GfSHAbkPqdsuYynNudw", nil)
+    co, err := admin.New("http://192.168.1.1", "AKIAIOSFODNN7EXAMPLE", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", nil)
     if err != nil {
         panic(err)
     }

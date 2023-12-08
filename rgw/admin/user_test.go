@@ -45,8 +45,8 @@ var (
   "keys": [
     {
       "user": "dashboard-admin",
-      "access_key": "4WD1FGM5PXKLC97YC0SZ",
-      "secret_key": "YSaT5bEcJTjBJCDG5yvr2NhGQ9xzoTIg8B1gQHa3"
+      "access_key": "AKIAIOSFODNN7EXAMPLE",
+      "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     }
   ],
   "swift_keys": [
