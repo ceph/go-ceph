@@ -8,7 +8,11 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: cephfs/admin
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+FSAdmin.FSQuiesce | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rados
 

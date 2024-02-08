@@ -614,7 +614,14 @@
       }
     ],
     "deprecated_api": [],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "FSAdmin.FSQuiesce",
+        "comment": "FSQuiesce will quiesce the specified subvolumes in a volume.\nQuiescing a fs will prevent new writes to the subvolumes.\nSimilar To:\n\nceph fs quiesce <volume>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rados": {
     "stable_api": [
