@@ -41,8 +41,8 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 API.GetInfo | v0.25.0 | v0.27.0 | 
-API.GetBucketQuota | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-API.SetBucketQuota | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.GetBucketQuota | v0.26.0 | v0.28.0 | 
+API.SetBucketQuota | v0.26.0 | v0.28.0 | 
 
 ## Package: common/admin/manager
 
