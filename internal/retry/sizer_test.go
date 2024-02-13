@@ -60,7 +60,7 @@ func TestSizer(t *testing.T) {
 	t.Run("exceedsMax", func(t *testing.T) {
 		var tries int
 		var err error
-		WithSizes(1, 1024, func(size int) Hint {
+		WithSizes(1, 1024, func(_ int) Hint {
 			tries++
 			err = errors.New("foo")
 			return DoubleSize

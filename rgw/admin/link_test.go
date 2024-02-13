@@ -13,7 +13,7 @@ func (suite *RadosGWTestSuite) TestLink() {
 	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
 
-	suite.T().Run("create test user1", func(t *testing.T) {
+	suite.T().Run("create test user1", func(_ *testing.T) {
 		user, err := co.CreateUser(context.Background(), User{ID: "test-user1", DisplayName: "test-user1", Email: "test1@example.com"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "test-user1", user.ID)
@@ -28,7 +28,7 @@ func (suite *RadosGWTestSuite) TestLink() {
 		assert.NoError(t, err)
 	})
 
-	suite.T().Run("create test user2", func(t *testing.T) {
+	suite.T().Run("create test user2", func(_ *testing.T) {
 		user, err := co.CreateUser(context.Background(), User{ID: "test-user2", DisplayName: "test-user2", Email: "test2@example.com"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "test-user2", user.ID)
@@ -62,17 +62,17 @@ func (suite *RadosGWTestSuite) TestLink() {
 		assert.NoError(t, err)
 	})
 
-	suite.T().Run("remove bucket", func(t *testing.T) {
+	suite.T().Run("remove bucket", func(_ *testing.T) {
 		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("delete test user1", func(t *testing.T) {
+	suite.T().Run("delete test user1", func(_ *testing.T) {
 		err := co.RemoveUser(context.Background(), User{ID: "test-user1"})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("delete test user2", func(t *testing.T) {
+	suite.T().Run("delete test user2", func(_ *testing.T) {
 		err := co.RemoveUser(context.Background(), User{ID: "test-user2"})
 		assert.NoError(suite.T(), err)
 	})

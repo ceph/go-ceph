@@ -93,26 +93,26 @@ func (suite *RadosGWTestSuite) TestUser() {
 	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
 
-	suite.T().Run("fail to create user since no UID provided", func(t *testing.T) {
+	suite.T().Run("fail to create user since no UID provided", func(_ *testing.T) {
 		_, err = co.CreateUser(context.Background(), User{Email: "leseb@example.com"})
 		assert.Error(suite.T(), err)
 		assert.EqualError(suite.T(), err, errMissingUserID.Error())
 	})
 
-	suite.T().Run("fail to create user since no no display name provided", func(t *testing.T) {
+	suite.T().Run("fail to create user since no no display name provided", func(_ *testing.T) {
 		_, err = co.CreateUser(context.Background(), User{ID: "leseb", Email: "leseb@example.com"})
 		assert.Error(suite.T(), err)
 		assert.EqualError(suite.T(), err, errMissingUserDisplayName.Error())
 	})
 
-	suite.T().Run("user creation success", func(t *testing.T) {
+	suite.T().Run("user creation success", func(_ *testing.T) {
 		usercaps := "users=read"
 		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 	})
 
-	suite.T().Run("get user leseb by uid", func(t *testing.T) {
+	suite.T().Run("get user leseb by uid", func(_ *testing.T) {
 		user, err := co.GetUser(context.Background(), User{ID: "leseb"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
@@ -121,20 +121,20 @@ func (suite *RadosGWTestSuite) TestUser() {
 		os.Setenv("LESEB_ACCESS_KEY", user.Keys[0].AccessKey)
 	})
 
-	suite.T().Run("get user leseb by key", func(t *testing.T) {
+	suite.T().Run("get user leseb by key", func(_ *testing.T) {
 		user, err := co.GetUser(context.Background(), User{Keys: []UserKeySpec{{AccessKey: os.Getenv("LESEB_ACCESS_KEY")}}})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 		os.Unsetenv("LESEB_ACCESS_KEY")
 	})
 
-	suite.T().Run("modify user email", func(t *testing.T) {
+	suite.T().Run("modify user email", func(_ *testing.T) {
 		user, err := co.ModifyUser(context.Background(), User{ID: "leseb", Email: "leseb@leseb.com"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@leseb.com", user.Email)
 	})
 
-	suite.T().Run("modify user max bucket", func(t *testing.T) {
+	suite.T().Run("modify user max bucket", func(_ *testing.T) {
 		maxBuckets := -1
 		user, err := co.ModifyUser(context.Background(), User{ID: "leseb", MaxBuckets: &maxBuckets})
 		assert.NoError(suite.T(), err)
@@ -142,39 +142,39 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), -1, *user.MaxBuckets)
 	})
 
-	suite.T().Run("user already exists", func(t *testing.T) {
+	suite.T().Run("user already exists", func(_ *testing.T) {
 		_, err := co.CreateUser(context.Background(), User{ID: "admin", DisplayName: "Admin user"})
 		assert.Error(suite.T(), err)
 		assert.True(suite.T(), errors.Is(err, ErrUserExists), fmt.Sprintf("%+v", err))
 	})
 
-	suite.T().Run("get users", func(t *testing.T) {
+	suite.T().Run("get users", func(_ *testing.T) {
 		users, err := co.GetUsers(context.Background())
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 2, len(*users))
 	})
 
-	suite.T().Run("set user quota", func(t *testing.T) {
+	suite.T().Run("set user quota", func(_ *testing.T) {
 		quotaEnable := true
 		maxObjects := int64(100)
 		err := co.SetUserQuota(context.Background(), QuotaSpec{QuotaType: "user", UID: "leseb", MaxObjects: &maxObjects, Enabled: &quotaEnable})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("get user quota", func(t *testing.T) {
+	suite.T().Run("get user quota", func(_ *testing.T) {
 		q, err := co.GetUserQuota(context.Background(), QuotaSpec{QuotaType: "user", UID: "leseb"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), int64(100), *q.MaxObjects)
 	})
 
-	suite.T().Run("get user stat", func(t *testing.T) {
+	suite.T().Run("get user stat", func(_ *testing.T) {
 		statEnable := true
 		user, err := co.GetUser(context.Background(), User{ID: "leseb", GenerateStat: &statEnable})
 		assert.NoError(suite.T(), err)
 		assert.NotNil(suite.T(), user.Stat.Size)
 	})
 
-	suite.T().Run("create a subuser", func(t *testing.T) {
+	suite.T().Run("create a subuser", func(_ *testing.T) {
 		err := co.CreateSubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo", Access: SubuserAccessReadWrite})
 		assert.NoError(suite.T(), err)
 
@@ -187,7 +187,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 		}
 	})
 
-	suite.T().Run("modify a subuser", func(t *testing.T) {
+	suite.T().Run("modify a subuser", func(_ *testing.T) {
 		err := co.ModifySubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo", Access: SubuserAccessRead})
 		assert.NoError(suite.T(), err)
 
@@ -199,7 +199,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 		}
 	})
 
-	suite.T().Run("remove a subuser", func(t *testing.T) {
+	suite.T().Run("remove a subuser", func(_ *testing.T) {
 		err := co.RemoveSubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo"})
 		assert.NoError(suite.T(), err)
 
@@ -210,7 +210,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 		}
 	})
 
-	suite.T().Run("remove user", func(t *testing.T) {
+	suite.T().Run("remove user", func(_ *testing.T) {
 		err = co.RemoveUser(context.Background(), User{ID: "leseb"})
 		assert.NoError(suite.T(), err)
 	})

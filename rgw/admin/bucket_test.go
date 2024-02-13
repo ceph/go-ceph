@@ -21,46 +21,46 @@ func (suite *RadosGWTestSuite) TestBucket() {
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
 
-	suite.T().Run("list buckets", func(t *testing.T) {
+	suite.T().Run("list buckets", func(_ *testing.T) {
 		buckets, err := co.ListBuckets(context.Background())
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 1, len(buckets))
 	})
 
-	suite.T().Run("info non-existing bucket", func(t *testing.T) {
+	suite.T().Run("info non-existing bucket", func(_ *testing.T) {
 		_, err := co.GetBucketInfo(context.Background(), Bucket{Bucket: "foo"})
 		assert.Error(suite.T(), err)
 		assert.True(suite.T(), errors.Is(err, ErrNoSuchBucket), err)
 	})
 
-	suite.T().Run("info existing bucket", func(t *testing.T) {
+	suite.T().Run("info existing bucket", func(_ *testing.T) {
 		_, err := co.GetBucketInfo(context.Background(), Bucket{Bucket: suite.bucketTestName})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("get policy non-existing bucket", func(t *testing.T) {
+	suite.T().Run("get policy non-existing bucket", func(_ *testing.T) {
 		_, err := co.GetBucketPolicy(context.Background(), Bucket{Bucket: "foo"})
 		assert.Error(suite.T(), err)
 		assert.True(suite.T(), errors.Is(err, ErrNoSuchKey), err)
 	})
 
-	suite.T().Run("get policy existing bucket", func(t *testing.T) {
+	suite.T().Run("get policy existing bucket", func(_ *testing.T) {
 		_, err := co.GetBucketPolicy(context.Background(), Bucket{Bucket: suite.bucketTestName})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("remove bucket", func(t *testing.T) {
+	suite.T().Run("remove bucket", func(_ *testing.T) {
 		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("list bucket is now zero", func(t *testing.T) {
+	suite.T().Run("list bucket is now zero", func(_ *testing.T) {
 		buckets, err := co.ListBuckets(context.Background())
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 0, len(buckets))
 	})
 
-	suite.T().Run("remove non-existing bucket", func(t *testing.T) {
+	suite.T().Run("remove non-existing bucket", func(_ *testing.T) {
 		err := co.RemoveBucket(context.Background(), Bucket{Bucket: "foo"})
 		assert.Error(suite.T(), err)
 		if util.CurrentCephVersion() <= util.CephOctopus {

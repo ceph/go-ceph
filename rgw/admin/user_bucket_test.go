@@ -20,31 +20,31 @@ func (suite *RadosGWTestSuite) TestUserBucket() {
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
 
-	suite.T().Run("list empty user's buckets", func(t *testing.T) {
+	suite.T().Run("list empty user's buckets", func(_ *testing.T) {
 		_, err := co.ListUsersBuckets(context.Background(), "")
 		assert.Error(suite.T(), err)
 		assert.True(suite.T(), errors.Is(err, errMissingUserID), err)
 	})
 
-	suite.T().Run("list user's buckets", func(t *testing.T) {
+	suite.T().Run("list user's buckets", func(_ *testing.T) {
 		buckets, err := co.ListUsersBuckets(context.Background(), "admin")
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 1, len(buckets))
 	})
 
-	suite.T().Run("list unknown user's buckets", func(t *testing.T) {
+	suite.T().Run("list unknown user's buckets", func(_ *testing.T) {
 		buckets, err := co.ListUsersBuckets(context.Background(), "foo")
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 0, len(buckets))
 	})
 
-	suite.T().Run("list empty user's buckets with stat", func(t *testing.T) {
+	suite.T().Run("list empty user's buckets with stat", func(_ *testing.T) {
 		_, err := co.ListUsersBucketsWithStat(context.Background(), "")
 		assert.Error(suite.T(), err)
 		assert.True(suite.T(), errors.Is(err, errMissingUserID), err)
 	})
 
-	suite.T().Run("list user's buckets with stat", func(t *testing.T) {
+	suite.T().Run("list user's buckets with stat", func(_ *testing.T) {
 		buckets, err := co.ListUsersBucketsWithStat(context.Background(), "admin")
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 1, len(buckets))
@@ -55,7 +55,7 @@ func (suite *RadosGWTestSuite) TestUserBucket() {
 		assert.NotNil(suite.T(), b.BucketQuota.MaxSize)
 	})
 
-	suite.T().Run("list unknown user's buckets with stat", func(t *testing.T) {
+	suite.T().Run("list unknown user's buckets with stat", func(_ *testing.T) {
 		buckets, err := co.ListUsersBucketsWithStat(context.Background(), "foo")
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 0, len(buckets))

@@ -2,9 +2,10 @@ package admin
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func (suite *RadosGWTestSuite) TestListBucketsWithStat() {
@@ -18,7 +19,7 @@ func (suite *RadosGWTestSuite) TestListBucketsWithStat() {
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
 
-	suite.T().Run("list buckets with stat", func(t *testing.T) {
+	suite.T().Run("list buckets with stat", func(_ *testing.T) {
 		buckets, err := co.ListBucketsWithStat(context.Background())
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), 1, len(buckets))

@@ -7,7 +7,7 @@ import (
 )
 
 func TestCommandInput(t *testing.T) {
-	t.Run("newAndFree", func(t *testing.T) {
+	t.Run("newAndFree", func(_ *testing.T) {
 		ci := NewCommandInput(
 			[][]byte{[]byte("foobar")},
 			nil)

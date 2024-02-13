@@ -1054,7 +1054,7 @@ func (suite *RadosTestSuite) TestListAcrossNamespaces() {
 	// count objects in pool
 	suite.ioctx.SetNamespace(AllNamespaces)
 	allFoundObjects := 0
-	err = suite.ioctx.ListObjects(func(oid string) {
+	err = suite.ioctx.ListObjects(func(_ string) {
 		allFoundObjects++
 	})
 	assert.NoError(suite.T(), err)
@@ -1289,14 +1289,14 @@ func (suite *RadosTestSuite) TestSetGetNamespace() {
 		assert.Equal(t, "space1", ns)
 	})
 
-	suite.T().Run("allNamespaces", func(t *testing.T) {
+	suite.T().Run("allNamespaces", func(_ *testing.T) {
 		suite.ioctx.SetNamespace(AllNamespaces)
 		ns, err := suite.ioctx.GetNamespace()
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), AllNamespaces, ns)
 	})
 
-	suite.T().Run("invalidIoctx", func(t *testing.T) {
+	suite.T().Run("invalidIoctx", func(_ *testing.T) {
 		i := &IOContext{}
 		ns, err := i.GetNamespace()
 		assert.Error(suite.T(), err)

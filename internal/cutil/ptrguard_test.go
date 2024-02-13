@@ -40,7 +40,7 @@ func TestPtrGuard(t *testing.T) {
 		var pgDone, uDone bool
 		goPtr := func(b *bool) unsafe.Pointer {
 			s := "ok"
-			runtime.SetFinalizer(&s, func(p *string) { *b = true })
+			runtime.SetFinalizer(&s, func(_ *string) { *b = true })
 			return unsafe.Pointer(&s)
 		}
 		cPtr := Malloc(PtrSize)

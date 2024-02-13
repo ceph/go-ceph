@@ -25,7 +25,7 @@ func TestUserPerm(t *testing.T) {
 		uperm.Destroy()
 		uperm.Destroy()
 	})
-	t.Run("tryForceGc", func(t *testing.T) {
+	t.Run("tryForceGc", func(_ *testing.T) {
 		func() {
 			uperm := NewUserPerm(0, 0, nil)
 			_ = uperm
