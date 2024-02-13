@@ -26,7 +26,7 @@ type User struct {
 	UserQuota           QuotaSpec      `json:"user_quota"`
 	TempURLKeys         []interface{}  `json:"temp_url_keys"`
 	Type                string         `json:"type"`
-	MfaIDs              []interface{}  `json:"mfa_ids"`
+	MfaIds              []interface{}  `json:"mfa_ids"` //revive:disable-line:var-naming old-yet-exported public api
 	KeyType             string         `url:"key-type"`
 	Tenant              string         `url:"tenant"`
 	GenerateKey         *bool          `url:"generate-key"`
@@ -120,7 +120,6 @@ func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 
 	//  valid parameters not supported by go-ceph: sync
 	body, err := api.call(ctx, http.MethodGet, "/user", valueToURLParams(user, []string{"uid", "access-key", "stats"}))
-
 	if err != nil {
 		return User{}, err
 	}
