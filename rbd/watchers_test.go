@@ -143,7 +143,7 @@ func TestWatch(t *testing.T) {
 		err = image.Close()
 		require.NoError(t, err)
 
-		_, err = image.UpdateWatch(func(d interface{}) {
+		_, err = image.UpdateWatch(func(_ interface{}) {
 		}, nil)
 		assert.Equal(t, ErrImageNotOpen, err)
 	})
@@ -158,7 +158,7 @@ func TestWatch(t *testing.T) {
 		}()
 
 		cc := 0
-		w, err := image.UpdateWatch(func(d interface{}) {
+		w, err := image.UpdateWatch(func(_ interface{}) {
 			cc++
 		}, nil)
 		assert.NoError(t, err)
@@ -232,7 +232,7 @@ func TestWatchMultiChannels(t *testing.T) {
 		defer func() {
 			assert.NoError(t, img.Close())
 		}()
-		w, err := img.UpdateWatch(func(d interface{}) {
+		w, err := img.UpdateWatch(func(_ interface{}) {
 			mon <- n
 		}, nil)
 		require.NoError(t, err)

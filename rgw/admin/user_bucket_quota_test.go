@@ -23,25 +23,25 @@ func (suite *RadosGWTestSuite) TestUserBucketQuota() {
 		assert.NoError(suite.T(), err)
 	}()
 
-	suite.T().Run("set bucket quota without uid", func(t *testing.T) {
+	suite.T().Run("set bucket quota without uid", func(_ *testing.T) {
 		err := co.SetBucketQuota(context.Background(), QuotaSpec{})
 		assert.Error(suite.T(), err)
 		assert.EqualError(suite.T(), err, errMissingUserID.Error())
 	})
 
-	suite.T().Run("set bucket quota", func(t *testing.T) {
+	suite.T().Run("set bucket quota", func(_ *testing.T) {
 		maxObjects := int64(101)
 		err := co.SetBucketQuota(context.Background(), QuotaSpec{UID: "leseb", MaxObjects: &maxObjects})
 		assert.NoError(suite.T(), err)
 	})
 
-	suite.T().Run("get bucket quota without uid", func(t *testing.T) {
+	suite.T().Run("get bucket quota without uid", func(_ *testing.T) {
 		_, err := co.GetBucketQuota(context.Background(), QuotaSpec{})
 		assert.Error(suite.T(), err)
 		assert.EqualError(suite.T(), err, errMissingUserID.Error())
 	})
 
-	suite.T().Run("get bucket quota", func(t *testing.T) {
+	suite.T().Run("get bucket quota", func(_ *testing.T) {
 		q, err := co.GetBucketQuota(context.Background(), QuotaSpec{UID: "leseb"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), int64(101), *q.MaxObjects)

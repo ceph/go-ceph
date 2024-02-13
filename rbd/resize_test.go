@@ -11,7 +11,7 @@ import (
 
 func TestImageResize2(t *testing.T) {
 	cc := 0
-	cb := func(offset, total uint64, v interface{}) int {
+	cb := func(_, total uint64, v interface{}) int {
 		cc++
 		val := v.(int)
 		assert.Equal(t, 0, val)

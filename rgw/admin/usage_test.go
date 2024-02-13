@@ -20,7 +20,7 @@ func (suite *RadosGWTestSuite) TestUsage() {
 		assert.NotEmpty(t, usage)
 	})
 
-	suite.T().Run("trim usage", func(t *testing.T) {
+	suite.T().Run("trim usage", func(_ *testing.T) {
 		pFalse := false
 		_, err := co.GetUsage(context.Background(), Usage{RemoveAll: &pFalse})
 		assert.NoError(suite.T(), err)

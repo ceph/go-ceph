@@ -34,7 +34,7 @@ func TestSparsifyWithProgress(t *testing.T) {
 		defer func() { assert.NoError(t, img.Close()) }()
 
 		cc := 0
-		cb := func(offset, total uint64, v interface{}) int {
+		cb := func(_, total uint64, v interface{}) int {
 			cc++
 			val := v.(int)
 			assert.Equal(t, 0, val)
@@ -53,7 +53,7 @@ func TestSparsifyWithProgress(t *testing.T) {
 		defer func() { assert.NoError(t, img.Close()) }()
 
 		cc := 0
-		cb := func(offset, total uint64, v interface{}) int {
+		cb := func(_, total uint64, v interface{}) int {
 			cc++
 			val := v.(int)
 			assert.Equal(t, 0, val)
@@ -71,7 +71,7 @@ func TestSparsifyWithProgress(t *testing.T) {
 		assert.NoError(t, img.Close())
 
 		cc := 0
-		cb := func(offset, total uint64, v interface{}) int {
+		cb := func(_, total uint64, v interface{}) int {
 			cc++
 			val := v.(int)
 			assert.Equal(t, 0, val)

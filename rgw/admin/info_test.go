@@ -44,7 +44,7 @@ func (suite *RadosGWTestSuite) TestGetInfo() {
 	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
 
-	suite.T().Run("test get rgw cluster/endpoint information", func(t *testing.T) {
+	suite.T().Run("test get rgw cluster/endpoint information", func(_ *testing.T) {
 		info, err := co.GetInfo(context.Background())
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "rados", info.InfoSpec.StorageBackends[0].Name)

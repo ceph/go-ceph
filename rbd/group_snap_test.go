@@ -186,7 +186,7 @@ func TestGroupSnapshots(t *testing.T) {
 		assert.NoError(t, err)
 
 		cc := 0
-		cb := func(offset, total uint64, v interface{}) int {
+		cb := func(_, total uint64, v interface{}) int {
 			cc++
 			val := v.(int)
 			assert.Equal(t, 0, val)
@@ -234,7 +234,7 @@ func TestGroupSnapshots(t *testing.T) {
 			GroupSnapRollback(nil, gname, "foo")
 		})
 		assert.Panics(t, func() {
-			cb := func(o, t uint64, v interface{}) int { return 0 }
+			cb := func(_, _ uint64, _ interface{}) int { return 0 }
 			GroupSnapRollbackWithProgress(nil, gname, "foo", cb, nil)
 		})
 	})

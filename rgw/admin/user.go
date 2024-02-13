@@ -26,7 +26,7 @@ type User struct {
 	UserQuota           QuotaSpec      `json:"user_quota"`
 	TempURLKeys         []interface{}  `json:"temp_url_keys"`
 	Type                string         `json:"type"`
-	MfaIds              []interface{}  `json:"mfa_ids"`
+	MfaIDs              []interface{}  `json:"mfa_ids"`
 	KeyType             string         `url:"key-type"`
 	Tenant              string         `url:"tenant"`
 	GenerateKey         *bool          `url:"generate-key"`

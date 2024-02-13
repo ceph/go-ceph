@@ -46,7 +46,7 @@ func TestDiffIterate(t *testing.T) {
 			DiffIterateConfig{
 				Offset: 0,
 				Length: uint64(1 << 22),
-				Callback: func(o, l uint64, e int, x interface{}) int {
+				Callback: func(_, _ uint64, _ int, _ interface{}) int {
 					gotCalled++
 					return 0
 				},
@@ -111,7 +111,7 @@ func testDiffIterateBasic(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -127,7 +127,7 @@ func testDiffIterateBasic(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -146,7 +146,7 @@ func testDiffIterateBasic(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -167,7 +167,7 @@ func testDiffIterateBasic(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -190,7 +190,7 @@ func testDiffIterateBasic(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -256,7 +256,7 @@ func testDiffIterateTwoAtOnce(t *testing.T, ioctx *rados.IOContext) {
 			DiffIterateConfig{
 				Offset: 0,
 				Length: isize,
-				Callback: func(o, l uint64, e int, x interface{}) int {
+				Callback: func(o, l uint64, _ int, _ interface{}) int {
 					time.Sleep(8 * time.Millisecond)
 					calls = append(calls, diResult{offset: o, length: l})
 					return 0
@@ -326,7 +326,7 @@ func testDiffIterateEarlyExit(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				if o > 1 {
 					return -5
 				}
@@ -372,7 +372,7 @@ func testDiffIterateSnapshot(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -389,7 +389,7 @@ func testDiffIterateSnapshot(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -411,7 +411,7 @@ func testDiffIterateSnapshot(t *testing.T, ioctx *rados.IOContext) {
 			SnapName: "ss1",
 			Offset:   0,
 			Length:   isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -438,7 +438,7 @@ func testDiffIterateSnapshot(t *testing.T, ioctx *rados.IOContext) {
 			SnapName: "ss1",
 			Offset:   0,
 			Length:   isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
 				calls = append(calls, diResult{offset: o, length: l})
 				return 0
 			},
@@ -481,7 +481,7 @@ func testDiffIterateCallbackData(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, x interface{}) int {
 				if v, ok := x.(int); ok {
 					assert.EqualValues(t, 77, v)
 				} else {
@@ -503,7 +503,7 @@ func testDiffIterateCallbackData(t *testing.T, ioctx *rados.IOContext) {
 		DiffIterateConfig{
 			Offset: 0,
 			Length: isize,
-			Callback: func(o, l uint64, e int, x interface{}) int {
+			Callback: func(o, l uint64, _ int, x interface{}) int {
 				if v, ok := x.(string); ok {
 					assert.EqualValues(t, "bob", v)
 				} else {
