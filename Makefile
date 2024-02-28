@@ -32,6 +32,9 @@ endif
 ifeq ($(CEPH_VERSION),reef)
 	CEPH_TAG := v18
 endif
+ifeq ($(CEPH_VERSION),squid)
+	CEPH_TAG := v19
+endif
 # pre-<codename> indicates we want to consume pre-release versions of ceph from
 # the ceph ci. This way we can start testing on ceph versions before they hit
 # quay.io/ceph/ceph
@@ -52,6 +55,12 @@ ifeq ($(CEPH_VERSION),pre-reef)
 	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := reef
 	BUILD_TAGS := reef,ceph_pre_reef
+endif
+ifeq ($(CEPH_VERSION),pre-squid)
+	CEPH_TAG := squid
+	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	GO_CEPH_VERSION := squid
+	BUILD_TAGS := squid,ceph_pre_squid
 endif
 ifeq ($(CEPH_VERSION),main)
 	CEPH_TAG := main
