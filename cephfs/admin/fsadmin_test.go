@@ -23,12 +23,13 @@ const (
 	cephPacfic   = "pacific"
 	cephQuincy   = "quincy"
 	cephReef     = "reef"
+	cephSquid    = "squid"
 	cephMain     = "main"
 )
 
 func init() {
 	switch vname := os.Getenv("CEPH_VERSION"); vname {
-	case cephNautilus, cephOctopus, cephPacfic, cephQuincy, cephReef, cephMain:
+	case cephNautilus, cephOctopus, cephPacfic, cephQuincy, cephReef, cephSquid, cephMain:
 		serverVersion = vname
 	}
 }
