@@ -21,7 +21,7 @@ RUN true && \
     yum clean all && \
     true
 
-ARG GO_VERSION=1.19.5
+ARG GO_VERSION=1.21.8
 ENV GO_VERSION=${GO_VERSION}
 ARG GOARCH
 ENV GOARCH=${GOARCH}
