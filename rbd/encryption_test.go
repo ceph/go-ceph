@@ -128,3 +128,69 @@ func TestEncryptionLoad(t *testing.T) {
 	conn.DeletePool(poolname)
 	conn.Shutdown()
 }
+
+func TestEncryptedResize(t *testing.T) {
+	conn := radosConnect(t)
+	defer conn.Shutdown()
+
+	poolname := GetUUID()
+	err := conn.MakePool(poolname)
+	assert.NoError(t, err)
+	defer conn.DeletePool(poolname)
+
+	imageName := "resizeme"
+	imageSize := uint64(50) * 1024 * 1024
+	encOpts := EncryptionOptionsLUKS2{
+		Alg:        EncryptionAlgorithmAES256,
+		Passphrase: []byte("test-password"),
+	}
+
+	t.Run("create", func(t *testing.T) {
+		ioctx, err := conn.OpenIOContext(poolname)
+		require.NoError(t, err)
+		defer ioctx.Destroy()
+
+		err = CreateImage(ioctx, imageName, imageSize, NewRbdImageOptions())
+		require.NoError(t, err)
+
+		image, err := OpenImage(ioctx, imageName, NoSnapshot)
+		require.NoError(t, err)
+		defer image.Close()
+
+		s, err := image.GetSize()
+		require.NoError(t, err)
+		t.Logf("image size before encryption: %d", s)
+
+		err = image.EncryptionFormat(encOpts)
+		require.NoError(t, err)
+
+		s, err = image.GetSize()
+		require.NoError(t, err)
+		t.Logf("image size after encryption: %d", s)
+	})
+
+	t.Run("resize", func(t *testing.T) {
+		ioctx, err := conn.OpenIOContext(poolname)
+		require.NoError(t, err)
+		defer ioctx.Destroy()
+
+		image, err := OpenImage(ioctx, imageName, NoSnapshot)
+		require.NoError(t, err)
+		defer image.Close()
+
+		err = image.EncryptionLoad(encOpts)
+		assert.NoError(t, err)
+
+		s, err := image.GetSize()
+		require.NoError(t, err)
+		t.Logf("image size before resize: %d", s)
+		assert.NotEqual(t, s, imageSize)
+
+		err = image.Resize(imageSize)
+		assert.NoError(t, err)
+
+		s, err = image.GetSize()
+		require.NoError(t, err)
+		t.Logf("image size after resize of encrypted image: %d", s)
+	})
+}
