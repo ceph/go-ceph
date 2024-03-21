@@ -4,7 +4,10 @@ package rbd
 
 /*
 #cgo LDFLAGS: -lrbd
+#ifndef _POSIX_C_SOURCE
+// possibly defined in /usr/include/features.h already
 #define _POSIX_C_SOURCE 200112L
+#endif
 #undef _GNU_SOURCE
 #include <errno.h>
 #include <stdlib.h>
