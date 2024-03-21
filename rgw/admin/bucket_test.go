@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/ceph/go-ceph/internal/util"
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,7 @@ func (suite *RadosGWTestSuite) TestBucket() {
 	s3, err := newS3Agent(suite.accessKey, suite.secretKey, suite.endpoint, true)
 	assert.NoError(suite.T(), err)
 
+	beforeCreate := time.Now()
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
 
@@ -36,6 +38,13 @@ func (suite *RadosGWTestSuite) TestBucket() {
 	suite.T().Run("info existing bucket", func(_ *testing.T) {
 		_, err := co.GetBucketInfo(context.Background(), Bucket{Bucket: suite.bucketTestName})
 		assert.NoError(suite.T(), err)
+	})
+
+	suite.T().Run("existing bucket has valid creation date", func(_ *testing.T) {
+		b, err := co.GetBucketInfo(context.Background(), Bucket{Bucket: suite.bucketTestName})
+		assert.NoError(suite.T(), err)
+		assert.NotNil(suite.T(), b.CreationTime)
+		assert.WithinDuration(suite.T(), beforeCreate, *b.CreationTime, time.Minute)
 	})
 
 	suite.T().Run("get policy non-existing bucket", func(_ *testing.T) {
