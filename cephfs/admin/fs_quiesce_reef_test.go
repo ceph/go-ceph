@@ -1,4 +1,4 @@
-//go:build (nautilus || octopus || pacific || quincy || reef || squid || ceph_pre_squid) && ceph_preview
+//go:build (nautilus || octopus || pacific || quincy || reef) && ceph_preview
 
 package admin
 
