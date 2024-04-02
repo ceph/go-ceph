@@ -64,6 +64,12 @@ func TestGetFeaturesInMimic(t *testing.T) {
 	assert.Equal(t, f, FeatureOperations)
 }
 
+func TestGetFeaturesInNautilus(t *testing.T) {
+	f, ok := featureNameToBit[FeatureNameMigrating]
+	assert.True(t, ok)
+	assert.Equal(t, f, FeatureMigrating)
+}
+
 func TestFeatureSet(t *testing.T) {
 	fsBits := FeatureSet(FeatureExclusiveLock | FeatureDeepFlatten)
 	fsNames := FeatureSetFromNames([]string{FeatureNameExclusiveLock, FeatureNameDeepFlatten})
