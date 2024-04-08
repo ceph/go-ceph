@@ -618,8 +618,8 @@
       {
         "name": "FSAdmin.FSQuiesce",
         "comment": "FSQuiesce will quiesce the specified subvolumes in a volume.\nQuiescing a fs will prevent new writes to the subvolumes.\nSimilar To:\n\nceph fs quiesce <volume>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.27.0",
+        "expected_stable_version": "v0.29.0"
       }
     ]
   },
@@ -1935,8 +1935,8 @@
       {
         "name": "Image.GetSnapGroupNamespace",
         "comment": "GetSnapGroupNamespace returns the SnapGroupNamespace of the snapshot which\nis part of a group. The caller should make sure that the snapshot ID passed\nin this function belongs to a snapshot that was taken as part of a group\nsnapshot.\n\nImplements:\n\n\t\tint rbd_snap_get_group_namespace(rbd_image_t image, uint64_t snap_id,\n\t                                      rbd_snap_group_namespace_t *group_snap,\n\t                                      size_t group_snap_size)\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.27.0",
+        "expected_stable_version": "v0.29.0"
       }
     ]
   },
