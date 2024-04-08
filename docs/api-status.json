@@ -1923,15 +1923,15 @@
         "comment": "LockRelease releases a lock on the image.\n\nImplements:\n\n\tint rbd_lock_release(rbd_image_t image);\n",
         "added_in_version": "v0.22.0",
         "became_stable_version": "v0.24.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Image.Resize2",
         "comment": "Resize2 resizes an rbd image and allows configuration of allow_shrink and a callback function. The callback\nfunction will be called with the first argument as the progress, the second argument as the total, and the third\nargument as an opaque value that is passed to the Resize2 function's data argument in each callback execution.\nThe resize operation will be aborted if the progress callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_resize2(rbd_image_t image, uint64_t size, allow_shrink bool, librbd_progress_fn_t cb, void *cbdata);\n",
         "added_in_version": "v0.25.0",
-        "expected_stable_version": "v0.27.0"
-      },
+        "became_stable_version": "v0.27.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "Image.GetSnapGroupNamespace",
         "comment": "GetSnapGroupNamespace returns the SnapGroupNamespace of the snapshot which\nis part of a group. The caller should make sure that the snapshot ID passed\nin this function belongs to a snapshot that was taken as part of a group\nsnapshot.\n\nImplements:\n\n\t\tint rbd_snap_get_group_namespace(rbd_image_t image, uint64_t snap_id,\n\t                                      rbd_snap_group_namespace_t *group_snap,\n\t                                      size_t group_snap_size)\n",
