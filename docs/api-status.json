@@ -2015,12 +2015,6 @@
   "rgw/admin": {
     "preview_api": [
       {
-        "name": "API.GetInfo",
-        "comment": "GetInfo - https://docs.ceph.com/en/latest/radosgw/adminops/#info\n",
-        "added_in_version": "v0.25.0",
-        "expected_stable_version": "v0.27.0"
-      },
-      {
         "name": "API.GetBucketQuota",
         "comment": "GetBucketQuota - https://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-quota\n",
         "added_in_version": "v0.26.0",
@@ -2164,6 +2158,12 @@
         "comment": "ListBucketsWithStat will return the list of all buckets with stat (system admin API only)\n",
         "added_in_version": "v0.20.0",
         "became_stable_version": "v0.22.0"
+      },
+      {
+        "name": "API.GetInfo",
+        "comment": "GetInfo - https://docs.ceph.com/en/latest/radosgw/adminops/#info\n",
+        "added_in_version": "v0.25.0",
+        "became_stable_version": "v0.27.0"
       }
     ]
   },
