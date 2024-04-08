@@ -12,7 +12,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-FSAdmin.FSQuiesce | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FSAdmin.FSQuiesce | v0.27.0 | v0.29.0 | 
 
 ## Package: rados
 
@@ -24,7 +24,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Image.GetSnapGroupNamespace | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.GetSnapGroupNamespace | v0.27.0 | v0.29.0 | 
 
 ### Deprecated APIs
 
