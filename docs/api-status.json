@@ -1156,7 +1156,26 @@
         "became_stable_version": "v0.19.0"
       }
     ],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "ReadOpExecStep.Bytes",
+        "comment": "Bytes returns the result of the executed command as a byte slice.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ReadOp.Exec",
+        "comment": "Exec executes an OSD class method on an object.\nSee rados_exec() in the RADOS C api documentation for a general description.\n\nImplements:\n\n\tvoid rados_read_op_exec(rados_read_op_t read_op,\n\t                        const char *cls,\n\t                        const char *method,\n\t                        const char *in_buf,\n\t                        size_t in_len,\n\t                        char **out_buf,\n\t                        size_t *out_len,\n\t                        int *prval);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "WriteOp.Exec",
+        "comment": "Exec executes an OSD class method on an object.\nSee rados_exec() in the RADOS C api documentation for a general description.\n\nImplements:\n\n\tvoid rados_write_op_exec(rados_write_op_t write_op,\n\t                         const char *cls,\n\t                         const char *method,\n\t                         const char *in_buf,\n\t                         size_t in_len,\n\t                         int *prval)\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rbd": {
     "deprecated_api": [

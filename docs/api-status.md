@@ -16,7 +16,13 @@ FSAdmin.FSQuiesce | v0.27.0 | v0.29.0 |
 
 ## Package: rados
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+ReadOpExecStep.Bytes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOp.Exec | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+WriteOp.Exec | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
