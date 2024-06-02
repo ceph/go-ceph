@@ -14,7 +14,7 @@ RUN true && \
     yum update -y --disablerepo=ganesha && \
     cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" && \
     yum install -y \
-    git wget curl make \
+    git wget /usr/bin/curl make \
     /usr/bin/cc /usr/bin/c++ \
     "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" \
     gdb libcephfs2-debuginfo librados2-debuginfo librbd1-debuginfo && \
