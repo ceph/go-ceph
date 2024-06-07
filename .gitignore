@@ -7,3 +7,4 @@
 *.test
 /*.json
 /implements
+/_results
