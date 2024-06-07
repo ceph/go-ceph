@@ -2013,20 +2013,7 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [
-      {
-        "name": "API.GetBucketQuota",
-        "comment": "GetBucketQuota - https://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-quota\n",
-        "added_in_version": "v0.26.0",
-        "expected_stable_version": "v0.28.0"
-      },
-      {
-        "name": "API.SetBucketQuota",
-        "comment": "SetBucketQuota - https://docs.ceph.com/en/latest/radosgw/adminops/#set-bucket-quota\n",
-        "added_in_version": "v0.26.0",
-        "expected_stable_version": "v0.28.0"
-      }
-    ],
+    "preview_api": [],
     "stable_api": [
       {
         "name": "API.ListBuckets",
@@ -2164,6 +2151,18 @@
         "comment": "GetInfo - https://docs.ceph.com/en/latest/radosgw/adminops/#info\n",
         "added_in_version": "v0.25.0",
         "became_stable_version": "v0.27.0"
+      },
+      {
+        "name": "API.GetBucketQuota",
+        "comment": "GetBucketQuota - https://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-quota\n",
+        "added_in_version": "v0.26.0",
+        "became_stable_version": "v0.28.0"
+      },
+      {
+        "name": "API.SetBucketQuota",
+        "comment": "SetBucketQuota - https://docs.ceph.com/en/latest/radosgw/adminops/#set-bucket-quota\n",
+        "added_in_version": "v0.26.0",
+        "became_stable_version": "v0.28.0"
       }
     ]
   },
