@@ -40,12 +40,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rgw/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-API.GetBucketQuota | v0.26.0 | v0.28.0 | 
-API.SetBucketQuota | v0.26.0 | v0.28.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/manager
 
