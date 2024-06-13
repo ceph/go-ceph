@@ -10,7 +10,7 @@ const (
 	// ErrUserExists - Attempt to create existing user
 	ErrUserExists errorReason = "UserAlreadyExists"
 
-	// ErrNoSuchUser - Attempt to create existing user
+	// ErrNoSuchUser - User does not exist
 	ErrNoSuchUser errorReason = "NoSuchUser"
 
 	// ErrInvalidAccessKey - Invalid access key specified
@@ -33,6 +33,9 @@ const (
 
 	// ErrSubuserExists - Specified subuser exists
 	ErrSubuserExists errorReason = "SubuserExists"
+
+	// ErrNoSuchSubUser - SubUser does not exist
+	ErrNoSuchSubUser errorReason = "NoSuchSubUser"
 
 	// ErrInvalidAccess - Invalid subuser access specified
 	ErrInvalidAccess errorReason = "InvalidAccess"
