@@ -31,6 +31,7 @@ WriteOp.Exec | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 Image.GetSnapGroupNamespace | v0.27.0 | v0.29.0 | 
+CloneImageByID | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 
