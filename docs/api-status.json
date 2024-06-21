@@ -1956,6 +1956,12 @@
         "comment": "GetSnapGroupNamespace returns the SnapGroupNamespace of the snapshot which\nis part of a group. The caller should make sure that the snapshot ID passed\nin this function belongs to a snapshot that was taken as part of a group\nsnapshot.\n\nImplements:\n\n\t\tint rbd_snap_get_group_namespace(rbd_image_t image, uint64_t snap_id,\n\t                                      rbd_snap_group_namespace_t *group_snap,\n\t                                      size_t group_snap_size)\n",
         "added_in_version": "v0.27.0",
         "expected_stable_version": "v0.29.0"
+      },
+      {
+        "name": "CloneImageByID",
+        "comment": "CloneImageByID creates a clone of the image from a snapshot with the given\nID in the provided io-context with the given name and image options.\n\nImplements:\n\n\tint rbd_clone4(rados_ioctx_t p_ioctx, const char *p_name,\n\t               uint64_t p_snap_id, rados_ioctx_t c_ioctx,\n\t               const char *c_name, rbd_image_options_t c_opts);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
