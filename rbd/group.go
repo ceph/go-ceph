@@ -110,7 +110,8 @@ func GroupImageAdd(groupIoctx *rados.IOContext, groupName string,
 		cephIoctx(groupIoctx),
 		cGroupName,
 		cephIoctx(imageIoctx),
-		cImageName)
+		cImageName,
+		C.uint32_t(0))
 	return getError(ret)
 }
 
@@ -135,7 +136,8 @@ func GroupImageRemove(groupIoctx *rados.IOContext, groupName string,
 		cephIoctx(groupIoctx),
 		cGroupName,
 		cephIoctx(imageIoctx),
-		cImageName)
+		cImageName,
+		C.uint32_t(0))
 	return getError(ret)
 }
 
@@ -160,7 +162,8 @@ func GroupImageRemoveByID(groupIoctx *rados.IOContext, groupName string,
 		cephIoctx(groupIoctx),
 		cGroupName,
 		cephIoctx(imageIoctx),
-		cid)
+		cid,
+		C.uint32_t(0))
 	return getError(ret)
 }
 
@@ -264,4 +267,148 @@ func (image *Image) GetGroup() (GroupInfo, error) {
 	}
 	ret = C.rbd_group_info_cleanup(&cgi, C.sizeof_rbd_group_info_t)
 	return gi, getError(ret)
+}
+
+// MirrorGroupStatusState is used to indicate the state of a mirrored group
+// within the site status info.
+type MirrorGroupStatusState int64
+
+const (
+	// MirrorGrouptatusStateUnknown is equivalent to MIRROR_GROUP_STATUS_STATE_UNKNOWN
+	MirrorGroupStatusStateUnknown = MirrorGroupStatusState(C.MIRROR_GROUP_STATUS_STATE_UNKNOWN)
+	// MirrorGroupStatusStateError is equivalent to MIRROR_GROUP_STATUS_STATE_ERROR
+	MirrorGroupStatusStateError = MirrorGroupStatusState(C.MIRROR_GROUP_STATUS_STATE_ERROR)
+	// MirrorGroupStatusStateStartingReplay is equivalent to MIRROR_GROUP_STATUS_STATE_STARTING_REPLAY
+	MirrorGroupStatusStateStartingReplay = MirrorGroupStatusState(C.MIRROR_GROUP_STATUS_STATE_STARTING_REPLAY)
+	// MirrorGroupStatusStateReplaying is equivalent to MIRROR_GROUP_STATUS_STATE_REPLAYING
+	MirrorGroupStatusStateReplaying = MirrorGroupStatusState(C.MIRROR_GROUP_STATUS_STATE_REPLAYING)
+	// MirrorGroupStatusStateStoppingReplay is equivalent to MIRROR_GROUP_STATUS_STATE_STOPPING_REPLAY
+	MirrorGroupStatusStateStoppingReplay = MirrorGroupStatusState(C.MIRROR_GROUP_STATUS_STATE_STOPPING_REPLAY)
+	// MirrorGroupStatusStateStopped is equivalent to MIRROR_IMAGE_GROUP_STATUS_STATE_STOPPED
+	MirrorGroupStatusStateStopped = MirrorGroupStatusState(C.MIRROR_GROUP_STATUS_STATE_STOPPED)
+)
+
+// MirrorImageState represents the mirroring state of a RBD image.
+type MirrorGroupState C.rbd_mirror_group_state_t
+
+const (
+	// MirrorGrpupDisabling is the representation of
+	// RBD_MIRROR_GROUP_DISABLING from librbd.
+	MirrorGrpupDisabling = MirrorGroupState(C.RBD_MIRROR_GROUP_DISABLING)
+	// MirrorGroupEnabling is the representation of
+	// RBD_MIRROR_GROUP_ENABLING from librbd
+	MirrorGroupEnabling = MirrorGroupState(C.RBD_MIRROR_GROUP_ENABLING)
+	// MirrorGroupEnabled is the representation of
+	// RBD_MIRROR_IMAGE_ENABLED from librbd.
+	MirrorGroupEnabled = MirrorGroupState(C.RBD_MIRROR_GROUP_ENABLED)
+	// MirrorGroupDisabled is the representation of
+	// RBD_MIRROR_GROUP_DISABLED from librbd.
+	MirrorGroupDisabled = MirrorGroupState(C.RBD_MIRROR_GROUP_DISABLED)
+)
+
+// MirrorGroupInfo represents the mirroring status information of group.
+type MirrorGroupInfo struct {
+	GlobalID        string
+	State           MirrorGroupState
+	MirrorImageMode ImageMirrorMode
+	Primary         bool
+}
+
+// SiteMirrorGroupStatus contains information pertaining to the status of
+// a mirrored group within a site.
+type SiteMirrorGroupStatus struct {
+	MirrorUUID           string
+	State                MirrorGroupStatusState
+	MirrorImageCount     int
+	MirrorImagePoolIds   int64
+	MirrorImageGlobalIDs string
+	MirrorImages         []SiteMirrorImageStatus
+	Description          string
+	LastUpdate           int64
+	Up                   bool
+}
+
+// GlobalMirrorGroupStatus contains information pertaining to the global
+// status of a mirrored group. It contains general information as well
+// as per-site information stored in the SiteStatuses slice.
+type GlobalMirrorGroupStatus struct {
+	Name              string
+	Info              MirrorGroupInfo
+	SiteStatusesCount int
+	SiteStatuses      []SiteMirrorGroupStatus
+}
+
+type groupSiteArray [cutil.MaxIdx]C.rbd_mirror_group_site_status_t
+
+// GetGlobalMirrorGroupStatus returns status information pertaining to the state
+// of a groups's mirroring.
+//
+// Implements:
+//
+//	int rbd_mirror_group_get_global_status(
+//		IoCtx& io_ctx,
+//		const char *group_name
+//		mirror_group_global_status_t *mirror_group_status,
+//		size_t status_size);
+func GetGlobalMirrorGroupStatus(ioctx *rados.IOContext, groupName string) (GlobalMirrorGroupStatus, error) {
+	s := C.rbd_mirror_group_global_status_t{}
+	cGroupName := C.CString(groupName)
+	defer C.free(unsafe.Pointer(cGroupName))
+	ret := C.rbd_mirror_group_get_global_status(
+		cephIoctx(ioctx),
+		(*C.char)(cGroupName),
+		&s,
+		C.sizeof_rbd_mirror_group_global_status_t)
+	if err := getError(ret); err != nil {
+		return GlobalMirrorGroupStatus{}, err
+	}
+
+	status := newGlobalMirrorGroupStatus(&s)
+	return status, nil
+}
+
+func newGlobalMirrorGroupStatus(
+	s *C.rbd_mirror_group_global_status_t) GlobalMirrorGroupStatus {
+
+	status := GlobalMirrorGroupStatus{
+		Name:              C.GoString(s.name),
+		Info:              convertMirrorGroupInfo(&s.info),
+		SiteStatusesCount: int(s.site_statuses_count),
+		SiteStatuses:      make([]SiteMirrorGroupStatus, s.site_statuses_count),
+	}
+	gsscs := (*groupSiteArray)(unsafe.Pointer(s.site_statuses))[:s.site_statuses_count:s.site_statuses_count]
+	for i := C.uint32_t(0); i < s.site_statuses_count; i++ {
+		gss := gsscs[i]
+		status.SiteStatuses[i] = SiteMirrorGroupStatus{
+			MirrorUUID:       C.GoString(gss.mirror_uuid),
+			State:            MirrorGroupStatusState(gss.state),
+			Description:      C.GoString(gss.description),
+			MirrorImageCount: int(gss.mirror_image_count),
+			LastUpdate:       int64(gss.last_update),
+			MirrorImages:     make([]SiteMirrorImageStatus, gss.mirror_image_count),
+			Up:               bool(gss.up),
+		}
+
+		sscs := (*siteArray)(unsafe.Pointer(gss.mirror_images))[:gss.mirror_image_count:gss.mirror_image_count]
+		for i := C.uint32_t(0); i < gss.mirror_image_count; i++ {
+			ss := sscs[i]
+			status.SiteStatuses[i].MirrorImages[i] = SiteMirrorImageStatus{
+				MirrorUUID:  C.GoString(ss.mirror_uuid),
+				State:       MirrorImageStatusState(ss.state),
+				Description: C.GoString(ss.description),
+				LastUpdate:  int64(ss.last_update),
+				Up:          bool(ss.up),
+			}
+		}
+	}
+	return status
+}
+
+func convertMirrorGroupInfo(cInfo *C.rbd_mirror_group_info_t) MirrorGroupInfo {
+	return MirrorGroupInfo{
+		GlobalID:        C.GoString(cInfo.global_id),
+		MirrorImageMode: ImageMirrorMode(cInfo.mirror_image_mode),
+		State:           MirrorGroupState(cInfo.state),
+		Primary:         bool(cInfo.primary),
+	}
 }

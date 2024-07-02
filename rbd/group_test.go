@@ -375,3 +375,23 @@ func TestGroupImageGetGroup(t *testing.T) {
 		})
 	})
 }
+
+func TestGetGroupMirrorStatus(t *testing.T) {
+	conn := radosConnect(t)
+	require.NotNil(t, conn)
+	defer conn.Shutdown()
+
+	// poolname := GetUUID()
+	poolname := "data"
+	err := conn.MakePool(poolname)
+	require.NoError(t, err)
+	// defer conn.DeletePool(poolname)
+
+	ioctx, err := conn.OpenIOContext(poolname)
+	require.NoError(t, err)
+	defer ioctx.Destroy()
+
+	status, err := GetGlobalMirrorGroupStatus(ioctx, "grp1")
+	assert.NoError(t, err)
+	assert.NotNil(t, status)
+}
