@@ -18,50 +18,50 @@ ifeq ($(CONTAINER_CMD),)
 endif
 
 ifeq ($(CEPH_VERSION),octopus)
-	CEPH_TAG := v15
+	CEPH_TAG ?= v15
 endif
 ifeq ($(CEPH_VERSION),pacific)
-	CEPH_TAG := v16
+	CEPH_TAG ?= v16
 endif
 ifeq ($(CEPH_VERSION),quincy)
-	CEPH_TAG := v17
+	CEPH_TAG ?= v17
 endif
 ifeq ($(CEPH_VERSION),reef)
-	CEPH_TAG := v18
+	CEPH_TAG ?= v18
 endif
 ifeq ($(CEPH_VERSION),squid)
-	CEPH_TAG := v19
+	CEPH_TAG ?= v19
 endif
 # pre-<codename> indicates we want to consume pre-release versions of ceph from
 # the ceph ci. This way we can start testing on ceph versions before they hit
 # quay.io/ceph/ceph
 ifeq ($(CEPH_VERSION),pre-quincy)
-	CEPH_TAG := quincy
-	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	CEPH_TAG ?= quincy
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := quincy
 	BUILD_TAGS := quincy,ceph_pre_quincy
 endif
 ifeq ($(CEPH_VERSION),pre-pacific)
-	CEPH_TAG := pacific
-	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	CEPH_TAG ?= pacific
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := pacific
 	BUILD_TAGS := pacific,ceph_pre_pacific
 endif
 ifeq ($(CEPH_VERSION),pre-reef)
-	CEPH_TAG := reef
-	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	CEPH_TAG ?= reef
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := reef
 	BUILD_TAGS := reef,ceph_pre_reef
 endif
 ifeq ($(CEPH_VERSION),pre-squid)
-	CEPH_TAG := squid
-	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	CEPH_TAG ?= squid
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := squid
 	BUILD_TAGS := squid,ceph_pre_squid
 endif
 ifeq ($(CEPH_VERSION),main)
-	CEPH_TAG := main
-	CEPH_IMG := quay.ceph.io/ceph-ci/ceph
+	CEPH_TAG ?= main
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
 	GO_CEPH_VERSION := main
 	BUILD_TAGS := main,ceph_main
 endif
