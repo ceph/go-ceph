@@ -17,9 +17,6 @@ ifeq ($(CONTAINER_CMD),)
 	CONTAINER_CMD:=$(shell podman version >/dev/null 2>&1 && echo podman)
 endif
 
-ifeq ($(CEPH_VERSION),nautilus)
-	CEPH_TAG := v14
-endif
 ifeq ($(CEPH_VERSION),octopus)
 	CEPH_TAG := v15
 endif
