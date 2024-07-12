@@ -112,6 +112,9 @@ func TestCloneImageByID(t *testing.T) {
 	t.Run("CloneFromGroupSnap", func(t *testing.T) {
 		err := GroupSnapCreate(ioctx, gname, "groupsnap")
 		assert.NoError(t, err)
+		defer func() {
+			assert.NoError(t, GroupSnapRemove(ioctx, gname, "groupsnap"))
+		}()
 
 		cloneName := "img-clone"
 		optionsClone := NewRbdImageOptions()
@@ -147,8 +150,5 @@ func TestCloneImageByID(t *testing.T) {
 		assert.Equal(t, parentInfo.Snap.ID, snapID)
 		assert.Equal(t, parentInfo.Image.PoolName, poolname)
 		assert.False(t, parentInfo.Image.Trash)
-
-		err = GroupSnapRemove(ioctx, gname, "groupsnap")
-		assert.NoError(t, err)
 	})
 }
