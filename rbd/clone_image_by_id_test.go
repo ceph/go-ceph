@@ -1,8 +1,9 @@
-//go:build !(nautilus || octopus || pacific || quincy || reef) && ceph_preview
+//go:build ceph_preview
 
 package rbd
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -91,6 +92,9 @@ func TestCloneImageByID(t *testing.T) {
 
 		// Create a clone of the image using the snapshot.
 		err = CloneImageByID(ioctx, name1, snapID, ioctx, cloneName, optionsClone)
+		if errors.Is(err, ErrNotImplemented) {
+			t.Skipf("CloneImageByID is not supported: %v", err)
+		}
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, RemoveImage(ioctx, cloneName)) }()
 
@@ -135,6 +139,9 @@ func TestCloneImageByID(t *testing.T) {
 
 		// Create a clone of the image using the snapshot.
 		err = CloneImageByID(ioctx, name1, snapID, ioctx, cloneName, optionsClone)
+		if errors.Is(err, ErrNotImplemented) {
+			t.Skipf("CloneImageByID is not supported: %v", err)
+		}
 		assert.NoError(t, err)
 		defer func() { assert.NoError(t, RemoveImage(ioctx, cloneName)) }()
 
