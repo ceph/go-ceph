@@ -70,7 +70,7 @@ jobs:
         - "pacific"
         - "quincy"
         - "reef"
-      # - "squid"
+        - "squid"
         - "pre-quincy"
         - "pre-reef"
         - "pre-squid"
