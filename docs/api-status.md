@@ -61,3 +61,27 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 No Preview/Deprecated APIs found. All APIs are considered stable.
 
+## Package: rados/striper
+
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Striper.Read | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Stat | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+New | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewWithLayout | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Destroy | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.SetObjectLayoutStripeUnit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.SetObjectLayoutStripeCount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.SetObjectLayoutObjectSize | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Write | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.WriteFull | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Append | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Remove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Truncate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.GetXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.SetXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.RmXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.ListXattrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
