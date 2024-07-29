@@ -104,7 +104,7 @@ func main() {
 		source, pkg := splitPkg(pkgref)
 		checkCLang := false
 		switch pkg {
-		case "cephfs", "rados", "rbd":
+		case "cephfs", "rados", "rbd", "rados/striper":
 			checkCLang = true
 			if verbose {
 				logger.Printf("Processing package (with C): %s\n", pkg)

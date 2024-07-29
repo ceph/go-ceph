@@ -17,6 +17,9 @@ var (
 	radosCStub = `
 #include "rados/librados.h"
 `
+	radosStriperCStub = `
+#include "radosstriper/libradosstriper.h"
+`
 	rbdCStub = `
 #include "rbd/librbd.h"
 #include "rbd/features.h"
@@ -44,9 +47,10 @@ var (
 #define __linux__ 1
 `
 	stubs = map[string]string{
-		"cephfs": cephfsCStub,
-		"rados":  radosCStub,
-		"rbd":    rbdCStub,
+		"cephfs":        cephfsCStub,
+		"rados":         radosCStub,
+		"rados/striper": radosStriperCStub,
+		"rbd":           rbdCStub,
 	}
 	funcPrefix = map[string]string{
 		"cephfs": "ceph_",
