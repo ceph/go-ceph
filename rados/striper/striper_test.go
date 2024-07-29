@@ -98,8 +98,8 @@ func (suite *StriperTestSuite) TestNewStriperWithLayout() {
 	ioctx := suite.defaultContext()
 	defer ioctx.Destroy()
 
-	p := StriperLayout{65536, 16, 8388608}
-	striper, err := NewWithLayout(ioctx, p)
+	l := Layout{65536, 16, 8388608}
+	striper, err := NewWithLayout(ioctx, l)
 	assert.NoError(suite.T(), err)
 	striper.Destroy()
 }
