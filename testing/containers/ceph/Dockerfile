@@ -20,9 +20,11 @@ RUN true \
         "libcephfs-devel-${cv}" \
         "librados-devel-${cv}" \
         "librbd-devel-${cv}" \
+        "libradosstriper-devel-${cv}" \
         libcephfs2-debuginfo \
         librados2-debuginfo \
         librbd1-debuginfo \
+        libradosstriper1-debuginfo \
     && yum clean all \
     && true
 
