@@ -8,19 +8,23 @@ FROM ${CEPH_IMG}:${CEPH_TAG}
 ARG GO_CEPH_VERSION
 ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION}
 
-RUN true && \
-    echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" && \
-    [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] && \
-    (. /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi ) && \
-    yum update -y --disablerepo=ganesha && \
-    cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" && \
-    yum install -y \
-    git wget /usr/bin/curl make \
-    /usr/bin/cc /usr/bin/c++ \
-    "libcephfs-devel-${cv}" "librados-devel-${cv}" "librbd-devel-${cv}" \
-    gdb libcephfs2-debuginfo librados2-debuginfo librbd1-debuginfo && \
-    yum clean all && \
-    true
+RUN true \
+    && echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" \
+    && [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] \
+    && (. /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi ) \
+    && yum update -y --disablerepo=ganesha \
+    && cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" \
+    && yum install -y \
+        git wget /usr/bin/curl make \
+        /usr/bin/cc /usr/bin/c++ gdb \
+        "libcephfs-devel-${cv}" \
+        "librados-devel-${cv}" \
+        "librbd-devel-${cv}" \
+        libcephfs2-debuginfo \
+        librados2-debuginfo \
+        librbd1-debuginfo \
+    && yum clean all \
+    && true
 
 ARG GO_VERSION=1.21.8
 ENV GO_VERSION=${GO_VERSION}
