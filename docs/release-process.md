@@ -8,10 +8,14 @@ Today, the release process includes the following stages:
 
 ### Pre-release
 - [ ] Complete any API stability updates
+  - [ ] if issue "APIs pending stability updates" exists:
+    - [ ] remove `ceph_preview` constraints from related files
+    - [ ] run `make api-promote`
+  - [ ] run `make api-fix-versions` for new APIs
 - [ ] Check milestone for any incomplete issues
+- [ ] Update the releases table in the README
 
 ### Release Tasks
-- [ ] Update the releases table in the README
 - [ ] Tag the code
 - [ ] Create release notes
 - [ ] Finalize the release on GitHub
