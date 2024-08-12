@@ -8,11 +8,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: cephfs/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-FSAdmin.FSQuiesce | v0.27.0 | v0.29.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados
 
@@ -30,7 +26,6 @@ WriteOp.Exec | v0.29.0 | v0.31.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Image.GetSnapGroupNamespace | v0.27.0 | v0.29.0 | 
 CloneImageByID | v0.29.0 | v0.31.0 | 
 
 ### Deprecated APIs
