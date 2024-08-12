@@ -1160,20 +1160,20 @@
       {
         "name": "ReadOpExecStep.Bytes",
         "comment": "Bytes returns the result of the executed command as a byte slice.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "ReadOp.Exec",
         "comment": "Exec executes an OSD class method on an object.\nSee rados_exec() in the RADOS C api documentation for a general description.\n\nImplements:\n\n\tvoid rados_read_op_exec(rados_read_op_t read_op,\n\t                        const char *cls,\n\t                        const char *method,\n\t                        const char *in_buf,\n\t                        size_t in_len,\n\t                        char **out_buf,\n\t                        size_t *out_len,\n\t                        int *prval);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "WriteOp.Exec",
         "comment": "Exec executes an OSD class method on an object.\nSee rados_exec() in the RADOS C api documentation for a general description.\n\nImplements:\n\n\tvoid rados_write_op_exec(rados_write_op_t write_op,\n\t                         const char *cls,\n\t                         const char *method,\n\t                         const char *in_buf,\n\t                         size_t in_len,\n\t                         int *prval)\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       }
     ]
   },
@@ -1960,8 +1960,8 @@
       {
         "name": "CloneImageByID",
         "comment": "CloneImageByID creates a clone of the image from a snapshot with the given\nID in the provided io-context with the given name and image options.\n\nImplements:\n\n\tint rbd_clone4(rados_ioctx_t p_ioctx, const char *p_name,\n\t               uint64_t p_snap_id, rados_ioctx_t c_ioctx,\n\t               const char *c_name, rbd_image_options_t c_opts);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       }
     ]
   },
@@ -2270,104 +2270,104 @@
       {
         "name": "Striper.Read",
         "comment": "Read bytes into data from the striped object at the specified offset.\n\nImplements:\n\n\tint rados_striper_read(rados_striper_t striper,\n\t                       const char *soid,\n\t                       const char *buf,\n\t                       size_t len,\n\t                       uint64_t off);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.Stat",
         "comment": "Stat returns metadata describing the striped object.\n\nImplements:\n\n\tint rados_striper_stat2(rados_striper_t striper,\n\t                       const char* soid,\n\t                       uint64_t *psize,\n\t                       struct timespec *pmtime);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "New",
         "comment": "New returns a rados Striper object created from a rados IOContext.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "NewWithLayout",
         "comment": "NewWithLayout returns a rados Striper object created from a rados IOContext\nand striper layout parameters. These parameters will be used when new\nobjects are created.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.Destroy",
         "comment": "Destroy the radosstriper object at the Ceph API level.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.SetObjectLayoutStripeUnit",
         "comment": "SetObjectLayoutStripeUnit sets the stripe unit value used to layout\nnew objects.\n\nImplements:\n\n\tint rados_striper_set_object_layout_stripe_unit(rados_striper_t striper,\n\t                                                unsigned int stripe_unit);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.SetObjectLayoutStripeCount",
         "comment": "SetObjectLayoutStripeCount sets the stripe count value used to layout\nnew objects.\n\nImplements:\n\n\tint rados_striper_set_object_layout_stripe_count(rados_striper_t striper,\n\t                                                 unsigned int stripe_count);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.SetObjectLayoutObjectSize",
         "comment": "SetObjectLayoutObjectSize sets the object size value used to layout\nnew objects.\n\nImplements:\n\n\tint rados_striper_set_object_layout_object_size(rados_striper_t striper,\n\t                                                unsigned int object_size);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.Write",
         "comment": "Write bytes from data into the striped object at the specified offset.\n\nImplements:\n\n\tint rados_striper_write(rados_striper_t striper,\n\t                        const char *soid,\n\t                        const char *buf,\n\t                        size_t len,\n\t                        uint64_t off);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.WriteFull",
         "comment": "WriteFull writes all of the bytes in data to the striped object, truncating\nthe object to the length of data.\n\nImplements:\n\n\tint rados_striper_write_full(rados_striper_t striper,\n\t                             const char *soid,\n\t                             const char *buf,\n\t                             size_t len);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.Append",
         "comment": "Append the bytes in data to the end of the striped object.\n\nImplements:\n\n\tint rados_striper_append(rados_striper_t striper,\n\t                         const char *soid,\n\t                         const char *buf,\n\t                         size_t len);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.Remove",
         "comment": "Remove a striped RADOS object.\n\nImplements:\n\n\tint rados_striper_remove(rados_striper_t striper,\n\t                         const char *soid);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.Truncate",
         "comment": "Truncate a striped object, setting it to the specified size.\n\nImplements:\n\n\tint rados_striper_trunc(rados_striper_t striper, const char *soid, uint64_t size);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.GetXattr",
         "comment": "GetXattr retrieves an extended attribute (xattr) of the given name from the\nspecified striped object.\n\nImplements:\n\n\tint rados_striper_getxattr(rados_striper_t striper,\n\t                           const char *oid,\n\t                           const char *name,\n\t                           char *buf,\n\t                           size_t len);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.SetXattr",
         "comment": "SetXattr sets an extended attribute (xattr) of the given name on the\nspecified striped object.\n\nImplements:\n\n\tint rados_striper_setxattr(rados_striper_t striper,\n\t                           const char *oid,\n\t                           const char *name,\n\t                           const char *buf,\n\t                           size_t len);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.RmXattr",
         "comment": "RmXattr removes the extended attribute (xattr) of the given name from the\nstriped object.\n\nImplements:\n\n\tint rados_striper_rmxattr(rados_striper_t striper,\n\t                          const char *oid,\n\t                          const char *name);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       },
       {
         "name": "Striper.ListXattrs",
         "comment": "ListXattrs returns a map containing all of the extended attributes (xattrs)\nfor a striped object. The xattr names provide the key strings and the map's\nvalues are byte slices.\n\nImplements:\n\n\tint rados_striper_getxattrs(rados_striper_t striper,\n\t                            const char *oid,\n\t                            rados_xattrs_iter_t *iter);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.29.0",
+        "expected_stable_version": "v0.31.0"
       }
     ]
   }

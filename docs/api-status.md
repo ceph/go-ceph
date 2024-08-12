@@ -20,9 +20,9 @@ FSAdmin.FSQuiesce | v0.27.0 | v0.29.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-ReadOpExecStep.Bytes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-ReadOp.Exec | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-WriteOp.Exec | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ReadOpExecStep.Bytes | v0.29.0 | v0.31.0 | 
+ReadOp.Exec | v0.29.0 | v0.31.0 | 
+WriteOp.Exec | v0.29.0 | v0.31.0 | 
 
 ## Package: rbd
 
@@ -31,7 +31,7 @@ WriteOp.Exec | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 Image.GetSnapGroupNamespace | v0.27.0 | v0.29.0 | 
-CloneImageByID | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+CloneImageByID | v0.29.0 | v0.31.0 | 
 
 ### Deprecated APIs
 
@@ -67,21 +67,21 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Striper.Read | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.Stat | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-New | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-NewWithLayout | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.Destroy | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.SetObjectLayoutStripeUnit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.SetObjectLayoutStripeCount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.SetObjectLayoutObjectSize | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.Write | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.WriteFull | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.Append | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.Remove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.Truncate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.GetXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.SetXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.RmXattr | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Striper.ListXattrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Striper.Read | v0.29.0 | v0.31.0 | 
+Striper.Stat | v0.29.0 | v0.31.0 | 
+New | v0.29.0 | v0.31.0 | 
+NewWithLayout | v0.29.0 | v0.31.0 | 
+Striper.Destroy | v0.29.0 | v0.31.0 | 
+Striper.SetObjectLayoutStripeUnit | v0.29.0 | v0.31.0 | 
+Striper.SetObjectLayoutStripeCount | v0.29.0 | v0.31.0 | 
+Striper.SetObjectLayoutObjectSize | v0.29.0 | v0.31.0 | 
+Striper.Write | v0.29.0 | v0.31.0 | 
+Striper.WriteFull | v0.29.0 | v0.31.0 | 
+Striper.Append | v0.29.0 | v0.31.0 | 
+Striper.Remove | v0.29.0 | v0.31.0 | 
+Striper.Truncate | v0.29.0 | v0.31.0 | 
+Striper.GetXattr | v0.29.0 | v0.31.0 | 
+Striper.SetXattr | v0.29.0 | v0.31.0 | 
+Striper.RmXattr | v0.29.0 | v0.31.0 | 
+Striper.ListXattrs | v0.29.0 | v0.31.0 | 
 
