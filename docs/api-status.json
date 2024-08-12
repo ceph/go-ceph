@@ -611,17 +611,16 @@
         "comment": "FetchVolumeInfo fetches the information of a CephFS volume.\n\nSimilar To:\n\n\tceph fs volume info <vol_name>\n",
         "added_in_version": "v0.21.0",
         "became_stable_version": "v0.23.0"
-      }
-    ],
-    "deprecated_api": [],
-    "preview_api": [
+      },
       {
         "name": "FSAdmin.FSQuiesce",
         "comment": "FSQuiesce will quiesce the specified subvolumes in a volume.\nQuiescing a fs will prevent new writes to the subvolumes.\nSimilar To:\n\nceph fs quiesce <volume>\n",
         "added_in_version": "v0.27.0",
-        "expected_stable_version": "v0.29.0"
+        "became_stable_version": "v0.29.0"
       }
-    ]
+    ],
+    "deprecated_api": [],
+    "preview_api": []
   },
   "rados": {
     "stable_api": [
@@ -1948,15 +1947,15 @@
         "comment": "Resize2 resizes an rbd image and allows configuration of allow_shrink and a callback function. The callback\nfunction will be called with the first argument as the progress, the second argument as the total, and the third\nargument as an opaque value that is passed to the Resize2 function's data argument in each callback execution.\nThe resize operation will be aborted if the progress callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_resize2(rbd_image_t image, uint64_t size, allow_shrink bool, librbd_progress_fn_t cb, void *cbdata);\n",
         "added_in_version": "v0.25.0",
         "became_stable_version": "v0.27.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Image.GetSnapGroupNamespace",
         "comment": "GetSnapGroupNamespace returns the SnapGroupNamespace of the snapshot which\nis part of a group. The caller should make sure that the snapshot ID passed\nin this function belongs to a snapshot that was taken as part of a group\nsnapshot.\n\nImplements:\n\n\t\tint rbd_snap_get_group_namespace(rbd_image_t image, uint64_t snap_id,\n\t                                      rbd_snap_group_namespace_t *group_snap,\n\t                                      size_t group_snap_size)\n",
         "added_in_version": "v0.27.0",
-        "expected_stable_version": "v0.29.0"
-      },
+        "became_stable_version": "v0.29.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "CloneImageByID",
         "comment": "CloneImageByID creates a clone of the image from a snapshot with the given\nID in the provided io-context with the given name and image options.\n\nImplements:\n\n\tint rbd_clone4(rados_ioctx_t p_ioctx, const char *p_name,\n\t               uint64_t p_snap_id, rados_ioctx_t c_ioctx,\n\t               const char *c_name, rbd_image_options_t c_opts);\n",
