@@ -91,11 +91,25 @@ const (
 	GroupSnapStateComplete = GroupSnapState(C.RBD_GROUP_SNAP_STATE_COMPLETE)
 )
 
-// GroupSnapInfo values are returned by GroupSnapList, representing the
-// snapshots that are part of an rbd group.
+// GroupSnap contains the information of a single snapshot that is part of a
+// group snapshot.
+type GroupSnap struct {
+	Name   string
+	PoolID uint64
+	SnapID uint64
+}
+
+// GroupSnapInfo values are returned by GroupSnapList and GroupSnapGetInfo,
+// representing the group snapshots that are created of an rbd group.
+// SnapName, ID and Snapshots are only set by the GroupSnapGetInfo function.
 type GroupSnapInfo struct {
 	Name  string
 	State GroupSnapState
+
+	SnapName string
+	ID       string
+
+	Snapshots []GroupSnap
 }
 
 // GroupSnapList returns a slice of snapshots in a group.
