@@ -104,6 +104,26 @@ func TestGroupSnapshots(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, gsl, 0)
 	})
+	t.Run("groupSnapGetInfo", func(t *testing.T) {
+		err := GroupSnapCreate(ioctx, gname, "snapDetails")
+		assert.NoError(t, err)
+		defer func() {
+			err = GroupSnapRemove(ioctx, gname, "snapDetails")
+			assert.NoError(t, err)
+		}()
+
+		info, err := GroupSnapGetInfo(ioctx, gname, "snapDetails")
+		assert.NoError(t, err)
+
+		assert.Equal(t, GroupSnapStateComplete, info.State)
+
+		names := make([]string, len(info.Snapshots))
+		for i, snap := range info.Snapshots {
+			names[i] = snap.Name
+		}
+		assert.Contains(t, names, name1)
+		assert.Contains(t, names, name2)
+	})
 	t.Run("groupSnapRollback", func(t *testing.T) {
 		img, err := OpenImage(ioctx, name1, NoSnapshot)
 		assert.NoError(t, err)
