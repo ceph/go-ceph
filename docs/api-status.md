@@ -27,6 +27,7 @@ WriteOp.Exec | v0.29.0 | v0.31.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 CloneImageByID | v0.29.0 | v0.31.0 | 
+GroupSnapGetInfo | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 

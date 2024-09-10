@@ -1961,6 +1961,12 @@
         "comment": "CloneImageByID creates a clone of the image from a snapshot with the given\nID in the provided io-context with the given name and image options.\n\nImplements:\n\n\tint rbd_clone4(rados_ioctx_t p_ioctx, const char *p_name,\n\t               uint64_t p_snap_id, rados_ioctx_t c_ioctx,\n\t               const char *c_name, rbd_image_options_t c_opts);\n",
         "added_in_version": "v0.29.0",
         "expected_stable_version": "v0.31.0"
+      },
+      {
+        "name": "GroupSnapGetInfo",
+        "comment": "GroupSnapGetInfo returns a slice of RBD image snapshots that are part of a\ngroup snapshot.\n\nImplements:\n\n\tint rbd_group_snap_get_info(rados_ioctx_t group_p,\n\t                        const char *group_name,\n\t                        const char *snap_name,\n\t                        rbd_group_snap_info2_t *snaps);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
