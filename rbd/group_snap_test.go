@@ -1,6 +1,7 @@
 package rbd
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -113,6 +114,9 @@ func TestGroupSnapshots(t *testing.T) {
 		}()
 
 		info, err := GroupSnapGetInfo(ioctx, gname, "snapDetails")
+		if errors.Is(err, ErrNotImplemented) {
+			t.Skipf("GroupSnapGetInfo is not supported: %v", err)
+		}
 		assert.NoError(t, err)
 
 		assert.Equal(t, GroupSnapStateComplete, info.State)
