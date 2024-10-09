@@ -204,7 +204,7 @@ func GroupSnapRollbackWithProgress(
 	cb GroupSnapRollbackCallback, data interface{}) error {
 	// the provided callback must be a real function
 	if cb == nil {
-		return rbdError(C.EINVAL)
+		return getError(C.EINVAL)
 	}
 
 	cGroupName := C.CString(group)
