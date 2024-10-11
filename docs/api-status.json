@@ -1965,8 +1965,8 @@
       {
         "name": "GroupSnapGetInfo",
         "comment": "GroupSnapGetInfo returns a slice of RBD image snapshots that are part of a\ngroup snapshot.\n\nImplements:\n\n\tint rbd_group_snap_get_info(rados_ioctx_t group_p,\n\t                        const char *group_name,\n\t                        const char *snap_name,\n\t                        rbd_group_snap_info2_t *snaps);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.30.0",
+        "expected_stable_version": "v0.32.0"
       }
     ]
   },
