@@ -118,13 +118,6 @@
         "comment": "RewindDir sets the directory stream to the beginning of the directory.\n\nImplements:\n void ceph_rewinddir(struct ceph_mount_info *cmount, struct ceph_dir_result *dirp);\n"
       },
       {
-        "name": "cephFSError.Error",
-        "comment": "Error returns the error string for the cephFSError type.\n"
-      },
-      {
-        "name": "cephFSError.ErrorCode"
-      },
-      {
         "name": "MountInfo.Open",
         "comment": "Open a file at the given path. The flags are the same os flags as\na local open call. Mode is the same mode bits as a local open call.\n\nImplements:\n int ceph_open(struct ceph_mount_info *cmount, const char *path, int flags, mode_t mode);\n"
       },
@@ -749,13 +742,6 @@
         "comment": "GetPoolByID returns the name of a pool by a given ID.\n"
       },
       {
-        "name": "radosError.Error",
-        "comment": "Error returns the error string for the radosError type.\n"
-      },
-      {
-        "name": "radosError.ErrorCode"
-      },
-      {
         "name": "IOContext.Pointer",
         "comment": "Pointer returns a pointer reference to an internal structure.\nThis function should NOT be used outside of go-ceph itself.\n"
       },
@@ -1209,12 +1195,6 @@
       {
         "name": "Image.EncryptionLoad",
         "comment": "EncryptionLoad enables IO on an open encrypted image\n\nImplements:\n int rbd_encryption_load(rbd_image_t image,\n                         rbd_encryption_format_t format,\n                         rbd_encryption_options_t opts,\n                         size_t opts_size);\n"
-      },
-      {
-        "name": "rbdError.Error"
-      },
-      {
-        "name": "rbdError.ErrorCode"
       },
       {
         "name": "FeatureSetFromNames",
