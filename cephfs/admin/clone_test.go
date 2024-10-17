@@ -27,6 +27,11 @@ var sampleCloneStatusInProg = []byte(`{
       "volume": "cephfs",
       "subvolume": "subvol1",
       "snapshot": "snap1"
+    },
+	"progress_report": {
+      "percentage cloned": "25%",
+      "amount cloned": "55/202",
+      "files cloned": "1/3"
     }
   }
 }`)
@@ -66,6 +71,9 @@ func TestParseCloneStatus(t *testing.T) {
 			assert.EqualValues(t, "subvol1", status.Source.SubVolume)
 			assert.EqualValues(t, "snap1", status.Source.Snapshot)
 			assert.EqualValues(t, "", status.Source.Group)
+			assert.EqualValues(t, "25%", status.ProgressReport.PercentageCloned)
+			assert.EqualValues(t, "55/202", status.ProgressReport.AmountCloned)
+			assert.EqualValues(t, "1/3", status.ProgressReport.FilesCloned)
 		}
 	})
 }
