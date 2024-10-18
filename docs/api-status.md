@@ -19,6 +19,7 @@ Name | Added in Version | Expected Stable Version |
 ReadOpExecStep.Bytes | v0.29.0 | v0.31.0 | 
 ReadOp.Exec | v0.29.0 | v0.31.0 | 
 WriteOp.Exec | v0.29.0 | v0.31.0 | 
+Conn.GetAddrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
