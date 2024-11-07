@@ -12,7 +12,6 @@ RUN true \
     && echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" \
     && [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] \
     && (. /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi ) \
-    && yum update -y \
     && cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" \
     && yum install -y \
         git wget /usr/bin/curl make \
