@@ -8,6 +8,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	serverVersion string
+)
+
+const (
+	cephOctopus = "octopus"
+	cephPacfic  = "pacific"
+	cephQuincy  = "quincy"
+	cephReef    = "reef"
+	cephSquid   = "squid"
+	cephMain    = "main"
+)
+
+func init() {
+	switch vname := os.Getenv("CEPH_VERSION"); vname {
+	case cephOctopus, cephPacfic, cephQuincy, cephReef, cephSquid, cephMain:
+		serverVersion = vname
+	}
+}
+
 func TestFileOpen(t *testing.T) {
 	mount := fsConnect(t)
 	defer fsDisconnect(t, mount)
@@ -492,6 +512,10 @@ func TestFallocate(t *testing.T) {
 
 	// Allocate space - default case, mode == 0.
 	t.Run("modeIsZero", func(t *testing.T) {
+		if serverVersion == cephMain {
+			t.Skip("fallocate with mode 0 is unsupported: https://tracker.ceph.com/issues/68026")
+		}
+
 		// check file size.
 		sx, err := mount.Statx(fname, StatxBasicStats, 0)
 		assert.NoError(t, err)
@@ -507,6 +531,10 @@ func TestFallocate(t *testing.T) {
 
 	// Allocate space - size increases, data remains intact.
 	t.Run("increaseSize", func(t *testing.T) {
+		if serverVersion == cephMain {
+			t.Skip("fallocate with mode 0 is unsupported: https://tracker.ceph.com/issues/68026")
+		}
+
 		fname := "file2.txt"
 		f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE, 0644)
 		assert.NoError(t, err)
