@@ -16,7 +16,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Conn.GetAddrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Conn.GetAddrs | v0.31.0 | v0.33.0 | 
 
 ## Package: rbd
 
