@@ -1,5 +1,3 @@
-//go:build ceph_preview
-
 /*
 Package striper contains a set of wrappers around Ceph's libradosstriper API.
 

@@ -1,5 +1,3 @@
-//go:build ceph_preview
-
 package striper
 
 import (
@@ -78,7 +76,6 @@ func (suite *StriperTestSuite) TestNewStriper() {
 	striper, err := New(ioctx)
 	assert.NoError(suite.T(), err)
 	striper.Destroy()
-
 }
 
 func (suite *StriperTestSuite) TestStriperSetObjectLayout() {
