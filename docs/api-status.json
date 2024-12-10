@@ -1163,8 +1163,8 @@
       {
         "name": "Conn.GetAddrs",
         "comment": "GetAddrs returns the addresses of the RADOS session,\nsuitable for blocklisting.\n\nImplements:\n\n\tint rados_getaddrs(rados_t cluster, char **addrs)\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.31.0",
+        "expected_stable_version": "v0.33.0"
       }
     ]
   },
