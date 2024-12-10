@@ -16,9 +16,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-ReadOpExecStep.Bytes | v0.29.0 | v0.31.0 | 
-ReadOp.Exec | v0.29.0 | v0.31.0 | 
-WriteOp.Exec | v0.29.0 | v0.31.0 | 
 Conn.GetAddrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
@@ -27,7 +24,6 @@ Conn.GetAddrs | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-CloneImageByID | v0.29.0 | v0.31.0 | 
 GroupSnapGetInfo | v0.30.0 | v0.32.0 | 
 
 ### Deprecated APIs
@@ -60,25 +56,5 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados/striper
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-Striper.Read | v0.29.0 | v0.31.0 | 
-Striper.Stat | v0.29.0 | v0.31.0 | 
-New | v0.29.0 | v0.31.0 | 
-NewWithLayout | v0.29.0 | v0.31.0 | 
-Striper.Destroy | v0.29.0 | v0.31.0 | 
-Striper.SetObjectLayoutStripeUnit | v0.29.0 | v0.31.0 | 
-Striper.SetObjectLayoutStripeCount | v0.29.0 | v0.31.0 | 
-Striper.SetObjectLayoutObjectSize | v0.29.0 | v0.31.0 | 
-Striper.Write | v0.29.0 | v0.31.0 | 
-Striper.WriteFull | v0.29.0 | v0.31.0 | 
-Striper.Append | v0.29.0 | v0.31.0 | 
-Striper.Remove | v0.29.0 | v0.31.0 | 
-Striper.Truncate | v0.29.0 | v0.31.0 | 
-Striper.GetXattr | v0.29.0 | v0.31.0 | 
-Striper.SetXattr | v0.29.0 | v0.31.0 | 
-Striper.RmXattr | v0.29.0 | v0.31.0 | 
-Striper.ListXattrs | v0.29.0 | v0.31.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
