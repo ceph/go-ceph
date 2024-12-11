@@ -9,9 +9,11 @@ ARG GO_CEPH_VERSION
 ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION}
 
 RUN true \
+    && if [ -z "${CEPH_VERSION}" ]; then CEPH_VERSION="${CEPH_REF}"; fi \
     && echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" \
     && [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] \
     && (. /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi ) \
+    && if [ ! -f /etc/yum.repos.d/ceph.repo ]; then yum reinstall -y "$(curl -fs "https://shaman.ceph.com/api/search/?project=ceph&distros=centos/9/x86_64&flavor=default&ref=${CEPH_REF}&sha1=${CEPH_SHA:-latest}" | jq -r .[0].url)/noarch/ceph-release-1-0.el9.noarch.rpm"; fi \
     && yum install -y \
         git wget /usr/bin/curl make \
         /usr/bin/cc /usr/bin/c++ gdb \
