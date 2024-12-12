@@ -512,7 +512,8 @@ func TestFallocate(t *testing.T) {
 
 	// Allocate space - default case, mode == 0.
 	t.Run("modeIsZero", func(t *testing.T) {
-		if serverVersion == cephMain {
+		switch serverVersion {
+		case cephMain, cephSquid, cephReef, cephQuincy:
 			t.Skip("fallocate with mode 0 is unsupported: https://tracker.ceph.com/issues/68026")
 		}
 
@@ -531,7 +532,8 @@ func TestFallocate(t *testing.T) {
 
 	// Allocate space - size increases, data remains intact.
 	t.Run("increaseSize", func(t *testing.T) {
-		if serverVersion == cephMain {
+		switch serverVersion {
+		case cephMain, cephSquid, cephReef, cephQuincy:
 			t.Skip("fallocate with mode 0 is unsupported: https://tracker.ceph.com/issues/68026")
 		}
 
