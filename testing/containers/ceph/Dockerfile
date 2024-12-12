@@ -9,19 +9,18 @@ ARG GO_CEPH_VERSION
 ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION}
 
 RUN true \
+    && if [ -z "${CEPH_VERSION}" ]; then CEPH_VERSION="${CEPH_REF}"; fi \
     && echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" \
     && [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] \
-    && enablerepos="--enablerepo=crb" \
-    && . /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then enablerepos=""; find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi \
-    && yum update -y $enablerepos \
-    && cv="$(rpm -q --queryformat '%{version}-%{release}' ceph-common)" \
-    && yum install $enablerepos -y \
+    && (. /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi ) \
+    && if [ ! -f /etc/yum.repos.d/ceph.repo ]; then rpm -ivh --force "$(curl -fs "https://shaman.ceph.com/api/search/?project=ceph&distros=centos/9/x86_64&flavor=default&ref=${CEPH_REF}&sha1=${CEPH_SHA:-latest}" | jq -r .[0].url)/noarch/ceph-release-1-0.el9.noarch.rpm"; fi \
+    && yum install -y \
         git wget /usr/bin/curl make \
         /usr/bin/cc /usr/bin/c++ gdb \
-        "libcephfs-devel-${cv}" \
-        "librados-devel-${cv}" \
-        "librbd-devel-${cv}" \
-        "libradosstriper-devel-${cv}" \
+        libcephfs-devel \
+        librados-devel \
+        librbd-devel \
+        libradosstriper-devel \
         libcephfs2-debuginfo \
         librados2-debuginfo \
         librbd1-debuginfo \

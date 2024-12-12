@@ -16,6 +16,11 @@ PKG_PREFIX=github.com/ceph/go-ceph
 ALT_FS="@/tmp/ceph/altfs.txt"
 GOFLAGS="-buildvcs=false ${GOFLAGS}"
 
+# hack around a change to the ci container environment
+if [ -z "${CEPH_VERSION}" ]; then
+    export CEPH_VERSION="${CEPH_REF}"
+fi
+
 # Default env vars that are not currently changed by this script
 # but can be used to change the test behavior:
 # GO_CEPH_TEST_MDS_NAME
