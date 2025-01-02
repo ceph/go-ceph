@@ -7,9 +7,10 @@ import (
 
 // BucketLinkInput the bucket link/unlink input parameters
 type BucketLinkInput struct {
-	Bucket   string `url:"bucket" json:"bucket"`
-	BucketID string `url:"bucket-id" json:"bucket_id"`
-	UID      string `url:"uid" json:"uid"`
+	Bucket        string `url:"bucket" json:"bucket"`
+	BucketID      string `url:"bucket-id" json:"bucket_id"`
+	UID           string `url:"uid" json:"uid"`
+	NewBucketName string `url:"new-bucket-name" json:"new_bucket_name"` // Link operation only; optional; use to rename a bucket. While the tenant-id can be specified, this is not necessary in normal operation.
 }
 
 // UnlinkBucket unlink a bucket from a specified user
@@ -34,7 +35,6 @@ func (api *API) LinkBucket(ctx context.Context, link BucketLinkInput) error {
 	if link.Bucket == "" {
 		return errMissingBucket
 	}
-	//  valid parameters not supported by go-ceph: new-bucket-name
-	_, err := api.call(ctx, http.MethodPut, "/bucket", valueToURLParams(link, []string{"uid", "bucket-id", "bucket"}))
+	_, err := api.call(ctx, http.MethodPut, "/bucket", valueToURLParams(link, []string{"uid", "bucket-id", "bucket", "new-bucket-name"}))
 	return err
 }
