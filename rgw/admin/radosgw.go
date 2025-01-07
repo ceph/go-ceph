@@ -10,8 +10,9 @@ import (
 
 	"errors"
 
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 )
 
 const (
@@ -78,14 +79,20 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 	}
 
 	// Build S3 authentication
-	cred := credentials.NewStaticCredentials(api.AccessKey, api.SecretKey, "")
-	signer := v4.NewSigner(cred)
+	credCache := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(api.AccessKey, api.SecretKey, ""))
+	creds, err := credCache.Retrieve(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	signer := v4.NewSigner()
 	// This was present in https://github.com/IrekFasikhov/go-rgwadmin/ but it seems that the lib works without it
 	// Let's keep it here just in case something shows up
 	// signer.DisableRequestBodyOverwrite = true
 
 	// Sign in S3
-	_, err = signer.Sign(request, nil, service, authRegion, time.Now())
+	const emptyPayloadHash = "UNSIGNED-PAYLOAD"
+	err = signer.SignHTTP(ctx, creds, request, emptyPayloadHash, service, authRegion, time.Now())
 	if err != nil {
 		return nil, err
 	}
