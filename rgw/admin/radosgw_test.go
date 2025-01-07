@@ -1,6 +1,9 @@
 package admin
 
 import (
+	"context"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -9,11 +12,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go/logging"
 	tsuite "github.com/stretchr/testify/suite"
 )
 
@@ -61,34 +65,45 @@ func TestRadosGWTestSuite(t *testing.T) {
 
 // S3Agent wraps the s3.S3 structure to allow for wrapper methods
 type S3Agent struct {
-	Client *s3.S3
+	Client *s3.Client
 }
 
 func newS3Agent(accessKey, secretKey, endpoint string, debug bool) (*S3Agent, error) {
 	const cephRegion = "us-east-1"
 
-	logLevel := aws.LogOff
+	var logger logging.Logger
+	logger = logging.Nop{}
 	if debug {
-		logLevel = aws.LogDebug
+		logger = logging.NewStandardLogger(os.Stderr)
 	}
+
 	client := http.Client{
 		Timeout: time.Second * 15,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 	}
-	sess, err := session.NewSession(
-		aws.NewConfig().
-			WithRegion(cephRegion).
-			WithCredentials(credentials.NewStaticCredentials(accessKey, secretKey, "")).
-			WithEndpoint(endpoint).
-			WithS3ForcePathStyle(true).
-			WithMaxRetries(5).
-			WithDisableSSL(true).
-			WithHTTPClient(&client).
-			WithLogLevel(logLevel),
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(cephRegion),
+		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
+			Value: aws.Credentials{
+				AccessKeyID:     accessKey,
+				SecretAccessKey: secretKey,
+				SessionToken:    "",
+			},
+		}),
+		config.WithBaseEndpoint(endpoint),
+		config.WithRetryMaxAttempts(5),
+		config.WithHTTPClient(&client),
+		config.WithLogger(logger),
 	)
 	if err != nil {
 		return nil, err
 	}
-	svc := s3.New(sess)
+
+	svc := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.UsePathStyle = true
+	})
 	return &S3Agent{
 		Client: svc,
 	}, nil
@@ -98,18 +113,21 @@ func (s *S3Agent) createBucket(name string) error {
 	bucketInput := &s3.CreateBucketInput{
 		Bucket: &name,
 	}
-	_, err := s.Client.CreateBucket(bucketInput)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case s3.ErrCodeBucketAlreadyExists:
-				return nil
-			case s3.ErrCodeBucketAlreadyOwnedByYou:
-				return nil
-			}
-		}
+
+	var (
+		bae   *types.BucketAlreadyExists
+		baoby *types.BucketAlreadyOwnedByYou
+	)
+
+	_, err := s.Client.CreateBucket(context.TODO(), bucketInput)
+	switch {
+	case err == nil:
+	case errors.As(err, &bae):
+	case errors.As(err, &baoby):
+	default:
 		return fmt.Errorf("failed to create bucket %q. %w", name, err)
 	}
+
 	return nil
 }
 
