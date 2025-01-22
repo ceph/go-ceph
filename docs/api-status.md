@@ -25,6 +25,7 @@ Conn.GetAddrs | v0.31.0 | v0.33.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 GroupSnapGetInfo | v0.30.0 | v0.32.0 | 
+Image.EncryptionLoad2 | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 
