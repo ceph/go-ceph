@@ -71,7 +71,6 @@ jobs:
         - "quincy"
         - "reef"
         - "squid"
-        - "pre-quincy"
         - "pre-reef"
         - "pre-squid"
         - "main"
