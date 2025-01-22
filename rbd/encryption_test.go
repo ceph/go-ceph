@@ -49,13 +49,16 @@ func TestEncryptionFormat(t *testing.T) {
 
 func TestEncryptionLoad(t *testing.T) {
 	conn := radosConnect(t)
+	defer conn.Shutdown()
 
 	poolname := GetUUID()
 	err := conn.MakePool(poolname)
 	assert.NoError(t, err)
+	defer conn.DeletePool(poolname)
 
 	ioctx, err := conn.OpenIOContext(poolname)
 	require.NoError(t, err)
+	defer ioctx.Destroy()
 
 	name := GetUUID()
 	testImageSize := uint64(1 << 23) // format requires more than 4194304 bytes
@@ -78,55 +81,58 @@ func TestEncryptionLoad(t *testing.T) {
 	// then write some encrypted data at the end of the image
 	err = img.Close()
 	assert.NoError(t, err)
-	img, err = OpenImage(ioctx, name, NoSnapshot)
-	err = img.EncryptionLoad(opts)
-	assert.NoError(t, err)
+	defer func() {
+		assert.NoError(t, img.Remove())
+	}()
 
-	outData := []byte("Hi rbd! Nice to talk through go-ceph :)")
+	testData := []byte("Hi rbd! Nice to talk through go-ceph :)")
+	var offset int64
 
-	stats, err := img.Stat()
-	require.NoError(t, err)
-	offset := int64(stats.Size) - int64(len(outData))
+	t.Run("prepare", func(t *testing.T) {
+		img, err = OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		defer img.Close()
+		err = img.EncryptionLoad(opts)
+		assert.NoError(t, err)
 
-	nOut, err := img.WriteAt(outData, offset)
-	assert.Equal(t, len(outData), nOut)
-	assert.NoError(t, err)
+		stats, err := img.Stat()
+		require.NoError(t, err)
+		offset = int64(stats.Size) - int64(len(testData))
 
-	err = img.Close()
-	assert.NoError(t, err)
+		nOut, err := img.WriteAt(testData, offset)
+		assert.Equal(t, len(testData), nOut)
+		assert.NoError(t, err)
+	})
 
-	// Re-open the image, load the encryption format, and read the encrypted data
-	img, err = OpenImage(ioctx, name, NoSnapshot)
-	assert.NoError(t, err)
-	err = img.EncryptionLoad(opts)
-	assert.NoError(t, err)
+	t.Run("readEnc", func(t *testing.T) {
+		require.NotEqual(t, offset, 0)
+		// Re-open the image, load the encryption format, and read the encrypted data
+		img, err = OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		defer img.Close()
+		err = img.EncryptionLoad(opts)
+		assert.NoError(t, err)
 
-	inData := make([]byte, len(outData))
-	nIn, err := img.ReadAt(inData, offset)
-	assert.Equal(t, nIn, len(inData))
-	assert.Equal(t, inData, outData)
-	assert.NoError(t, err)
+		inData := make([]byte, len(testData))
+		nIn, err := img.ReadAt(inData, offset)
+		assert.Equal(t, nIn, len(inData))
+		assert.Equal(t, inData, testData)
+		assert.NoError(t, err)
+	})
 
-	err = img.Close()
-	assert.NoError(t, err)
+	t.Run("noEnc", func(t *testing.T) {
+		require.NotEqual(t, offset, 0)
+		// Re-open the image and attempt to read the encrypted data without loading the encryption
+		img, err = OpenImage(ioctx, name, NoSnapshot)
+		assert.NoError(t, err)
+		defer img.Close()
 
-	// Re-open the image and attempt to read the encrypted data without loading the encryption
-	img, err = OpenImage(ioctx, name, NoSnapshot)
-	assert.NoError(t, err)
-
-	nIn, err = img.ReadAt(inData, offset)
-	assert.Equal(t, nIn, len(inData))
-	assert.NotEqual(t, inData, outData)
-	assert.NoError(t, err)
-
-	err = img.Close()
-	assert.NoError(t, err)
-	err = img.Remove()
-	assert.NoError(t, err)
-
-	ioctx.Destroy()
-	conn.DeletePool(poolname)
-	conn.Shutdown()
+		inData := make([]byte, len(testData))
+		nIn, err := img.ReadAt(inData, offset)
+		assert.Equal(t, nIn, len(inData))
+		assert.NotEqual(t, inData, testData)
+		assert.NoError(t, err)
+	})
 }
 
 func TestEncryptedResize(t *testing.T) {
