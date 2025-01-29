@@ -127,3 +127,20 @@ func (e statusError) Is(target error) bool { return target == errorReason(e.Code
 
 // Error returns non-empty string if there was an error.
 func (e statusError) Error() string { return fmt.Sprintf("%s %s %s", e.Code, e.RequestID, e.HostID) }
+
+// ParseError parses an error returned by the RGW API and attempts to
+// extract error model. It returns the extracted error model and a boolean
+// indicating whether the error was successfully parsed.
+//
+// Does not handle internal client errors such as "missing user ID"
+func ParseError(err error) (statusError, bool) {
+	statusErr := statusError{}
+	if err == nil {
+		return statusErr, true
+	}
+	ok := errors.As(err, &statusErr)
+	if !ok {
+		return statusErr, false
+	}
+	return statusErr, true
+}
