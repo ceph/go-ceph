@@ -105,7 +105,7 @@ type errorReason string
 
 // statusError is the API response when an error occurs
 type statusError struct {
-	Code      string `json:"Code,omitempty"`
+	Code      string `json:"Code,omitempty"` // see errorReason constants
 	RequestID string `json:"RequestId,omitempty"`
 	HostID    string `json:"HostId,omitempty"`
 }
