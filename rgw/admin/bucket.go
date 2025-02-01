@@ -23,9 +23,10 @@ type Bucket struct {
 	ID                string     `json:"id"`
 	Marker            string     `json:"marker"`
 	IndexType         string     `json:"index_type"`
-	Versioned         *bool      `json:"versioned"`          // reef
-	VersioningEnabled *bool      `json:"versioning_enabled"` // reef
-	Versioning        *string    `json:"versioning"`         // quincy, squid+
+	Versioned         *bool      `json:"versioned"`           // reef
+	VersioningEnabled *bool      `json:"versioning_enabled"`  // reef
+	Versioning        *string    `json:"versioning"`          // quincy, squid+
+	ObjectLockEnabled bool       `json:"object_lock_enabled"` // quincy+
 	Owner             string     `json:"owner"`
 	Ver               string     `json:"ver"`
 	MasterVer         string     `json:"master_ver"`
