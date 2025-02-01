@@ -26,6 +26,7 @@ type Bucket struct {
 	Versioned         *bool      `json:"versioned"`          // pre-squid
 	VersioningEnabled *bool      `json:"versioning_enabled"` // pre-squid
 	Versioning        *string    `json:"versioning"`         // squid+
+	ObjectLockEnabled bool       `json:"object_lock_enabled"`
 	Owner             string     `json:"owner"`
 	Ver               string     `json:"ver"`
 	MasterVer         string     `json:"master_ver"`
