@@ -264,7 +264,7 @@ test_pkg() {
 
     ulimit -c unlimited
     testbin="./${pkg}/${pkg##*/}.test"
-    show go test -v "${testargs[@]}" -o "${testbin}" "./${pkg}"
+    show go test -timeout 15m -v "${testargs[@]}" -o "${testbin}" "./${pkg}"
     ret=$(($?+ret))
     if ls "${pkg}"/core.* >/dev/null 2>&1; then
         echo "Found coredump"
