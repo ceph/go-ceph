@@ -55,15 +55,10 @@ func (opts EncryptionOptionsLUKS2) writeEncryptionSpec(spec *C.rbd_encryption_sp
 	}
 }
 
-// EncryptionLoad2 enables IO on an open encrypted image. The difference
-// between EncryptionLoad and EncryptionLoad2 is that EncryptionLoad2 can open
-// ancestor images with a different encryption options than the current image.
-// The first EncryptionOptions in the slice is applied to the current image,
-// the second to the first ancestor, the third to the second ancestor and so
-// on.  If the length of the slice is smaller than the number of ancestors the
-// final item in the slice will be applied to all remaining ancestors, or if
-// the ancestor does not match the encryption format the ancestor will be
-// interpreted as plain-text.
+// EncryptionLoad2 enables IO on an open encrypted image. Multiple encryption
+// option values can be passed to this call in a slice. For more information
+// about how items in the slice are applied to images, and possibly ancestor
+// images refer to the documentation in the C api for rbd_encryption_load2.
 //
 // Implements:
 //
