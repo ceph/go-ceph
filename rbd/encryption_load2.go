@@ -6,6 +6,7 @@ package rbd
 // /* force XSI-complaint strerror_r() */
 // #define _POSIX_C_SOURCE 200112L
 // #undef _GNU_SOURCE
+// #include <stdlib.h>
 // #include <rbd/librbd.h>
 import "C"
 
@@ -13,14 +14,45 @@ import (
 	"unsafe"
 )
 
-// toEncryptionSpec returns a rbd_encryption_spec_t converted from the
-// cEncryptionData type.
-func (edata cEncryptionData) toEncryptionSpec() C.rbd_encryption_spec_t {
-	var cSpec C.rbd_encryption_spec_t
-	cSpec.format = edata.format
-	cSpec.opts = edata.opts
-	cSpec.opts_size = edata.optsSize
-	return cSpec
+type encryptionOptions2 interface {
+	EncryptionOptions
+	writeEncryptionSpec(spec *C.rbd_encryption_spec_t) func()
+}
+
+func (opts EncryptionOptionsLUKS1) writeEncryptionSpec(spec *C.rbd_encryption_spec_t) func() {
+	/* only C memory should be attached to spec */
+	cPassphrase := (*C.char)(C.CBytes(opts.Passphrase))
+	cOptsSize := C.size_t(C.sizeof_rbd_encryption_luks1_format_options_t)
+	cOpts := (*C.rbd_encryption_luks1_format_options_t)(C.malloc(cOptsSize))
+	cOpts.alg = C.rbd_encryption_algorithm_t(opts.Alg)
+	cOpts.passphrase = cPassphrase
+	cOpts.passphrase_size = C.size_t(len(opts.Passphrase))
+
+	spec.format = C.RBD_ENCRYPTION_FORMAT_LUKS1
+	spec.opts = C.rbd_encryption_options_t(cOpts)
+	spec.opts_size = cOptsSize
+	return func() {
+		C.free(unsafe.Pointer(cOpts.passphrase))
+		C.free(unsafe.Pointer(cOpts))
+	}
+}
+
+func (opts EncryptionOptionsLUKS2) writeEncryptionSpec(spec *C.rbd_encryption_spec_t) func() {
+	/* only C memory should be attached to spec */
+	cPassphrase := (*C.char)(C.CBytes(opts.Passphrase))
+	cOptsSize := C.size_t(C.sizeof_rbd_encryption_luks2_format_options_t)
+	cOpts := (*C.rbd_encryption_luks2_format_options_t)(C.malloc(cOptsSize))
+	cOpts.alg = C.rbd_encryption_algorithm_t(opts.Alg)
+	cOpts.passphrase = cPassphrase
+	cOpts.passphrase_size = C.size_t(len(opts.Passphrase))
+
+	spec.format = C.RBD_ENCRYPTION_FORMAT_LUKS2
+	spec.opts = C.rbd_encryption_options_t(cOpts)
+	spec.opts_size = cOptsSize
+	return func() {
+		C.free(unsafe.Pointer(cOpts.passphrase))
+		C.free(unsafe.Pointer(cOpts))
+	}
 }
 
 // EncryptionLoad2 enables IO on an open encrypted image. The difference
@@ -42,21 +74,27 @@ func (image *Image) EncryptionLoad2(opts []EncryptionOptions) error {
 	if image.image == nil {
 		return ErrImageNotOpen
 	}
+	for _, o := range opts {
+		if _, ok := o.(encryptionOptions2); !ok {
+			return ErrImageNotOpen /* fixme */
+		}
+	}
 
 	length := len(opts)
-	eos := make([]cEncryptionData, length)
 	cspecs := (*C.rbd_encryption_spec_t)(C.malloc(
 		C.size_t(C.sizeof_rbd_encryption_spec_t * length)))
 	specs := unsafe.Slice(cspecs, length)
+	freeFuncs := make([]func(), length)
 
 	for idx, option := range opts {
-		eos[idx] = option.allocateEncryptionOptions()
-		specs[idx] = eos[idx].toEncryptionSpec()
+		f := option.(encryptionOptions2).writeEncryptionSpec(&specs[idx])
+		freeFuncs[idx] = f
 	}
 	defer func() {
-		for _, eopt := range eos {
-			eopt.free()
+		for _, f := range freeFuncs {
+			f()
 		}
+		C.free(unsafe.Pointer(cspecs))
 	}()
 
 	ret := C.rbd_encryption_load2(
