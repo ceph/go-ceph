@@ -32,3 +32,20 @@ func (opts EncryptionOptionsLUKS) allocateEncryptionOptions() cEncryptionData {
 	retData.format = C.RBD_ENCRYPTION_FORMAT_LUKS
 	return retData
 }
+
+func (opts EncryptionOptionsLUKS) writeEncryptionSpec(spec *C.rbd_encryption_spec_t) func() {
+	/* only C memory should be attached to spec */
+	cPassphrase := (*C.char)(C.CBytes(opts.Passphrase))
+	cOptsSize := C.size_t(C.sizeof_rbd_encryption_luks_format_options_t)
+	cOpts := (*C.rbd_encryption_luks_format_options_t)(C.malloc(cOptsSize))
+	cOpts.passphrase = cPassphrase
+	cOpts.passphrase_size = C.size_t(len(opts.Passphrase))
+
+	spec.format = C.RBD_ENCRYPTION_FORMAT_LUKS
+	spec.opts = C.rbd_encryption_options_t(cOpts)
+	spec.opts_size = cOptsSize
+	return func() {
+		C.free(unsafe.Pointer(cOpts.passphrase))
+		C.free(unsafe.Pointer(cOpts))
+	}
+}
