@@ -1953,6 +1953,12 @@
         "comment": "GroupSnapGetInfo returns a slice of RBD image snapshots that are part of a\ngroup snapshot.\n\nImplements:\n\n\tint rbd_group_snap_get_info(rados_ioctx_t group_p,\n\t                        const char *group_name,\n\t                        const char *snap_name,\n\t                        rbd_group_snap_info2_t *snaps);\n",
         "added_in_version": "v0.30.0",
         "expected_stable_version": "v0.32.0"
+      },
+      {
+        "name": "Image.EncryptionLoad2",
+        "comment": "EncryptionLoad2 enables IO on an open encrypted image. The difference\nbetween EncryptionLoad and EncryptionLoad2 is that EncryptionLoad2 can open\nancestor images with a different encryption options than the current image.\nThe first EncryptionOptions in the slice is applied to the current image,\nthe second to the first ancestor, the third to the second ancestor and so\non.  If the length of the slice is smaller than the number of ancestors the\nfinal item in the slice will be applied to all remaining ancestors, or if\nthe ancestor does not match the encryption format the ancestor will be\ninterpreted as plain-text.\n\nImplements:\n\n\tint rbd_encryption_load2(rbd_image_t image,\n\t                         const rbd_encryption_spec_t *specs,\n\t                         size_t spec_count);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
