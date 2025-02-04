@@ -6,26 +6,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ceph/go-ceph/internal/util"
 )
 
 var (
 	serverVersion string
 )
 
-const (
-	cephOctopus = "octopus"
-	cephPacfic  = "pacific"
-	cephQuincy  = "quincy"
-	cephReef    = "reef"
-	cephSquid   = "squid"
-	cephMain    = "main"
-)
-
 func init() {
-	switch vname := os.Getenv("CEPH_VERSION"); vname {
-	case cephOctopus, cephPacfic, cephQuincy, cephReef, cephSquid, cephMain:
-		serverVersion = vname
-	}
+	serverVersion = util.CurrentCephVersionString()
 }
 
 func TestFileOpen(t *testing.T) {
@@ -513,7 +503,7 @@ func TestFallocate(t *testing.T) {
 	// Allocate space - default case, mode == 0.
 	t.Run("modeIsZero", func(t *testing.T) {
 		switch serverVersion {
-		case cephMain, cephSquid, cephReef, cephQuincy:
+		case util.Main, util.Squid, util.Reef, util.Quincy:
 			t.Skip("fallocate with mode 0 is unsupported: https://tracker.ceph.com/issues/68026")
 		}
 
@@ -533,7 +523,7 @@ func TestFallocate(t *testing.T) {
 	// Allocate space - size increases, data remains intact.
 	t.Run("increaseSize", func(t *testing.T) {
 		switch serverVersion {
-		case cephMain, cephSquid, cephReef, cephQuincy:
+		case util.Main, util.Squid, util.Reef, util.Quincy:
 			t.Skip("fallocate with mode 0 is unsupported: https://tracker.ceph.com/issues/68026")
 		}
 
