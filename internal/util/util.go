@@ -16,10 +16,31 @@ const (
 	CephUnknown
 )
 
+// List of known CephVersion strings
+const (
+	Nautilus = "nautilus"
+	Octopus  = "octopus"
+	Pacific  = "pacific"
+	Quincy   = "quincy"
+	Reef     = "reef"
+	Squid    = "squid"
+	Tentacle = "tentacle"
+	Main     = "main"
+)
+
 // CurrentCephVersion is the current Ceph version
 func CurrentCephVersion() CephVersion {
 	vname := os.Getenv("CEPH_VERSION")
 	return CephVersionOfString(vname)
+}
+
+// CurrentCephVersionString is the current Ceph version string
+func CurrentCephVersionString() string {
+	switch vname := os.Getenv("CEPH_VERSION"); vname {
+	case Nautilus, Octopus, Pacific, Quincy, Reef, Squid, Tentacle, Main:
+		return vname
+	}
+	return ""
 }
 
 // CephVersionOfString converts a string to CephVersion
