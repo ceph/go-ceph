@@ -20,16 +20,19 @@ type Bucket struct {
 		DataExtraPool string `json:"data_extra_pool"`
 		IndexPool     string `json:"index_pool"`
 	} `json:"explicit_placement"`
-	ID           string     `json:"id"`
-	Marker       string     `json:"marker"`
-	IndexType    string     `json:"index_type"`
-	Owner        string     `json:"owner"`
-	Ver          string     `json:"ver"`
-	MasterVer    string     `json:"master_ver"`
-	Mtime        string     `json:"mtime"`
-	CreationTime *time.Time `json:"creation_time"`
-	MaxMarker    string     `json:"max_marker"`
-	Usage        struct {
+	ID                string     `json:"id"`
+	Marker            string     `json:"marker"`
+	IndexType         string     `json:"index_type"`
+	Versioned         *bool      `json:"versioned"`
+	VersioningEnabled *bool      `json:"versioning_enabled"`
+	ObjectLockEnabled *bool      `json:"object_lock_enabled"`
+	Owner             string     `json:"owner"`
+	Ver               string     `json:"ver"`
+	MasterVer         string     `json:"master_ver"`
+	Mtime             string     `json:"mtime"`
+	CreationTime      *time.Time `json:"creation_time"`
+	MaxMarker         string     `json:"max_marker"`
+	Usage             struct {
 		RgwMain struct {
 			Size           *uint64 `json:"size"`
 			SizeActual     *uint64 `json:"size_actual"`
