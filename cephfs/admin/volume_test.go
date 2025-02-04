@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ceph/go-ceph/internal/util"
 )
 
 func TestListVolumes(t *testing.T) {
@@ -182,7 +184,7 @@ func TestParseDumpToIdents(t *testing.T) {
 }
 
 func TestVolumeStatus(t *testing.T) {
-	if serverVersion == cephNautilus {
+	if serverVersion == util.Nautilus {
 		t.Skipf("can only execute on octopus/pacific servers")
 	}
 	fsa := getFSAdmin(t)
@@ -193,7 +195,7 @@ func TestVolumeStatus(t *testing.T) {
 }
 
 func TestVolumeStatusInvalid(t *testing.T) {
-	if serverVersion != cephNautilus {
+	if serverVersion != util.Nautilus {
 		t.Skipf("can only excecute on nautilus servers")
 	}
 	fsa := getFSAdmin(t)
