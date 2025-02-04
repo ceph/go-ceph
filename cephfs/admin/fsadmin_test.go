@@ -2,12 +2,12 @@ package admin
 
 import (
 	"errors"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ceph/go-ceph/internal/admintest"
+	"github.com/ceph/go-ceph/internal/util"
 )
 
 var (
@@ -17,21 +17,8 @@ var (
 	serverVersion string
 )
 
-const (
-	cephNautilus = "nautilus"
-	cephOctopus  = "octopus"
-	cephPacfic   = "pacific"
-	cephQuincy   = "quincy"
-	cephReef     = "reef"
-	cephSquid    = "squid"
-	cephMain     = "main"
-)
-
 func init() {
-	switch vname := os.Getenv("CEPH_VERSION"); vname {
-	case cephNautilus, cephOctopus, cephPacfic, cephQuincy, cephReef, cephSquid, cephMain:
-		serverVersion = vname
-	}
+	serverVersion = util.CurrentCephVersionString()
 }
 
 func TestServerSentinel(t *testing.T) {
