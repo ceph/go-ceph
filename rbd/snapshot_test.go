@@ -1,31 +1,20 @@
 package rbd
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ceph/go-ceph/internal/util"
 )
 
 var (
 	serverVersion string
 )
 
-const (
-	cephOctopus = "octopus"
-	cephPacfic  = "pacific"
-	cephQuincy  = "quincy"
-	cephReef    = "reef"
-	cephSquid   = "squid"
-	cephMain    = "main"
-)
-
 func init() {
-	switch vname := os.Getenv("CEPH_VERSION"); vname {
-	case cephOctopus, cephPacfic, cephQuincy, cephReef, cephSquid, cephMain:
-		serverVersion = vname
-	}
+	serverVersion = util.CurrentCephVersionString()
 }
 
 func TestCreateSnapshot(t *testing.T) {
@@ -160,7 +149,7 @@ func TestGetSnapTimestamp(t *testing.T) {
 
 	t.Run("invalidSnapID", func(t *testing.T) {
 		switch serverVersion {
-		case cephOctopus, cephPacfic:
+		case util.Octopus, util.Pacific:
 			t.Skip("hits assert due to https://tracker.ceph.com/issues/47287")
 		}
 
