@@ -24,7 +24,7 @@ Conn.GetAddrs | v0.31.0 | v0.33.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Image.EncryptionLoad2 | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.EncryptionLoad2 | v0.32.0 | v0.34.0 | 
 
 ### Deprecated APIs
 
