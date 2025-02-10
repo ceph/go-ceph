@@ -1945,15 +1945,15 @@
         "comment": "CloneImageByID creates a clone of the image from a snapshot with the given\nID in the provided io-context with the given name and image options.\n\nImplements:\n\n\tint rbd_clone4(rados_ioctx_t p_ioctx, const char *p_name,\n\t               uint64_t p_snap_id, rados_ioctx_t c_ioctx,\n\t               const char *c_name, rbd_image_options_t c_opts);\n",
         "added_in_version": "v0.29.0",
         "became_stable_version": "v0.31.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "GroupSnapGetInfo",
         "comment": "GroupSnapGetInfo returns a slice of RBD image snapshots that are part of a\ngroup snapshot.\n\nImplements:\n\n\tint rbd_group_snap_get_info(rados_ioctx_t group_p,\n\t                        const char *group_name,\n\t                        const char *snap_name,\n\t                        rbd_group_snap_info2_t *snaps);\n",
         "added_in_version": "v0.30.0",
-        "expected_stable_version": "v0.32.0"
-      },
+        "became_stable_version": "v0.32.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "Image.EncryptionLoad2",
         "comment": "EncryptionLoad2 enables IO on an open encrypted image. Multiple encryption\noption values can be passed to this call in a slice. For more information\nabout how items in the slice are applied to images, and possibly ancestor\nimages refer to the documentation in the C api for rbd_encryption_load2.\n\nImplements:\n\n\tint rbd_encryption_load2(rbd_image_t image,\n\t                         const rbd_encryption_spec_t *specs,\n\t                         size_t spec_count);\n",
