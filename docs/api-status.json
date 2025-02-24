@@ -1767,6 +1767,10 @@
         "comment": "ListChildren returns arrays with the pools and names of the images that are\nchildren of the given image. The index of the pools and images arrays can be\nused to link the two items together.\n\nImplements:\n  int rbd_list_children3(rbd_image_t image, rbd_linked_image_spec_t *images,\n                         size_t *max_images);\n"
       },
       {
+        "name": "Image.ListChildrenAttributes",
+        "comment": "ListChildrenAttributes returns an array of struct with the names and ids of the\nimages and pools and the trash of the images that are children of the given image.\n\nImplements:\n\n\tint rbd_list_children3(rbd_image_t image, rbd_linked_image_spec_t *images,\n\t                       size_t *max_images);\n"
+      },
+      {
         "name": "Image.SetSnapByID",
         "comment": "SetSnapByID updates the rbd image (not the Snapshot) such that the snapshot\nis the source of readable data.\n\nImplements:\n int rbd_snap_set_by_id(rbd_image_t image, uint64_t snap_id);\n"
       },
