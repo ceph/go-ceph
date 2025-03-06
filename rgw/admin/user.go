@@ -18,7 +18,7 @@ type User struct {
 	Keys                []UserKeySpec  `json:"keys"`
 	SwiftKeys           []SwiftKeySpec `json:"swift_keys" url:"-"`
 	Caps                []UserCapSpec  `json:"caps"`
-	OpMask              string         `json:"op_mask"`
+	OpMask              string         `json:"op_mask" url:"op-mask"`
 	DefaultPlacement    string         `json:"default_placement"`
 	DefaultStorageClass string         `json:"default_storage_class"`
 	PlacementTags       []interface{}  `json:"placement_tags"`
