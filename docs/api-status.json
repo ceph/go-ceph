@@ -342,7 +342,26 @@
         "became_stable_version": "v0.24.0"
       }
     ],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "Wrap",
+        "comment": "Wrap a CephFS Mount object into a new type that is compatible with Go's io.FS\ninterface. CephFS Mounts are not compatible with io.FS directly because the\ngo-ceph library predates the addition of io.FS to Go as well as the fact that\ngo-ceph attempts to provide APIs that match the cephfs libraries first and\nforemost.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "MountWrapper.SetTracing",
+        "comment": "SetTracing configures the MountWrapper and objects connected to it for debug\ntracing. True enables tracing and false disables it. A debug logging\nfunction must also be set using go-ceph's common.log.SetDebugf function.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "MountWrapper.Open",
+        "comment": "Open opens the named file. This may be either a regular file or a directory.\nDirectories opened with this function will return object compatible with the\nio.ReadDirFile interface.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "cephfs/admin": {
     "stable_api": [

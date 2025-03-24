@@ -4,7 +4,13 @@
 
 ## Package: cephfs
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Wrap | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MountWrapper.SetTracing | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+MountWrapper.Open | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: cephfs/admin
 
