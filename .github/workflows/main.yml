@@ -48,8 +48,8 @@ jobs:
     needs: go-versions
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b
       with:
         go-version: ${{ needs.go-versions.outputs.latest }}
     - name: Install revive
@@ -82,7 +82,7 @@ jobs:
         - ceph_version: "reef"
           go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Set cores to get stored as "core"
       run:  sudo bash -c 'echo "core" > /proc/sys/kernel/core_pattern'
     - name: Run tests
