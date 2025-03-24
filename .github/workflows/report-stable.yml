@@ -12,23 +12,26 @@ jobs:
     steps:
     # Checkout with fetch-depth=0 in order to fetch (all) tags.
     # The Makefile runs git commands to pass tag info to the apiage script.
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
         fetch-depth: 0
     - name: Run makefile
       run: make api-report-issuetemplate  RESULTS_DIR=_results
     - name: Archive test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: "go-ceph-api-updates"
         path: |
           _results/
         retention-days: 30
       if: "!cancelled()"
-    - name: File Issue
-      uses: JasonEtco/create-an-issue@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        filename: _results/issue.md
-        update_existing: true
+    #### Disabled action ####
+    # - name: File Issue
+    #  uses: JasonEtco/create-an-issue@v2
+    #  env:
+    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #  with:
+    #    filename: _results/issue.md
+    #    update_existing: true
+    - name: Please file an issue
+      run: echo "Dear Human, Please file an issue with the following template"; cat _results/issue.md
