@@ -1,5 +1,5 @@
 ARG CEPH_IMG=quay.io/ceph/ceph
-ARG CEPH_TAG=v16
+ARG CEPH_TAG=v19
 FROM ${CEPH_IMG}:${CEPH_TAG}
 
 # A CEPH_VERSION env var is already set in the base image.
