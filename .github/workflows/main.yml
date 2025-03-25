@@ -77,9 +77,9 @@ jobs:
         go_version:
         - ${{ needs.go-versions.outputs.latest }}
         include:
-        - ceph_version: "reef"
+        - ceph_version: "squid"
           go_version: ${{ needs.go-versions.outputs.prev }}
-        - ceph_version: "reef"
+        - ceph_version: "squid"
           go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
