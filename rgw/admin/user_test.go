@@ -107,7 +107,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 
 	suite.T().Run("user creation success", func(_ *testing.T) {
 		usercaps := "users=read"
-		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps})
+		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 	})
@@ -118,6 +118,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 		assert.Equal(suite.T(), "users", user.Caps[0].Type)
 		assert.Equal(suite.T(), "read", user.Caps[0].Perm)
+		assert.Equal(suite.T(), "delete", user.OpMask)
 		os.Setenv("LESEB_ACCESS_KEY", user.Keys[0].AccessKey)
 	})
 
