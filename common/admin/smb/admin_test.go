@@ -3,6 +3,7 @@
 package smb
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	tsuite "github.com/stretchr/testify/suite"
 
+	fsadmin "github.com/ceph/go-ceph/cephfs/admin"
 	"github.com/ceph/go-ceph/common/admin/manager"
 	"github.com/ceph/go-ceph/internal/admintest"
 	"github.com/ceph/go-ceph/internal/commands"
@@ -33,10 +35,12 @@ func (suite *SMBAdminSuite) SetupSuite() {
 	suite.vconn = admintest.NewConnector()
 	suite.disableOrch()
 	suite.enableSMB()
-	suite.waitForSMB()
+	suite.waitForSMBResponsive()
+	suite.configureSubVolume()
 }
 
 func (suite *SMBAdminSuite) TearDownSuite() {
+	suite.removeSubVolume()
 	suite.disableSMB()
 }
 
@@ -45,10 +49,13 @@ func (suite *SMBAdminSuite) enableSMB() {
 	t.Logf("enabling smb module")
 	mgradmin := manager.NewFromConn(suite.vconn.Get(t))
 	err := mgradmin.EnableModule(modName, true)
+	if err != nil && strings.Contains(err.Error(), "already enabled") {
+		return
+	}
 	assert.NoError(t, err)
 }
 
-func (suite *SMBAdminSuite) waitForSMB() {
+func (suite *SMBAdminSuite) waitForSMBOLD() {
 	t := suite.T()
 	t.Logf("waiting for smb module")
 	time.Sleep(100 * time.Millisecond)
@@ -66,6 +73,19 @@ func (suite *SMBAdminSuite) waitForSMB() {
 		time.Sleep(100 * time.Millisecond)
 	}
 	t.Fatalf("timed out waiting for smb module")
+}
+
+func (suite *SMBAdminSuite) waitForSMBResponsive() {
+	// wait until smb module is responsive
+	sa := NewFromConn(suite.vconn.Get(suite.T()))
+	for i := 0; i < 30; i++ {
+		_, err := sa.Show(nil, nil)
+		if err == nil {
+			return
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+	suite.T().Fatalf("show command never succeeded - module not ready?")
 }
 
 func (suite *SMBAdminSuite) disableSMB() {
@@ -92,16 +112,25 @@ func (suite *SMBAdminSuite) disableOrch() {
 	assert.NoError(suite.T(), err)
 }
 
+func (suite *SMBAdminSuite) configureSubVolume() {
+	// set up a subvolume for use by smb commands
+	fsa := fsadmin.NewFromConn(suite.vconn.Get(suite.T()))
+	err := fsa.CreateSubVolumeGroup("cephfs", "smb", nil)
+	assert.NoError(suite.T(), err)
+	err = fsa.CreateSubVolume("cephfs", "smb", "v1", nil)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *SMBAdminSuite) removeSubVolume() {
+	fsa := fsadmin.NewFromConn(suite.vconn.Get(suite.T()))
+	err := fsa.RemoveSubVolume("cephfs", "smb", "v1")
+	assert.NoError(suite.T(), err)
+	err = fsa.RemoveSubVolumeGroup("cephfs", "smb")
+	assert.NoError(suite.T(), err)
+}
+
 func (suite *SMBAdminSuite) SetupTest() {
-	// wait until smb module is responsive
-	sa := NewFromConn(suite.vconn.Get(suite.T()))
-	for i := 0; i < 30; i++ {
-		_, err := sa.Show(nil, nil)
-		if err == nil {
-			return
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
+	suite.waitForSMBResponsive()
 }
 
 func (suite *SMBAdminSuite) TearDownTest() {
@@ -173,7 +202,7 @@ func (suite *SMBAdminSuite) TestRemoveShare() {
 
 	r := []Resource{
 		NewActiveDirectoryCluster("cc1", "zoid"),
-		NewShare("cc1", "zap").SetCephFS("cephfs", "", "", "/"),
+		NewShare("cc1", "zap").SetCephFS("cephfs", "smb", "v1", "/"),
 	}
 	rg, err := sa.Apply(r, nil)
 	assert.NoError(t, err)
@@ -231,7 +260,7 @@ func (suite *SMBAdminSuite) TestShowSelect() {
 		},
 		[]GroupInfo{{"clients"}},
 	)
-	share := NewShare("cc1", "ss1").SetCephFS("cephfs", "", "", "/")
+	share := NewShare("cc1", "ss1").SetCephFS("cephfs", "smb", "v1", "/")
 	rgroup, err := sa.Apply([]Resource{cluster, ug, share}, nil)
 	assert.NoError(t, err)
 	assert.True(t, rgroup.Ok())
