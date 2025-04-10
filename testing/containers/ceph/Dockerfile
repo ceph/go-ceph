@@ -13,7 +13,7 @@ RUN true \
     && echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]" \
     && [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ] \
     && (. /etc/os-release ; if [ "$ID" = centos -a "$VERSION" = 8 ]; then find /etc/yum.repos.d/ -name '*.repo' -exec sed -i -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g'  {} \; ; fi ) \
-    && if [ ! -f /etc/yum.repos.d/ceph.repo -a "$CEPH_IS_DEVEL" = true ]; then yum reinstall -y "$(curl -fs "https://shaman.ceph.com/api/search/?project=ceph&distros=centos/9/x86_64&flavor=default&ref=${CEPH_REF}&sha1=${CEPH_SHA:-latest}" | jq -r .[0].url)/noarch/ceph-release-1-0.el9.noarch.rpm"; fi \
+    && if [ ! -f /etc/yum.repos.d/ceph.repo -a "$CEPH_IS_DEVEL" = true ]; then if [ -z "$CEPH_SHA1" ]; then CEPH_SHA1="$(sed -n 's/.*CEPH_GIT_VER *= *"\(.*\)".*/\1/p' /usr/bin/ceph)"; fi ; yum reinstall -y "$(curl -fs "https://shaman.ceph.com/api/search/?project=ceph&distros=centos/9/x86_64&flavor=default&ref=${CEPH_REF}&sha1=${CEPH_SHA1:-latest}" | jq -r .[0].url)/noarch/ceph-release-1-0.el9.noarch.rpm"; fi \
     && if [ ! -f /etc/yum.repos.d/ceph.repo -a "$CEPH_IS_DEVEL" != true ]; then yum reinstall -y "https://download.ceph.com/rpm-${CEPH_REF}/el9/noarch/ceph-release-1-1.el9.noarch.rpm"; fi \
     && yum install -y \
         git wget /usr/bin/curl make \
