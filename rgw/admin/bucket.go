@@ -34,28 +34,23 @@ type Bucket struct {
 	CreationTime      *time.Time `json:"creation_time"`
 	MaxMarker         string     `json:"max_marker"`
 	Usage             struct {
-		RgwMain struct {
-			Size           *uint64 `json:"size"`
-			SizeActual     *uint64 `json:"size_actual"`
-			SizeUtilized   *uint64 `json:"size_utilized"`
-			SizeKb         *uint64 `json:"size_kb"`
-			SizeKbActual   *uint64 `json:"size_kb_actual"`
-			SizeKbUtilized *uint64 `json:"size_kb_utilized"`
-			NumObjects     *uint64 `json:"num_objects"`
-		} `json:"rgw.main"`
-		RgwMultimeta struct {
-			Size           *uint64 `json:"size"`
-			SizeActual     *uint64 `json:"size_actual"`
-			SizeUtilized   *uint64 `json:"size_utilized"`
-			SizeKb         *uint64 `json:"size_kb"`
-			SizeKbActual   *uint64 `json:"size_kb_actual"`
-			SizeKbUtilized *uint64 `json:"size_kb_utilized"`
-			NumObjects     *uint64 `json:"num_objects"`
-		} `json:"rgw.multimeta"`
+		RgwMain      RgwUsage `json:"rgw.main"`
+		RgwMultimeta RgwUsage `json:"rgw.multimeta"`
 	} `json:"usage"`
 	BucketQuota QuotaSpec `json:"bucket_quota"`
 	Policy      *bool     `url:"policy"`
 	PurgeObject *bool     `url:"purge-objects"`
+}
+
+// RgwUsage contains usage statistics.
+type RgwUsage struct {
+	Size           *uint64 `json:"size"`
+	SizeActual     *uint64 `json:"size_actual"`
+	SizeUtilized   *uint64 `json:"size_utilized"`
+	SizeKb         *uint64 `json:"size_kb"`
+	SizeKbActual   *uint64 `json:"size_kb_actual"`
+	SizeKbUtilized *uint64 `json:"size_kb_utilized"`
+	NumObjects     *uint64 `json:"num_objects"`
 }
 
 // Policy describes a bucket policy
