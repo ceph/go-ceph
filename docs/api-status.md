@@ -27,7 +27,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 Image.EncryptionLoad2 | v0.32.0 | v0.34.0 | 
-Image.DiffIterateByID | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.DiffIterateByID | v0.33.0 | v0.35.0 | 
 
 ### Deprecated APIs
 
