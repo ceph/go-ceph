@@ -1985,8 +1985,8 @@
       {
         "name": "Image.DiffIterateByID",
         "comment": "DiffIterateByID calls a callback on changed extents of an image.\n\nCalling DiffIterateByID will cause the callback specified in the\nDiffIterateByIDConfig to be called as many times as there are changed\nregions in the image (controlled by the parameters as passed to librbd).\n\nSee the documentation of DiffIterateCallback for a description of the\narguments to the callback and the return behavior.\n\nImplements:\n\n\tint rbd_diff_iterate3(rbd_image_t image,\n\t                      uint64_t from_snap_id,\n\t                      uint64_t ofs, uint64_t len,\n\t                      uint32_t flags,\n\t                      int (*cb)(uint64_t, size_t, int, void *),\n\t                      void *arg);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.33.0",
+        "expected_stable_version": "v0.35.0"
       }
     ]
   },
