@@ -18,11 +18,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-Conn.GetAddrs | v0.31.0 | v0.33.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rbd
 

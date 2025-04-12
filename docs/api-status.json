@@ -1176,16 +1176,15 @@
         "comment": "Exec executes an OSD class method on an object.\nSee rados_exec() in the RADOS C api documentation for a general description.\n\nImplements:\n\n\tvoid rados_write_op_exec(rados_write_op_t write_op,\n\t                         const char *cls,\n\t                         const char *method,\n\t                         const char *in_buf,\n\t                         size_t in_len,\n\t                         int *prval)\n",
         "added_in_version": "v0.29.0",
         "became_stable_version": "v0.31.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Conn.GetAddrs",
         "comment": "GetAddrs returns the addresses of the RADOS session,\nsuitable for blocklisting.\n\nImplements:\n\n\tint rados_getaddrs(rados_t cluster, char **addrs)\n",
         "added_in_version": "v0.31.0",
-        "expected_stable_version": "v0.33.0"
+        "became_stable_version": "v0.33.0"
       }
-    ]
+    ],
+    "preview_api": []
   },
   "rbd": {
     "deprecated_api": [
