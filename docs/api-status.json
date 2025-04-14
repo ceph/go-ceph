@@ -2063,7 +2063,14 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "API.CheckBucketIndex",
+        "comment": "CheckBucketIndex - https://docs.ceph.com/en/reef/radosgw/adminops/#check-bucket-index\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ],
     "stable_api": [
       {
         "name": "API.ListBuckets",
