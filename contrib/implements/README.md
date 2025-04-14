@@ -6,7 +6,7 @@ go-ceph implmeents.
 
 ## Build
 
-In the go-ceph repository run `make implmeents` to create a standalone
+In the go-ceph repository run `make implements` to create a standalone
 binary for the `implements` cli tool.
 
 ## Run
