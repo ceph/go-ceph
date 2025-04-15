@@ -47,7 +47,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.CheckBucketIndex | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.CheckBucketIndex | v0.33.0 | v0.35.0 | 
 
 ## Package: common/admin/manager
 
