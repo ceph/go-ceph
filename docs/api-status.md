@@ -8,9 +8,9 @@
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Wrap | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MountWrapper.SetTracing | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-MountWrapper.Open | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Wrap | v0.33.0 | v0.35.0 | 
+MountWrapper.SetTracing | v0.33.0 | v0.35.0 | 
+MountWrapper.Open | v0.33.0 | v0.35.0 | 
 
 ## Package: cephfs/admin
 
