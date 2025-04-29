@@ -71,8 +71,10 @@ jobs:
         - "quincy"
         - "reef"
         - "squid"
+      # - "tentacle"
         - "pre-reef"
         - "pre-squid"
+        - "pre-tentacle"
         - "main"
         go_version:
         - ${{ needs.go-versions.outputs.latest }}
