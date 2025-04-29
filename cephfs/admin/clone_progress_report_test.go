@@ -1,4 +1,4 @@
-//go:build main
+//go:build !(octopus || pacific || quincy || reef || squid)
 
 package admin
 
