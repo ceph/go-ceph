@@ -13,6 +13,7 @@ const (
 	CephQuincy
 	CephReef
 	CephSquid
+	CephTentacle
 	CephUnknown
 )
 
@@ -58,6 +59,8 @@ func CephVersionOfString(vname string) CephVersion {
 		return CephReef
 	case "squid":
 		return CephSquid
+	case "tentacle":
+		return CephTentacle
 	default:
 		return CephUnknown
 	}
