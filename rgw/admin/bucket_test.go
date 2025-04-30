@@ -137,10 +137,10 @@ func (suite *RadosGWTestSuite) TestBucket() {
 	suite.T().Run("remove non-existing bucket", func(_ *testing.T) {
 		err := co.RemoveBucket(context.Background(), Bucket{Bucket: "foo"})
 		assert.Error(suite.T(), err)
-		if util.CurrentCephVersion() <= util.CephOctopus {
-			assert.True(suite.T(), errors.Is(err, ErrNoSuchKey))
-		} else {
+		if util.CurrentCephVersion() >= util.CephPacific && util.CurrentCephVersion() <= util.CephSquid {
 			assert.True(suite.T(), errors.Is(err, ErrNoSuchBucket))
+		} else {
+			assert.True(suite.T(), errors.Is(err, ErrNoSuchKey))
 		}
 	})
 }
