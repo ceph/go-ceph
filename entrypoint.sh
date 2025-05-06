@@ -350,10 +350,10 @@ test_go_ceph() {
         # shellcheck disable=SC2086
         wait_for_files ${WAIT_FILES//:/ }
     fi
-    if [[ ${MIRROR_CONF} ]]; then
-      setup_mirroring
-      export MIRROR_CONF
-    fi
+    # if [[ ${MIRROR_CONF} ]]; then
+    #   setup_mirroring
+    #   export MIRROR_CONF
+    # fi
     # Borrow a page from CURL's cli and use a prefixed @ to mean read the
     # value from a filename after the at-sign.
     case "$ALT_FS" in
@@ -371,10 +371,14 @@ test_go_ceph() {
     esac
     export GO_CEPH_TEST_ALT_FS_NAME
 
-    for pkg in "${pkgs[@]}"; do
-        test_pkg "${pkg}" || test_failed "${pkg}"
-    done
-    post_all_tests
+    test_pkg cephfs
+    echo "*** pausing execution"
+    # cat /tmp/cephfs.log
+    sleep infinity 
+    # for pkg in "${pkgs[@]}"; do
+    #     test_pkg "${pkg}" || test_failed "${pkg}"
+    # done
+    # post_all_tests
 }
 
 pause_if_needed() {

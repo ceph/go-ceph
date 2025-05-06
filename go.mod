@@ -28,6 +28,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.30.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.19 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/malicote/go-tree v0.0.0-20160105170345-359c45405799 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -63,9 +63,12 @@ auth service required = none
 auth client required = none
 osd pool default size = 1
 mon host = ${HOSTNAME}
+debug_client =20
 
 [mds.${MDS_NAME}]
 host = ${HOSTNAME}
+log file = ${LOG_DIR}/mds-${MDS_NAME}.log
+debug_mds = 20
 
 [mon.${MON_NAME}]
 log file = ${LOG_DIR}/mon.log
@@ -87,7 +90,7 @@ osd class load list = *
 osd class default list = *
 
 [mgr.${MGR_NAME}]
-log_file = ${LOG_DIR}/mgr.log
+log file = ${LOG_DIR}/mgr.log
 
 [client.rgw.${RGW_ID}]
 rgw dns name = ${HOSTNAME}
@@ -99,6 +102,11 @@ rgw usage max user shards = 1
 log file = ${LOG_DIR}/client.rgw.${RGW_ID}.log
 rgw frontends = beast port=80
 ms mon client mode = crc
+
+[client]
+log file = /tmp/client.log
+debug_client =20
+
 EOF
 }
 
@@ -119,7 +127,7 @@ launch_mds_server() {
     local mds="$1"
     local fs="$2"
 
-    ceph auth get-or-create "mds.${mds}" mon 'profile mds' mgr 'profile mds' mds 'allow *' osd 'allow *' >> "${MDS_DATA}/keyring"
+    ceph auth get-or-create "mds.${mds}" mon 'profile mds, allow *' mgr 'profile mds, allow *' mds 'allow *' osd 'allow * tag cephfs *=*' >> "${MDS_DATA}/keyring"
     ceph osd pool create "${fs}_data" 8
     ceph osd pool create "${fs}_metadata" 8
     ceph fs new "${fs}" "${fs}_metadata" "${fs}_data"

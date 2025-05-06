@@ -64,7 +64,7 @@ func NewConnFromConfig(t *testing.T, configFile string) *rados.Conn {
 // environment.
 func WrapConn(conn *rados.Conn) ccom.RadosCommander {
 	var c ccom.RadosCommander = conn
-	if DebugTraceEnabled() {
+	if DebugTraceEnabled() || true {
 		c = commands.NewTraceCommander(conn)
 	}
 	return c
