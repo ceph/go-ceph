@@ -25,13 +25,8 @@ jobs:
           _results/
         retention-days: 30
       if: "!cancelled()"
-    #### Disabled action ####
-    # - name: File Issue
-    #  uses: JasonEtco/create-an-issue@v2
-    #  env:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #  with:
-    #    filename: _results/issue.md
-    #    update_existing: true
-    - name: Please file an issue
-      run: echo "Dear Human, Please file an issue with the following template"; cat _results/issue.md
+    - name: File a GitHub Issue
+      run: gh issue create --title "$(cat _results/title.txt)" --body-file _results/body.md
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPO: ${{ github.repository }}
