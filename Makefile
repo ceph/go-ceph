@@ -327,8 +327,7 @@ api-report-updates: api-check-updates
 api-report-issuetemplate: api-check-updates
 	./contrib/apiage.py --mode=updates-to-issuetemplate \
 		--current-tag="$$(git describe --tags --abbrev=0)" \
-		< $(RESULTS_DIR)/updates-found.json \
-		> $(RESULTS_DIR)/issue.md
+		< $(RESULTS_DIR)/updates-found.json
 
 ifeq ($(RESULTS_DIR),)
 IMPLEMENTS_DIR:=$(PWD)/_results

@@ -287,13 +287,7 @@ def format_markdown(tracked, outfh):
             print("", file=outfh)
 
 
-def format_updates_markdown(updates, outfh, issuetemplate=False, next_ver=""):
-    if issuetemplate:
-        print("---", file=outfh)
-        print(
-            f"title: APIs pending stability updates in {next_ver}", file=outfh
-        )
-        print("---", file=outfh)
+def format_updates_markdown(updates, outfh, issuetemplate=False):
     print("## Preview APIs due to become stable", file=outfh)
     if not updates.get("preview"):
         print("n/a", file=outfh)
@@ -569,13 +563,14 @@ def main():
         updates_needed = json.load(sys.stdin)
         format_updates_markdown(updates_needed, sys.stdout)
     elif cli.mode == "updates-to-issuetemplate":
-        updates_needed = json.load(sys.stdin)
-        format_updates_markdown(
-            updates_needed,
-            sys.stdout,
-            issuetemplate=True,
-            next_ver=cli.added_in_version,
-        )
+        with open("./_results/title.txt", "w") as fh:
+            print(
+                f"APIs pending stability updates in {cli.added_in_version}",
+                file=fh,
+            )
+        with open("./_results/body.md", "w") as fh:
+            updates_needed = json.load(sys.stdin)
+            format_updates_markdown(updates_needed, fh, issuetemplate=True)
 
 
 if __name__ == "__main__":
