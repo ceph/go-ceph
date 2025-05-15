@@ -14,7 +14,11 @@ MountWrapper.Open | v0.33.0 | v0.35.0 |
 
 ## Package: cephfs/admin
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+FSAdmin.SubVolumeSnapshotPath | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rados
 

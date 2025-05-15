@@ -632,7 +632,14 @@
       }
     ],
     "deprecated_api": [],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "FSAdmin.SubVolumeSnapshotPath",
+        "comment": "SubVolumeSnapshotPath returns the path for a snapshot from the source subvolume.\n\nSimilar To:\n\n\tceph fs subvolume snapshot getpath <volume> --group-name=<group> <source> <name>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rados": {
     "stable_api": [
