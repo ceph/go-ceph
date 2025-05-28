@@ -62,8 +62,8 @@ func NewConnFromConfig(t *testing.T, configFile string) *rados.Conn {
 
 // WrapConn wraps the given conn in as a "tracer" if so enabled in the
 // environment.
-func WrapConn(conn *rados.Conn) ccom.RadosCommander {
-	var c ccom.RadosCommander = conn
+func WrapConn(conn *rados.Conn) ccom.RadosBufferCommander {
+	var c ccom.RadosBufferCommander = conn
 	if DebugTraceEnabled() {
 		c = commands.NewTraceCommander(conn)
 	}
@@ -100,7 +100,7 @@ func (c *Connector) GetConn(t *testing.T) *rados.Conn {
 
 // Get returns a RadosCommander that may or may not be wrapped.
 // Typically this is the one you want.
-func (c *Connector) Get(t *testing.T) ccom.RadosCommander {
+func (c *Connector) Get(t *testing.T) ccom.RadosBufferCommander {
 	conn := WrapConn(c.realConn(t))
 	// We sleep briefly before returning in order to ensure we have a mgr map
 	// before we start executing the tests.
