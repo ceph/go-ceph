@@ -17,8 +17,11 @@ warningCode = 0
 [rule.exported]
 [rule.if-return]
 [rule.increment-decrement]
+# The configuration approach to the following rule is pretty bonkers.
+# But we need to skip package name checks because we already have an
+# (internal!) utils package and we aint changing it now.
 [rule.var-naming]
-  arguments = [["ID", "UID"]]
+  arguments = [["ID", "UID"], [], [{skipPackageNameChecks=true}]]
 [rule.var-declaration]
 # We need to disable the package-comments check because we check all the .go
 # files in the repo individually. This appears to confuse the new
