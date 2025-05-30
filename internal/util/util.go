@@ -1,5 +1,7 @@
+//revive:disable:var-naming Package name is intended
 package util
 
+//revive:enable:var-naming
 import "os"
 
 // CephVersion type
