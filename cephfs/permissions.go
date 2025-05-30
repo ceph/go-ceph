@@ -10,7 +10,17 @@ import "C"
 
 import (
 	"unsafe"
+
+	"github.com/ceph/go-ceph/internal/util"
 )
+
+var (
+	serVersion string
+)
+
+func init() {
+	serVersion = util.CurrentCephVersionString()
+}
 
 // Chmod changes the mode bits (permissions) of a file/directory.
 func (mount *MountInfo) Chmod(path string, mode uint32) error {
@@ -26,7 +36,13 @@ func (mount *MountInfo) Chown(path string, user uint32, group uint32) error {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
-	ret := C.ceph_chown(mount.mount, cPath, C.int(user), C.int(group))
+	var ret C.int
+
+	if util.CurrentCephVersion() > util.CephTentacle {
+		ret = C.ceph_chown(mount.mount, cPath, C.uid_t(user), C.gid_t(group))
+	} else {
+		ret = C.ceph_chown(mount.mount, cPath, C.int(user), C.int(group))
+	}
 	return getError(ret)
 }
 
@@ -35,6 +51,11 @@ func (mount *MountInfo) Lchown(path string, user uint32, group uint32) error {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
-	ret := C.ceph_lchown(mount.mount, cPath, C.int(user), C.int(group))
+	if util.CurrentCephVersion() > util.CephTentacle {
+		ret = C.ceph_lchown(mount.mount, cPath, C.uid_t(user), C.gid_t(group))
+	} else {
+		ret = C.ceph_lchown(mount.mount, cPath, C.int(user), C.int(group))
+	}
+
 	return getError(ret)
 }

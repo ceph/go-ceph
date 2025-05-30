@@ -15,6 +15,7 @@ import (
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/cutil"
+	"github.com/ceph/go-ceph/internal/util"
 )
 
 const (
@@ -284,7 +285,14 @@ func (f *File) Fchown(user uint32, group uint32) error {
 		return err
 	}
 
-	ret := C.ceph_fchown(f.mount.mount, f.fd, C.int(user), C.int(group))
+	var ret C.int
+
+	if util.CurrentCephVersion() > util.CephTentacle {
+		ret = C.ceph_fchown(f.mount.mount, f.fd, C.uid_t(user), C.gid_t(group))
+	} else {
+		ret = C.ceph_fchown(f.mount.mount, f.fd, C.int(user), C.int(group))
+	}
+
 	return getError(ret)
 }
 
