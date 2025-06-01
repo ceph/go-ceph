@@ -10,7 +10,7 @@ require (
 	github.com/aws/smithy-go v1.22.3
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/sys v0.32.0
+	golang.org/x/sys v0.33.0
 )
 
 require (
