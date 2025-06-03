@@ -778,6 +778,10 @@ func (image *Image) Write(data []byte) (n int, err error) {
 		return 0, err
 	}
 
+	if len(data) == 0 {
+		return 0, nil
+	}
+
 	ret := int(C.rbd_write(image.image, C.uint64_t(image.offset),
 		C.size_t(len(data)), (*C.char)(unsafe.Pointer(&data[0]))))
 
