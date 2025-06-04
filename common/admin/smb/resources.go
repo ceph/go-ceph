@@ -220,10 +220,11 @@ func ValidateResources(resources []Resource) error {
 	return nil
 }
 
-// errorMerge is a helper function for combining a lower level error from
-// the api with a resultGroup, treating the result group as an error if it
-// is not successful.
-func errorMerge(results ResultGroup, err error) error {
+// errorPick is a helper function for picking between a low level error
+// like from the rados API or if no low-level error occurred it can
+// determine if the resultGroup should be treated as an error or not
+// when there's are high-level errors reported in the JSON.
+func errorPick(results ResultGroup, err error) error {
 	if err != nil {
 		return err
 	}
@@ -238,7 +239,7 @@ func errorMerge(results ResultGroup, err error) error {
 // Cluster resource to remove and then applies it in one step.
 func (a *Admin) RemoveCluster(clusterID string) error {
 	rl := []Resource{NewClusterToRemove(clusterID)}
-	return errorMerge(a.Apply(rl, nil))
+	return errorPick(a.Apply(rl, nil))
 }
 
 // RemoveShare will remove a Share resource with matching ID values from
@@ -246,7 +247,7 @@ func (a *Admin) RemoveCluster(clusterID string) error {
 // resource to remove and then applies it in one step.
 func (a *Admin) RemoveShare(clusterID, shareID string) error {
 	rl := []Resource{NewShareToRemove(clusterID, shareID)}
-	return errorMerge(a.Apply(rl, nil))
+	return errorPick(a.Apply(rl, nil))
 }
 
 // RemoveJoinAuth will remove a JoinAuth resource with a matching ID value
@@ -254,7 +255,7 @@ func (a *Admin) RemoveShare(clusterID, shareID string) error {
 // JoinAuth resource to remove and then applies it in one step.
 func (a *Admin) RemoveJoinAuth(authID string) error {
 	rl := []Resource{NewJoinAuthToRemove(authID)}
-	return errorMerge(a.Apply(rl, nil))
+	return errorPick(a.Apply(rl, nil))
 }
 
 // RemoveUsersAndGroups will remove a UsersAndGroups resource with a matching
@@ -262,5 +263,5 @@ func (a *Admin) RemoveJoinAuth(authID string) error {
 // a UsersAndGroups resource to remove and then applies it in one step.
 func (a *Admin) RemoveUsersAndGroups(ugID string) error {
 	rl := []Resource{NewUsersAndGroupsToRemove(ugID)}
-	return errorMerge(a.Apply(rl, nil))
+	return errorPick(a.Apply(rl, nil))
 }
