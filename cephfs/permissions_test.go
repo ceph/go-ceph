@@ -53,16 +53,16 @@ func TestChown(t *testing.T) {
 	sx, err := mount.Statx(dirname, StatxBasicStats, 0)
 	require.NoError(t, err)
 
-	assert.Equal(t, uint32(sx.Uid), root)
-	assert.Equal(t, uint32(sx.Gid), root)
+	assert.Equal(t, sx.Uid, root)
+	assert.Equal(t, sx.Gid, root)
 
 	err = mount.Chown(dirname, bob, bob)
 	assert.NoError(t, err)
 
 	sx, err = mount.Statx(dirname, StatxBasicStats, 0)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(sx.Uid), bob)
-	assert.Equal(t, uint32(sx.Gid), bob)
+	assert.Equal(t, sx.Uid, bob)
+	assert.Equal(t, sx.Gid, bob)
 }
 
 func TestLchown(t *testing.T) {
@@ -87,9 +87,9 @@ func TestLchown(t *testing.T) {
 	err = mount.Lchown("symlnk", bob, bob)
 	sx, err := mount.Statx("symlnk", StatxBasicStats, AtSymlinkNofollow)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(sx.Uid), bob)
-	assert.Equal(t, uint32(sx.Gid), bob)
+	assert.Equal(t, sx.Uid, bob)
+	assert.Equal(t, sx.Gid, bob)
 	sx, err = mount.Statx(dirname, StatxBasicStats, AtSymlinkNofollow)
-	assert.Equal(t, uint32(sx.Uid), root)
-	assert.Equal(t, uint32(sx.Gid), root)
+	assert.Equal(t, sx.Uid, root)
+	assert.Equal(t, sx.Gid, root)
 }

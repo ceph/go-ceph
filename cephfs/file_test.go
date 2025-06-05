@@ -402,16 +402,16 @@ func TestFchown(t *testing.T) {
 
 	sx, err := mount.Statx(fname, StatxBasicStats, 0)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(sx.Uid), root)
-	assert.Equal(t, uint32(sx.Gid), root)
+	assert.Equal(t, sx.Uid, root)
+	assert.Equal(t, sx.Gid, root)
 
 	err = f1.Fchown(bob, bob)
 	assert.NoError(t, err)
 
 	sx, err = mount.Statx(fname, StatxBasicStats, 0)
 	assert.NoError(t, err)
-	assert.Equal(t, uint32(sx.Uid), bob)
-	assert.Equal(t, uint32(sx.Gid), bob)
+	assert.Equal(t, sx.Uid, bob)
+	assert.Equal(t, sx.Gid, bob)
 
 	// TODO use t.Run sub-tests where appropriate
 	f2 := &File{}
