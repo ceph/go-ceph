@@ -185,15 +185,15 @@ func TestErrorMerge(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, errorMerge(results, e))
+	assert.NoError(t, errorPick(results, e))
 
 	results.Results[0].success = false
 	results.Results[0].message = "bad mood"
 	results.Success = false
-	assert.ErrorContains(t, errorMerge(results, e), "bad mood")
+	assert.ErrorContains(t, errorPick(results, e), "bad mood")
 
 	e = fmt.Errorf("bigbad")
-	assert.ErrorContains(t, errorMerge(results, e), "bigbad")
+	assert.ErrorContains(t, errorPick(results, e), "bigbad")
 }
 
 type phoneyConn struct {
