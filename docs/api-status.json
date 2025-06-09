@@ -2416,368 +2416,368 @@
       {
         "name": "NewFromConn",
         "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "SimplePlacement",
         "comment": "SimplePlacement returns a placement with common placement parameters - count\nand label - specified.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Cluster.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Cluster.Intent",
         "comment": "Intent controls if a resource is to be created/updated or removed.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Cluster.Identity",
         "comment": "Identity returns a ResourceRef identifying this cluster.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Cluster.MarshalJSON",
         "comment": "MarshalJSON supports marshalling a cluster to JSON.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Cluster.Validate",
         "comment": "Validate returns an error describing an issue with the resource or\nnil if the resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Cluster.SetPlacement",
         "comment": "SetPlacement modifies a cluster's placment settings.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewUserCluster",
         "comment": "NewUserCluster returns a new Cluster with default values set to\ncreate/update a cluster with local users-and-groups defined.\nIn addition to the cluster name, this function accepts zero or more\nID values naming ceph.smb.usersgroups resources.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewActiveDirectoryCluster",
         "comment": "NewActiveDirectoryCluster returns a new Cluster with default values set to\ncreate/update a cluster with active directory authentication.\nIn addition to the cluster name, this function accepts the name of the\ndomain/realm and zero or more ID values naming ceph.smb.join.auth resources.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewClusterToRemove",
         "comment": "NewClusterToRemove return a new Cluster with default values set to remove a\ncluster from management.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "JoinAuth.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "JoinAuth.Intent",
         "comment": "Intent controls if a resource is to be created/updated or removed.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "JoinAuth.Identity",
         "comment": "Identity returns a ResourceRef identifying this joinauth resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "JoinAuth.Validate",
         "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "JoinAuth.MarshalJSON",
         "comment": "MarshalJSON supports marshalling a cluster to JSON.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "JoinAuth.SetAuth",
         "comment": "SetAuth modifies a JoinAuth's authentication values.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewJoinAuth",
         "comment": "NewJoinAuth returns a new JoinAuth with default values.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewLinkedJoinAuth",
         "comment": "NewLinkedJoinAuth returns a new JoinAuth with default values that link the\nresource to a particular cluster. Linked resources can only be used by the\ncluster they link to and are automatically deleted when the linked cluster\nis deleted.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewJoinAuthToRemove",
         "comment": "NewJoinAuthToRemove returns a new JoinAuth with default values set to remove\nthe join auth resource from management.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResourceType.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResourceType.String",
         "comment": "String returns a string value referring to a resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResourceID.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResourceID.String",
         "comment": "String returns a string value referring to a resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ChildResourceID.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ChildResourceID.String",
         "comment": "String returns a string value referring to a resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Admin.Show",
         "comment": "Show smb module resource descriptions stored on the Ceph cluster.\nIf any values are provided in the refs slice, the function will query\nonly resources matching those references. These may be all matching\nresources of a type or more specific references with IDs. The opts value\ncan be nil for default behavior or supplied to customize the query results.\nCurrently, ShowOptions can be used to filter password values.\n\nSimilar To:\n\n\tceph smb show\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Admin.Apply",
         "comment": "Apply changes to the resource descriptions stored on the Ceph cluster.\nSupply one or more Resource objects in the slice and these resources will\nbe created, updated, or removed based on the Resource's parameters.\nAn Intent() of Present will create or update a resource.\nAn Intent() of Removed will remove a matching resource or be a no-op if nothing\nis matched.\nThe opts value can be nil for default behavior or supplied to customize the\nway the command processes inputs and outputs. Currently, the password values\nsupplied in the objects and returned in the result can be filtered depending\non the fields in the ApplyOptions structure.\n\nSimilar To:\n\n\tceph smb apply -i -\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ValidateResources",
         "comment": "ValidateResources in the supplied slice, returning an error if any\nresource is invalid or nil if all resources are valid. The first invalid resource\nwill be identified and described in the resulting error.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Admin.RemoveCluster",
         "comment": "RemoveCluster will remove a Cluster resource with a matching ID value\nfrom the Ceph cluster. This is a convenience function that creates a\nCluster resource to remove and then applies it in one step.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Admin.RemoveShare",
         "comment": "RemoveShare will remove a Share resource with matching ID values from\nthe Ceph cluster. This is a convenience function that creates a Share\nresource to remove and then applies it in one step.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Admin.RemoveJoinAuth",
         "comment": "RemoveJoinAuth will remove a JoinAuth resource with a matching ID value\nfrom the Ceph cluster. This is a convenience function that creates a\nJoinAuth resource to remove and then applies it in one step.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Admin.RemoveUsersAndGroups",
         "comment": "RemoveUsersAndGroups will remove a UsersAndGroups resource with a matching\nID value from the Ceph cluster. This is a convenience function that creates\na UsersAndGroups resource to remove and then applies it in one step.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.UnmarshalJSON",
         "comment": "UnmarshalJSON support unmarshalling JSON to a Result.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.Ok",
         "comment": "Ok returns true if the resource modification was a success.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.Resource",
         "comment": "Resource returns the resource changed.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.Message",
         "comment": "Message returns an optional string describing the modification state.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.Error",
         "comment": "Error supports treating a failed result as a Go error.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.State",
         "comment": "State returns a short string describing the state of the resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Result.Dump",
         "comment": "Dump additional fields returned with the result.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResultGroup.Ok",
         "comment": "Ok returns true if all the resource modifications were successful.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResultGroup.ErrorResults",
         "comment": "ErrorResults returns a slice of results containing items that were not\nsuccessful.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ResultGroup.Error",
         "comment": "Error supports treating a failed ResultGroup as a Go error.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "ShareAccess.Validate",
         "comment": "Validate returns an error describing an issue with the share access object\nor nil if the object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Share.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Share.Intent",
         "comment": "Intent controls if a resource is to be created/updated or removed.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Share.Identity",
         "comment": "Identity returns a ResourceRef identifying this share resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Share.MarshalJSON",
         "comment": "MarshalJSON supports marshalling a Share resource to JSON.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Share.Validate",
         "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "Share.SetCephFS",
         "comment": "SetCephFS modifies a Share resource's CephFS storage parameters.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewShare",
         "comment": "NewShare returns a new Share resource object with default values.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewShareToRemove",
         "comment": "NewShareToRemove returns a new Share resource object with default values set\nto remove the share from management.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "UsersAndGroups.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "UsersAndGroups.Intent",
         "comment": "Intent controls if a resource is to be created/updated or removed.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "UsersAndGroups.Identity",
         "comment": "Identity returns a ResourceRef identifying this users and groups resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "UsersAndGroups.Validate",
         "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "UsersAndGroups.MarshalJSON",
         "comment": "MarshalJSON supports marshalling a UsersAndGroups resource to JSON.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "UsersAndGroups.SetValues",
         "comment": "SetValues modifies a UsersAndGroups resource's users list and groups list.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewUsersAndGroups",
         "comment": "NewUsersAndGroups returns a new UsersAndGroups resource object with default\nvalues.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewLinkedUsersAndGroups",
         "comment": "NewLinkedUsersAndGroups returns a new UsersAndGroups resource object with\ndefault values that link the resource to a particular cluster. Linked\nresources can only be used by the cluster they link to and are automatically\ndeleted when the linked cluster is deleted.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       },
       {
         "name": "NewUsersAndGroupsToRemove",
         "comment": "NewUsersAndGroupsToRemove returns a new UsersAndGroups resource object with\ndefault values set to remove the users and groups resource from management.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.34.0",
+        "expected_stable_version": "v0.36.0"
       }
     ]
   }
