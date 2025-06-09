@@ -18,7 +18,7 @@ MountWrapper.Open | v0.33.0 | v0.35.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-FSAdmin.SubVolumeSnapshotPath | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FSAdmin.SubVolumeSnapshotPath | v0.34.0 | v0.36.0 | 
 
 ## Package: rados
 
