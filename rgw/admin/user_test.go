@@ -59,7 +59,7 @@ var (
   "op_mask": "read, write, delete",
   "system": "true",
   "admin": "false",
-  "default_placement": "",
+  "default_placement": "ssd",
   "default_storage_class": "",
   "placement_tags": [],
   "bucket_quota": {
@@ -107,7 +107,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 
 	suite.T().Run("user creation success", func(_ *testing.T) {
 		usercaps := "users=read"
-		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete"})
+		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete", DefaultPlacement: "default-placement"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 	})
@@ -119,6 +119,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), "users", user.Caps[0].Type)
 		assert.Equal(suite.T(), "read", user.Caps[0].Perm)
 		assert.Equal(suite.T(), "delete", user.OpMask)
+		assert.Equal(suite.T(), "default-placement", user.DefaultPlacement)
 		os.Setenv("LESEB_ACCESS_KEY", user.Keys[0].AccessKey)
 	})
 
@@ -224,6 +225,13 @@ func TestGetUserMockAPI(t *testing.T) {
 		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
 		assert.NoError(t, err)
 		assert.Equal(t, "dashboard-admin", u.DisplayName, u)
+	})
+	t.Run("test get user default placement", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
+		assert.NoError(t, err)
+		assert.Equal(t, "ssd", u.DefaultPlacement, u)
 	})
 	t.Run("test get user with access key", func(t *testing.T) {
 		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
