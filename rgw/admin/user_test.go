@@ -59,7 +59,7 @@ var (
   "op_mask": "read, write, delete",
   "system": "true",
   "admin": "false",
-  "default_placement": "",
+  "default_placement": "ssd",
   "default_storage_class": "",
   "placement_tags": [],
   "bucket_quota": {
@@ -224,6 +224,13 @@ func TestGetUserMockAPI(t *testing.T) {
 		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
 		assert.NoError(t, err)
 		assert.Equal(t, "dashboard-admin", u.DisplayName, u)
+	})
+	t.Run("test get user default placement", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
+		assert.NoError(t, err)
+		assert.Equal(t, "ssd", u.DefaultPlacement, u)
 	})
 	t.Run("test get user with access key", func(t *testing.T) {
 		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
