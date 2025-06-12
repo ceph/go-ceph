@@ -10,6 +10,15 @@ updates:
       - "no-API"
     commit-message:
       prefix: "go-ceph"
+  - package-ecosystem: "gomod"
+    directory: "/contrib/implements"
+    schedule:
+      interval: "monthly"
+    rebase-strategy: "disabled"
+    labels:
+      - "no-API"
+    commit-message:
+      prefix: "contrib"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
