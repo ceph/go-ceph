@@ -2,9 +2,10 @@ package implements
 
 import (
 	"fmt"
-	"regexp"
+	"runtime"
+	"strings"
 
-	"modernc.org/cc/v3"
+	"modernc.org/cc/v4"
 )
 
 var (
@@ -12,6 +13,7 @@ var (
 	// ceph lib<whatever> content.
 
 	cephfsCStub = `
+#define _FILE_OFFSET_BITS 64
 #include "cephfs/libcephfs.h"
 `
 	radosCStub = `
@@ -23,28 +25,6 @@ var (
 	rbdCStub = `
 #include "rbd/librbd.h"
 #include "rbd/features.h"
-`
-	typeStubs = `
-#define int8_t int
-#define int16_t int
-#define int32_t int
-#define int64_t int
-#define uint8_t int
-#define uint16_t int
-#define uint32_t int
-#define uint64_t int
-#define dev_t int
-#define size_t int
-#define ssize_t int
-#define mode_t int
-#define uid_t int
-#define gid_t int
-#define off_t int
-#define time_t int
-#define bool int
-#define __GNUC__ 4
-#define __x86_64__ 1
-#define __linux__ 1
 `
 	stubs = map[string]string{
 		"cephfs":        cephfsCStub,
@@ -65,32 +45,37 @@ func stubCFunctions(libname string) (CFunctions, error) {
 	if cstub == "" {
 		return nil, fmt.Errorf("no C stub available for '%s'", libname)
 	}
-	var conf cc.Config
-	conf.PreprocessOnly = true
-	conf.IgnoreInclude = regexp.MustCompile(`^<.+>$`)
-	src := []cc.Source{
-		{Name: "typestubs", Value: typeStubs, DoNotCache: true},
-		{Name: libname, Value: cstub, DoNotCache: true},
-	}
-	inc := []string{"@", "/usr/local/include", "/usr/include"}
-	cAST, err := cc.Parse(&conf, inc, nil, src)
+	conf, err := cc.NewConfig(runtime.GOOS, runtime.GOARCH)
 	if err != nil {
 		return nil, err
 	}
-	cfMap := map[cc.StringID]CFunction{}
-	deprecated := cc.String("deprecated")
-	for i := range cAST.Scope {
-		for _, n := range cAST.Scope[i] {
+
+	src := []cc.Source{
+		{Name: "<predefined>", Value: conf.Predefined},
+		{Name: "<builtin>", Value: cc.Builtin},
+		{Name: libname, Value: cstub},
+	}
+	cAST, err := cc.Translate(conf, src)
+	if err != nil {
+		return nil, err
+	}
+	cfMap := map[string]CFunction{}
+	for i := range cAST.Scope.Nodes {
+		for _, n := range cAST.Scope.Nodes[i] {
 			if n, ok := n.(*cc.Declarator); ok &&
-				!n.IsTypedefName &&
+				!n.IsTypename() &&
+				strings.HasPrefix(n.Name(), funcPrefix[libname]) &&
 				n.DirectDeclarator != nil &&
 				(n.DirectDeclarator.Case == cc.DirectDeclaratorFuncParam ||
 					n.DirectDeclarator.Case == cc.DirectDeclaratorFuncIdent) {
 				name := n.Name()
 				if _, exists := cfMap[name]; !exists {
-					_, isDeprecated := n.AttributeSpecifierList.Has(deprecated)
+					isDeprecated := false
+					if attrs := n.Type().Attributes(); attrs != nil {
+						isDeprecated = attrs.IsAttrSet("deprecated")
+					}
 					cf := CFunction{
-						Name:         name.String(),
+						Name:         name,
 						IsDeprecated: isDeprecated,
 					}
 					cfMap[name] = cf
