@@ -43,7 +43,7 @@ GNDN int foo(int x) {
 """
 
 CEPHFS_C = """
-#define FILE_OFFSET_BITS 64
+#define _FILE_OFFSET_BITS 64
 #include <stdlib.h>
 #define __USE_FILE_OFFSET64
 #include <cephfs/libcephfs.h>
