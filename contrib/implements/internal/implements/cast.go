@@ -53,9 +53,10 @@ var (
 		"rbd":           rbdCStub,
 	}
 	funcPrefix = map[string]string{
-		"cephfs": "ceph_",
-		"rados":  "rados_",
-		"rbd":    "rbd_",
+		"cephfs":        "ceph_",
+		"rados":         "rados_",
+		"rados/striper": "rados_striper_",
+		"rbd":           "rbd_",
 	}
 )
 
