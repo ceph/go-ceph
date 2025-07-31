@@ -360,6 +360,12 @@
         "comment": "Open opens the named file. This may be either a regular file or a directory.\nDirectories opened with this function will return object compatible with the\nio.ReadDirFile interface.\n",
         "added_in_version": "v0.33.0",
         "expected_stable_version": "v0.35.0"
+      },
+      {
+        "name": "File.Fd",
+        "comment": "Fd returns the integer open file descriptor in cephfs.\nNOTE: It doesn't make sense to consume the returned integer fd anywhere\noutside CephFS and is recommended not to do so given the undefined behaviour.\nAlso, as seen with the Go standard library, the fd is only valid as long as\nthe corresponding File object is intact in the sense that an fd from a closed\nFile object is invalid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
