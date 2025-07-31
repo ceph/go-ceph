@@ -63,6 +63,7 @@ func TestFutime(t *testing.T) {
 	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	assert.NoError(t, err)
 	assert.NotNil(t, f1)
+	assert.NotEqual(t, -1, f1.Fd())
 	defer func() {
 		assert.NoError(t, f1.Close())
 		assert.NoError(t, mount.Unlink(fname))
@@ -73,7 +74,7 @@ func TestFutime(t *testing.T) {
 		AcTime:  currentTime.Sec,
 		ModTime: currentTime.Sec,
 	}
-	err = mount.Futime(int(f1.fd), newTime)
+	err = mount.Futime(f1.Fd(), newTime)
 	assert.NoError(t, err)
 
 	sx, err := mount.Statx(fname, StatxBasicStats, 0)
@@ -88,7 +89,7 @@ func TestFutime(t *testing.T) {
 		AcTime:  currentTime.Sec,
 		ModTime: currentTime.Sec,
 	}
-	err = mount1.Futime(int(f1.fd), newTime)
+	err = mount1.Futime(f1.Fd(), newTime)
 	assert.Error(t, err)
 }
 
@@ -100,6 +101,7 @@ func TestFutimens(t *testing.T) {
 	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	assert.NoError(t, err)
 	assert.NotNil(t, f1)
+	assert.NotEqual(t, -1, f1.Fd())
 	defer func() {
 		assert.NoError(t, f1.Close())
 		assert.NoError(t, mount.Unlink(fname))
@@ -109,7 +111,7 @@ func TestFutimens(t *testing.T) {
 		{int64(time.Now().Second()), 0},
 		{int64(time.Now().Second()), 0},
 	}
-	err = mount.Futimens(int(f1.fd), times)
+	err = mount.Futimens(f1.Fd(), times)
 	assert.NoError(t, err)
 
 	sx, err := mount.Statx(fname, StatxBasicStats, 0)
@@ -123,7 +125,7 @@ func TestFutimens(t *testing.T) {
 		{int64(time.Now().Second()), 0},
 		{int64(time.Now().Second()), 0},
 	}
-	err = mount1.Futimens(int(f1.fd), times)
+	err = mount1.Futimens(f1.Fd(), times)
 	assert.Error(t, err)
 
 	// Test times array length more than 2
@@ -132,7 +134,7 @@ func TestFutimens(t *testing.T) {
 		{int64(time.Now().Second()), 0},
 		{int64(time.Now().Second()), 0},
 	}
-	err = mount.Futimens(int(f1.fd), times)
+	err = mount.Futimens(f1.Fd(), times)
 	assert.Error(t, err)
 }
 
@@ -144,6 +146,7 @@ func TestFutimes(t *testing.T) {
 	f1, err := mount.Open(fname, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	assert.NoError(t, err)
 	assert.NotNil(t, f1)
+	assert.NotEqual(t, -1, f1.Fd())
 	defer func() {
 		assert.NoError(t, f1.Close())
 		assert.NoError(t, mount.Unlink(fname))
@@ -160,7 +163,7 @@ func TestFutimes(t *testing.T) {
 			USec: int64(val.Nsec / 1000),
 		})
 	}
-	err = mount.Futimes(int(f1.fd), newTimes)
+	err = mount.Futimes(f1.Fd(), newTimes)
 	assert.NoError(t, err)
 
 	sx, err := mount.Statx(fname, StatxBasicStats, 0)
@@ -181,7 +184,7 @@ func TestFutimes(t *testing.T) {
 			USec: int64(val.Nsec / 1000),
 		})
 	}
-	err = mount1.Futimes(int(f1.fd), newTimes)
+	err = mount1.Futimes(f1.Fd(), newTimes)
 	assert.Error(t, err)
 
 	// Test times array length more than 2
@@ -197,6 +200,6 @@ func TestFutimes(t *testing.T) {
 			USec: int64(val.Nsec / 1000),
 		})
 	}
-	err = mount.Futimes(int(f1.fd), newTimes)
+	err = mount.Futimes(f1.Fd(), newTimes)
 	assert.Error(t, err)
 }
