@@ -5,7 +5,7 @@
 # repeat this list in a few places.
 queue_rules:
   - name: default
-    conditions:
+    queue_conditions:
       - check-success=check
       - check-success=dpulls
       - check-success=test-suite (octopus)
@@ -61,6 +61,7 @@ pull_request_rules:
       - conflict
     actions:
       comment:
-        message: "This pull request now has conflicts with the target branch.
-        Could you please resolve conflicts and force push the corrected
-        changes? 🙏"
+        message:
+          This pull request now has conflicts with the target branch.
+          Could you please resolve conflicts and force push the corrected
+          changes? 🙏
