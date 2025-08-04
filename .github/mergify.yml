@@ -65,3 +65,6 @@ pull_request_rules:
           This pull request now has conflicts with the target branch.
           Could you please resolve conflicts and force push the corrected
           changes? 🙏
+
+merge_queue:
+  max_parallel_checks: 1
