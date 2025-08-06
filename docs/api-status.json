@@ -366,6 +366,24 @@
         "comment": "Fd returns the integer open file descriptor in cephfs.\nNOTE: It doesn't make sense to consume the returned integer fd anywhere\noutside CephFS and is recommended not to do so given the undefined behaviour.\nAlso, as seen with the Go standard library, the fd is only valid as long as\nthe corresponding File object is intact in the sense that an fd from a closed\nFile object is invalid.\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "File.Futime",
+        "comment": "Futime changes file/directory last access and modification times.\n\nImplements:\n\n\tint ceph_futime(struct ceph_mount_info *cmount, int fd, struct utimbuf *buf);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "File.Futimens",
+        "comment": "Futimens changes file/directory last access and modification times, here times param\nis an array of Timespec struct having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimens(struct ceph_mount_info *cmount, int fd, struct timespec times[2]);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "File.Futimes",
+        "comment": "Futimes changes file/directory last access and modification times, here times param\nis an array of Timeval struct type having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimes(struct ceph_mount_info *cmount, int fd, struct timeval times[2]);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },

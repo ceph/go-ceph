@@ -12,6 +12,9 @@ Wrap | v0.33.0 | v0.35.0 |
 MountWrapper.SetTracing | v0.33.0 | v0.35.0 | 
 MountWrapper.Open | v0.33.0 | v0.35.0 | 
 File.Fd | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+File.Futime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+File.Futimens | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+File.Futimes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: cephfs/admin
 
