@@ -8,9 +8,6 @@
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Wrap | v0.33.0 | v0.35.0 | 
-MountWrapper.SetTracing | v0.33.0 | v0.35.0 | 
-MountWrapper.Open | v0.33.0 | v0.35.0 | 
 File.Fd | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 File.Futime | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 File.Futimens | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
@@ -29,12 +26,6 @@ FSAdmin.SubVolumeSnapshotPath | v0.34.0 | v0.36.0 |
 No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rbd
-
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-Image.DiffIterateByID | v0.33.0 | v0.35.0 | 
 
 ### Deprecated APIs
 
