@@ -1,5 +1,4 @@
-//go:build !nautilus && ceph_preview
-// +build !nautilus,ceph_preview
+//go:build !nautilus
 
 package admin
 

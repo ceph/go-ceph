@@ -1,4 +1,4 @@
-//go:build ceph_preview && ceph_main
+//go:build ceph_main
 
 package nfs
 
