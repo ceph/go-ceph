@@ -4,6 +4,7 @@ package osd
 
 import (
 	ccom "github.com/ceph/go-ceph/common/commands"
+	"github.com/ceph/go-ceph/internal/commands"
 )
 
 // Commander interface supports sending commands to Ceph.
@@ -22,3 +23,5 @@ type Admin struct {
 func NewFromConn(conn Commander) *Admin {
 	return &Admin{conn}
 }
+
+type response = commands.Response
