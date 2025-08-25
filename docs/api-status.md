@@ -27,6 +27,12 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rbd
 
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Image.GetDataPoolID | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
 ### Deprecated APIs
 
 Name | Deprecated in Version | Expected Removal Version | 

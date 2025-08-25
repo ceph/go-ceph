@@ -2018,7 +2018,14 @@
         "became_stable_version": "v0.35.0"
       }
     ],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "Image.GetDataPoolID",
+        "comment": "GetDataPoolID returns the ID of the data pool assigned to an image\n\nImplements:\n\n\tint64_t rbd_get_data_pool_id(rbd_image_t image)\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rbd/admin": {
     "stable_api": [
