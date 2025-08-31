@@ -2818,6 +2818,30 @@
         "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Admin.OSDBlocklist",
+        "comment": "OSDBlocklist returns the list of blocklisted clients.\n\nSimilar To:\n\n\tceph osd blocklist ls\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Admin.OSDBlocklistAdd",
+        "comment": "OSDBlocklistAdd adds an ip address or network address in CIDR format to the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] add <ip_addr|cidr_network> [expire]\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Admin.OSDBlocklistRemove",
+        "comment": "OSDBlocklistRemove removes an ip address or network address from the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] rm <ip_addr|cidr_network>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Float.MarshalJSON",
+        "comment": "MarshalJSON is a custom implementation for the JSON marshaling of Float.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   }

@@ -144,4 +144,8 @@ NewUsersAndGroupsToRemove | v0.34.0 | v0.36.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 NewFromConn | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Admin.OSDBlocklist | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Admin.OSDBlocklistAdd | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Admin.OSDBlocklistRemove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Float.MarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
