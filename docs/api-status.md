@@ -137,3 +137,11 @@ NewUsersAndGroups | v0.34.0 | v0.36.0 |
 NewLinkedUsersAndGroups | v0.34.0 | v0.36.0 | 
 NewUsersAndGroupsToRemove | v0.34.0 | v0.36.0 | 
 
+## Package: common/admin/osd
+
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+NewFromConn | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
