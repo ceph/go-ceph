@@ -115,3 +115,18 @@ const (
 	// placeholder values.
 	PasswordFilterHidden = PasswordFilter("hidden")
 )
+
+// Service names particular network services provided by an ceph smb cluster.
+type Service string
+
+const (
+	// SMBService represents the core smb network file system service.
+	SMBService = Service("smb")
+	// SMBMetricsService represents the prometheus style metrics service.
+	SMBMetricsService = Service("smbmetrics")
+	// CTDBService represents the ctdb service used to coordinate clusters.
+	CTDBService = Service("ctdb")
+	// RemoteControlService represents a cloud compatible remote control
+	// service (based on gRPC).
+	RemoteControlService = Service("remote-control")
+)

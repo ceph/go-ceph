@@ -1,6 +1,10 @@
-//go:build !(octopus || pacific || quincy || reef || squid || ceph_preview)
+//go:build !(octopus || pacific || quincy || reef || squid) && ceph_preview
 
 package smb
+
+// CustomPortsMap is used to configure a cluster with custom ports for
+// a specified service type.
+type CustomPortsMap map[Service]int
 
 // Cluster configures an SMB Cluster resource that is managed within a
 // Ceph cluster.
@@ -14,6 +18,9 @@ type Cluster struct {
 	Placement         Placement         `json:"placement,omitempty"`
 	Clustering        Clustering        `json:"clustering,omitempty"`
 	PublicAddrs       []PublicAddress   `json:"public_addrs,omitempty"`
+	// CustomPorts allows the customization of network port binding
+	// by virtual service name [PREVIEW].
+	CustomPorts CustomPortsMap `json:"custom_ports,omitempty"`
 }
 
 // Validate returns an error describing an issue with the resource or
@@ -21,3 +28,7 @@ type Cluster struct {
 func (cluster *Cluster) Validate() error {
 	return cluster.coreValidate()
 }
+
+// PREVIEW Field Group tracking
+// Group 1:
+//   CustomPorts
