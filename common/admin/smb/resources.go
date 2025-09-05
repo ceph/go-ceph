@@ -85,6 +85,8 @@ func (e *resourceEntry) UnmarshalJSON(data []byte) error {
 		e.r = new(JoinAuth)
 	case UsersAndGroupsType:
 		e.r = new(UsersAndGroups)
+	case TLSCredentialType:
+		e.r = new(TLSCredential)
 	default:
 		return fmt.Errorf("%w: %s", ErrUnknownResourceType, stub.ResourceType)
 	}
