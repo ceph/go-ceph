@@ -72,6 +72,7 @@ type Cluster struct {
 	Clustering        Clustering        `json:"clustering,omitempty"`
 	PublicAddrs       []PublicAddress   `json:"public_addrs,omitempty"`
 	CustomPorts       CustomPortsMap    `json:"custom_ports,omitempty"`
+	BindAddrs         []BindAddress     `json:"bind_addrs,omitempty"`
 }
 
 // Type returns a ResourceType value.
