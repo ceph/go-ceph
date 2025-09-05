@@ -55,6 +55,10 @@ type PublicAddress struct {
 	Destination []string
 }
 
+// CustomPortsMap is used to configure a cluster with custom ports for
+// a specified service type.
+type CustomPortsMap map[Service]int
+
 // Cluster configures an SMB Cluster resource that is managed within a
 // Ceph cluster.
 type Cluster struct {
@@ -67,6 +71,7 @@ type Cluster struct {
 	Placement         Placement         `json:"placement,omitempty"`
 	Clustering        Clustering        `json:"clustering,omitempty"`
 	PublicAddrs       []PublicAddress   `json:"public_addrs,omitempty"`
+	CustomPorts       CustomPortsMap    `json:"custom_ports,omitempty"`
 }
 
 // Type returns a ResourceType value.
