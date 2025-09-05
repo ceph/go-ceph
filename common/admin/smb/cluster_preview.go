@@ -21,6 +21,9 @@ type Cluster struct {
 	// CustomPorts allows the customization of network port binding
 	// by virtual service name [PREVIEW].
 	CustomPorts CustomPortsMap `json:"custom_ports,omitempty"`
+	// BindAddrs allows specifying the addresses/networks an SMB cluster
+	// running on a ceph node will bind to [PREVIEW].
+	BindAddrs []BindAddress `json:"bind_addrs,omitempty"`
 }
 
 // Validate returns an error describing an issue with the resource or
@@ -32,3 +35,4 @@ func (cluster *Cluster) Validate() error {
 // PREVIEW Field Group tracking
 // Group 1:
 //   CustomPorts
+//   BindAddress
