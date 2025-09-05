@@ -147,6 +147,8 @@ func (suite *SMBAdminSuite) TearDownTest() {
 			res.IntentValue = Removed
 		case *UsersAndGroups:
 			res.IntentValue = Removed
+		case *TLSCredential:
+			res.IntentValue = Removed
 		}
 	}
 	if len(r) > 0 {
