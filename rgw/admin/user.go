@@ -42,11 +42,13 @@ type SubuserSpec struct {
 	Access SubuserAccess `json:"permissions" url:"access"`
 
 	// these are always nil in answers, they are only relevant in requests
-	GenerateKey *bool   `json:"-" url:"generate-key"`
-	SecretKey   *string `json:"-" url:"secret-key"`
-	Secret      *string `json:"-" url:"secret"`
-	PurgeKeys   *bool   `json:"-" url:"purge-keys"`
-	KeyType     *string `json:"-" url:"key-type"`
+	GenerateKey       *bool   `json:"-" url:"generate-key"`
+	GenerateAccessKey *bool   `json:"-" url:"gen-access-key"`
+	AccessKey         *string `json:"-" url:"access-key"`
+	SecretKey         *string `json:"-" url:"secret-key"`
+	Secret            *string `json:"-" url:"secret"`
+	PurgeKeys         *bool   `json:"-" url:"purge-keys"`
+	KeyType           *string `json:"-" url:"key-type"`
 }
 
 // SubuserAccess represents an access level for a subuser

@@ -48,9 +48,8 @@ func (api *API) CreateSubuser(ctx context.Context, user User, subuser SubuserSpe
 	if !subuser.validateSubuserAccess() {
 		return makeInvalidSubuserAccessLevelError(subuser)
 	}
-	// valid parameters not supported by go-ceph: access-key, gen-access-key
 	v := valueToURLParams(user, []string{"uid"})
-	addToURLParams(&v, subuser, []string{"subuser", "access", "secret-key", "generate-secret", "key-type"})
+	addToURLParams(&v, subuser, []string{"subuser", "access", "access-key", "secret-key", "generate-secret", "gen-access-key", "key-type"})
 	_, err := api.call(ctx, http.MethodPut, "/user", v)
 	if err != nil {
 		return err
