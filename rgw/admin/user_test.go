@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -177,7 +178,19 @@ func (suite *RadosGWTestSuite) TestUser() {
 	})
 
 	suite.T().Run("create a subuser", func(_ *testing.T) {
-		err := co.CreateSubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{Name: "foo", Access: SubuserAccessReadWrite})
+		var (
+			accessKey = "SUBUSER_ACCESS_KEY"
+			secretKey = "SUBUSER_SECRET_KEY"
+		)
+		err := co.CreateSubuser(context.Background(), User{ID: "leseb"}, SubuserSpec{
+			Name:              "foo",
+			Access:            SubuserAccessReadWrite,
+			KeyType:           &[]string{"s3"}[0],
+			AccessKey:         &accessKey,
+			SecretKey:         &secretKey,
+			GenerateKey:       &[]bool{false}[0],
+			GenerateAccessKey: &[]bool{false}[0],
+		})
 		assert.NoError(suite.T(), err)
 
 		user, err := co.GetUser(context.Background(), User{ID: "leseb"})
@@ -186,6 +199,14 @@ func (suite *RadosGWTestSuite) TestUser() {
 			assert.Equal(suite.T(), user.Subusers[0].Name, "leseb:foo")
 			// Note: the returned values are not equal to the input values ...
 			assert.Equal(suite.T(), user.Subusers[0].Access, SubuserAccess("read-write"))
+
+			// Check Keys
+			assert.Len(suite.T(), user.SwiftKeys, 0)
+
+			found := slices.ContainsFunc(user.Keys, func(key UserKeySpec) bool {
+				return key.User == "leseb:foo" && key.AccessKey == accessKey && key.SecretKey == secretKey
+			})
+			assert.True(suite.T(), found)
 		}
 	})
 
