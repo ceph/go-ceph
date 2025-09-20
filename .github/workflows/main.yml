@@ -71,7 +71,7 @@ jobs:
         - "quincy"
         - "reef"
         - "squid"
-      # - "tentacle"
+        - "tentacle"
         - "pre-reef"
         - "pre-squid"
         - "pre-tentacle"
