@@ -265,6 +265,7 @@ test-binaries: \
 	cephfs/admin.test \
 	common/admin/manager.test \
 	common/admin/nfs.test \
+	common/admin/nvmegw.test \
 	common/admin/smb.test \
 	internal/callbacks.test \
 	internal/commands.test \
