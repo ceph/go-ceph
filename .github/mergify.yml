@@ -13,6 +13,7 @@ queue_rules:
       - check-success=test-suite (quincy)
       - check-success=test-suite (reef)
       - check-success=test-suite (squid)
+      - check-success=test-suite (tentacle)
     merge_method: rebase
     update_method: rebase
 
@@ -40,6 +41,7 @@ pull_request_rules:
       - status-success=test-suite (quincy)
       - status-success=test-suite (reef)
       - status-success=test-suite (squid)
+      - status-success=test-suite (tentacle)
       - or:
         - and:
           - label=no-API
