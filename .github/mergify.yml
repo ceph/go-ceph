@@ -8,7 +8,6 @@ queue_rules:
     queue_conditions:
       - check-success=check
       - check-success=dpulls
-      - check-success=test-suite (octopus)
       - check-success=test-suite (pacific)
       - check-success=test-suite (quincy)
       - check-success=test-suite (reef)
@@ -36,7 +35,6 @@ pull_request_rules:
       - status-success=check
       - status-success=dpulls
       # See above
-      - status-success=test-suite (octopus)
       - status-success=test-suite (pacific)
       - status-success=test-suite (quincy)
       - status-success=test-suite (reef)
