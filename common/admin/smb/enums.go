@@ -24,6 +24,9 @@ const (
 	JoinAuthType = ResourceType("ceph.smb.join.auth")
 	// UsersAndGroupsType resources contain data used to define users and groups.
 	UsersAndGroupsType = ResourceType("ceph.smb.usersgroups")
+	// TLSCredentialType resources contain data used to establish TLS
+	// secured network connections.
+	TLSCredentialType = ResourceType("ceph.smb.tls.credential")
 )
 
 // SourceType indicates how a Cluster resource refers to another resource it
@@ -114,4 +117,19 @@ const (
 	// PasswordFilterHidden specifies passwords should be replaced by opaque
 	// placeholder values.
 	PasswordFilterHidden = PasswordFilter("hidden")
+)
+
+// Service names particular network services provided by an ceph smb cluster.
+type Service string
+
+const (
+	// SMBService represents the core smb network file system service.
+	SMBService = Service("smb")
+	// SMBMetricsService represents the prometheus style metrics service.
+	SMBMetricsService = Service("smbmetrics")
+	// CTDBService represents the ctdb service used to coordinate clusters.
+	CTDBService = Service("ctdb")
+	// RemoteControlService represents a cloud compatible remote control
+	// service (based on gRPC).
+	RemoteControlService = Service("remote-control")
 )

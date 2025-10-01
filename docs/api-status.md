@@ -136,4 +136,22 @@ UsersAndGroups.SetValues | v0.34.0 | v0.36.0 |
 NewUsersAndGroups | v0.34.0 | v0.36.0 | 
 NewLinkedUsersAndGroups | v0.34.0 | v0.36.0 | 
 NewUsersAndGroupsToRemove | v0.34.0 | v0.36.0 | 
+NewBindAddress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewNetworkBindAddress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BindAddress.MarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BindAddress.UnmarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BindAddress.Address | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BindAddress.Network | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BindAddress.IsNetwork | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BindAddress.String | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+RemoteControl.Validate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TLSCredential.Type | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TLSCredential.Intent | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TLSCredential.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TLSCredential.Validate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TLSCredential.MarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TLSCredential.Set | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewTLSCredential | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewLinkedTLSCredential | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewTLSCredentialToRemove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
