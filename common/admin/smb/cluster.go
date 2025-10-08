@@ -22,6 +22,14 @@ type UserGroupSource struct {
 	Ref        string     `json:"ref"`
 }
 
+// TLSCredentialSource identifies a TLS Credential resource that will be
+// used as a source for TLS-based connection security for a service
+// used for-or-by the smb cluster.
+type TLSCredentialSource struct {
+	SourceType SourceType `json:"source_type"`
+	Ref        string     `json:"ref"`
+}
+
 // DomainSettings are used to configure domain related settings for a
 // cluster using active directory authentication.
 type DomainSettings struct {
@@ -55,6 +63,41 @@ type PublicAddress struct {
 	Destination []string
 }
 
+// CustomPortsMap is used to configure a cluster with custom ports for
+// a specified service type.
+type CustomPortsMap map[Service]int
+
+// RemoteControl configures the optional smb cluster remote control subsystem.
+type RemoteControl struct {
+	// Enabled is used to explicitly enable or disable the remote control
+	// subsystem. If Enabled is true the remote control subsystem will be
+	// enabled, if false always disabled. If unset (nil) the state of the
+	// subsystem is determined by the TLS sources being set or not.
+	Enabled *bool `json:"enabled,omitempty"`
+	// Cert is used to provide a TLS certificate to the remote control service.
+	Cert *TLSCredentialSource `json:"cert,omitempty"`
+	// Key is used to provide a TLS key to the remote control service.
+	Key *TLSCredentialSource `json:"key,omitempty"`
+	// CACert is used to provide a TLS CA certificate to the remote control
+	// service.
+	CACert *TLSCredentialSource `json:"ca_cert,omitempty"`
+}
+
+// Validate returns an error describing an issue with the remote control
+// configuration or nil if the resource object is valid.
+func (rc *RemoteControl) Validate() error {
+	hasCert := rc.Cert != nil
+	hasKey := rc.Key != nil
+	hasCACert := rc.CACert != nil
+	if (hasCert || hasKey) && !(hasCert && hasKey) {
+		return fmt.Errorf("cert and key must be specified together")
+	}
+	if hasCACert && !(hasCert && hasKey) {
+		return fmt.Errorf("a CA cert must be specified with a cert and key")
+	}
+	return nil
+}
+
 // Cluster configures an SMB Cluster resource that is managed within a
 // Ceph cluster.
 type Cluster struct {
@@ -67,6 +110,9 @@ type Cluster struct {
 	Placement         Placement         `json:"placement,omitempty"`
 	Clustering        Clustering        `json:"clustering,omitempty"`
 	PublicAddrs       []PublicAddress   `json:"public_addrs,omitempty"`
+	CustomPorts       CustomPortsMap    `json:"custom_ports,omitempty"`
+	BindAddrs         []BindAddress     `json:"bind_addrs,omitempty"`
+	RemoteControl     *RemoteControl    `json:"remote_control,omitempty"`
 }
 
 // Type returns a ResourceType value.
@@ -132,6 +178,11 @@ func (cluster *Cluster) Validate() error {
 		}
 	default:
 		return fmt.Errorf("invalid AuthMode: %#v", cluster.AuthMode)
+	}
+	if cluster.RemoteControl != nil {
+		if err := cluster.RemoteControl.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
