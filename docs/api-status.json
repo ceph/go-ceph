@@ -653,17 +653,16 @@
         "comment": "FSQuiesce will quiesce the specified subvolumes in a volume.\nQuiescing a fs will prevent new writes to the subvolumes.\nSimilar To:\n\nceph fs quiesce <volume>\n",
         "added_in_version": "v0.27.0",
         "became_stable_version": "v0.29.0"
-      }
-    ],
-    "deprecated_api": [],
-    "preview_api": [
+      },
       {
         "name": "FSAdmin.SubVolumeSnapshotPath",
         "comment": "SubVolumeSnapshotPath returns the path for a snapshot from the source subvolume.\n\nSimilar To:\n\n\tceph fs subvolume snapshot getpath <volume> --group-name=<group> <source> <name>\n",
         "added_in_version": "v0.34.0",
-        "expected_stable_version": "v0.36.0"
+        "became_stable_version": "v0.36.0"
       }
-    ]
+    ],
+    "deprecated_api": [],
+    "preview_api": []
   },
   "rados": {
     "stable_api": [

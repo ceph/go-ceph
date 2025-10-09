@@ -15,11 +15,7 @@ File.Futimes | v0.35.0 | v0.37.0 |
 
 ## Package: cephfs/admin
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-FSAdmin.SubVolumeSnapshotPath | v0.34.0 | v0.36.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados
 
