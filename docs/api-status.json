@@ -2021,8 +2021,8 @@
       {
         "name": "Image.GetDataPoolID",
         "comment": "GetDataPoolID returns the ID of the data pool assigned to an image\n\nImplements:\n\n\tint64_t rbd_get_data_pool_id(rbd_image_t image)\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       }
     ]
   },
@@ -2816,32 +2816,26 @@
       {
         "name": "NewFromConn",
         "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.OSDBlocklist",
         "comment": "OSDBlocklist returns the list of blocklisted clients.\n\nSimilar To:\n\n\tceph osd blocklist ls\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.OSDBlocklistAdd",
         "comment": "OSDBlocklistAdd adds an ip address or network address in CIDR format to the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] add <ip_addr|cidr_network> [expire]\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.OSDBlocklistRemove",
         "comment": "OSDBlocklistRemove removes an ip address or network address from the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] rm <ip_addr|cidr_network>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
-      },
-      {
-        "name": "Float.MarshalJSON",
-        "comment": "MarshalJSON is a custom implementation for the JSON marshaling of Float.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       }
     ]
   }
