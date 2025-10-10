@@ -2041,6 +2041,12 @@
         "comment": "GetDataPoolID returns the ID of the data pool assigned to an image\n\nImplements:\n\n\tint64_t rbd_get_data_pool_id(rbd_image_t image)\n",
         "added_in_version": "v0.36.0",
         "expected_stable_version": "v0.38.0"
+      },
+      {
+        "name": "Image.RemoveSnapByID",
+        "comment": "RemoveSnapByID removes an existing snapshot. This can be used to manually\nremove a snapshot from the trash.\n\nImplements:\n\n\tint rbd_snap_remove_by_id(rbd_image_t image, uint64_t snap_id);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
