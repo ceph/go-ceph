@@ -76,16 +76,9 @@ func (e *resourceEntry) UnmarshalJSON(data []byte) error {
 	}
 	e.stubResource = stub
 
-	switch stub.ResourceType {
-	case ClusterType:
-		e.r = new(Cluster)
-	case ShareType:
-		e.r = new(Share)
-	case JoinAuthType:
-		e.r = new(JoinAuth)
-	case UsersAndGroupsType:
-		e.r = new(UsersAndGroups)
-	default:
+	if rnew, ok := resourceTypes[stub.ResourceType]; ok {
+		e.r = rnew()
+	} else {
 		return fmt.Errorf("%w: %s", ErrUnknownResourceType, stub.ResourceType)
 	}
 
@@ -264,4 +257,24 @@ func (a *Admin) RemoveJoinAuth(authID string) error {
 func (a *Admin) RemoveUsersAndGroups(ugID string) error {
 	rl := []Resource{NewUsersAndGroupsToRemove(ugID)}
 	return errorPick(a.Apply(rl, nil))
+}
+
+var resourceTypes map[ResourceType]func() Resource
+
+func init() {
+	if resourceTypes == nil {
+		resourceTypes = map[ResourceType]func() Resource{}
+	}
+	resourceTypes[ClusterType] = func() Resource {
+		return new(Cluster)
+	}
+	resourceTypes[ShareType] = func() Resource {
+		return new(Share)
+	}
+	resourceTypes[JoinAuthType] = func() Resource {
+		return new(JoinAuth)
+	}
+	resourceTypes[UsersAndGroupsType] = func() Resource {
+		return new(UsersAndGroups)
+	}
 }
