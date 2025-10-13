@@ -2459,7 +2459,128 @@
     ]
   },
   "common/admin/smb": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "NewBindAddress",
+        "comment": "NewBindAddress returns a BindAddress associated with a single IP address.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "NewNetworkBindAddress",
+        "comment": "NewNetworkBindAddress returns a BindAddress associated with a network\naddress. The network address is a range of addresses determined using\na prefix length.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindAddress.MarshalJSON",
+        "comment": "MarshalJSON supports marshalling a BindAddress to JSON.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindAddress.UnmarshalJSON",
+        "comment": "UnmarshalJSON supports un-marshalling a JSON to a BindAddress.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindAddress.Address",
+        "comment": "Address returns the IP address value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindAddress.Network",
+        "comment": "Network returns the IP network address value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindAddress.IsNetwork",
+        "comment": "IsNetwork returns true if this BindAddress contains a network value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindAddress.String",
+        "comment": "String returns a string representing this BindAddress.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Cluster.Validate",
+        "comment": "Validate returns an error describing an issue with the resource or\nnil if the resource object is valid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "RemoteControl.Validate",
+        "comment": "Validate returns an error describing an issue with the remote control\nconfiguration or nil if the resource object is valid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.Type",
+        "comment": "Type returns a ResourceType value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.Intent",
+        "comment": "Intent controls if a resource is to be created/updated or removed.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.SetIntent",
+        "comment": "SetIntent updates the resource's intent value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.Identity",
+        "comment": "Identity returns a ResourceRef identifying this tls credential resource.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.Validate",
+        "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.MarshalJSON",
+        "comment": "MarshalJSON supports marshalling a TLSCredential to JSON.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TLSCredential.Set",
+        "comment": "Set modifies a TLSCredential's credential type and credential value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "NewTLSCredential",
+        "comment": "NewTLSCredential returns a new empty TLSCredential.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "NewLinkedTLSCredential",
+        "comment": "NewLinkedTLSCredential returns a new TLSCredentialID with default values\nthat link the resource to a particular cluster. Linked resources can only\nbe used by the cluster they link to and are automatically deleted when the\nlinked cluster is deleted.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "NewTLSCredentialToRemove",
+        "comment": "NewTLSCredentialToRemove returns a new TLSCredential with default values\nset to remove the credential resource from management.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ],
     "stable_api": [
       {
         "name": "NewFromConn",
