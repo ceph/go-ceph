@@ -17,23 +17,6 @@ type DomainSettings struct {
 	JoinSources []JoinAuthSource `json:"join_sources"`
 }
 
-// Placement is passed to cephadm to determine where cluster services
-// will be run.
-type Placement map[string]any
-
-// SimplePlacement returns a placement with common placement parameters - count
-// and label - specified.
-func SimplePlacement(count int, label string) Placement {
-	p := Placement{}
-	if count > 0 {
-		p["count"] = count
-	}
-	if label != "" {
-		p["label"] = label
-	}
-	return p
-}
-
 // PublicAddress used by a cluster with integrated Samba clustering enabled.
 type PublicAddress struct {
 	Address     string
