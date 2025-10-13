@@ -24,6 +24,9 @@ const (
 	JoinAuthType = ResourceType("ceph.smb.join.auth")
 	// UsersAndGroupsType resources contain data used to define users and groups.
 	UsersAndGroupsType = ResourceType("ceph.smb.usersgroups")
+	// TLSCredentialType resources contain data used to establish TLS
+	// secured network connections.
+	TLSCredentialType = ResourceType("ceph.smb.tls.credential")
 )
 
 // SourceType indicates how a Cluster resource refers to another resource it
