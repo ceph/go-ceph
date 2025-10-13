@@ -137,7 +137,14 @@ func (suite *SMBAdminSuite) TearDownTest() {
 	sa := NewFromConn(suite.vconn.Get(suite.T()))
 	r, err := sa.Show(nil, nil)
 	suite.Assert().NoError(err)
+
 	for i := range r {
+		if sio, ok := r[i].(interface{ SetIntent(Intent) }); ok {
+			sio.SetIntent(Removed)
+			continue
+		}
+		// TODO: maybe go back and make a SetIntent receiver for the
+		// existing core resource types
 		switch res := r[i].(type) {
 		case *Cluster:
 			res.IntentValue = Removed
