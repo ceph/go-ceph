@@ -2844,26 +2844,26 @@
       {
         "name": "NewFromConn",
         "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.CreateGateway",
         "comment": "CreateGateway will create a new NVMe-oF gateway for accessing RBD-image.\n\nSimilar To:\n\n\tceph nvme-gw create gw pool group\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.DeleteGateway",
         "comment": "DeleteGateway will delete a NVMe-oF gateway for accessing RBD-image.\n\nSimilar To:\n\n\tceph nvme-gw delete gw pool group\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.ShowGateways",
         "comment": "ShowGateways returns a list of gateways for the pool and group.\n\nSimilar To:\n\n\tceph nvme-gw show pool group\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.36.0",
+        "expected_stable_version": "v0.38.0"
       }
     ]
   }

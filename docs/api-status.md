@@ -86,8 +86,8 @@ Admin.OSDBlocklistRemove | v0.36.0 | v0.38.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-NewFromConn | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Admin.CreateGateway | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Admin.DeleteGateway | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Admin.ShowGateways | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewFromConn | v0.36.0 | v0.38.0 | 
+Admin.CreateGateway | v0.36.0 | v0.38.0 | 
+Admin.DeleteGateway | v0.36.0 | v0.38.0 | 
+Admin.ShowGateways | v0.36.0 | v0.38.0 | 
 
