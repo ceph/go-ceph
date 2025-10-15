@@ -402,6 +402,24 @@
         "comment": "Close closes the snapshot diff handle.\n\nImplements:\n\n\tint ceph_close_snapdiff(struct ceph_snapdiff_info* snapdiff);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FileBlockDiffInit",
+        "comment": "FileBlockDiffInit initializes the block diff stream to get file block deltas.\nIt takes the mount handle, root path, relative path, snapshot names and returns\na FileBlockDiffInfo struct that contains the block diff stream handle.\n\nImplements:\n\n\t    int ceph_file_blockdiff_init(\n\t\t    struct ceph_mount_info* cmount,\n\t\t\tconst char* root_path,\n\t\t\tconst char* rel_path,\n\t\t\tconst char* snap1,\n\t\t\tconst char* snap2,\n\t\t\tstruct ceph_file_blockdiff_info* out_info);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FileBlockDiffInfo.ReadFileBlockDiff",
+        "comment": "ReadFileBlockDiff retrieves the next set of file block diffs.\nIt returns\n  - a boolean which is set to true if there are no more\n    entries after this call\n  - a FileBlockDiffChangedBlocks struct that contains\n    the number of blocks and list of CBlocks.\n  - and a error if any.\n\nImplements:\n\nint ceph_file_blockdiff(struct ceph_file_blockdiff_info* info,\n\n\tstruct ceph_file_blockdiff_changedblocks* blocks);\n\nvoid ceph_free_file_blockdiff_buffer(struct ceph_file_blockdiff_changedblocks* blocks);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FileBlockDiffInfo.Close",
+        "comment": "Close closes the block diff stream.\n\nImplements:\n\nint ceph_file_blockdiff_finish(struct ceph_file_blockdiff_info* info);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },

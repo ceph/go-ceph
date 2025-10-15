@@ -15,6 +15,9 @@ File.Futimes | v0.35.0 | v0.37.0 |
 OpenSnapDiff | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 SnapDiffInfo.Readdir | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 SnapDiffInfo.Close | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInfo.ReadFileBlockDiff | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInfo.Close | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: cephfs/admin
 
