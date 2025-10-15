@@ -402,6 +402,30 @@
         "comment": "Close closes the snapshot diff handle.\n\nImplements:\n\n\tint ceph_close_snapdiff(struct ceph_snapdiff_info* snapdiff);\n",
         "added_in_version": "v0.37.0",
         "expected_stable_version": "v0.39.0"
+      },
+      {
+        "name": "FileBlockDiffInit",
+        "comment": "FileBlockDiffInit initializes the block diff stream to get file block deltas.\nIt takes the mount handle, root path, relative path, snapshot names and returns\na FileBlockDiffInfo struct that contains the block diff stream handle.\n\nImplements:\n\n\t    int ceph_file_blockdiff_init(\n\t\t    struct ceph_mount_info* cmount,\n\t\t\tconst char* root_path,\n\t\t\tconst char* rel_path,\n\t\t\tconst char* snap1,\n\t\t\tconst char* snap2,\n\t\t\tstruct ceph_file_blockdiff_info* out_info);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FileBlockDiffInfo.Close",
+        "comment": "Close closes the block diff stream.\n\nImplements:\n\nint ceph_file_blockdiff_finish(struct ceph_file_blockdiff_info* info);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FileBlockDiffInfo.More",
+        "comment": "More returns true if there are more entries to read in the block diff stream.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "FileBlockDiffInfo.Read",
+        "comment": "Read retrieves the next set of file block diffs.\nIt returns\n  - FileBlockDiffChangedBlocks struct that contains the number of blocks and list of ChangedBlocks and error if any.\n\nImplements:\n\n\tint ceph_file_blockdiff(struct ceph_file_blockdiff_info* info,\n\t\t\t\t\t   \t\tstruct ceph_file_blockdiff_changedblocks* blocks);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
