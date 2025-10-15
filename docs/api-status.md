@@ -11,6 +11,10 @@ Name | Added in Version | Expected Stable Version |
 OpenSnapDiff | v0.37.0 | v0.39.0 | 
 SnapDiffInfo.Readdir | v0.37.0 | v0.39.0 | 
 SnapDiffInfo.Close | v0.37.0 | v0.39.0 | 
+FileBlockDiffInit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInfo.Close | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInfo.More | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInfo.Read | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: cephfs/admin
 
