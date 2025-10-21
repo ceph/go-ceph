@@ -31,6 +31,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 Image.GetDataPoolID | v0.36.0 | v0.38.0 | 
+Image.RemoveSnapByID | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 
