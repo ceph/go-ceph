@@ -98,7 +98,7 @@ jobs:
       run: make test-containers-clean "CEPH_VERSION=${{ matrix.ceph_version }}"
     - name: Archive test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: "go-ceph-results-${{ matrix.ceph_version }}-${{ matrix.go_version }}"
         path: |
