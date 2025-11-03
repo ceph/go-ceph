@@ -158,5 +158,6 @@ different channels:
   [user's mailing list](https://lists.ceph.io/hyperkitty/list/ceph-users@ceph.io/)
   and [dev list](https://lists.ceph.io/hyperkitty/list/dev@ceph.io/)
   and we also announce our releases on those lists
-* You can sometimes find us in the
-  [#ceph-devel IRC channel](https://ceph.io/irc/) - hours may vary
+* You can sometimes chat with us in realtime in the
+  [#go-ceph Slack channel](https://ceph.io/en/community/connect/) or
+  [#ceph-devel Slack channel](https://ceph.io/en/community/connect/)
