@@ -266,15 +266,23 @@ test-binaries: \
 	common/admin/manager.test \
 	common/admin/nfs.test \
 	common/admin/nvmegw.test \
+	common/admin/osd.test \
 	common/admin/smb.test \
+	common/commands.test \
+	common/log.test \
 	internal/callbacks.test \
 	internal/commands.test \
 	internal/cutil.test \
+	internal/dlsym.test \
 	internal/errutil.test \
+	internal/log.test \
 	internal/retry.test \
 	rados.test \
+	rados/striper.test \
 	rbd.test \
-	rbd/admin.test
+	rbd/admin.test \
+	rgw.test \
+	rgw/admin.test
 test-bins: test-binaries
 
 %.test: % force_go_build
