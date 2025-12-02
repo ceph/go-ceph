@@ -12,7 +12,7 @@ jobs:
     steps:
     # Checkout with fetch-depth=0 in order to fetch (all) tags.
     # The Makefile runs git commands to pass tag info to the apiage script.
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       with:
         fetch-depth: 0
     - name: Run makefile
