@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ceph/go-ceph/internal/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,11 @@ func TestFetchVolumeInfo(t *testing.T) {
 		vinfo, err := fsa.FetchVolumeInfo(volume)
 		assert.NoError(t, err)
 		assert.NotNil(t, vinfo)
-		assert.Contains(t, vinfo.MonAddrs[0], "6789")
+		if util.CurrentCephVersion() > util.CephTentacle {
+			assert.Contains(t, vinfo.MonAddrs[0], "3300")
+		} else {
+			assert.Contains(t, vinfo.MonAddrs[0], "6789")
+		}
 		assert.Equal(t, "cephfs_data", vinfo.Pools.DataPool[0].Name)
 	})
 
