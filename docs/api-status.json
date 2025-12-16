@@ -2123,14 +2123,7 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [
-      {
-        "name": "API.CheckBucketIndex",
-        "comment": "CheckBucketIndex - https://docs.ceph.com/en/reef/radosgw/adminops/#check-bucket-index\n",
-        "added_in_version": "v0.33.0",
-        "expected_stable_version": "v0.35.0"
-      }
-    ],
+    "preview_api": [],
     "stable_api": [
       {
         "name": "API.ListBuckets",
@@ -2280,6 +2273,12 @@
         "comment": "SetBucketQuota - https://docs.ceph.com/en/latest/radosgw/adminops/#set-bucket-quota\n",
         "added_in_version": "v0.26.0",
         "became_stable_version": "v0.28.0"
+      },
+      {
+        "name": "API.CheckBucketIndex",
+        "comment": "CheckBucketIndex checks the index of an existing bucket.\nNOTE: to check multipart object accounting with check-objects, fix must be set to True.\n",
+        "added_in_version": "v0.33.0",
+        "became_stable_version": "v0.37.0"
       }
     ]
   },
