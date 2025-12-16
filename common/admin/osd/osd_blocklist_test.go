@@ -4,7 +4,9 @@ package osd
 
 import (
 	"errors"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -43,11 +45,25 @@ func (suite *OSDAdminSuite) TestOSDBlocklist() {
 		assert.Error(t, err)
 		assert.Equal(t, err, ErrInvalidArgument)
 
+		t1 := time.Now().UTC().Truncate(time.Microsecond)
+
 		err = osda.OSDBlocklistAdd(AddressEntry{
 			Addr:   "192.168.122.3",
 			Expire: 22.3,
 		})
 		assert.NoError(t, err)
+
+		res, err := osda.OSDBlocklist()
+		assert.NoError(t, err)
+
+		for _, entry := range *res {
+			if strings.Contains(entry.Addr, "192.168.122.3") {
+				t2 := entry.Until.UTC()
+				assert.InDelta(t,
+					22.3, t2.Sub(t1).Seconds(), 0.05)
+				break
+			}
+		}
 
 		// add invalid network
 		err = osda.OSDBlocklistAdd(AddressEntry{
