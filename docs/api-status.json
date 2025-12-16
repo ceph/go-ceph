@@ -388,20 +388,20 @@
       {
         "name": "OpenSnapDiff",
         "comment": "OpenSnapDiff opens a snapshot diff stream to get snapshots delta\nand returns a SnapDiffInfo struct containing the diff information.\n\nImplements:\n\n\tint ceph_open_snapdiff(struct ceph_mount_info* cmount,\n\t                       const char* root_path,\n\t                       const char* rel_path,\n\t                       const char* snap1,\n\t                       const char* snap2,\n\t                       struct ceph_snapdiff_info* out);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "SnapDiffInfo.Readdir",
         "comment": "Readdir returns the next entry in the snapshot diff stream.\nIf there are no more entries, it returns (nil, nil).\n\nImplements:\n\n\tint ceph_readdir_snapdiff(struct ceph_snapdiff_info* snapdiff,\n\t                           struct ceph_snapdiff_entry_t* out);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "SnapDiffInfo.Close",
         "comment": "Close closes the snapshot diff handle.\n\nImplements:\n\n\tint ceph_close_snapdiff(struct ceph_snapdiff_info* snapdiff);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       }
     ]
   },
@@ -2045,8 +2045,8 @@
       {
         "name": "Image.RemoveSnapByID",
         "comment": "RemoveSnapByID removes an existing snapshot. This can be used to manually\nremove a snapshot from the trash.\n\nImplements:\n\n\tint rbd_snap_remove_by_id(rbd_image_t image, uint64_t snap_id);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       }
     ]
   },
@@ -2468,122 +2468,122 @@
       {
         "name": "NewBindAddress",
         "comment": "NewBindAddress returns a BindAddress associated with a single IP address.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "NewNetworkBindAddress",
         "comment": "NewNetworkBindAddress returns a BindAddress associated with a network\naddress. The network address is a range of addresses determined using\na prefix length.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "BindAddress.MarshalJSON",
         "comment": "MarshalJSON supports marshalling a BindAddress to JSON.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "BindAddress.UnmarshalJSON",
         "comment": "UnmarshalJSON supports un-marshalling a JSON to a BindAddress.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "BindAddress.Address",
         "comment": "Address returns the IP address value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "BindAddress.Network",
         "comment": "Network returns the IP network address value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "BindAddress.IsNetwork",
         "comment": "IsNetwork returns true if this BindAddress contains a network value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "BindAddress.String",
         "comment": "String returns a string representing this BindAddress.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "Cluster.Validate",
         "comment": "Validate returns an error describing an issue with the resource or\nnil if the resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "RemoteControl.Validate",
         "comment": "Validate returns an error describing an issue with the remote control\nconfiguration or nil if the resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.Type",
         "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.Intent",
         "comment": "Intent controls if a resource is to be created/updated or removed.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.SetIntent",
         "comment": "SetIntent updates the resource's intent value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.Identity",
         "comment": "Identity returns a ResourceRef identifying this tls credential resource.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.Validate",
         "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.MarshalJSON",
         "comment": "MarshalJSON supports marshalling a TLSCredential to JSON.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "TLSCredential.Set",
         "comment": "Set modifies a TLSCredential's credential type and credential value.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "NewTLSCredential",
         "comment": "NewTLSCredential returns a new empty TLSCredential.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "NewLinkedTLSCredential",
         "comment": "NewLinkedTLSCredential returns a new TLSCredentialID with default values\nthat link the resource to a particular cluster. Linked resources can only\nbe used by the cluster they link to and are automatically deleted when the\nlinked cluster is deleted.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "NewTLSCredentialToRemove",
         "comment": "NewTLSCredentialToRemove returns a new TLSCredential with default values\nset to remove the credential resource from management.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.37.0",
+        "expected_stable_version": "v0.39.0"
       }
     ],
     "stable_api": [

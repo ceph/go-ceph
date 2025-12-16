@@ -8,9 +8,9 @@
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-OpenSnapDiff | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SnapDiffInfo.Readdir | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-SnapDiffInfo.Close | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+OpenSnapDiff | v0.37.0 | v0.39.0 | 
+SnapDiffInfo.Readdir | v0.37.0 | v0.39.0 | 
+SnapDiffInfo.Close | v0.37.0 | v0.39.0 | 
 
 ## Package: cephfs/admin
 
@@ -27,7 +27,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 Image.GetDataPoolID | v0.36.0 | v0.38.0 | 
-Image.RemoveSnapByID | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.RemoveSnapByID | v0.37.0 | v0.39.0 | 
 
 ### Deprecated APIs
 
@@ -67,26 +67,26 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-NewBindAddress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-NewNetworkBindAddress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-BindAddress.MarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-BindAddress.UnmarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-BindAddress.Address | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-BindAddress.Network | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-BindAddress.IsNetwork | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-BindAddress.String | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-Cluster.Validate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-RemoteControl.Validate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.Type | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.Intent | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.SetIntent | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.Validate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.MarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TLSCredential.Set | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-NewTLSCredential | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-NewLinkedTLSCredential | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-NewTLSCredentialToRemove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+NewBindAddress | v0.37.0 | v0.39.0 | 
+NewNetworkBindAddress | v0.37.0 | v0.39.0 | 
+BindAddress.MarshalJSON | v0.37.0 | v0.39.0 | 
+BindAddress.UnmarshalJSON | v0.37.0 | v0.39.0 | 
+BindAddress.Address | v0.37.0 | v0.39.0 | 
+BindAddress.Network | v0.37.0 | v0.39.0 | 
+BindAddress.IsNetwork | v0.37.0 | v0.39.0 | 
+BindAddress.String | v0.37.0 | v0.39.0 | 
+Cluster.Validate | v0.37.0 | v0.39.0 | 
+RemoteControl.Validate | v0.37.0 | v0.39.0 | 
+TLSCredential.Type | v0.37.0 | v0.39.0 | 
+TLSCredential.Intent | v0.37.0 | v0.39.0 | 
+TLSCredential.SetIntent | v0.37.0 | v0.39.0 | 
+TLSCredential.Identity | v0.37.0 | v0.39.0 | 
+TLSCredential.Validate | v0.37.0 | v0.39.0 | 
+TLSCredential.MarshalJSON | v0.37.0 | v0.39.0 | 
+TLSCredential.Set | v0.37.0 | v0.39.0 | 
+NewTLSCredential | v0.37.0 | v0.39.0 | 
+NewLinkedTLSCredential | v0.37.0 | v0.39.0 | 
+NewTLSCredentialToRemove | v0.37.0 | v0.39.0 | 
 
 ## Package: common/admin/osd
 
