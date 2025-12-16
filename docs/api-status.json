@@ -358,33 +358,33 @@
         "comment": "Open opens the named file. This may be either a regular file or a directory.\nDirectories opened with this function will return object compatible with the\nio.ReadDirFile interface.\n",
         "added_in_version": "v0.33.0",
         "became_stable_version": "v0.35.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "File.Fd",
         "comment": "Fd returns the integer open file descriptor in cephfs.\nNOTE: It doesn't make sense to consume the returned integer fd anywhere\noutside CephFS and is recommended not to do so given the undefined behaviour.\nAlso, as seen with the Go standard library, the fd is only valid as long as\nthe corresponding File object is intact in the sense that an fd from a closed\nFile object is invalid.\n",
         "added_in_version": "v0.35.0",
-        "expected_stable_version": "v0.37.0"
+        "became_stable_version": "v0.37.0"
       },
       {
         "name": "File.Futime",
         "comment": "Futime changes file/directory last access and modification times.\n\nImplements:\n\n\tint ceph_futime(struct ceph_mount_info *cmount, int fd, struct utimbuf *buf);\n",
         "added_in_version": "v0.35.0",
-        "expected_stable_version": "v0.37.0"
+        "became_stable_version": "v0.37.0"
       },
       {
         "name": "File.Futimens",
         "comment": "Futimens changes file/directory last access and modification times, here times param\nis an array of Timespec struct having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimens(struct ceph_mount_info *cmount, int fd, struct timespec times[2]);\n",
         "added_in_version": "v0.35.0",
-        "expected_stable_version": "v0.37.0"
+        "became_stable_version": "v0.37.0"
       },
       {
         "name": "File.Futimes",
         "comment": "Futimes changes file/directory last access and modification times, here times param\nis an array of Timeval struct type having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimes(struct ceph_mount_info *cmount, int fd, struct timeval times[2]);\n",
         "added_in_version": "v0.35.0",
-        "expected_stable_version": "v0.37.0"
-      },
+        "became_stable_version": "v0.37.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "OpenSnapDiff",
         "comment": "OpenSnapDiff opens a snapshot diff stream to get snapshots delta\nand returns a SnapDiffInfo struct containing the diff information.\n\nImplements:\n\n\tint ceph_open_snapdiff(struct ceph_mount_info* cmount,\n\t                       const char* root_path,\n\t                       const char* rel_path,\n\t                       const char* snap1,\n\t                       const char* snap2,\n\t                       struct ceph_snapdiff_info* out);\n",
