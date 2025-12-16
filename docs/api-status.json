@@ -2967,19 +2967,19 @@
         "name": "Admin.OSDBlocklist",
         "comment": "OSDBlocklist returns the list of blocklisted clients.\n\nSimilar To:\n\n\tceph osd blocklist ls\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "Admin.OSDBlocklistAdd",
         "comment": "OSDBlocklistAdd adds an ip address or network address in CIDR format to the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] add <ip_addr|cidr_network> [expire]\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "expected_stable_version": "v0.39.0"
       },
       {
         "name": "Admin.OSDBlocklistRemove",
         "comment": "OSDBlocklistRemove removes an ip address or network address from the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] rm <ip_addr|cidr_network>\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "expected_stable_version": "v0.39.0"
       }
     ]
   },
