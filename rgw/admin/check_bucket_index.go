@@ -1,4 +1,4 @@
-//go:build ceph_preview && !octopus
+//go:build !octopus
 
 package admin
 
