@@ -166,7 +166,7 @@ launch_radosgw() {
     # not going to try to make shellcheck happy with this line at this time
     # shellcheck disable=SC2016
     timeout 60 sh -c 'until [ $(ceph -s | grep -c "rgw:") -eq 1 ]; do echo "waiting for rgw to show up" && sleep 1; done'
-    radosgw-admin user create --uid admin --display-name "Admin User" --caps "buckets=*;users=*;usage=read;metadata=read" --access-key="$S3_ACCESS_KEY" --secret-key="$S3_SECRET_KEY"
+    radosgw-admin user create --uid admin --display-name "Admin User" --caps "buckets=*;users=*;usage=read;metadata=read;account=*" --access-key="$S3_ACCESS_KEY" --secret-key="$S3_SECRET_KEY"
 }
 
 launch_radosgw2() {
