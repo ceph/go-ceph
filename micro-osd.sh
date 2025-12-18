@@ -173,6 +173,10 @@ launch_radosgw2() {
     radosgw-admin caps add --uid=admin --caps="info=read"
 }
 
+launch_radosgw3() {
+    radosgw-admin caps add --uid=admin --caps="accounts=*"
+}
+
 selftest() {
     ceph --version
     ceph status
@@ -195,8 +199,11 @@ if [ -z "$FEATURESET" ] ; then
         pacific)
             FEATURESET="mon osd mgr mds mds2 rbd-mirror cephfs-mirror rgw selftest"
         ;;
-        *)
+        quincy|reef)
             FEATURESET="mon osd mgr mds mds2 rbd-mirror cephfs-mirror rgw rgw2 selftest"
+        ;;
+        *)
+            FEATURESET="mon osd mgr mds mds2 rbd-mirror cephfs-mirror rgw rgw2 rgw3 selftest"
         ;;
     esac
 fi
@@ -213,6 +220,7 @@ for fname in ${FEATURESET} ; do
         cephfs-mirror) launch_cephfs_mirror ;;
         rgw|radosgw) launch_radosgw ;;
         rgw2|radosgw2) launch_radosgw2 ;;
+        rgw3|radosgw3) launch_radosgw3 ;;
         selftest) selftest ;;
         *)
             echo "Invalid feature: ${fname}"

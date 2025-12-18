@@ -2147,7 +2147,32 @@
     ]
   },
   "rgw/admin": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "API.CreateAccount",
+        "comment": "CreateAccount will create a new RGW account\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.GetAccount",
+        "comment": "GetAccount will return the RGW account details\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.DeleteAccount",
+        "comment": "DeleteAccount will delete the RGW account\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.ModifyAccount",
+        "comment": "ModifyAccount will modify the RGW account\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ],
     "stable_api": [
       {
         "name": "API.ListBuckets",

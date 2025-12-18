@@ -85,6 +85,9 @@ const (
 	// ErrSignatureDoesNotMatch - the query to the API has invalid parameters
 	ErrSignatureDoesNotMatch errorReason = "SignatureDoesNotMatch"
 
+	// ErrAccountAlreadyExists indicates that the account already exists
+	ErrAccountAlreadyExists errorReason = "AccountAlreadyExists"
+
 	unmarshalError = "failed to unmarshal radosgw http response"
 )
 
