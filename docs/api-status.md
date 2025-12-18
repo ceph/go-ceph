@@ -47,7 +47,14 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rgw/admin
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+API.CreateAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.GetAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.DeleteAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.ModifyAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/manager
 
