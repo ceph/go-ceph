@@ -4,7 +4,6 @@
 package admin
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -13,13 +12,6 @@ import (
 
 	"github.com/ceph/go-ceph/rbd"
 )
-
-func skipIfQuincy(t *testing.T) {
-	vname := os.Getenv("CEPH_VERSION")
-	if vname == "quincy" {
-		t.Skipf("disabled on ceph %s", vname)
-	}
-}
 
 func TestMirrorSnapshotScheduleStatus(t *testing.T) {
 	// note: the status function doesn't return anything "useful" unless
