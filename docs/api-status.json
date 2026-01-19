@@ -1012,6 +1012,9 @@
         "name": "OperationError.Error"
       },
       {
+        "name": "OperationError.Unwrap"
+      },
+      {
         "name": "Version",
         "comment": "Version returns the major, minor, and patch components of the version of\nthe RADOS library linked against.\n"
       },
