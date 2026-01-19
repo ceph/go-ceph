@@ -1,6 +1,7 @@
 package rados
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -34,6 +35,31 @@ func TestOperationError(t *testing.T) {
 	assert.Contains(t, estr, "write operation error")
 	assert.NotContains(t, estr, "op=")
 	assert.Contains(t, estr, "Step#0=unlucky")
+}
+
+func TestOperationErrorUnwrap(t *testing.T) {
+	se1 := fmt.Errorf("limit exceeded")
+	se2 := errors.ErrUnsupported
+	oe := OperationError{
+		kind:    writeOp,
+		OpError: ErrObjectExists,
+		StepErrors: map[int]error{
+			1: se1,
+			2: se2,
+		},
+	}
+
+	subErrors := oe.Unwrap()
+	assert.Contains(t, subErrors, ErrObjectExists)
+	assert.Contains(t, subErrors, se1)
+	assert.Contains(t, subErrors, se1)
+	assert.NotContains(t, subErrors, ErrInvalidIOContext)
+
+	assert.Error(t, oe)
+	assert.ErrorIs(t, oe, ErrObjectExists)
+	assert.ErrorIs(t, oe, se1)
+	assert.ErrorIs(t, oe, se2)
+	assert.NotErrorIs(t, oe, ErrInvalidIOContext)
 }
 
 type fooStep struct {
