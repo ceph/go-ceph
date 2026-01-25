@@ -113,6 +113,9 @@ type ShowOptions struct {
 	// PasswordFilter can be used to filter/obfuscate password values
 	// stored on the Ceph cluster.
 	PasswordFilter PasswordFilter
+
+	// custom unmarshaler for show
+	unmarshal func(r commands.Response) ([]Resource, error)
 }
 
 // Show smb module resource descriptions stored on the Ceph cluster.
@@ -141,8 +144,12 @@ func (a *Admin) Show(refs []ResourceRef, opts *ShowOptions) (
 	if opts != nil && opts.PasswordFilter != PasswordFilterUnset {
 		m["password_filter"] = string(opts.PasswordFilter)
 	}
-	g := resourceGroup{}
 	c := commands.MarshalMgrCommand(a.conn, m)
+	if opts != nil && opts.unmarshal != nil {
+		// use custom unmarshal function (for GenericResource)
+		return opts.unmarshal(c)
+	}
+	g := resourceGroup{}
 	if err := c.NoStatus().Unmarshal(&g).End(); err != nil {
 		return nil, err
 	}
