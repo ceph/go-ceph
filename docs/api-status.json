@@ -2060,15 +2060,15 @@
         "comment": "DiffIterateByID calls a callback on changed extents of an image.\n\nCalling DiffIterateByID will cause the callback specified in the\nDiffIterateByIDConfig to be called as many times as there are changed\nregions in the image (controlled by the parameters as passed to librbd).\n\nSee the documentation of DiffIterateCallback for a description of the\narguments to the callback and the return behavior.\n\nImplements:\n\n\tint rbd_diff_iterate3(rbd_image_t image,\n\t                      uint64_t from_snap_id,\n\t                      uint64_t ofs, uint64_t len,\n\t                      uint32_t flags,\n\t                      int (*cb)(uint64_t, size_t, int, void *),\n\t                      void *arg);\n",
         "added_in_version": "v0.33.0",
         "became_stable_version": "v0.35.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Image.GetDataPoolID",
         "comment": "GetDataPoolID returns the ID of the data pool assigned to an image\n\nImplements:\n\n\tint64_t rbd_get_data_pool_id(rbd_image_t image)\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
-      },
+        "became_stable_version": "v0.38.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "Image.RemoveSnapByID",
         "comment": "RemoveSnapByID removes an existing snapshot. This can be used to manually\nremove a snapshot from the trash.\n\nImplements:\n\n\tint rbd_snap_remove_by_id(rbd_image_t image, uint64_t snap_id);\n",
@@ -3010,12 +3010,6 @@
   "common/admin/osd": {
     "preview_api": [
       {
-        "name": "NewFromConn",
-        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
-        "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
-      },
-      {
         "name": "Admin.OSDBlocklist",
         "comment": "OSDBlocklist returns the list of blocklisted clients.\n\nSimilar To:\n\n\tceph osd blocklist ls\n",
         "added_in_version": "v0.36.0",
@@ -3033,33 +3027,42 @@
         "added_in_version": "v0.36.0",
         "expected_stable_version": "v0.39.0"
       }
-    ]
-  },
-  "common/admin/nvmegw": {
-    "preview_api": [
+    ],
+    "stable_api": [
       {
         "name": "NewFromConn",
         "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "became_stable_version": "v0.38.0"
+      }
+    ]
+  },
+  "common/admin/nvmegw": {
+    "preview_api": [],
+    "stable_api": [
+      {
+        "name": "NewFromConn",
+        "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
+        "added_in_version": "v0.36.0",
+        "became_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.CreateGateway",
         "comment": "CreateGateway will create a new NVMe-oF gateway for accessing RBD-image.\n\nSimilar To:\n\n\tceph nvme-gw create gw pool group\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "became_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.DeleteGateway",
         "comment": "DeleteGateway will delete a NVMe-oF gateway for accessing RBD-image.\n\nSimilar To:\n\n\tceph nvme-gw delete gw pool group\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "became_stable_version": "v0.38.0"
       },
       {
         "name": "Admin.ShowGateways",
         "comment": "ShowGateways returns a list of gateways for the pool and group.\n\nSimilar To:\n\n\tceph nvme-gw show pool group\n",
         "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.38.0"
+        "became_stable_version": "v0.38.0"
       }
     ]
   }
