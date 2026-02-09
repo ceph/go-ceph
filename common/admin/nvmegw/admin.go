@@ -1,4 +1,4 @@
-//go:build !(octopus || pacific || quincy || reef) && ceph_preview
+//go:build !(octopus || pacific || quincy || reef)
 
 package nvmegw
 
