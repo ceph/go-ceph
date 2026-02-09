@@ -11,10 +11,10 @@ Name | Added in Version | Expected Stable Version |
 OpenSnapDiff | v0.37.0 | v0.39.0 | 
 SnapDiffInfo.Readdir | v0.37.0 | v0.39.0 | 
 SnapDiffInfo.Close | v0.37.0 | v0.39.0 | 
-FileBlockDiffInit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-FileBlockDiffInfo.Close | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-FileBlockDiffInfo.More | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-FileBlockDiffInfo.Read | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+FileBlockDiffInit | v0.38.0 | v0.40.0 | 
+FileBlockDiffInfo.Close | v0.38.0 | v0.40.0 | 
+FileBlockDiffInfo.More | v0.38.0 | v0.40.0 | 
+FileBlockDiffInfo.Read | v0.38.0 | v0.40.0 | 
 
 ## Package: cephfs/admin
 
@@ -50,10 +50,10 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.CreateAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-API.GetAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-API.DeleteAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-API.ModifyAccount | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.CreateAccount | v0.38.0 | v0.40.0 | 
+API.GetAccount | v0.38.0 | v0.40.0 | 
+API.DeleteAccount | v0.38.0 | v0.40.0 | 
+API.ModifyAccount | v0.38.0 | v0.40.0 | 
 
 ## Package: common/admin/manager
 
