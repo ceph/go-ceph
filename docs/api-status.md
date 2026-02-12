@@ -97,6 +97,19 @@ TLSCredential.Set | v0.37.0 | v0.39.0 |
 NewTLSCredential | v0.37.0 | v0.39.0 | 
 NewLinkedTLSCredential | v0.37.0 | v0.39.0 | 
 NewTLSCredentialToRemove | v0.37.0 | v0.39.0 | 
+TopIdentityKind.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ChildIdentityKind.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GuessIdentityKind | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.Type | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.Intent | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.MarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.UnmarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.Validate | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+GenericResource.Convert | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ToGeneric | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ShowOptions.SetGeneric | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ShowOptions.Generic | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/osd
 
