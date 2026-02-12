@@ -46,7 +46,7 @@ RUN true && \
 ENV PATH="${PATH}:/opt/go/bin"
 ENV GOROOT=/opt/go
 ENV GO111MODULE=on
-ENV GOPATH /go
+ENV GOPATH=/go
 ENV GOCACHE=/go/cache
 WORKDIR /go/src/github.com/ceph/go-ceph
 VOLUME /go/src/github.com/ceph/go-ceph
