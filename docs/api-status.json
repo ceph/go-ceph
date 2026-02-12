@@ -2636,6 +2636,84 @@
         "comment": "NewTLSCredentialToRemove returns a new TLSCredential with default values\nset to remove the credential resource from management.\n",
         "added_in_version": "v0.37.0",
         "expected_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TopIdentityKind.Identity",
+        "comment": "Identity extracts ID fields from the generic map and returns the\nresource reference for the TopIdentityKind.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ChildIdentityKind.Identity",
+        "comment": "Identity extracts ID fields from the generic map and returns the\nresource reference for the ChildIdentityKind.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GuessIdentityKind",
+        "comment": "GuessIdentityKind inspects the generic map and attempts to return the\nbest GenericIdentityKind for the supplied data. If a good guess can not\nbe made an error will be returned.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.Type",
+        "comment": "Type returns a ResourceType value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.Intent",
+        "comment": "Intent controls if a resource is to be created/updated or removed.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.Identity",
+        "comment": "Identity returns a ResourceRef identifying this generic resource.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.MarshalJSON",
+        "comment": "MarshalJSON supports marshalling a generic resource to JSON.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.UnmarshalJSON",
+        "comment": "UnmarshalJSON supports unmarshalling a generic resource from JSON.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.Validate",
+        "comment": "Validate returns an error describing an issue with the resource or\nnil if the object is valid.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "GenericResource.Convert",
+        "comment": "Convert a generic resource to a specific resource. The function\nwill return a Resource representing a concrete resource\ntype such as *Share or *Cluster. If the resource type is unknown\nto this module or the conversion fails an error will be returned.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ToGeneric",
+        "comment": "ToGeneric creates a new GenericResource from another resource object.\nTypically this will be some more concrete resource type such as\n*Share or *Cluster.\nOne use of this function might be to fill in known fields using the\nwell structured concrete resource type and then, once generic, extend\nit with fields not currently known to this module.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ShowOptions.SetGeneric",
+        "comment": "SetGeneric enables or disables returning GenericResource objects from\nthe Show function. If true all Resource objects returned from Show\nwill be GenericResource instances.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ShowOptions.Generic",
+        "comment": "Generic returns true if the show options are set to return\nGenericResource instances from the Show function.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ],
     "stable_api": [
