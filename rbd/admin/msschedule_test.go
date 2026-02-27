@@ -7,6 +7,7 @@ import (
 	"errors"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -211,7 +212,7 @@ func TestMirrorSnapshotScheduleAddRemove(t *testing.T) {
 		assert.NoError(t, err)
 	})
 	t.Run("startTime", func(t *testing.T) {
-		stime := StartTime("12:00:00")
+		stime := StartTime(time.Now().Format("2006-01-02T15:04:00"))
 		err := scheduler.Add(NewLevelSpec(defaultPoolName, "", ""), Interval("1d"), stime)
 		assert.NoError(t, err)
 		err = scheduler.Remove(NewLevelSpec(defaultPoolName, "", ""), Interval("1d"), stime)
