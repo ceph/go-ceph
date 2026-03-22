@@ -3143,5 +3143,393 @@
         "became_stable_version": "v0.38.0"
       }
     ]
+  },
+  "common/commands/builder": {
+    "preview_api": [
+      {
+        "name": "NewBuilder",
+        "comment": "NewBuilder returns a new command builder given a Description of ceph\ncommand.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Builder.Prepare",
+        "comment": "Prepare sets default values in the Values map. It is called\nautomatically by NewBuilder. It can be used to reset values\nin the map if needed.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Builder.Arguments",
+        "comment": "Arguments returns a slice of all the ceph argument types known\nto this builder.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Builder.ArgumentsMap",
+        "comment": "ArgumentsMap returns a map of argument names to the various ceph argument\ntypes known to this builder.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Builder.Validate",
+        "comment": "Validate returns an error if the contents of the Values map do not match\nparameters defined by the ceph argument types known to this builder.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Builder.MarshalJSON",
+        "comment": "MarshalJSON returns the builder's Values map as JSON encoded bytes or an\nerror if the Values don't validate or marshal to JSON.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Builder.Apply",
+        "comment": "Apply takes string argument values, in either a slice (linear) or\nmap (named) form and, using the known argument types, converts\nthe values and stores the results in the builder's Values map.\n\nNB. This function doesn't handle repeat arguments (n:N) other than in\nthe args slice and then only at the end of the slice. This function\nis meant to serve as a simple example for mapping argument values into\na call to MonCommand/MgrCommand/etc. not implement everything the\nstandard `ceph` command can do.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BindArgumentType",
+        "comment": "BindArgumentType returns a CephArgumentType bound to the given\nSignatureVar.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.Choices",
+        "comment": "Choices return the allowed values for this argument as map of strings to\nbools.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.Convert",
+        "comment": "Convert an any value into a valid underlying type for later serialization.\nReturns new type as any or error if conversion fails.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.Check",
+        "comment": "Check that a given value meets requirements for this argument.\nReturns an error if this value fails the check.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephChoices.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephString.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephString.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephString.Convert",
+        "comment": "Convert an any value into a valid underlying type for later serialization.\nReturns new type as any or error if conversion fails.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephString.Check",
+        "comment": "Check that a given value meets requirements for this argument.\nReturns an error if this value fails the check.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephString.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephString.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephInt.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephInt.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephInt.Convert",
+        "comment": "Convert an any value into a valid underlying type for later serialization.\nReturns new type as any or error if conversion fails.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephInt.Check",
+        "comment": "Check that a given value meets requirements for this argument.\nReturns an error if this value fails the check.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephInt.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephInt.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephFloat.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephFloat.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephFloat.Convert",
+        "comment": "Convert an any value into a valid underlying type for later serialization.\nReturns new type as any or error if conversion fails.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephFloat.Check",
+        "comment": "Check that a given value meets requirements for this argument.\nReturns an error if this value fails the check.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephFloat.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephFloat.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephBool.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephBool.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephBool.Convert",
+        "comment": "Convert an any value into a valid underlying type for later serialization.\nReturns new type as any or error if conversion fails.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephBool.Check",
+        "comment": "Check that a given value meets requirements for this argument.\nReturns an error if this value fails the check.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephBool.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephBool.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephPoolName.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephObjectName.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephOSDName.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephPGID.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephUnknownType.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephUnknownType.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephUnknownType.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephUnknownType.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephRepeatedArg.TypeName",
+        "comment": "TypeName returns the name of this ceph argument type.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephRepeatedArg.Name",
+        "comment": "Name returns the name of this ceph argument.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephRepeatedArg.Set",
+        "comment": "Set the given value into the map ensuring that the value is of the correct\nunderlying type. If the type is not valid returns an error.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephRepeatedArg.Append",
+        "comment": "Append the given value onto a slice in the data map. Works like Set but\nassumes a single value of the desired type (string for CephString, int or\nstring-with-int-value for CephInt).\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CephRepeatedArg.Validate",
+        "comment": "Validate the data map contains the necessary values and those values have\nthe correct underlying type and value.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SignatureVar.Required",
+        "comment": "Required returns true if the variable is required.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "SignatureElement.UnmarshalJSON",
+        "comment": "UnmarshalJSON decodes JSON into a SignatureElement.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Description.Prefix",
+        "comment": "Prefix returns the static strings in the signature of a command as a slice\nof strings.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Description.PrefixString",
+        "comment": "PrefixString returns the static strings in the signature of a command as a\nsingle space separated string.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Description.Variables",
+        "comment": "Variables returns the variable components in a ceph command signature in a\nslice.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CommandDescriptions.UnmarshalJSON",
+        "comment": "UnmarshalJSON decodes JSON data into a CommandDescriptions object.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CommandDescriptions.Match",
+        "comment": "Match returns all command Descriptions that have full or partially matching\nprefix strings. For example, passing `[]string{\"osd\"}` will return a slice\nwith all commands where the first prefix term is \"osd\".  Passing\n`[]string{\"osd\", \"ls\"}` will return a slice with all commands where the\nfirst two prefix terms are \"osd\" and \"ls\".\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "CommandDescriptions.Find",
+        "comment": "Find returns all command Descriptions that have full or partially matching\nprefix strings. This is like Match but uses variable arguments instead\nof a slice for convenience in code where you know what command you\nintend to call. For example: `matches = cd.Find(\"osd\", \"rm\")`.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "QueryMgrJSON",
+        "comment": "QueryMgrJSON makes a request to the Ceph MGR to describe the commands that\nthe service knows about. This function returns the response as raw JSON\nencoded bytes.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "QueryMonJSON",
+        "comment": "QueryMonJSON makes a request to the Ceph MON to describe the commands that\nthe service knows about. This function returns the response as raw JSON\nencoded bytes.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "QueryMgrDescriptions",
+        "comment": "QueryMgrDescriptions makes a request to the Ceph MGR to describe the\ncommands that the service knows about. This function returns the response as\na CommandDescriptions object.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "QueryMonDescriptions",
+        "comment": "QueryMonDescriptions makes a request to the Ceph MGR to describe the\ncommands that the service knows about. This function returns the response as\na CommandDescriptions object.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   }
 }
