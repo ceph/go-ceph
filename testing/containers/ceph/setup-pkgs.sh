@@ -17,15 +17,16 @@ if [ "$ID" = "centos" ] && [ "$VERSION" = "8" ]; then
             {} \;
 fi
 
+DISTRO_VERSION=${VERSION%%[^0-9]*}
 if [ ! -f /etc/yum.repos.d/ceph.repo ]; then
     if [ "$CEPH_IS_DEVEL" = "true" ]; then
         if [ -z "$CEPH_SHA1" ]; then
             CEPH_SHA1="$(sed -n 's/.*CEPH_GIT_VER *= *"\(.*\)".*/\1/p' /usr/bin/ceph)"
         fi
-        REPO_URL=$(curl -fs "https://shaman.ceph.com/api/search/?project=ceph&distros=centos/9/x86_64&flavor=default&ref=${CEPH_REF}&sha1=${CEPH_SHA1:-latest}" | jq -r .[0].url)
-        yum reinstall -y "${REPO_URL}/noarch/ceph-release-1-0.el9.noarch.rpm"
+        REPO_URL=$(curl -fs "https://shaman.ceph.com/api/search/?project=ceph&distros=${ID}/${DISTRO_VERSION}/x86_64&flavor=default&ref=${CEPH_REF}&sha1=${CEPH_SHA1:-latest}" | jq -r .[0].url)
+        yum reinstall -y "${REPO_URL}/noarch/ceph-release-1-0.el${DISTRO_VERSION}.noarch.rpm"
     else
-        yum reinstall -y "https://download.ceph.com/rpm-${CEPH_REF}/el9/noarch/ceph-release-1-1.el9.noarch.rpm"
+        yum reinstall -y "https://download.ceph.com/rpm-${CEPH_REF}/el${DISTRO_VERSION}/noarch/ceph-release-1-1.el${DISTRO_VERSION}.noarch.rpm"
     fi
 fi
 
