@@ -28,8 +28,7 @@ type mockDoType func(req *http.Request) (*http.Response, error)
 // Do is the mock client's `Do` func
 func (m *mockClient) Do(req *http.Request) (*http.Response, error) { return m.mockDo(req) }
 
-var (
-	fakeUserResponse = []byte(`
+var fakeUserResponse = []byte(`
 {
   "tenant": "",
   "user_id": "dashboard-admin",
@@ -61,7 +60,7 @@ var (
   "system": "true",
   "admin": "false",
   "default_placement": "ssd",
-  "default_storage_class": "",
+  "default_storage_class": "ONEZONE_IA",
   "placement_tags": [],
   "bucket_quota": {
     "enabled": false,
@@ -81,7 +80,6 @@ var (
   "type": "rgw",
   "mfa_ids": []
 }`)
-)
 
 func TestUnmarshal(t *testing.T) {
 	u := &User{}
@@ -108,7 +106,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 
 	suite.T().Run("user creation success", func(_ *testing.T) {
 		usercaps := "users=read"
-		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete", DefaultPlacement: "default-placement"})
+		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete", DefaultPlacement: "default-placement", DefaultStorageClass: "STANDARD"})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
 	})
@@ -253,6 +251,13 @@ func TestGetUserMockAPI(t *testing.T) {
 		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
 		assert.NoError(t, err)
 		assert.Equal(t, "ssd", u.DefaultPlacement, u)
+	})
+	t.Run("test get user default storage class", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
+		assert.NoError(t, err)
+		u, err := api.GetUser(context.TODO(), User{ID: "dashboard-admin"})
+		assert.NoError(t, err)
+		assert.Equal(t, "ONEZONE_IA", u.DefaultStorageClass, u)
 	})
 	t.Run("test get user with access key", func(t *testing.T) {
 		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClient())
