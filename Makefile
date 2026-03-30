@@ -231,7 +231,7 @@ $(RESULTS_DIR):
 	mkdir -p $(RESULTS_DIR)
 endif
 
-SHELL_SOURCES=entrypoint.sh micro-osd.sh
+SHELL_SOURCES=$(wildcard $(CONTAINER_CONFIG_DIR)/*.sh)
 
 .PHONY: ci-image
 ci-image: $(BUILDFILE)
