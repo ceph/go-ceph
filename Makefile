@@ -239,9 +239,8 @@ $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile $(SHELL_SOURCES)
 	$(CONTAINER_CMD) build \
 		$(CONTAINER_BUILD_ARGS) \
 		$(CONTAINER_BUILD_OPTS) \
-		--build-context dir=$(CONTAINER_CONFIG_DIR) \
 		-t $(CI_IMAGE_TAG) \
-		-f $(CONTAINER_CONFIG_DIR)/Dockerfile .
+		-f $(CONTAINER_CONFIG_DIR)/Dockerfile $(CONTAINER_CONFIG_DIR)
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
 	echo $(CEPH_VERSION) >> $(BUILDFILE)
 
