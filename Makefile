@@ -2,7 +2,7 @@ CI_IMAGE_NAME ?= go-ceph-ci
 CONTAINER_CMD ?=
 CONTAINER_OPTS ?= --security-opt $(shell grep -q selinux /sys/kernel/security/lsm 2>/dev/null && echo "label=disable" || echo "apparmor:unconfined")
 CONTAINER_BUILD_OPTS ?=
-CONTAINER_CONFIG_DIR ?= testing/containers/ceph
+CONTAINER_CONFIG_DIR ?= testing/containers
 VOLUME_FLAGS ?=
 CEPH_VERSION ?= pacific
 RESULTS_DIR ?=
@@ -231,7 +231,7 @@ $(RESULTS_DIR):
 	mkdir -p $(RESULTS_DIR)
 endif
 
-SHELL_SOURCES=entrypoint.sh micro-osd.sh
+SHELL_SOURCES=$(wildcard $(CONTAINER_CONFIG_DIR)/*.sh)
 
 .PHONY: ci-image
 ci-image: $(BUILDFILE)
@@ -239,9 +239,8 @@ $(BUILDFILE): $(CONTAINER_CONFIG_DIR)/Dockerfile $(SHELL_SOURCES)
 	$(CONTAINER_CMD) build \
 		$(CONTAINER_BUILD_ARGS) \
 		$(CONTAINER_BUILD_OPTS) \
-		--build-context dir=$(CONTAINER_CONFIG_DIR) \
 		-t $(CI_IMAGE_TAG) \
-		-f $(CONTAINER_CONFIG_DIR)/Dockerfile .
+		-f $(CONTAINER_CONFIG_DIR)/Dockerfile $(CONTAINER_CONFIG_DIR)
 	@$(CONTAINER_CMD) inspect -f '{{.Id}}' $(CI_IMAGE_TAG) > $(BUILDFILE)
 	echo $(CEPH_VERSION) >> $(BUILDFILE)
 
