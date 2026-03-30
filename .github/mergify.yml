@@ -1,4 +1,3 @@
----
 # each test should be listed separately, do not use regular expressions:
 # https://docs.mergify.io/conditions.html#validating-all-status-check
 # Until mergify allows us to have default conditions, we will need to
@@ -41,20 +40,19 @@ pull_request_rules:
       - status-success=test-suite (squid)
       - status-success=test-suite (tentacle)
       - or:
-        - and:
-          - label=no-API
-          - "#approved-reviews-by>=1"
-        - and:
-          - label=API
-          - "#approved-reviews-by>=2"
-        - and:
-          - label=API
-          - "#approved-reviews-by>=1"
-          - "updated-at<10 days ago"
+          - and:
+              - label=no-API
+              - "#approved-reviews-by>=1"
+          - and:
+              - label=API
+              - "#approved-reviews-by>=2"
+          - and:
+              - label=API
+              - "#approved-reviews-by>=1"
+              - "updated-at<10 days ago"
     actions:
       queue: {}
       dismiss_reviews: {}
-      delete_head_branch: {}
   # Conflict resolution prompt
   - name: ask to resolve conflict
     conditions:
