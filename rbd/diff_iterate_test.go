@@ -39,6 +39,9 @@ func TestDiffIterate(t *testing.T) {
 	t.Run("callbackData", func(t *testing.T) {
 		testDiffIterateCallbackData(t, ioctx)
 	})
+	t.Run("nonZeroOffset", func(t *testing.T) {
+		testDiffIterateNonZeroOffset(t, ioctx)
+	})
 	t.Run("badImage", func(t *testing.T) {
 		var gotCalled int
 		img := GetImage(ioctx, "bob")
@@ -447,6 +450,100 @@ func testDiffIterateSnapshot(t *testing.T, ioctx *rados.IOContext) {
 	if assert.Len(t, calls, 1) {
 		assert.EqualValues(t, 0, calls[0].offset)
 		assert.EqualValues(t, 29, calls[0].length)
+	}
+}
+
+// testDiffIterateNonZeroOffset verifies that DiffIterate works correctly with
+// a non-zero Offset. This exercises the scenario where a caller wants to skip
+// a portion of the image (e.g. a LUKS header) and only scan the remainder.
+// In this scenario, Length is set to (imageSize - Offset) so that the diff
+// covers only the remaining range rather than the full imageSize.
+func testDiffIterateNonZeroOffset(t *testing.T, ioctx *rados.IOContext) {
+	name := GetUUID()
+	isize := uint64(1 << 23) // 8MiB
+	iorder := 20             // 1MiB
+	options := NewRbdImageOptions()
+	defer options.Destroy()
+	assert.NoError(t,
+		options.SetUint64(RbdImageOptionOrder, uint64(iorder)))
+	err := CreateImage(ioctx, name, isize, options)
+	assert.NoError(t, err)
+
+	img, err := OpenImage(ioctx, name, NoSnapshot)
+	assert.NoError(t, err)
+	defer func() {
+		assert.NoError(t, img.Close())
+		assert.NoError(t, img.Remove())
+	}()
+
+	type diResult struct {
+		offset uint64
+		length uint64
+	}
+
+	// Write data at three locations:
+	// - offset 0 (before the skip region)
+	// - offset 2MiB (after the skip region)
+	// - offset 5MiB (well after the skip region)
+	_, err = img.WriteAt([]byte("header-data"), 0)
+	assert.NoError(t, err)
+	_, err = img.WriteAt([]byte("real-data-1"), 2*1024*1024) // 2MiB
+	assert.NoError(t, err)
+	_, err = img.WriteAt([]byte("real-data-2"), 5*1024*1024) // 5MiB
+	assert.NoError(t, err)
+
+	// Scan with Offset=0, Length=isize to see all 3 extents
+	calls := []diResult{}
+	err = img.DiffIterate(
+		DiffIterateConfig{
+			Offset: 0,
+			Length: isize,
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
+				calls = append(calls, diResult{offset: o, length: l})
+				return 0
+			},
+		})
+	assert.NoError(t, err)
+	assert.Len(t, calls, 3, "expected 3 extents with Offset=0")
+
+	// Scan with Offset=1MiB, Length=isize-1MiB (correct usage)
+	// Should skip the first extent at offset 0 and return only 2 extents
+	skipBytes := uint64(1 << 20) // 1MiB
+	calls = []diResult{}
+	err = img.DiffIterate(
+		DiffIterateConfig{
+			Offset: skipBytes,
+			Length: isize - skipBytes,
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
+				calls = append(calls, diResult{offset: o, length: l})
+				return 0
+			},
+		})
+	assert.NoError(t, err)
+	if assert.Len(t, calls, 2, "expected 2 extents with Offset=1MiB") {
+		assert.EqualValues(t, 2*1024*1024, calls[0].offset)
+		assert.EqualValues(t, 11, calls[0].length)
+		assert.EqualValues(t, 5*1024*1024, calls[1].offset)
+		assert.EqualValues(t, 11, calls[1].length)
+	}
+
+	// Scan with Offset=3MiB, Length=isize-3MiB
+	// Should return only the extent at 5MiB
+	skipBytes = uint64(3 << 20) // 3MiB
+	calls = []diResult{}
+	err = img.DiffIterate(
+		DiffIterateConfig{
+			Offset: skipBytes,
+			Length: isize - skipBytes,
+			Callback: func(o, l uint64, _ int, _ interface{}) int {
+				calls = append(calls, diResult{offset: o, length: l})
+				return 0
+			},
+		})
+	assert.NoError(t, err)
+	if assert.Len(t, calls, 1, "expected 1 extent with Offset=3MiB") {
+		assert.EqualValues(t, 5*1024*1024, calls[0].offset)
+		assert.EqualValues(t, 11, calls[0].length)
 	}
 }
 
