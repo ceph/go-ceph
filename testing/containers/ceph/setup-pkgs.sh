@@ -8,6 +8,7 @@ fi
 echo "Check: [ ${CEPH_VERSION} = ${GO_CEPH_VERSION} ]"
 [ "${CEPH_VERSION}" = "${GO_CEPH_VERSION}" ]
 
+# shellcheck disable=SC1091
 . /etc/os-release
 if [ "$ID" = "centos" ] && [ "$VERSION" = "8" ]; then
     find /etc/yum.repos.d/ -name '*.repo' -exec \
