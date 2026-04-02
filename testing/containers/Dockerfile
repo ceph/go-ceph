@@ -11,7 +11,7 @@ ENV GO_CEPH_VERSION=${GO_CEPH_VERSION:-$CEPH_VERSION}
 COPY setup-pkgs.sh /tmp/setup-pkgs.sh
 RUN /tmp/setup-pkgs.sh && rm /tmp/setup-pkgs.sh
 
-ARG GO_VERSION=1.24.9
+ARG GO_VERSION=1.25.8
 ENV GO_VERSION=${GO_VERSION}
 ARG GOARCH
 ENV GOARCH=${GOARCH}
