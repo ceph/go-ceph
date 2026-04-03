@@ -704,7 +704,14 @@
       }
     ],
     "deprecated_api": [],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "FSAdmin.SubVolumeGroupInfo",
+        "comment": "SubVolumeGroupInfo returns information about the specified subvolume group.\n\nSimilar To:\n\n\tceph fs subvolumegroup info <volume> <group_name>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rados": {
     "stable_api": [

@@ -15,7 +15,11 @@ FileBlockDiffInfo.Read | v0.38.0 | v0.40.0 |
 
 ## Package: cephfs/admin
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+FSAdmin.SubVolumeGroupInfo | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rados
 
