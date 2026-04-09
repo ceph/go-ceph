@@ -170,11 +170,11 @@ launch_radosgw() {
 }
 
 launch_radosgw2() {
-    radosgw-admin caps add --uid=admin --caps="info=read"
+    radosgw-admin caps add --uid=admin --caps="info=read;ratelimit=*"
 }
 
 launch_radosgw3() {
-    radosgw-admin caps add --uid=admin --caps="accounts=*"
+    radosgw-admin caps add --uid=admin --caps="accounts=*;ratelimit=*"
 }
 
 selftest() {

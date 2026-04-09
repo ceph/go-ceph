@@ -2173,6 +2173,18 @@
         "comment": "ModifyAccount will modify the RGW account\n",
         "added_in_version": "v0.38.0",
         "expected_stable_version": "v0.40.0"
+      },
+      {
+        "name": "API.SetIndividualBucketRateLimit",
+        "comment": "SetIndividualBucketRateLimit sets rate-limits to a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-rate-limit-for-an-individual-bucket\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.GetIndividualBucketRateLimit",
+        "comment": "GetIndividualBucketRateLimit returns rate-limits of a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-rate-limit\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ],
     "stable_api": [
