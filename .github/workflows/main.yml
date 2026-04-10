@@ -71,7 +71,6 @@ jobs:
         - "reef"
         - "squid"
         - "tentacle"
-        - "pre-reef"
         - "pre-squid"
         - "pre-tentacle"
         - "main"
