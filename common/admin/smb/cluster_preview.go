@@ -19,13 +19,13 @@ type Cluster struct {
 	Clustering        Clustering        `json:"clustering,omitempty"`
 	PublicAddrs       []PublicAddress   `json:"public_addrs,omitempty"`
 	// CustomPorts allows the customization of network port binding
-	// by virtual service name [PREVIEW].
+	// by virtual service name.
 	CustomPorts CustomPortsMap `json:"custom_ports,omitempty"`
 	// BindAddrs allows specifying the addresses/networks an SMB cluster
-	// running on a ceph node will bind to [PREVIEW].
+	// running on a ceph node will bind to.
 	BindAddrs []BindAddress `json:"bind_addrs,omitempty"`
 	// RemoteControl is used to specify settings for the remote control
-	// support service [PREVIEW].
+	// support service.
 	RemoteControl *RemoteControl `json:"remote_control,omitempty"`
 }
 
@@ -47,7 +47,7 @@ func (cluster *Cluster) Validate() error {
 // Increment the group number when adding PREVIEW fields in a new go-ceph
 // release cycle (maybe integrate with api-fix-versions in the future?)
 //
-// Group 1:
+// Group 1 [STABLE]:
 //   CustomPorts
 //   BindAddress
 //   RemoteControl
