@@ -382,27 +382,27 @@
         "comment": "Futimes changes file/directory last access and modification times, here times param\nis an array of Timeval struct type having length 2, where times[0] represents the access time\nand times[1] represents the modification time.\n\nImplements:\n\n\tint ceph_futimes(struct ceph_mount_info *cmount, int fd, struct timeval times[2]);\n",
         "added_in_version": "v0.35.0",
         "became_stable_version": "v0.37.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "OpenSnapDiff",
         "comment": "OpenSnapDiff opens a snapshot diff stream to get snapshots delta\nand returns a SnapDiffInfo struct containing the diff information.\n\nImplements:\n\n\tint ceph_open_snapdiff(struct ceph_mount_info* cmount,\n\t                       const char* root_path,\n\t                       const char* rel_path,\n\t                       const char* snap1,\n\t                       const char* snap2,\n\t                       struct ceph_snapdiff_info* out);\n",
         "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
+        "became_stable_version": "v0.39.0"
       },
       {
         "name": "SnapDiffInfo.Readdir",
         "comment": "Readdir returns the next entry in the snapshot diff stream.\nIf there are no more entries, it returns (nil, nil).\n\nImplements:\n\n\tint ceph_readdir_snapdiff(struct ceph_snapdiff_info* snapdiff,\n\t                           struct ceph_snapdiff_entry_t* out);\n",
         "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
+        "became_stable_version": "v0.39.0"
       },
       {
         "name": "SnapDiffInfo.Close",
         "comment": "Close closes the snapshot diff handle.\n\nImplements:\n\n\tint ceph_close_snapdiff(struct ceph_snapdiff_info* snapdiff);\n",
         "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
+        "became_stable_version": "v0.39.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "FileBlockDiffInit",
         "comment": "FileBlockDiffInit initializes the block diff stream to get file block deltas.\nIt takes the mount handle, root path, relative path, snapshot names and returns\na FileBlockDiffInfo struct that contains the block diff stream handle.\n\nImplements:\n\n\t    int ceph_file_blockdiff_init(\n\t\t    struct ceph_mount_info* cmount,\n\t\t\tconst char* root_path,\n\t\t\tconst char* rel_path,\n\t\t\tconst char* snap1,\n\t\t\tconst char* snap2,\n\t\t\tstruct ceph_file_blockdiff_info* out_info);\n",
@@ -2066,16 +2066,15 @@
         "comment": "GetDataPoolID returns the ID of the data pool assigned to an image\n\nImplements:\n\n\tint64_t rbd_get_data_pool_id(rbd_image_t image)\n",
         "added_in_version": "v0.36.0",
         "became_stable_version": "v0.38.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Image.RemoveSnapByID",
         "comment": "RemoveSnapByID removes an existing snapshot. This can be used to manually\nremove a snapshot from the trash.\n\nImplements:\n\n\tint rbd_snap_remove_by_id(rbd_image_t image, uint64_t snap_id);\n",
         "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
+        "became_stable_version": "v0.39.0"
       }
-    ]
+    ],
+    "preview_api": []
   },
   "rbd/admin": {
     "stable_api": [
@@ -2518,122 +2517,8 @@
   "common/admin/smb": {
     "preview_api": [
       {
-        "name": "NewBindAddress",
-        "comment": "NewBindAddress returns a BindAddress associated with a single IP address.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "NewNetworkBindAddress",
-        "comment": "NewNetworkBindAddress returns a BindAddress associated with a network\naddress. The network address is a range of addresses determined using\na prefix length.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "BindAddress.MarshalJSON",
-        "comment": "MarshalJSON supports marshalling a BindAddress to JSON.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "BindAddress.UnmarshalJSON",
-        "comment": "UnmarshalJSON supports un-marshalling a JSON to a BindAddress.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "BindAddress.Address",
-        "comment": "Address returns the IP address value.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "BindAddress.Network",
-        "comment": "Network returns the IP network address value.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "BindAddress.IsNetwork",
-        "comment": "IsNetwork returns true if this BindAddress contains a network value.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "BindAddress.String",
-        "comment": "String returns a string representing this BindAddress.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
         "name": "Cluster.Validate",
         "comment": "Validate returns an error describing an issue with the resource or\nnil if the resource object is valid.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "RemoteControl.Validate",
-        "comment": "Validate returns an error describing an issue with the remote control\nconfiguration or nil if the resource object is valid.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.Type",
-        "comment": "Type returns a ResourceType value.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.Intent",
-        "comment": "Intent controls if a resource is to be created/updated or removed.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.SetIntent",
-        "comment": "SetIntent updates the resource's intent value.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.Identity",
-        "comment": "Identity returns a ResourceRef identifying this tls credential resource.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.Validate",
-        "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.MarshalJSON",
-        "comment": "MarshalJSON supports marshalling a TLSCredential to JSON.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "TLSCredential.Set",
-        "comment": "Set modifies a TLSCredential's credential type and credential value.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "NewTLSCredential",
-        "comment": "NewTLSCredential returns a new empty TLSCredential.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "NewLinkedTLSCredential",
-        "comment": "NewLinkedTLSCredential returns a new TLSCredentialID with default values\nthat link the resource to a particular cluster. Linked resources can only\nbe used by the cluster they link to and are automatically deleted when the\nlinked cluster is deleted.\n",
-        "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "NewTLSCredentialToRemove",
-        "comment": "NewTLSCredentialToRemove returns a new TLSCredential with default values\nset to remove the credential resource from management.\n",
         "added_in_version": "v0.37.0",
         "expected_stable_version": "v0.39.0"
       },
@@ -3082,36 +2967,149 @@
         "comment": "NewUsersAndGroupsToRemove returns a new UsersAndGroups resource object with\ndefault values set to remove the users and groups resource from management.\n",
         "added_in_version": "v0.34.0",
         "became_stable_version": "v0.36.0"
+      },
+      {
+        "name": "NewBindAddress",
+        "comment": "NewBindAddress returns a BindAddress associated with a single IP address.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "NewNetworkBindAddress",
+        "comment": "NewNetworkBindAddress returns a BindAddress associated with a network\naddress. The network address is a range of addresses determined using\na prefix length.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "BindAddress.MarshalJSON",
+        "comment": "MarshalJSON supports marshalling a BindAddress to JSON.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "BindAddress.UnmarshalJSON",
+        "comment": "UnmarshalJSON supports un-marshalling a JSON to a BindAddress.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "BindAddress.Address",
+        "comment": "Address returns the IP address value.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "BindAddress.Network",
+        "comment": "Network returns the IP network address value.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "BindAddress.IsNetwork",
+        "comment": "IsNetwork returns true if this BindAddress contains a network value.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "BindAddress.String",
+        "comment": "String returns a string representing this BindAddress.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "RemoteControl.Validate",
+        "comment": "Validate returns an error describing an issue with the remote control\nconfiguration or nil if the resource object is valid.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.Type",
+        "comment": "Type returns a ResourceType value.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.Intent",
+        "comment": "Intent controls if a resource is to be created/updated or removed.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.SetIntent",
+        "comment": "SetIntent updates the resource's intent value.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.Identity",
+        "comment": "Identity returns a ResourceRef identifying this tls credential resource.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.Validate",
+        "comment": "Validate returns an error describing an issue with the resource or nil if\nthe resource object is valid.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.MarshalJSON",
+        "comment": "MarshalJSON supports marshalling a TLSCredential to JSON.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "TLSCredential.Set",
+        "comment": "Set modifies a TLSCredential's credential type and credential value.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "NewTLSCredential",
+        "comment": "NewTLSCredential returns a new empty TLSCredential.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "NewLinkedTLSCredential",
+        "comment": "NewLinkedTLSCredential returns a new TLSCredentialID with default values\nthat link the resource to a particular cluster. Linked resources can only\nbe used by the cluster they link to and are automatically deleted when the\nlinked cluster is deleted.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "NewTLSCredentialToRemove",
+        "comment": "NewTLSCredentialToRemove returns a new TLSCredential with default values\nset to remove the credential resource from management.\n",
+        "added_in_version": "v0.37.0",
+        "became_stable_version": "v0.39.0"
       }
     ]
   },
   "common/admin/osd": {
-    "preview_api": [
-      {
-        "name": "Admin.OSDBlocklist",
-        "comment": "OSDBlocklist returns the list of blocklisted clients.\n\nSimilar To:\n\n\tceph osd blocklist ls\n",
-        "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "Admin.OSDBlocklistAdd",
-        "comment": "OSDBlocklistAdd adds an ip address or network address in CIDR format to the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] add <ip_addr|cidr_network> [expire]\n",
-        "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.39.0"
-      },
-      {
-        "name": "Admin.OSDBlocklistRemove",
-        "comment": "OSDBlocklistRemove removes an ip address or network address from the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] rm <ip_addr|cidr_network>\n",
-        "added_in_version": "v0.36.0",
-        "expected_stable_version": "v0.39.0"
-      }
-    ],
+    "preview_api": [],
     "stable_api": [
       {
         "name": "NewFromConn",
         "comment": "NewFromConn creates an new management object from a preexisting\nrados connection. The existing connection can be rados.Conn or any\ntype implementing the RadosCommander interface.\n",
         "added_in_version": "v0.36.0",
         "became_stable_version": "v0.38.0"
+      },
+      {
+        "name": "Admin.OSDBlocklist",
+        "comment": "OSDBlocklist returns the list of blocklisted clients.\n\nSimilar To:\n\n\tceph osd blocklist ls\n",
+        "added_in_version": "v0.36.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "Admin.OSDBlocklistAdd",
+        "comment": "OSDBlocklistAdd adds an ip address or network address in CIDR format to the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] add <ip_addr|cidr_network> [expire]\n",
+        "added_in_version": "v0.36.0",
+        "became_stable_version": "v0.39.0"
+      },
+      {
+        "name": "Admin.OSDBlocklistRemove",
+        "comment": "OSDBlocklistRemove removes an ip address or network address from the\nblocklist.\n\nSimilar To:\n\n\tceph osd blocklist [range] rm <ip_addr|cidr_network>\n",
+        "added_in_version": "v0.36.0",
+        "became_stable_version": "v0.39.0"
       }
     ]
   },
