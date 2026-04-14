@@ -140,7 +140,7 @@ def api_compare(tracked, src):
             if not api.get("added_in_version"):
                 warning("no added_in_version set:", pkg, api["name"])
                 problems += 1
-            if not api.get("expected_stable_version"):
+            if not api.get("expected_stable_version") and not api.get("ignore"):
                 warning("no expected_stable_version set:", pkg, api["name"])
                 problems += 1
     return problems
@@ -248,6 +248,10 @@ def format_markdown(tracked, outfh):
     print("# go-ceph API Stability", file=outfh)
     print("", file=outfh)
     for pkg, pkg_api in tracked.items():
+        # filter out explicitly ignored preview APIs
+        if "preview_api" in pkg_api and pkg_api["preview_api"]:
+            pkg_api["preview_api"] = [api for api in pkg_api["preview_api"] if not api.get("ignore")]
+
         print(f"## Package: {pkg}", file=outfh)
         print("", file=outfh)
         if "preview_api" in pkg_api and pkg_api["preview_api"]:

@@ -68,7 +68,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-Cluster.Validate | v0.37.0 | v0.39.0 | 
 TopIdentityKind.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 ChildIdentityKind.Identity | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 GuessIdentityKind | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 

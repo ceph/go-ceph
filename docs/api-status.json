@@ -2519,8 +2519,9 @@
       {
         "name": "Cluster.Validate",
         "comment": "Validate returns an error describing an issue with the resource or\nnil if the resource object is valid.\n",
+        "ignore": true,
         "added_in_version": "v0.37.0",
-        "expected_stable_version": "v0.39.0"
+        "expected_stable_version": ""
       },
       {
         "name": "TopIdentityKind.Identity",
