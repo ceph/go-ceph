@@ -3,13 +3,15 @@
 
 For recent releases, please refer to the [readme](../README.md).
 
-The following tables describes what versions of Ceph were supported for
+The following table describes what versions of Ceph were supported for
 particular go-ceph releases. Note that prior to 2020 the project did not make
 versioned releases. The ability to compile with a particular Ceph version
 before go-ceph v0.2.0 is not guaranteed.
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.18.0         | octopus, pacific, quincy | nautilus                |
+| v0.17.0         | octopus, pacific, quincy | nautilus                |
 | v0.16.0         | octopus, pacific†       | nautilus                 |
 | v0.15.0         | octopus, pacific        | nautilus                 |
 | v0.14.0         | octopus, pacific        | nautilus                 |

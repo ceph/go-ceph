@@ -75,6 +75,7 @@ go test -tags pacific ....
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.38.0         | squid, tentacle         | pacific, quincy, reef    |
 | v0.38.0         | reef, squid, tentacle   | pacific, quincy          |
 | v0.37.0         | reef, squid, tentacle   | pacific, quincy          |
 | v0.36.0         | reef, squid, tentacle   | pacific, quincy          |
@@ -95,8 +96,6 @@ go test -tags pacific ....
 | v0.21.0         | pacific, quincy         | nautilus, octopus        |
 | v0.20.0         | pacific, quincy         | nautilus, octopus        |
 | v0.19.0         | pacific, quincy         | nautilus, octopus        |
-| v0.18.0         | octopus, pacific, quincy | nautilus                |
-| v0.17.0         | octopus, pacific, quincy | nautilus                |
 
 The tags affect what is supported at compile time. What version of the Ceph
 cluster the client libraries support, and vice versa, is determined entirely
