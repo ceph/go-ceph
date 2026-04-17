@@ -2392,7 +2392,14 @@
     ]
   },
   "common/admin/nfs": {
-    "preview_api": [],
+    "preview_api": [
+      {
+        "name": "Admin.ApplyExportInfo",
+        "comment": "ApplyExportInfo will create or update an existing NFS export.\n\nSimilar To:\n\n\tceph nfs export apply\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ],
     "stable_api": [
       {
         "name": "NewFromConn",

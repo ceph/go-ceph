@@ -62,7 +62,11 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/nfs
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Admin.ApplyExportInfo | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rados/striper
 
