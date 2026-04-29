@@ -1,0 +1,24 @@
+[general]
+verbosity=3
+regex-style-search=true
+contrib=contrib-body-requires-signed-off-by
+
+[title-max-length]
+line-length=72
+
+[title-must-not-contain-word]
+# Comma-separated list of words that should not occur in the title. Matching is case
+# insensitive. It's fine if the keyword occurs as part of a larger word (so "WIPING"
+# will not cause a violation, but "WIP: my title" will).
+words=wip,WIP
+
+[title-match-regex]
+# python-style regex that the commit-msg title must match
+# Note that the regex can contradict with other rules if not used correctly
+# (e.g. title-must-not-contain-word).
+regex=^.{2,32}: .*
+
+[ignore-body-lines]
+# do not enforce the default body line length checks on lines that appear to be
+# HTTP(S) URLs.
+regex=https?://
