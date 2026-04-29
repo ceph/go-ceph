@@ -57,6 +57,25 @@ jobs:
     - name: Run checks
       run: make check
 
+  # Check commit messages (in particular enforce Signed-off-by)
+  check-commits:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+      with:
+        python-version: '3.13'
+    - name: Install gitlint
+      run: |
+        python3 -m venv venv.gitlint
+        ./venv.gitlint/bin/pip install gitlint==0.19.1
+    - name: Run gitlint
+      run: ./venv.gitlint/bin/gitlint -C .gitlint --commits origin/master.. lint
+
   # Run the test suite in a container per-ceph-codename
   test-suite:
     name: test-suite (${{ matrix.ceph_version }}${{ matrix.go_version != needs.go-versions.outputs.latest && format(', go{0}', matrix.go_version) || '' }})
