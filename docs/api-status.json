@@ -1266,7 +1266,14 @@
         "became_stable_version": "v0.33.0"
       }
     ],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "IOContext.Checksum",
+        "comment": "Checksum calculates the checksum of the given object data, using one of the supported checksum algorithms.\n\nImplements:\n\n\tint rados_checksum(rados_ioctx_t io,\n\t                   const char *oid,\n\t                   rados_checksum_type_t type,\n\t                   const char *init_value,\n\t                   size_t init_value_len,\n\t                   size_t len,\n\t                   uint64_t off,\n\t                   size_t chunk_size,\n\t                   char *pchecksum,\n\t                   size_t checksum_len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rbd": {
     "deprecated_api": [
