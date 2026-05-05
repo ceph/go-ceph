@@ -23,7 +23,11 @@ FSAdmin.SubVolumeGroupInfo | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 
 ## Package: rados
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+IOContext.Checksum | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
