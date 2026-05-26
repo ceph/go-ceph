@@ -31,6 +31,12 @@ IOContext.Checksum | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 
 ## Package: rbd
 
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Image.FlattenWithProgress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
 ### Deprecated APIs
 
 Name | Deprecated in Version | Expected Removal Version | 

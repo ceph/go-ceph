@@ -2088,7 +2088,14 @@
         "became_stable_version": "v0.39.0"
       }
     ],
-    "preview_api": []
+    "preview_api": [
+      {
+        "name": "Image.FlattenWithProgress",
+        "comment": "FlattenWithProgress removes snapshot references from the image, reporting\nprogress via the supplied callback. The flatten operation will be aborted\nif the callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_flatten_with_progress(rbd_image_t image,\n\t                              librbd_progress_fn_t cb,\n\t                              void *cbdata);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
+    ]
   },
   "rbd/admin": {
     "stable_api": [
