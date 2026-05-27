@@ -19,8 +19,8 @@ type DomainSettings struct {
 
 // PublicAddress used by a cluster with integrated Samba clustering enabled.
 type PublicAddress struct {
-	Address     string
-	Destination []string
+	Address     string   `json:"address"`
+	Destination []string `json:"destination,omitempty"`
 }
 
 // Type returns a ResourceType value.
