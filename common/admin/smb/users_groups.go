@@ -22,7 +22,7 @@ type GroupInfo struct {
 // an SMB server instance.
 type UsersAndGroupsValues struct {
 	Users  []UserInfo  `json:"users,omitempty"`
-	Groups []GroupInfo `json:"groups,omitempty"`
+	Groups []GroupInfo `json:"groups"`
 }
 
 // UsersAndGroups is a resource containing user and group definitions that
