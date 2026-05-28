@@ -87,7 +87,7 @@ func (e *resourceEntry) UnmarshalJSON(data []byte) error {
 
 func validResourceType(v ResourceType) bool {
 	switch v {
-	case ClusterType, ShareType, JoinAuthType, UsersAndGroupsType:
+	case ClusterType, ShareType, JoinAuthType, UsersAndGroupsType, TLSCredentialType:
 		return true
 	}
 	return false
