@@ -164,6 +164,9 @@ type ApplyOptions struct {
 	// PasswordFilterOut can be used to filter/obfuscate password values
 	// returned from the Ceph cluster.
 	PasswordFilterOut PasswordFilter
+
+	// custom unmarshaler for apply results
+	unmarshal func(r commands.Response) (ResultGroup, error)
 }
 
 // Apply changes to the resource descriptions stored on the Ceph cluster.
@@ -202,6 +205,9 @@ func (a *Admin) Apply(resources []Resource, opts *ApplyOptions) (
 		m["password_filter_out"] = string(opts.PasswordFilterOut)
 	}
 	c := commands.MarshalMgrCommandWithBuffer(a.conn, m, buf)
+	if opts != nil && opts.unmarshal != nil {
+		return opts.unmarshal(c)
+	}
 	if err := c.NoStatus().Unmarshal(&rg).End(); err != nil {
 		return rg, err
 	}
