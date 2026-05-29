@@ -2640,6 +2640,18 @@
         "comment": "Generic returns true if the show options are set to return\nGenericResource instances from the Show function.\n",
         "added_in_version": "v0.39.0",
         "expected_stable_version": "v0.41.0"
+      },
+      {
+        "name": "ApplyOptions.SetGeneric",
+        "comment": "SetGeneric enables or disables returning GenericResource objects within\nthe results of the Apply function. If true all Resource objects embedded\nin Apply results will be GenericResource instances.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "ApplyOptions.Generic",
+        "comment": "Generic returns true if the apply options are set to return\nGenericResource instances in Apply results.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ],
     "stable_api": [

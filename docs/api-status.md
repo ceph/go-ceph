@@ -101,6 +101,8 @@ GenericResource.Convert | v0.39.0 | v0.41.0 |
 ToGeneric | v0.39.0 | v0.41.0 | 
 ShowOptions.SetGeneric | v0.39.0 | v0.41.0 | 
 ShowOptions.Generic | v0.39.0 | v0.41.0 | 
+ApplyOptions.SetGeneric | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+ApplyOptions.Generic | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/osd
 
