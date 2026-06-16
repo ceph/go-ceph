@@ -2171,30 +2171,6 @@
   "rgw/admin": {
     "preview_api": [
       {
-        "name": "API.CreateAccount",
-        "comment": "CreateAccount will create a new RGW account\n",
-        "added_in_version": "v0.38.0",
-        "expected_stable_version": "v0.40.0"
-      },
-      {
-        "name": "API.GetAccount",
-        "comment": "GetAccount will return the RGW account details\n",
-        "added_in_version": "v0.38.0",
-        "expected_stable_version": "v0.40.0"
-      },
-      {
-        "name": "API.DeleteAccount",
-        "comment": "DeleteAccount will delete the RGW account\n",
-        "added_in_version": "v0.38.0",
-        "expected_stable_version": "v0.40.0"
-      },
-      {
-        "name": "API.ModifyAccount",
-        "comment": "ModifyAccount will modify the RGW account\n",
-        "added_in_version": "v0.38.0",
-        "expected_stable_version": "v0.40.0"
-      },
-      {
         "name": "API.SetIndividualBucketRateLimit",
         "comment": "SetIndividualBucketRateLimit sets rate-limits to a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-rate-limit-for-an-individual-bucket\n",
         "added_in_version": "$NEXT_RELEASE",
@@ -2362,6 +2338,30 @@
         "comment": "CheckBucketIndex checks the index of an existing bucket.\nNOTE: to check multipart object accounting with check-objects, fix must be set to True.\n",
         "added_in_version": "v0.33.0",
         "became_stable_version": "v0.37.0"
+      },
+      {
+        "name": "API.CreateAccount",
+        "comment": "CreateAccount will create a new RGW account\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#create-account\n",
+        "added_in_version": "v0.38.0",
+        "became_stable_version": "v0.40.0"
+      },
+      {
+        "name": "API.GetAccount",
+        "comment": "GetAccount will return the RGW account details\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#get-account-info\n",
+        "added_in_version": "v0.38.0",
+        "became_stable_version": "v0.40.0"
+      },
+      {
+        "name": "API.DeleteAccount",
+        "comment": "DeleteAccount will delete the RGW account\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#remove-account\n",
+        "added_in_version": "v0.38.0",
+        "became_stable_version": "v0.40.0"
+      },
+      {
+        "name": "API.ModifyAccount",
+        "comment": "ModifyAccount will modify the RGW account\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#modify-account\n",
+        "added_in_version": "v0.38.0",
+        "became_stable_version": "v0.40.0"
       }
     ]
   },
