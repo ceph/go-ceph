@@ -4,14 +4,7 @@
 
 ## Package: cephfs
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-FileBlockDiffInit | v0.38.0 | v0.40.0 | 
-FileBlockDiffInfo.Close | v0.38.0 | v0.40.0 | 
-FileBlockDiffInfo.More | v0.38.0 | v0.40.0 | 
-FileBlockDiffInfo.Read | v0.38.0 | v0.40.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: cephfs/admin
 
