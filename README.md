@@ -75,6 +75,7 @@ go test -tags pacific ....
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.40.0         | squid, tentacle         | pacific, quincy, reef    |
 | v0.39.0         | squid, tentacle         | pacific, quincy, reef    |
 | v0.38.0         | reef, squid, tentacle   | pacific, quincy          |
 | v0.37.0         | reef, squid, tentacle   | pacific, quincy          |
