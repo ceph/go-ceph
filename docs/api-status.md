@@ -48,10 +48,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.CreateAccount | v0.38.0 | v0.40.0 | 
-API.GetAccount | v0.38.0 | v0.40.0 | 
-API.DeleteAccount | v0.38.0 | v0.40.0 | 
-API.ModifyAccount | v0.38.0 | v0.40.0 | 
 API.SetIndividualBucketRateLimit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 API.GetIndividualBucketRateLimit | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
