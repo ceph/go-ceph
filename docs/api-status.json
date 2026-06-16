@@ -707,8 +707,8 @@
       {
         "name": "FSAdmin.SubVolumeGroupInfo",
         "comment": "SubVolumeGroupInfo returns information about the specified subvolume group.\n\nSimilar To:\n\n\tceph fs subvolumegroup info <volume> <group_name>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       }
     ]
   },
@@ -1269,8 +1269,8 @@
       {
         "name": "IOContext.Checksum",
         "comment": "Checksum calculates the checksum of the given object data, using one of the supported checksum algorithms.\n\nImplements:\n\n\tint rados_checksum(rados_ioctx_t io,\n\t                   const char *oid,\n\t                   rados_checksum_type_t type,\n\t                   const char *init_value,\n\t                   size_t init_value_len,\n\t                   size_t len,\n\t                   uint64_t off,\n\t                   size_t chunk_size,\n\t                   char *pchecksum,\n\t                   size_t checksum_len);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       }
     ]
   },
@@ -2091,8 +2091,8 @@
       {
         "name": "Image.FlattenWithProgress",
         "comment": "FlattenWithProgress removes snapshot references from the image, reporting\nprogress via the supplied callback. The flatten operation will be aborted\nif the callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_flatten_with_progress(rbd_image_t image,\n\t                              librbd_progress_fn_t cb,\n\t                              void *cbdata);\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       }
     ]
   },
@@ -2173,14 +2173,14 @@
       {
         "name": "API.SetIndividualBucketRateLimit",
         "comment": "SetIndividualBucketRateLimit sets rate-limits to a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-rate-limit-for-an-individual-bucket\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       },
       {
         "name": "API.GetIndividualBucketRateLimit",
         "comment": "GetIndividualBucketRateLimit returns rate-limits of a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-rate-limit\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       }
     ],
     "stable_api": [
@@ -2409,8 +2409,8 @@
       {
         "name": "Admin.ApplyExportInfo",
         "comment": "ApplyExportInfo will create or update an existing NFS export.\n\nSimilar To:\n\n\tceph nfs export apply\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       }
     ],
     "stable_api": [
@@ -2643,14 +2643,14 @@
       {
         "name": "ApplyOptions.SetGeneric",
         "comment": "SetGeneric enables or disables returning GenericResource objects within\nthe results of the Apply function. If true all Resource objects embedded\nin Apply results will be GenericResource instances.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       },
       {
         "name": "ApplyOptions.Generic",
         "comment": "Generic returns true if the apply options are set to return\nGenericResource instances in Apply results.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.40.0",
+        "expected_stable_version": "v0.42.0"
       }
     ],
     "stable_api": [
