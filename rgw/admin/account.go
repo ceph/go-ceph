@@ -1,4 +1,4 @@
-//go:build !(pacific || quincy || reef) && ceph_preview
+//go:build !(pacific || quincy || reef)
 
 package admin
 
