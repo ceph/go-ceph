@@ -20,29 +20,32 @@ type Bucket struct {
 		DataExtraPool string `json:"data_extra_pool"`
 		IndexPool     string `json:"index_pool"`
 	} `json:"explicit_placement"`
-	ID                string     `json:"id"`
-	Marker            string     `json:"marker"`
-	IndexType         string     `json:"index_type"`
-	Versioned         *bool      `json:"versioned"`           // reef
-	VersioningEnabled *bool      `json:"versioning_enabled"`  // reef
-	Versioning        *string    `json:"versioning"`          // quincy, squid+
-	ObjectLockEnabled bool       `json:"object_lock_enabled"` // quincy+
-	Owner             string     `json:"owner"`
-	Ver               string     `json:"ver"`
-	MasterVer         string     `json:"master_ver"`
-	Mtime             string     `json:"mtime"`
-	CreationTime      *time.Time `json:"creation_time"`
-	MaxMarker         string     `json:"max_marker"`
-	Usage             struct {
-		RgwMain      RgwUsage `json:"rgw.main"`
-		RgwMultimeta RgwUsage `json:"rgw.multimeta"`
-	} `json:"usage"`
-	BucketQuota QuotaSpec `json:"bucket_quota"`
-	Policy      *bool     `url:"policy"`
-	PurgeObject *bool     `url:"purge-objects"`
+	ID                string      `json:"id"`
+	Marker            string      `json:"marker"`
+	IndexType         string      `json:"index_type"`
+	Versioned         *bool       `json:"versioned"`           // reef
+	VersioningEnabled *bool       `json:"versioning_enabled"`  // reef
+	Versioning        *string     `json:"versioning"`          // quincy, squid+
+	ObjectLockEnabled bool        `json:"object_lock_enabled"` // quincy+
+	Owner             string      `json:"owner"`
+	Ver               string      `json:"ver"`
+	MasterVer         string      `json:"master_ver"`
+	Mtime             string      `json:"mtime"`
+	CreationTime      *time.Time  `json:"creation_time"`
+	MaxMarker         string      `json:"max_marker"`
+	Usage             BucketUsage `json:"usage"`
+	BucketQuota       QuotaSpec   `json:"bucket_quota"`
+	Policy            *bool       `url:"policy"`
+	PurgeObject       *bool       `url:"purge-objects"`
 }
 
-// RgwUsage contains usage statistics.
+// BucketUsage contains usage statistics for a bucket
+type BucketUsage struct {
+	RgwMain      RgwUsage `json:"rgw.main"`
+	RgwMultimeta RgwUsage `json:"rgw.multimeta"`
+}
+
+// RgwUsage contains usage statistics for an object category
 type RgwUsage struct {
 	Size           *uint64 `json:"size"`
 	SizeActual     *uint64 `json:"size_actual"`

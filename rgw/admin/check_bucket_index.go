@@ -21,15 +21,10 @@ type CheckBucketIndexResponse struct {
 	InvalidMultipartEntries []string `json:"invalid_multipart_entries"`
 	CheckResult             struct {
 		ExistingHeader struct {
-			Usage struct {
-				RgwMain      RgwUsage `json:"rgw.main"`
-				RgwMultimeta RgwUsage `json:"rgw.multimeta"`
-			} `json:"usage"`
+			Usage BucketUsage `json:"usage"`
 		} `json:"existing_header"`
 		CalculatedHeader struct {
-			Usage struct {
-				RgwMain RgwUsage `json:"rgw.main"`
-			} `json:"usage"`
+			Usage BucketUsage `json:"usage"`
 		} `json:"calculated_header"`
 	} `json:"check_result"`
 }
