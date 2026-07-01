@@ -11,7 +11,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/pierrec/xxHash v0.1.5
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sys v0.45.0
+	golang.org/x/sys v0.46.0
 )
 
 require (
