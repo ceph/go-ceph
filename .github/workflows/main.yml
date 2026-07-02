@@ -48,7 +48,7 @@ jobs:
     needs: go-versions
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
     - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
       with:
         go-version: ${{ needs.go-versions.outputs.latest }}
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       with:
         fetch-depth: 0
         ref: ${{ github.event.pull_request.head.sha }}
@@ -101,7 +101,7 @@ jobs:
         - ceph_version: "tentacle"
           go_version: ${{ needs.go-versions.outputs.unstable }}
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
     - name: Set cores to get stored as "core"
       run:  sudo bash -c 'echo "core" > /proc/sys/kernel/core_pattern'
     - name: Run tests
