@@ -25,18 +25,22 @@ func TestBuildQueryPath(t *testing.T) {
 
 func TestValueToURLParams(t *testing.T) {
 	type args struct {
-		i interface{}
+		i                interface{}
+		acceptableFields []string
 	}
 	tests := []struct {
 		name string
 		args args
 		want string
 	}{
-		{"default", args{User{ID: "leseb", Email: "leseb@example.com"}}, "format=json&uid=leseb"},
+		{"default", args{User{ID: "leseb", Email: "leseb@example.com"}, []string{"uid"}}, "format=json&uid=leseb"},
+		// RGW expects placement-tags as a single comma-separated value, not repeated params.
+		{"placement tags", args{User{ID: "leseb", PlacementTags: []string{"fast", "ssd"}}, []string{"uid", "placement-tags"}}, "format=json&placement-tags=fast%2Cssd&uid=leseb"},
+		{"empty placement tags", args{User{ID: "leseb"}, []string{"uid", "placement-tags"}}, "format=json&uid=leseb"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := valueToURLParams(tt.args.i, []string{"uid"})
+			got := valueToURLParams(tt.args.i, tt.args.acceptableFields)
 			if !reflect.DeepEqual(got.Encode(), tt.want) {
 				t.Errorf("valueToURLParams() = %v, want %v", got.Encode(), tt.want)
 			}
