@@ -21,7 +21,7 @@ type User struct {
 	OpMask              string         `json:"op_mask" url:"op-mask"`
 	DefaultPlacement    string         `json:"default_placement" url:"default-placement"`
 	DefaultStorageClass string         `json:"default_storage_class" url:"default-storage-class"`
-	PlacementTags       []interface{}  `json:"placement_tags"`
+	PlacementTags       []string       `json:"placement_tags" url:"placement-tags"`
 	BucketQuota         QuotaSpec      `json:"bucket_quota"`
 	UserQuota           QuotaSpec      `json:"user_quota"`
 	TempURLKeys         []interface{}  `json:"temp_url_keys"`
@@ -161,8 +161,8 @@ func (api *API) CreateUser(ctx context.Context, user User) (User, error) {
 		return User{}, errMissingUserDisplayName
 	}
 
-	// valid parameters not supported by go-ceph: system, exclusive, placement-tags
-	body, err := api.call(ctx, http.MethodPut, "/user", valueToURLParams(user, []string{"uid", "display-name", "default-placement", "default-storage-class", "email", "key-type", "access-key", "secret-key", "user-caps", "tenant", "generate-key", "max-buckets", "suspended", "op-mask", "account-id", "account-root"}))
+	// valid parameters not supported by go-ceph: system, exclusive
+	body, err := api.call(ctx, http.MethodPut, "/user", valueToURLParams(user, []string{"uid", "display-name", "default-placement", "placement-tags", "default-storage-class", "email", "key-type", "access-key", "secret-key", "user-caps", "tenant", "generate-key", "max-buckets", "suspended", "op-mask", "account-id", "account-root"}))
 	if err != nil {
 		return User{}, err
 	}
@@ -197,8 +197,8 @@ func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 		return User{}, errMissingUserID
 	}
 
-	// valid parameters not supported by go-ceph: system, placement-tags
-	body, err := api.call(ctx, http.MethodPost, "/user", valueToURLParams(user, []string{"uid", "display-name", "default-placement", "default-storage-class", "email", "generate-key", "access-key", "secret-key", "key-type", "max-buckets", "suspended", "op-mask", "account-id", "account-root"}))
+	// valid parameters not supported by go-ceph: system
+	body, err := api.call(ctx, http.MethodPost, "/user", valueToURLParams(user, []string{"uid", "display-name", "default-placement", "placement-tags", "default-storage-class", "email", "generate-key", "access-key", "secret-key", "key-type", "max-buckets", "suspended", "op-mask", "account-id", "account-root"}))
 	if err != nil {
 		return User{}, err
 	}
