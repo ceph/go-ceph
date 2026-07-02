@@ -36,6 +36,7 @@ type Bucket struct {
 	Usage             struct {
 		RgwMain      RgwUsage `json:"rgw.main"`
 		RgwMultimeta RgwUsage `json:"rgw.multimeta"`
+		RgwNone      RgwUsage `json:"rgw.none"`
 	} `json:"usage"`
 	BucketQuota QuotaSpec `json:"bucket_quota"`
 	Policy      *bool     `url:"policy"`

@@ -24,11 +24,14 @@ type CheckBucketIndexResponse struct {
 			Usage struct {
 				RgwMain      RgwUsage `json:"rgw.main"`
 				RgwMultimeta RgwUsage `json:"rgw.multimeta"`
+				RgwNone      RgwUsage `json:"rgw.none"`
 			} `json:"usage"`
 		} `json:"existing_header"`
 		CalculatedHeader struct {
 			Usage struct {
-				RgwMain RgwUsage `json:"rgw.main"`
+				RgwMain      RgwUsage `json:"rgw.main"`
+				RgwMultimeta RgwUsage `json:"rgw.multimeta"`
+				RgwNone      RgwUsage `json:"rgw.none"`
 			} `json:"usage"`
 		} `json:"calculated_header"`
 	} `json:"check_result"`
