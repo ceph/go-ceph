@@ -106,9 +106,10 @@ func (suite *RadosGWTestSuite) TestUser() {
 
 	suite.T().Run("user creation success", func(_ *testing.T) {
 		usercaps := "users=read"
-		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete", DefaultPlacement: "default-placement", DefaultStorageClass: "STANDARD"})
+		user, err := co.CreateUser(context.Background(), User{ID: "leseb", DisplayName: "This is leseb", Email: "leseb@example.com", UserCaps: usercaps, OpMask: "delete", DefaultPlacement: "default-placement", DefaultStorageClass: "STANDARD", PlacementTags: []string{"fast", "ssd"}})
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@example.com", user.Email)
+		assert.Equal(suite.T(), []string{"fast", "ssd"}, user.PlacementTags)
 	})
 
 	suite.T().Run("get user leseb by uid", func(_ *testing.T) {
@@ -119,6 +120,7 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.Equal(suite.T(), "read", user.Caps[0].Perm)
 		assert.Equal(suite.T(), "delete", user.OpMask)
 		assert.Equal(suite.T(), "default-placement", user.DefaultPlacement)
+		assert.Equal(suite.T(), []string{"fast", "ssd"}, user.PlacementTags)
 		os.Setenv("LESEB_ACCESS_KEY", user.Keys[0].AccessKey)
 	})
 
@@ -141,6 +143,17 @@ func (suite *RadosGWTestSuite) TestUser() {
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), "leseb@leseb.com", user.Email)
 		assert.Equal(suite.T(), -1, *user.MaxBuckets)
+	})
+
+	suite.T().Run("modify user placement tags", func(_ *testing.T) {
+		user, err := co.ModifyUser(context.Background(), User{ID: "leseb", PlacementTags: []string{"slow", "hdd"}})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), []string{"slow", "hdd"}, user.PlacementTags)
+
+		// confirm the change is actually persisted, not just echoed back
+		fetched, err := co.GetUser(context.Background(), User{ID: "leseb"})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), []string{"slow", "hdd"}, fetched.PlacementTags)
 	})
 
 	suite.T().Run("user already exists", func(_ *testing.T) {

@@ -76,6 +76,19 @@ func getReflect(i interface{}, acceptableFields []string, values *url.Values) {
 		}
 
 		if v2.Kind() == reflect.Slice {
+			if v2.Type().Elem().Kind() == reflect.String {
+				if v2.Len() > 0 && contains(acceptableFields, name) {
+					tags := make([]string, v2.Len())
+					for i := 0; i < v2.Len(); i++ {
+						tags[i] = v2.Index(i).String()
+					}
+					// the RGW admin ops API expects a single comma-separated
+					// value here, not repeated params (see RGWOp_User_Create::execute()
+					// in rgw_rest_user.cc from Ceph sources)
+					values.Add(name, strings.Join(tags, ","))
+				}
+				continue
+			}
 			for i := 0; i < v2.Len(); i++ {
 				item := v2.Index(i)
 				getReflect(item.Interface(), acceptableFields, values)
