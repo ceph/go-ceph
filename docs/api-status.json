@@ -2181,6 +2181,12 @@
         "comment": "GetIndividualBucketRateLimit returns rate-limits of a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-rate-limit\n",
         "added_in_version": "v0.40.0",
         "expected_stable_version": "v0.42.0"
+      },
+      {
+        "name": "API.SetAccountQuota",
+        "comment": "SetAccountQuota sets the account-level or default-bucket quota for an RGW\naccount. The resulting quota can be read back with GetAccount, which populates\nAccount.Quota and Account.BucketQuota.\nThe underlying admin op requires Ceph v20.2.2 or later, or main; it is not\navailable in Squid, nor in Tentacle before v20.2.2.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-account-quota\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ],
     "stable_api": [
