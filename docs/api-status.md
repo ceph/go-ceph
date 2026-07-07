@@ -50,6 +50,7 @@ Name | Added in Version | Expected Stable Version |
 ---- | ---------------- | ----------------------- | 
 API.SetIndividualBucketRateLimit | v0.40.0 | v0.42.0 | 
 API.GetIndividualBucketRateLimit | v0.40.0 | v0.42.0 | 
+API.SetAccountQuota | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/manager
 

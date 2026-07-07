@@ -20,9 +20,9 @@ type Account struct {
 	MaxGroups     *int64 `json:"max_groups" url:"max-groups"`
 	MaxAccessKeys *int64 `json:"max_access_keys" url:"max-access-keys"`
 	MaxBuckets    *int64 `json:"max_buckets" url:"max-buckets"`
-	// Quota apis for account is only available mainline,
-	// but fields are available for preview builds for future compatibility
-	// Once backports merged will add account quota apis
+	// Quota and BucketQuota are populated by GetAccount. They can be set with
+	// SetAccountQuota; the underlying admin op requires Ceph v20.2.2 or later, or main.
+	// It is not present in Squid, nor in Tentacle before v20.2.2.
 	Quota       QuotaSpec `json:"quota"`
 	BucketQuota QuotaSpec `json:"bucket_quota"`
 }
