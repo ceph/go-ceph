@@ -43,6 +43,7 @@ type Bucket struct {
 type BucketUsage struct {
 	RgwMain      RgwUsage `json:"rgw.main"`
 	RgwMultimeta RgwUsage `json:"rgw.multimeta"`
+	RgwNone      RgwUsage `json:"rgw.none"`
 }
 
 // RgwUsage contains usage statistics for an object category
