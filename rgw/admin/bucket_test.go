@@ -1,8 +1,11 @@
 package admin
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -143,4 +146,99 @@ func (suite *RadosGWTestSuite) TestBucket() {
 			assert.True(suite.T(), errors.Is(err, ErrNoSuchBucket))
 		}
 	})
+}
+
+func TestGetBucketInfoMockAPI(t *testing.T) {
+	t.Run("test get bucket info", func(t *testing.T) {
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientGetBucket())
+		assert.NoError(t, err)
+		b, err := api.GetBucketInfo(context.TODO(), Bucket{Bucket: "my-versioned-bucket"})
+		assert.NoError(t, err)
+		assert.Equal(t, "my-versioned-bucket", b.Bucket)
+
+		assert.NotNil(t, b.Usage.RgwMain.NumObjects)
+		assert.Equal(t, uint64(14), *b.Usage.RgwMain.NumObjects)
+		assert.NotNil(t, b.Usage.RgwMultimeta.NumObjects)
+		assert.Equal(t, uint64(53), *b.Usage.RgwMultimeta.NumObjects)
+		assert.NotNil(t, b.Usage.RgwNone.NumObjects)
+		assert.Equal(t, uint64(27), *b.Usage.RgwNone.NumObjects)
+	})
+}
+
+var fakeBucketResponse = []byte(`{
+    "bucket": "my-versioned-bucket",
+    "tenant": "",
+    "versioning": "suspended",
+    "zonegroup": "e0806fd2-fdd2-43e5-b287-5b9234c7ba98",
+    "placement_rule": "default-placement",
+    "explicit_placement": {
+        "data_pool": "",
+        "data_extra_pool": "",
+        "index_pool": ""
+    },
+    "id": "72efcb62-08cd-4591-8485-0baa2775c462.790909945.83884",
+    "marker": "72efcb62-08cd-4591-8485-0baa2775c462.790909945.83884",
+    "index_type": "Normal",
+    "index_generation": 0,
+    "num_shards": 11,
+    "object_lock_enabled": false,
+    "mfa_enabled": false,
+    "owner": "test-user",
+    "ver": "0#10,1#2,2#2,3#2,4#2,5#2,6#2,7#2,8#2,9#2,10#2",
+    "master_ver": "0#0,1#0,2#0,3#0,4#0,5#0,6#0,7#0,8#0,9#0,10#0",
+    "mtime": "2026-07-03T12:20:07.394869Z",
+    "creation_time": "2026-07-03T12:15:57.194448Z",
+    "max_marker": "0#,1#,2#,3#,4#,5#,6#,7#,8#,9#,10#",
+    "usage": {
+        "rgw.none": {
+            "size": 0,
+            "size_actual": 0,
+            "size_utilized": 0,
+            "size_kb": 0,
+            "size_kb_actual": 0,
+            "size_kb_utilized": 0,
+            "num_objects": 27
+        },
+        "rgw.main": {
+            "size": 37656,
+            "size_actual": 49152,
+            "size_utilized": 37656,
+            "size_kb": 37,
+            "size_kb_actual": 48,
+            "size_kb_utilized": 37,
+            "num_objects": 14
+        },
+        "rgw.multimeta": {
+            "size": 0,
+            "size_actual": 0,
+            "size_utilized": 3445,
+            "size_kb": 0,
+            "size_kb_actual": 0,
+            "size_kb_utilized": 4,
+            "num_objects": 53
+        }
+    },
+    "bucket_quota": {
+        "enabled": false,
+        "check_on_raw": false,
+        "max_size": -1,
+        "max_size_kb": 0,
+        "max_objects": -1
+    }
+}
+`)
+
+func returnMockClientGetBucket() *mockClient {
+	r := io.NopCloser(bytes.NewReader(fakeBucketResponse))
+	return &mockClient{
+		mockDo: func(req *http.Request) (*http.Response, error) {
+			if req.Method == http.MethodGet && req.URL.Path == "127.0.0.1/admin/bucket" {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       r,
+				}, nil
+			}
+			return nil, fmt.Errorf("unexpected request: %q. method %q. path %q", req.URL.RawQuery, req.Method, req.URL.Path)
+		},
+	}
 }
