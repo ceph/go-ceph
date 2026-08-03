@@ -90,8 +90,10 @@ jobs:
         - "reef"
         - "squid"
         - "tentacle"
+        - "umbrella"
         - "pre-squid"
         - "pre-tentacle"
+        - "pre-umbrella"
         - "main"
         go_version:
         - ${{ needs.go-versions.outputs.latest }}
