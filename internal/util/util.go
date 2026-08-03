@@ -14,6 +14,7 @@ const (
 	CephReef
 	CephSquid
 	CephTentacle
+	CephUmbrella
 	CephUnknown
 )
 
@@ -26,6 +27,7 @@ const (
 	Reef     = "reef"
 	Squid    = "squid"
 	Tentacle = "tentacle"
+	Umbrella = "umbrella"
 	Main     = "main"
 )
 
@@ -38,7 +40,15 @@ func CurrentCephVersion() CephVersion {
 // CurrentCephVersionString is the current Ceph version string
 func CurrentCephVersionString() string {
 	switch vname := os.Getenv("CEPH_VERSION"); vname {
-	case Nautilus, Octopus, Pacific, Quincy, Reef, Squid, Tentacle, Main:
+	case Nautilus,
+		Octopus,
+		Pacific,
+		Quincy,
+		Reef,
+		Squid,
+		Tentacle,
+		Umbrella,
+		Main:
 		return vname
 	}
 	return ""
@@ -61,6 +71,8 @@ func CephVersionOfString(vname string) CephVersion {
 		return CephSquid
 	case "tentacle":
 		return CephTentacle
+	case "umbrella":
+		return CephUmbrella
 	default:
 		return CephUnknown
 	}
