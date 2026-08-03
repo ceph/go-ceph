@@ -13,6 +13,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 FSAdmin.SubVolumeGroupInfo | v0.40.0 | v0.42.0 | 
+FSAdmin.PinSubVolumeInGroup | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rados
 

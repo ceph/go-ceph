@@ -709,6 +709,12 @@
         "comment": "SubVolumeGroupInfo returns information about the specified subvolume group.\n\nSimilar To:\n\n\tceph fs subvolumegroup info <volume> <group_name>\n",
         "added_in_version": "v0.40.0",
         "expected_stable_version": "v0.42.0"
+      },
+      {
+        "name": "FSAdmin.PinSubVolumeInGroup",
+        "comment": "PinSubVolumeInGroup pins a subvolume in a volume and optional subvolume group\nto ranks according to policies. A valid pin setting value depends on the type\nof pin as described in the docs from\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#cephfs-pinning and\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#setting-subtree-partitioning-policies\n\nSimilar To:\n\n\tceph fs subvolume pin <vol_name> <sub_name> <pin_type> <pin_setting> [--group_name=<group>]\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
