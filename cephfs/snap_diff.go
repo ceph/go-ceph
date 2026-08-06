@@ -20,9 +20,35 @@ typedef struct {
   struct ceph_mount_info* cmount;
   struct ceph_dir_result* dir1;
   struct ceph_dir_result* dir_aux;
+  unsigned mask;
 } _ceph_snapdiff_info;
 
+#ifdef CEPH_SNAPDIFF_MODE
 // open_snapdiff_fn matches the open_snapdiff function signature.
+// New API: ceph_open_snapdiff takes an additional diff_mask parameter.
+typedef int(*open_snapdiff_fn)(struct ceph_mount_info* cmount,
+                                  const char* root_path,
+                                  const char* rel_path,
+                                  const char* snap1,
+                                  const char* snap2,
+                                  unsigned diff_mask,
+                                  _ceph_snapdiff_info* out);
+
+// open_snapdiff_dlsym take *fn as open_snapdiff_fn and calls the dynamically loaded
+// open_snapdiff function passed as 1st argument.
+static inline int open_snapdiff_dlsym(void *fn,
+                                  struct ceph_mount_info* cmount,
+                                  const char* root_path,
+                                  const char* rel_path,
+                                  const char* snap1,
+                                  const char* snap2,
+                                  _ceph_snapdiff_info* out) {
+	// cast function pointer fn to open_snapdiff and call the function
+	return ((open_snapdiff_fn) fn)(cmount, root_path, rel_path, snap1, snap2, 0, out);
+}
+#else
+// open_snapdiff_fn matches the open_snapdiff function signature.
+// Old API: ceph_open_snapdiff without diff_mask parameter.
 typedef int(*open_snapdiff_fn)(struct ceph_mount_info* cmount,
                                   const char* root_path,
                                   const char* rel_path,
@@ -42,6 +68,7 @@ static inline int open_snapdiff_dlsym(void *fn,
 	// cast function pointer fn to open_snapdiff and call the function
 	return ((open_snapdiff_fn) fn)(cmount, root_path, rel_path, snap1, snap2, out);
 }
+#endif
 
 // readdir_snapdiff_fn matches the readdir_snapdiff function signature.
 typedef int(*readdir_snapdiff_fn)(_ceph_snapdiff_info* snapdiff,
