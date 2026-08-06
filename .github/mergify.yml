@@ -49,7 +49,7 @@ pull_request_rules:
           - and:
               - label=API
               - "#approved-reviews-by>=1"
-              - "updated-at<10 days ago"
+              - "updated-at<5 days ago"
     actions:
       queue: {}
       dismiss_reviews: {}
