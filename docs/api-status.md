@@ -79,19 +79,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-TopIdentityKind.Identity | v0.39.0 | v0.41.0 | 
-ChildIdentityKind.Identity | v0.39.0 | v0.41.0 | 
-GuessIdentityKind | v0.39.0 | v0.41.0 | 
-GenericResource.Type | v0.39.0 | v0.41.0 | 
-GenericResource.Intent | v0.39.0 | v0.41.0 | 
-GenericResource.Identity | v0.39.0 | v0.41.0 | 
-GenericResource.MarshalJSON | v0.39.0 | v0.41.0 | 
-GenericResource.UnmarshalJSON | v0.39.0 | v0.41.0 | 
-GenericResource.Validate | v0.39.0 | v0.41.0 | 
-GenericResource.Convert | v0.39.0 | v0.41.0 | 
-ToGeneric | v0.39.0 | v0.41.0 | 
-ShowOptions.SetGeneric | v0.39.0 | v0.41.0 | 
-ShowOptions.Generic | v0.39.0 | v0.41.0 | 
 ApplyOptions.SetGeneric | v0.40.0 | v0.42.0 | 
 ApplyOptions.Generic | v0.40.0 | v0.42.0 | 
 
