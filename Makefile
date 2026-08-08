@@ -4,7 +4,7 @@ CONTAINER_OPTS ?= --security-opt $(shell grep -q selinux /sys/kernel/security/ls
 CONTAINER_BUILD_OPTS ?=
 CONTAINER_CONFIG_DIR ?= testing/containers
 VOLUME_FLAGS ?=
-CEPH_VERSION ?= pacific
+CEPH_VERSION ?= squid
 RESULTS_DIR ?=
 CHECK_GOFMT_FLAGS ?= -e -s -l
 IMPLEMENTS_OPTS ?=
@@ -60,10 +60,10 @@ ifeq ($(CEPH_VERSION),pre-tentacle)
 	BUILD_TAGS := tentacle,ceph_pre_tentacle
 endif
 ifeq ($(CEPH_VERSION),pre-umbrella)
-       CEPH_TAG ?= umbrella
-       CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
-       GO_CEPH_VERSION := umbrella
-       BUILD_TAGS := umbrella,ceph_pre_umbrella
+	CEPH_TAG ?= umbrella
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
+	GO_CEPH_VERSION := umbrella
+	BUILD_TAGS := umbrella,ceph_pre_umbrella
 endif
 ifeq ($(CEPH_VERSION),main)
 	CEPH_TAG ?= main

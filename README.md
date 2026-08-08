@@ -45,7 +45,7 @@ brew install ceph-client
 NOTE: CentOS users may want to use a
 [CentOS Storage SIG](https://wiki.centos.org/SpecialInterestGroup/Storage/Ceph)
 repository to enable packages for a supported ceph version.
-Example: `dnf -y install centos-release-ceph-pacific`.
+Example: `dnf -y install centos-release-ceph-tentacle`.
 (CentOS 7 users should use "yum" rather than "dnf")
 
 
@@ -65,16 +65,17 @@ work with non-current versions of Ceph, it is required to pass build-tags to
 the `go` command line. A tag with the named Ceph release will enable/disable
 certain features of the go-ceph packages, and prevent warnings or compile
 problems. For example, to ensure you select the library features that match
-the "pacific" release, use:
+the "tentacle" release, use:
 ```sh
-go build -tags pacific ....
-go test -tags pacific ....
+go build -tags tentacle ....
+go test -tags tentacle ....
 ```
 
 ### Supported Ceph Versions
 
 | go-ceph version | Supported Ceph Versions | Deprecated Ceph Versions |
 | --------------- | ------------------------| -------------------------|
+| v0.41.0         | squid, tentacle, umbrella | quincy, reef           |
 | v0.40.0         | squid, tentacle         | pacific, quincy, reef    |
 | v0.39.0         | squid, tentacle         | pacific, quincy, reef    |
 | v0.38.0         | reef, squid, tentacle   | pacific, quincy          |
