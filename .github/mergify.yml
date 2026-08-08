@@ -11,6 +11,7 @@ queue_rules:
       - check-success=test-suite (reef)
       - check-success=test-suite (squid)
       - check-success=test-suite (tentacle)
+      - check-success=test-suite (umbrella)
     merge_method: rebase
     update_method: rebase
 
@@ -37,6 +38,7 @@ pull_request_rules:
       - status-success=test-suite (reef)
       - status-success=test-suite (squid)
       - status-success=test-suite (tentacle)
+      - check-success=test-suite (umbrella)
       - or:
           - and:
               - label=no-API
