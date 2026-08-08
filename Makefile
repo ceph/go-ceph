@@ -60,10 +60,10 @@ ifeq ($(CEPH_VERSION),pre-tentacle)
 	BUILD_TAGS := tentacle,ceph_pre_tentacle
 endif
 ifeq ($(CEPH_VERSION),pre-umbrella)
-       CEPH_TAG ?= umbrella
-       CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
-       GO_CEPH_VERSION := umbrella
-       BUILD_TAGS := umbrella,ceph_pre_umbrella
+	CEPH_TAG ?= umbrella
+	CEPH_IMG ?= quay.ceph.io/ceph-ci/ceph
+	GO_CEPH_VERSION := umbrella
+	BUILD_TAGS := umbrella,ceph_pre_umbrella
 endif
 ifeq ($(CEPH_VERSION),main)
 	CEPH_TAG ?= main
