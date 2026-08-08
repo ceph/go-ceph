@@ -1,4 +1,4 @@
-//go:build !(pacific || quincy) && ceph_preview
+//go:build !(pacific || quincy)
 
 package builder
 
