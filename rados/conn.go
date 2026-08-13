@@ -6,6 +6,7 @@ package rados
 import "C"
 
 import (
+	"runtime"
 	"unsafe"
 
 	"github.com/ceph/go-ceph/internal/cutil"
@@ -69,12 +70,21 @@ func (c *Conn) Connect() error {
 	return nil
 }
 
-// Shutdown disconnects from the cluster.
+// Shutdown disconnects from the cluster and releases the cluster handle.
+// It may be called before Connect. Subsequent calls have no effect.
 func (c *Conn) Shutdown() {
-	if err := c.ensureConnected(); err != nil {
-		return
+	runtime.SetFinalizer(c, nil)
+	c.releaseClusterHandle()
+}
+
+// releaseClusterHandle performs the native cleanup shared by explicit
+// shutdown and the garbage-collector fallback.
+func (c *Conn) releaseClusterHandle() {
+	if c.cluster != nil {
+		C.rados_shutdown(c.cluster)
+		c.cluster = nil
 	}
-	freeConn(c)
+	c.connected = false
 }
 
 // ReadConfigFile configures the connection using a Ceph configuration file.
