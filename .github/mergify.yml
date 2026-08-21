@@ -42,12 +42,19 @@ pull_request_rules:
       - or:
           - and:
               - label=no-API
+              - label!=require-second-review
               - "#approved-reviews-by>=1"
+          - and:
+              - label=no-API
+              - label=require-second-review
+              - "#approved-reviews-by>=2"
           - and:
               - label=API
               - "#approved-reviews-by>=2"
           - and:
-              - label=API
+              - or:
+                - label=API
+                - label=no-API
               - "#approved-reviews-by>=1"
               - "updated-at<5 days ago"
     actions:
