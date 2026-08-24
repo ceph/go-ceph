@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // User is GO representation of the json output of a user creation
@@ -28,14 +29,18 @@ type User struct {
 	Type                string         `json:"type"`
 	MfaIds              []interface{}  `json:"mfa_ids"` //revive:disable-line:var-naming old-yet-exported public api
 	KeyType             string         `url:"key-type"`
-	Tenant              string         `url:"tenant"`
-	GenerateKey         *bool          `url:"generate-key"`
-	PurgeData           *int           `url:"purge-data"`
-	GenerateStat        *bool          `url:"stats"`
-	Stat                UserStat       `json:"stats"`
-	UserCaps            string         `url:"user-caps"`
-	AccountID           string         `json:"account_id" url:"account-id"`
-	AccountRoot         *bool          `url:"account-root"`
+	// Tenant is the user's tenant. Responses carry it here and leave ID
+	// bare; CreateUser sends it as its own "tenant" parameter, and
+	// GetUser, ModifyUser and RemoveUser fold it into the uid, so a User
+	// read back from one call addresses the same user in the next.
+	Tenant       string   `json:"tenant" url:"tenant"`
+	GenerateKey  *bool    `url:"generate-key"`
+	PurgeData    *int     `url:"purge-data"`
+	GenerateStat *bool    `url:"stats"`
+	Stat         UserStat `json:"stats"`
+	UserCaps     string   `url:"user-caps"`
+	AccountID    string   `json:"account_id" url:"account-id"`
+	AccountRoot  *bool    `url:"account-root"`
 }
 
 // SubuserSpec represents a subusers of a ceph-rgw user
@@ -109,6 +114,31 @@ type UserStat struct {
 	NumObjects  *uint64 `json:"num_objects"`
 }
 
+// withTenantUID returns a copy of u with a populated Tenant folded into
+// ID as "tenant$uid", the combined form RGW resolves tenancy through on
+// every operation. A bare ID gains the prefix; an ID already carrying
+// the same tenant is returned unchanged. Splitting on the first '$' is
+// enough because RGW itself (rgw_user::from_str) takes the tenant as
+// everything before it, in the namespaced "tenant$ns$uid" form too. An
+// ID naming a different tenant is an error, as is a Tenant without any
+// ID (lookup by access key).
+func (u User) withTenantUID() (User, error) {
+	if u.Tenant == "" {
+		return u, nil
+	}
+	if u.ID == "" {
+		return User{}, errTenantWithoutUserID
+	}
+	if i := strings.IndexByte(u.ID, '$'); i >= 0 {
+		if u.ID[:i] != u.Tenant {
+			return User{}, fmt.Errorf("%w: tenant %q, user ID %q", errTenantMismatch, u.Tenant, u.ID)
+		}
+		return u, nil
+	}
+	u.ID = u.Tenant + "$" + u.ID
+	return u, nil
+}
+
 // GetUser retrieves a given object store user
 func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" && len(user.Keys) == 0 {
@@ -120,6 +150,10 @@ func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 				return User{}, errMissingUserAccessKey
 			}
 		}
+	}
+	user, err := user.withTenantUID()
+	if err != nil {
+		return User{}, err
 	}
 
 	//  valid parameters not supported by go-ceph: sync
@@ -182,8 +216,12 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 	if user.ID == "" {
 		return errMissingUserID
 	}
+	user, err := user.withTenantUID()
+	if err != nil {
+		return err
+	}
 
-	_, err := api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user, []string{"uid", "purge-data"}))
+	_, err = api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user, []string{"uid", "purge-data"}))
 	if err != nil {
 		return err
 	}
@@ -195,6 +233,10 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" {
 		return User{}, errMissingUserID
+	}
+	user, err := user.withTenantUID()
+	if err != nil {
+		return User{}, err
 	}
 
 	// valid parameters not supported by go-ceph: system

@@ -93,6 +93,8 @@ const (
 
 var (
 	errMissingUserID          = errors.New("missing user ID")
+	errTenantMismatch         = errors.New("tenant conflicts with the tenant in the user ID")
+	errTenantWithoutUserID    = errors.New("tenant requires a user ID")
 	errMissingSubuserID       = errors.New("missing subuser ID")
 	errMissingUserAccessKey   = errors.New("missing user access key")
 	errMissingUserDisplayName = errors.New("missing user display name")
