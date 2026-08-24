@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // mockClient is the mock of the HTTP Client
@@ -308,4 +309,210 @@ func returnMockClient() *mockClient {
 			return nil, fmt.Errorf("unexpected request: %q. method %q. path %q", req.URL.RawQuery, req.Method, req.URL.Path)
 		},
 	}
+}
+
+func returnMockClientCaptureQuery(rawQuery *string, response []byte) *mockClient {
+	return &mockClient{
+		mockDo: func(req *http.Request) (*http.Response, error) {
+			*rawQuery = req.URL.RawQuery
+			return &http.Response{
+				StatusCode: 200,
+				Body:       io.NopCloser(bytes.NewReader(response)),
+			}, nil
+		},
+	}
+}
+
+func (suite *RadosGWTestSuite) TestUserTenant() {
+	suite.SetupConnection()
+	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
+	assert.NoError(suite.T(), err)
+
+	const tenant = "testtenant"
+	const uid = "tenantuser"
+
+	// A legacy user sharing the tenant user's bare UID. The bug being fixed is
+	// a tenant user's operations landing on this user, so it must stay
+	// untouched throughout.
+	var legacy User
+	suite.T().Run("create legacy user sharing the uid", func(t *testing.T) {
+		legacy, err = co.CreateUser(context.Background(), User{ID: uid, DisplayName: "Legacy user", Email: "legacy@example.com"})
+		assert.NoError(t, err)
+	})
+	legacyUnchanged := func(t *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: uid})
+		require.NoError(t, err)
+		assert.Empty(t, got.Tenant)
+		assert.Equal(t, legacy.DisplayName, got.DisplayName)
+		assert.Equal(t, legacy.Email, got.Email)
+		assert.Equal(t, legacy.Keys, got.Keys)
+		assert.Empty(t, got.Subusers)
+	}
+
+	var created User
+	suite.T().Run("create user with tenant", func(t *testing.T) {
+		created, err = co.CreateUser(context.Background(), User{ID: uid, Tenant: tenant, DisplayName: "Tenant user", Email: "tenant@example.com"})
+		assert.NoError(t, err)
+		assert.Equal(t, tenant, created.Tenant)
+		assert.Equal(t, uid, created.ID)
+	})
+
+	suite.T().Run("get user by tenant and id", func(t *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.NoError(t, err)
+		assert.Equal(t, "tenant@example.com", got.Email)
+		assert.Equal(t, tenant, got.Tenant)
+	})
+
+	suite.T().Run("get user by combined uid matches", func(t *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: tenant + "$" + uid})
+		assert.NoError(t, err)
+		assert.Equal(t, "tenant@example.com", got.Email)
+	})
+
+	suite.T().Run("get tenant user by access key resolves the tenant identity", func(t *testing.T) {
+		require.NotEmpty(t, created.Keys)
+		got, err := co.GetUser(context.Background(), User{Tenant: tenant, Keys: []UserKeySpec{{AccessKey: created.Keys[0].AccessKey}}})
+		assert.NoError(t, err)
+		assert.Equal(t, uid, got.ID)
+		assert.Equal(t, tenant, got.Tenant)
+	})
+
+	// Modify and remove through the User returned by GetUser, exercising the
+	// promise that a read-back user addresses the same identity next call.
+	suite.T().Run("modify through the returned user persists", func(t *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		require.NoError(t, err)
+		got.Email = "tenant@changed.com"
+		_, err = co.ModifyUser(context.Background(), got)
+		assert.NoError(t, err)
+		reread, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.NoError(t, err)
+		assert.Equal(t, "tenant@changed.com", reread.Email)
+	})
+
+	suite.T().Run("legacy user is unaffected", legacyUnchanged)
+
+	suite.T().Run("subuser lifecycle by tenant and id", func(t *testing.T) {
+		tenantUser := User{ID: uid, Tenant: tenant}
+		err := co.CreateSubuser(context.Background(), tenantUser, SubuserSpec{Name: "sub1", Access: SubuserAccessRead})
+		require.NoError(t, err)
+		got, err := co.GetUser(context.Background(), tenantUser)
+		require.NoError(t, err)
+		require.Len(t, got.Subusers, 1)
+		assert.Equal(t, SubuserAccessReplyRead, got.Subusers[0].Access)
+
+		err = co.ModifySubuser(context.Background(), tenantUser, SubuserSpec{Name: "sub1", Access: SubuserAccessReadWrite})
+		require.NoError(t, err)
+		got, err = co.GetUser(context.Background(), tenantUser)
+		require.NoError(t, err)
+		require.Len(t, got.Subusers, 1)
+		assert.Equal(t, SubuserAccessReplyReadWrite, got.Subusers[0].Access)
+
+		err = co.RemoveSubuser(context.Background(), tenantUser, SubuserSpec{Name: "sub1"})
+		require.NoError(t, err)
+		got, err = co.GetUser(context.Background(), tenantUser)
+		require.NoError(t, err)
+		assert.Empty(t, got.Subusers)
+	})
+
+	suite.T().Run("remove through the returned user", func(t *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		require.NoError(t, err)
+		err = co.RemoveUser(context.Background(), got)
+		assert.NoError(t, err)
+
+		_, err = co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.ErrorIs(t, err, ErrNoSuchUser)
+	})
+
+	suite.T().Run("legacy user is unchanged after removing the tenant user", legacyUnchanged)
+
+	suite.T().Run("remove legacy user", func(t *testing.T) {
+		err := co.RemoveUser(context.Background(), User{ID: uid})
+		assert.NoError(t, err)
+	})
+}
+
+func TestUserWithTenantUID(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      User
+		wantID  string
+		wantErr error
+	}{
+		{"no tenant", User{ID: "user1"}, "user1", nil},
+		{"no tenant with combined ID", User{ID: "tenantA$user1"}, "tenantA$user1", nil},
+		{"tenant folded into bare ID", User{ID: "user1", Tenant: "tenantA"}, "tenantA$user1", nil},
+		{"tenant matching combined ID", User{ID: "tenantA$user1", Tenant: "tenantA"}, "tenantA$user1", nil},
+		{"tenant matching namespaced combined ID", User{ID: "tenantA$oidc$user1", Tenant: "tenantA"}, "tenantA$oidc$user1", nil},
+		{"tenant conflicting with combined ID", User{ID: "tenantB$user1", Tenant: "tenantA"}, "", errTenantMismatch},
+		{"tenant conflicting with namespaced combined ID", User{ID: "tenantB$oidc$user1", Tenant: "tenantA"}, "", errTenantMismatch},
+		{"tenant conflicting with explicitly empty tenant", User{ID: "$user1", Tenant: "tenantA"}, "", errTenantMismatch},
+		{"tenant containing a separator", User{ID: "victim", Tenant: "$oidc"}, "", errTenantSeparator},
+		{"tenant with a namespace separator", User{ID: "user1", Tenant: "a$b"}, "", errTenantSeparator},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.in.withTenantUID()
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantID, got.ID)
+		})
+	}
+}
+
+func TestUserWithTenantMockAPI(t *testing.T) {
+	// The full fold/validation matrix lives in TestUserWithTenantUID; these
+	// cases only confirm each call puts the folded uid on the wire.
+	const foldedUID = "format=json&uid=tenantA%24user1"
+
+	t.Run("get folds the tenant into the uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{ID: "user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, foldedUID, query)
+	})
+	t.Run("modify folds the tenant into the uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.ModifyUser(context.TODO(), User{ID: "user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, foldedUID, query)
+	})
+	t.Run("remove folds the tenant into the uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.RemoveUser(context.TODO(), User{ID: "user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, foldedUID, query)
+	})
+	t.Run("get by access key folds nothing", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{Tenant: "tenantA", Keys: []UserKeySpec{{AccessKey: "AKIAIOSFODNN7EXAMPLE"}}})
+		assert.NoError(t, err)
+		assert.Equal(t, "access-key=AKIAIOSFODNN7EXAMPLE&format=json", query)
+	})
+	t.Run("response tenant round-trips into the next call's uid", func(t *testing.T) {
+		var query string
+		response := []byte(`{"tenant": "tenantA", "user_id": "user1"}`)
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, response))
+		assert.NoError(t, err)
+		got, err := api.GetUser(context.TODO(), User{ID: "tenantA$user1"})
+		assert.NoError(t, err)
+		assert.Equal(t, "user1", got.ID)
+		assert.Equal(t, "tenantA", got.Tenant)
+		_, err = api.ModifyUser(context.TODO(), got)
+		assert.NoError(t, err)
+		assert.Equal(t, foldedUID, query)
+	})
 }
