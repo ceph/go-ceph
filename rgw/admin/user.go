@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // User is GO representation of the json output of a user creation
@@ -28,14 +29,15 @@ type User struct {
 	Type                string         `json:"type"`
 	MfaIds              []interface{}  `json:"mfa_ids"` //revive:disable-line:var-naming old-yet-exported public api
 	KeyType             string         `url:"key-type"`
-	Tenant              string         `url:"tenant"`
-	GenerateKey         *bool          `url:"generate-key"`
-	PurgeData           *int           `url:"purge-data"`
-	GenerateStat        *bool          `url:"stats"`
-	Stat                UserStat       `json:"stats"`
-	UserCaps            string         `url:"user-caps"`
-	AccountID           string         `json:"account_id" url:"account-id"`
-	AccountRoot         *bool          `url:"account-root"`
+	// Tenant is the user's tenant (see withTenantUID).
+	Tenant       string   `json:"tenant" url:"tenant"`
+	GenerateKey  *bool    `url:"generate-key"`
+	PurgeData    *int     `url:"purge-data"`
+	GenerateStat *bool    `url:"stats"`
+	Stat         UserStat `json:"stats"`
+	UserCaps     string   `url:"user-caps"`
+	AccountID    string   `json:"account_id" url:"account-id"`
+	AccountRoot  *bool    `url:"account-root"`
 }
 
 // SubuserSpec represents a subusers of a ceph-rgw user
@@ -109,6 +111,28 @@ type UserStat struct {
 	NumObjects  *uint64 `json:"num_objects"`
 }
 
+// withTenantUID returns a copy of u with a populated Tenant folded into ID
+// as "tenant$uid", the form RGW resolves tenancy through. A bare ID gains
+// the prefix; an ID already naming the same tenant is unchanged; an ID
+// naming a different tenant, or a Tenant that itself contains '$', is an
+// error.
+func (u User) withTenantUID() (User, error) {
+	if u.Tenant == "" {
+		return u, nil
+	}
+	if strings.IndexByte(u.Tenant, '$') >= 0 {
+		return User{}, fmt.Errorf("%w: %q", errTenantSeparator, u.Tenant)
+	}
+	if i := strings.IndexByte(u.ID, '$'); i >= 0 {
+		if u.ID[:i] != u.Tenant {
+			return User{}, fmt.Errorf("%w: tenant %q, user ID %q", errTenantMismatch, u.Tenant, u.ID)
+		}
+		return u, nil
+	}
+	u.ID = u.Tenant + "$" + u.ID
+	return u, nil
+}
+
 // GetUser retrieves a given object store user
 func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" && len(user.Keys) == 0 {
@@ -119,6 +143,13 @@ func (api *API) GetUser(ctx context.Context, user User) (User, error) {
 			if key.AccessKey == "" {
 				return User{}, errMissingUserAccessKey
 			}
+		}
+	}
+	if user.ID != "" {
+		var err error
+		user, err = user.withTenantUID()
+		if err != nil {
+			return User{}, err
 		}
 	}
 
@@ -160,6 +191,12 @@ func (api *API) CreateUser(ctx context.Context, user User) (User, error) {
 	if user.DisplayName == "" {
 		return User{}, errMissingUserDisplayName
 	}
+	// Fold the tenant for the same early mismatch/separator checks as the
+	// other calls; CreateUser keeps sending it as the "tenant" parameter too.
+	user, err := user.withTenantUID()
+	if err != nil {
+		return User{}, err
+	}
 
 	// valid parameters not supported by go-ceph: system, exclusive
 	body, err := api.call(ctx, http.MethodPut, "/user", valueToURLParams(user, []string{"uid", "display-name", "default-placement", "placement-tags", "default-storage-class", "email", "key-type", "access-key", "secret-key", "user-caps", "tenant", "generate-key", "max-buckets", "suspended", "op-mask", "account-id", "account-root"}))
@@ -182,8 +219,12 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 	if user.ID == "" {
 		return errMissingUserID
 	}
+	user, err := user.withTenantUID()
+	if err != nil {
+		return err
+	}
 
-	_, err := api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user, []string{"uid", "purge-data"}))
+	_, err = api.call(ctx, http.MethodDelete, "/user", valueToURLParams(user, []string{"uid", "purge-data"}))
 	if err != nil {
 		return err
 	}
@@ -195,6 +236,10 @@ func (api *API) RemoveUser(ctx context.Context, user User) error {
 func (api *API) ModifyUser(ctx context.Context, user User) (User, error) {
 	if user.ID == "" {
 		return User{}, errMissingUserID
+	}
+	user, err := user.withTenantUID()
+	if err != nil {
+		return User{}, err
 	}
 
 	// valid parameters not supported by go-ceph: system
