@@ -309,3 +309,210 @@ func returnMockClient() *mockClient {
 		},
 	}
 }
+
+func returnMockClientCaptureQuery(rawQuery *string, response []byte) *mockClient {
+	return &mockClient{
+		mockDo: func(req *http.Request) (*http.Response, error) {
+			*rawQuery = req.URL.RawQuery
+			return &http.Response{
+				StatusCode: 200,
+				Body:       io.NopCloser(bytes.NewReader(response)),
+			}, nil
+		},
+	}
+}
+
+func (suite *RadosGWTestSuite) TestUserTenant() {
+	suite.SetupConnection()
+	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
+	assert.NoError(suite.T(), err)
+
+	const tenant = "testtenant"
+	const uid = "tenantuser"
+
+	suite.T().Run("create user with tenant", func(_ *testing.T) {
+		created, err := co.CreateUser(context.Background(), User{ID: uid, Tenant: tenant, DisplayName: "Tenant user", Email: "tenant@example.com"})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), tenant, created.Tenant)
+		assert.Equal(suite.T(), uid, created.ID)
+	})
+
+	suite.T().Run("get user by tenant and id", func(_ *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), "tenant@example.com", got.Email)
+		assert.Equal(suite.T(), tenant, got.Tenant)
+	})
+
+	suite.T().Run("get user by combined uid matches", func(_ *testing.T) {
+		got, err := co.GetUser(context.Background(), User{ID: tenant + "$" + uid})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), "tenant@example.com", got.Email)
+	})
+
+	suite.T().Run("modify user by tenant and id persists", func(_ *testing.T) {
+		_, err := co.ModifyUser(context.Background(), User{ID: uid, Tenant: tenant, Email: "tenant@changed.com"})
+		assert.NoError(suite.T(), err)
+		got, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.NoError(suite.T(), err)
+		assert.Equal(suite.T(), "tenant@changed.com", got.Email)
+	})
+
+	suite.T().Run("subuser lifecycle by tenant and id", func(_ *testing.T) {
+		err := co.CreateSubuser(context.Background(), User{ID: uid, Tenant: tenant}, SubuserSpec{Name: "sub1", Access: SubuserAccessRead})
+		assert.NoError(suite.T(), err)
+
+		got, err := co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.NoError(suite.T(), err)
+		assert.Len(suite.T(), got.Subusers, 1)
+
+		err = co.RemoveSubuser(context.Background(), User{ID: uid, Tenant: tenant}, SubuserSpec{Name: "sub1"})
+		assert.NoError(suite.T(), err)
+	})
+
+	suite.T().Run("tenant containing a separator is rejected", func(_ *testing.T) {
+		_, err := co.GetUser(context.Background(), User{ID: uid, Tenant: "a$b"})
+		assert.ErrorIs(suite.T(), err, errTenantSeparator)
+	})
+
+	suite.T().Run("remove user by tenant and id", func(_ *testing.T) {
+		err := co.RemoveUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.NoError(suite.T(), err)
+
+		_, err = co.GetUser(context.Background(), User{ID: uid, Tenant: tenant})
+		assert.Error(suite.T(), err)
+	})
+}
+
+func TestUserWithTenantUID(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      User
+		wantID  string
+		wantErr error
+	}{
+		{"no tenant", User{ID: "user1"}, "user1", nil},
+		{"no tenant with combined ID", User{ID: "tenantA$user1"}, "tenantA$user1", nil},
+		{"tenant folded into bare ID", User{ID: "user1", Tenant: "tenantA"}, "tenantA$user1", nil},
+		{"tenant matching combined ID", User{ID: "tenantA$user1", Tenant: "tenantA"}, "tenantA$user1", nil},
+		{"tenant matching namespaced combined ID", User{ID: "tenantA$oidc$user1", Tenant: "tenantA"}, "tenantA$oidc$user1", nil},
+		{"tenant conflicting with combined ID", User{ID: "tenantB$user1", Tenant: "tenantA"}, "", errTenantMismatch},
+		{"tenant conflicting with namespaced combined ID", User{ID: "tenantB$oidc$user1", Tenant: "tenantA"}, "", errTenantMismatch},
+		{"tenant conflicting with explicitly empty tenant", User{ID: "$user1", Tenant: "tenantA"}, "", errTenantMismatch},
+		{"tenant containing a separator", User{ID: "victim", Tenant: "$oidc"}, "", errTenantSeparator},
+		{"tenant with a namespace separator", User{ID: "user1", Tenant: "a$b"}, "", errTenantSeparator},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.in.withTenantUID()
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantID, got.ID)
+		})
+	}
+}
+
+func TestGetUserTenantMockAPI(t *testing.T) {
+	t.Run("tenant folded into uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{ID: "user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+	t.Run("combined uid with matching tenant unchanged", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{ID: "tenantA$user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+	t.Run("combined uid with conflicting tenant", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{ID: "tenantB$user1", Tenant: "tenantA"})
+		assert.ErrorIs(t, err, errTenantMismatch)
+		assert.Empty(t, query)
+	})
+	t.Run("tenant with lookup by access key folds nothing", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.GetUser(context.TODO(), User{Tenant: "tenantA", Keys: []UserKeySpec{{AccessKey: "AKIAIOSFODNN7EXAMPLE"}}})
+		assert.NoError(t, err)
+		assert.Equal(t, "access-key=AKIAIOSFODNN7EXAMPLE&format=json", query)
+	})
+	t.Run("response tenant round-trips into the next call's uid", func(t *testing.T) {
+		var query string
+		response := []byte(`{"tenant": "tenantA", "user_id": "user1"}`)
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, response))
+		assert.NoError(t, err)
+		got, err := api.GetUser(context.TODO(), User{ID: "tenantA$user1"})
+		assert.NoError(t, err)
+		assert.Equal(t, "user1", got.ID)
+		assert.Equal(t, "tenantA", got.Tenant)
+		_, err = api.ModifyUser(context.TODO(), got)
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+}
+
+func TestModifyUserTenantMockAPI(t *testing.T) {
+	t.Run("tenant folded into uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.ModifyUser(context.TODO(), User{ID: "user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+	t.Run("combined uid with matching tenant unchanged", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.ModifyUser(context.TODO(), User{ID: "tenantA$user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+	t.Run("combined uid with conflicting tenant", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, fakeUserResponse))
+		assert.NoError(t, err)
+		_, err = api.ModifyUser(context.TODO(), User{ID: "tenantB$user1", Tenant: "tenantA"})
+		assert.ErrorIs(t, err, errTenantMismatch)
+		assert.Empty(t, query)
+	})
+}
+
+func TestRemoveUserTenantMockAPI(t *testing.T) {
+	t.Run("tenant folded into uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.RemoveUser(context.TODO(), User{ID: "user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+	t.Run("combined uid with matching tenant unchanged", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.RemoveUser(context.TODO(), User{ID: "tenantA$user1", Tenant: "tenantA"})
+		assert.NoError(t, err)
+		assert.Equal(t, "format=json&uid=tenantA%24user1", query)
+	})
+	t.Run("combined uid with conflicting tenant", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.RemoveUser(context.TODO(), User{ID: "tenantB$user1", Tenant: "tenantA"})
+		assert.ErrorIs(t, err, errTenantMismatch)
+		assert.Empty(t, query)
+	})
+}
