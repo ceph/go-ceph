@@ -1277,6 +1277,18 @@
         "comment": "Checksum calculates the checksum of the given object data, using one of the supported checksum algorithms.\n\nImplements:\n\n\tint rados_checksum(rados_ioctx_t io,\n\t                   const char *oid,\n\t                   rados_checksum_type_t type,\n\t                   const char *init_value,\n\t                   size_t init_value_len,\n\t                   size_t len,\n\t                   uint64_t off,\n\t                   size_t chunk_size,\n\t                   char *pchecksum,\n\t                   size_t checksum_len);\n",
         "added_in_version": "v0.40.0",
         "expected_stable_version": "v0.42.0"
+      },
+      {
+        "name": "IOContext.GetOmapValuesOrdered",
+        "comment": "GetOmapValuesOrdered fetches a set of keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetOmapValues, which\nreturns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS. This makes it suitable for pagination: the Key of the last\nelement can be passed as `startAfter` in a subsequent call.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`maxReturn`: retrieve no more than `maxReturn` key/value pairs\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "IOContext.GetAllOmapValuesOrdered",
+        "comment": "GetAllOmapValuesOrdered fetches all the keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetAllOmapValues,\nwhich returns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`iteratorSize`: internal number of keys to fetch during a read operation\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
