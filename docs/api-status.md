@@ -22,6 +22,8 @@ FSAdmin.PinSubVolumeInGroup | v0.41.0 | v0.43.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 IOContext.Checksum | v0.40.0 | v0.42.0 | 
+IOContext.GetOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+IOContext.GetAllOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
 
