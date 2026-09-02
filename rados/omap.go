@@ -37,6 +37,11 @@ type GetOmapStep struct {
 	// canIterate is only set after the operation is performed and is
 	// intended to prevent premature fetching of data
 	canIterate bool
+
+	// err holds a validation error detected before the operation is
+	// performed. When set, it is surfaced from update() and the step
+	// will not iterate.
+	err error
 }
 
 func newGetOmapStep() *GetOmapStep {
@@ -61,6 +66,10 @@ func (gos *GetOmapStep) free() {
 }
 
 func (gos *GetOmapStep) update() error {
+	if gos.err != nil {
+		gos.canIterate = false
+		return gos.err
+	}
 	err := getError(*gos.rval)
 	gos.canIterate = (err == nil)
 	return err
