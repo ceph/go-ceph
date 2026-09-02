@@ -941,6 +941,11 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), nulFree, fetched)
 
+	// Pagination that feeds a NUL-containing key back as the startAfter
+	// cursor must fail with ErrNulInString rather than truncate it (#1292).
+	_, err = suite.ioctx.GetAllOmapValues(oid, "", "", 2)
+	assert.ErrorIs(suite.T(), err, ErrNulInString)
+
 	// Remove
 	err = suite.ioctx.RmOmapKeys(oid, []string{"key1", "prefixed-key3", "null\x00key4"})
 	assert.NoError(suite.T(), err)
