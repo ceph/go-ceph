@@ -135,6 +135,32 @@ func (suite *RadosTestSuite) TestReadOpGetOmapValues() {
 		ta.Error(err)
 		ta.Equal(ErrOperationIncomplete, err)
 	})
+
+	suite.T().Run("nulInStartAfter", func(t *testing.T) {
+		// a NUL byte in startAfter must be rejected, not truncated (#1292)
+		ta := assert.New(t)
+		op := CreateReadOp()
+		defer op.Release()
+		op.AssertExists()
+		gos := op.GetOmapValues("tos.captain\x00extra", "", 16)
+		err := op.Operate(suite.ioctx, oid, OperationNoFlag)
+		ta.ErrorIs(err, ErrNulInString)
+		_, nerr := gos.Next()
+		ta.Equal(ErrOperationIncomplete, nerr)
+	})
+
+	suite.T().Run("nulInFilterPrefix", func(t *testing.T) {
+		// a NUL byte in filterPrefix must be rejected, not truncated (#1292)
+		ta := assert.New(t)
+		op := CreateReadOp()
+		defer op.Release()
+		op.AssertExists()
+		gos := op.GetOmapValues("", "tos\x00", 16)
+		err := op.Operate(suite.ioctx, oid, OperationNoFlag)
+		ta.ErrorIs(err, ErrNulInString)
+		_, nerr := gos.Next()
+		ta.Equal(ErrOperationIncomplete, nerr)
+	})
 }
 
 func TestReadOpInvalid(t *testing.T) {
