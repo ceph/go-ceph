@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -924,10 +925,21 @@ func (suite *RadosTestSuite) TestReadWriteOmap() {
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), orig, fetched)
 
-	// Get All (with an iterator size smaller than the map size)
-	fetched, err = suite.ioctx.GetAllOmapValues(oid, "", "", 2)
+	// Get All (with an iterator size smaller than the map size) exercises
+	// pagination. Use only NUL-free keys so the last key of each page can be
+	// safely fed back as the startAfter cursor; NUL cursors are tested below.
+	nulFree := map[string][]byte{}
+	for k, v := range orig {
+		if !strings.ContainsRune(k, 0) {
+			nulFree[k] = v
+		}
+	}
+	nulFreeOid := suite.GenObjectName()
+	err = suite.ioctx.SetOmap(nulFreeOid, nulFree)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), orig, fetched)
+	fetched, err = suite.ioctx.GetAllOmapValues(nulFreeOid, "", "", 2)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), nulFree, fetched)
 
 	// Remove
 	err = suite.ioctx.RmOmapKeys(oid, []string{"key1", "prefixed-key3", "null\x00key4"})
