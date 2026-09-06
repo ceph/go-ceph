@@ -1,8 +1,10 @@
 package rbd
 
 import (
-	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRbdOptions(t *testing.T) {
@@ -165,13 +167,14 @@ func TestRbdOptions(t *testing.T) {
 
 	err = options.SetUint64(ImageOptionDataPool, 1)
 	assert.Error(t, err)
-	err = options.SetString(ImageOptionDataPool, "data")
+	dataPool := strings.Repeat("data", 1025)
+	err = options.SetString(ImageOptionDataPool, dataPool)
 	assert.NoError(t, err)
 	_, err = options.GetUint64(ImageOptionDataPool)
 	assert.Error(t, err)
 	s, err = options.GetString(ImageOptionDataPool)
 	assert.NoError(t, err)
-	assert.True(t, s == "data")
+	assert.Equal(t, dataPool, s)
 	set, err = options.IsSet(ImageOptionDataPool)
 	assert.NoError(t, err)
 	assert.True(t, set)
