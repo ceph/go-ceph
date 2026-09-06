@@ -121,22 +121,22 @@ func (c *Conn) OpenIOContext(pool string) (*IOContext, error) {
 
 // ListPools returns the names of all existing pools.
 func (c *Conn) ListPools() (names []string, err error) {
-	buf := make([]byte, 4096)
-	for {
-		ret := C.rados_pool_list(c.cluster,
+	var (
+		buf []byte
+		ret C.int
+	)
+	retry.WithTries(4096, 16, func(size int) retry.Hint {
+		buf = make([]byte, size)
+		ret = C.rados_pool_list(c.cluster,
 			(*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-		if ret < 0 {
-			return nil, getError(ret)
-		}
-
-		if int(ret) > len(buf) {
-			buf = make([]byte, ret)
-			continue
-		}
-
-		names = cutil.SplitSparseBuffer(buf[:ret])
-		return names, nil
+		err = getErrorIfNegative(ret)
+		return retry.Size(int(ret)).If(err == nil && int(ret) > size)
+	})
+	if err != nil {
+		return nil, err
 	}
+	names = cutil.SplitSparseBuffer(buf[:ret])
+	return names, nil
 }
 
 // SetConfigOption sets the value of the configuration option identified by
