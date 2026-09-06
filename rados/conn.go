@@ -310,14 +310,23 @@ func (c *Conn) GetPoolByName(name string) (int64, error) {
 
 // GetPoolByID returns the name of a pool by a given ID.
 func (c *Conn) GetPoolByID(id int64) (string, error) {
-	buf := make([]byte, 4096)
 	if err := c.ensureConnected(); err != nil {
 		return "", err
 	}
 	cid := C.int64_t(id)
-	ret := C.rados_pool_reverse_lookup(c.cluster, cid, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
-	if ret < 0 {
-		return "", getError(ret)
+	var (
+		buf []byte
+		err error
+	)
+	retry.WithSizes(4096, 1<<18, func(size int) retry.Hint {
+		buf = make([]byte, size)
+		ret := C.rados_pool_reverse_lookup(
+			c.cluster, cid, (*C.char)(unsafe.Pointer(&buf[0])), C.size_t(len(buf)))
+		err = getErrorIfNegative(ret)
+		return retry.DoubleSize.If(err == errRange)
+	})
+	if err != nil {
+		return "", err
 	}
 	return C.GoString((*C.char)(unsafe.Pointer(&buf[0]))), nil
 }
