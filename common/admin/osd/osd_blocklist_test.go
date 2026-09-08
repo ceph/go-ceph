@@ -9,7 +9,38 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ceph/go-ceph/internal/commands"
 )
+
+func TestParseBlocklist(t *testing.T) {
+	const (
+		ipUntil      = "2026-09-06T12:34:56.000000+0000"
+		rangeUntil   = "2026-09-07T12:34:56.000000+0000"
+		ipEntry      = `{"addr":"192.0.2.1:0/0","until":"` + ipUntil + `"}`
+		rangeEntry   = `{"range":"198.51.100.0/24","until":"` + rangeUntil + `"}`
+		legacyFormat = `[` + ipEntry + `][` + rangeEntry + `]`
+		newFormat    = `{"blocklist":[` + ipEntry + `],"range_blocklist":[` + rangeEntry + `]}`
+	)
+
+	ipTime, err := time.Parse(layout, ipUntil)
+	assert.NoError(t, err)
+	rangeTime, err := time.Parse(layout, rangeUntil)
+	assert.NoError(t, err)
+
+	want := []Blocklist{
+		{Addr: "192.0.2.1:0/0", Until: ipTime},
+		{Addr: "198.51.100.0/24", Until: rangeTime},
+	}
+
+	got, err := parseBlocklist(commands.NewResponse([]byte(legacyFormat), "", nil))
+	assert.NoError(t, err)
+	assert.Equal(t, &want, got)
+
+	got, err = parseBlocklist(commands.NewResponse([]byte(newFormat), "", nil))
+	assert.NoError(t, err)
+	assert.Equal(t, &want, got)
+}
 
 func (suite *OSDAdminSuite) TestOSDBlocklist() {
 	osda := NewFromConn(suite.vconn.Get(suite.T()))
