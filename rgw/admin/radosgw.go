@@ -38,6 +38,7 @@ type API struct {
 	SecretKey  string
 	Endpoint   string
 	HTTPClient HTTPClient
+	signer     *v4.Signer
 }
 
 // New returns client for Ceph RGW
@@ -62,11 +63,17 @@ func New(endpoint, accessKey, secretKey string, httpClient HTTPClient) (*API, er
 		httpClient = &http.Client{Timeout: connectionTimeout}
 	}
 
+	signer := v4.NewSigner()
+	// This was present in https://github.com/IrekFasikhov/go-rgwadmin/ but it seems that the lib works without it
+	// Let's keep it here just in case something shows up
+	// signer.DisableRequestBodyOverwrite = true
+
 	return &API{
 		Endpoint:   endpoint,
 		AccessKey:  accessKey,
 		SecretKey:  secretKey,
 		HTTPClient: httpClient,
+		signer:     signer,
 	}, nil
 }
 
@@ -85,14 +92,9 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 		return nil, err
 	}
 
-	signer := v4.NewSigner()
-	// This was present in https://github.com/IrekFasikhov/go-rgwadmin/ but it seems that the lib works without it
-	// Let's keep it here just in case something shows up
-	// signer.DisableRequestBodyOverwrite = true
-
 	// Sign in S3
 	const emptyPayloadHash = "UNSIGNED-PAYLOAD"
-	err = signer.SignHTTP(ctx, creds, request, emptyPayloadHash, service, authRegion, time.Now())
+	err = api.signer.SignHTTP(ctx, creds, request, emptyPayloadHash, service, authRegion, time.Now())
 	if err != nil {
 		return nil, err
 	}
