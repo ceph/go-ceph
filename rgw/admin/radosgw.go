@@ -3,12 +3,13 @@ package admin
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
-
-	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -115,4 +116,34 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 	}
 
 	return api.doRequest(ctx, req, unsignedPayload)
+}
+
+// sha256Hex returns the hex-encoded SHA-256 digest of data.
+func sha256Hex(data []byte) string {
+	h := sha256.Sum256(data)
+	return hex.EncodeToString(h[:])
+}
+
+// callSNS makes a POST request to the SNS-compatible topic API endpoint.
+// The SNS endpoint is at the S3 root, and is dispatched by the "Action" parameter.
+// All parameters (Action, Name, TopicArn, Attributes) are sent in the POST form
+// body because RGW's parse_post_action() only recognizes the
+// Attributes.entry.N.{key|value} format from the request body.
+func (api *API) callSNS(ctx context.Context, action string, params url.Values) ([]byte, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	params.Set("Action", action)
+
+	body := []byte(params.Encode())
+	payloadHash := sha256Hex(body)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, api.Endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	return api.doRequest(ctx, req, payloadHash)
 }
