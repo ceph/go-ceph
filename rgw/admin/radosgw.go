@@ -19,6 +19,7 @@ const (
 	authRegion        = "default"
 	service           = "s3"
 	connectionTimeout = time.Second * 3
+	unsignedPayload   = "UNSIGNED-PAYLOAD"
 )
 
 var (
@@ -70,15 +71,10 @@ func New(endpoint, accessKey, secretKey string, httpClient HTTPClient) (*API, er
 	}, nil
 }
 
-// call makes request to the RGW Admin Ops API
-func (api *API) call(ctx context.Context, httpMethod, path string, args url.Values) (body []byte, err error) {
-	// Build request
-	request, err := http.NewRequestWithContext(ctx, httpMethod, buildQueryPath(api.Endpoint, path, args.Encode()), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build S3 authentication
+// doRequest signs and sends an HTTP request, then reads and returns the
+// response body. The payloadHash is included in the S3 v4 signature;
+// use "UNSIGNED-PAYLOAD" when the body hash is not required by the server.
+func (api *API) doRequest(ctx context.Context, req *http.Request, payloadHash string) ([]byte, error) {
 	credCache := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(api.AccessKey, api.SecretKey, ""))
 	creds, err := credCache.Retrieve(ctx)
 	if err != nil {
@@ -86,36 +82,37 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 	}
 
 	signer := v4.NewSigner()
-	// This was present in https://github.com/IrekFasikhov/go-rgwadmin/ but it seems that the lib works without it
-	// Let's keep it here just in case something shows up
-	// signer.DisableRequestBodyOverwrite = true
-
-	// Sign in S3
-	const emptyPayloadHash = "UNSIGNED-PAYLOAD"
-	err = signer.SignHTTP(ctx, creds, request, emptyPayloadHash, service, authRegion, time.Now())
+	err = signer.SignHTTP(ctx, creds, req, payloadHash, service, authRegion, time.Now())
 	if err != nil {
 		return nil, err
 	}
 
-	// Send HTTP request
-	resp, err := api.HTTPClient.Do(request)
+	resp, err := api.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// Decode HTTP response
-	decodedResponse, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Body = io.NopCloser(bytes.NewBuffer(decodedResponse))
+	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 
-	// Handle error in response
 	if resp.StatusCode >= 300 {
-		return nil, handleStatusError(decodedResponse)
+		return nil, handleStatusError(body)
 	}
 
-	return decodedResponse, nil
+	return body, nil
+}
+
+// call makes request to the RGW Admin Ops API
+func (api *API) call(ctx context.Context, httpMethod, path string, args url.Values) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, httpMethod, buildQueryPath(api.Endpoint, path, args.Encode()), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return api.doRequest(ctx, req, unsignedPayload)
 }
