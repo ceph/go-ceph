@@ -32,6 +32,7 @@ IOContext.GetAllOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 Image.FlattenWithProgress | v0.40.0 | v0.42.0 | 
+Image.RebuildObjectMapWithProgress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 

@@ -2111,6 +2111,12 @@
         "comment": "FlattenWithProgress removes snapshot references from the image, reporting\nprogress via the supplied callback. The flatten operation will be aborted\nif the callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_flatten_with_progress(rbd_image_t image,\n\t                              librbd_progress_fn_t cb,\n\t                              void *cbdata);\n",
         "added_in_version": "v0.40.0",
         "expected_stable_version": "v0.42.0"
+      },
+      {
+        "name": "Image.RebuildObjectMapWithProgress",
+        "comment": "RebuildObjectMapWithProgress rebuilds the object map for the image HEAD or\ncurrently selected snapshot, reporting progress via the supplied callback.\nA negative callback return value requests that a locally executing rebuild\nabort. If the rebuild is forwarded to a remote exclusive-lock owner, callback\ncancellation cannot be propagated to that client.\n\nImplements:\n\n\tint rbd_rebuild_object_map(rbd_image_t image,\n\t                           librbd_progress_fn_t cb, void *cbdata);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
