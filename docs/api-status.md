@@ -62,6 +62,11 @@ Name | Added in Version | Expected Stable Version |
 API.SetIndividualBucketRateLimit | v0.40.0 | v0.42.0 | 
 API.GetIndividualBucketRateLimit | v0.40.0 | v0.42.0 | 
 API.SetAccountQuota | v0.41.0 | v0.43.0 | 
+API.CreateTopic | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.GetTopicAttributes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.DeleteTopic | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.ListTopics | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BoolString.UnmarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/manager
 
