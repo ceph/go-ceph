@@ -147,3 +147,34 @@ func (api *API) callSNS(ctx context.Context, action string, params url.Values) (
 
 	return api.doRequest(ctx, req, payloadHash)
 }
+
+// callNotification makes a request to the S3 bucket notification API.
+// These APIs live at the S3 path (/{bucket}?notification), not under /admin.
+func (api *API) callNotification(ctx context.Context, httpMethod, bucket, notificationID string, requestBody []byte) ([]byte, error) {
+	u, err := url.Parse(api.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = bucket
+	if notificationID != "" {
+		u.RawQuery = url.Values{"notification": {notificationID}}.Encode()
+	} else {
+		u.RawQuery = "notification"
+	}
+
+	var bodyReader io.Reader
+	if requestBody != nil {
+		bodyReader = bytes.NewReader(requestBody)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, httpMethod, u.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
+
+	if requestBody != nil {
+		req.Header.Set("Content-Type", "application/xml")
+	}
+
+	return api.doRequest(ctx, req, unsignedPayload)
+}
