@@ -2117,6 +2117,12 @@
         "comment": "GetFlags returns the status flags bitmask for the image HEAD or currently\nselected snapshot. It can be called on a read-only image handle.\nThe returned mask preserves all flag bits reported by librbd.\nUse GetFeatures to determine which image features are enabled.\n\nImplements:\n\n\tint rbd_get_flags(rbd_image_t image, uint64_t *flags);\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "Image.RebuildObjectMapWithProgress",
+        "comment": "RebuildObjectMapWithProgress rebuilds the object map for the image HEAD or\ncurrently selected snapshot, reporting progress via the supplied callback.\nThe image must have the object-map feature enabled, and the image handle\nmust not have been explicitly opened read-only.\nA negative callback return value requests that a locally executing rebuild\nabort; in-flight work may finish before the operation returns.\nIf the rebuild is forwarded to a remote exclusive-lock owner, callback\ncancellation cannot be propagated to that client.\n\nImplements:\n\n\tint rbd_rebuild_object_map(rbd_image_t image,\n\t                           librbd_progress_fn_t cb, void *cbdata);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
