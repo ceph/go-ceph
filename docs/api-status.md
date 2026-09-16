@@ -31,6 +31,7 @@ Name | Added in Version | Expected Stable Version |
 ---- | ---------------- | ----------------------- | 
 Image.GetBlockNamePrefix | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 Image.GetFlags | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.RebuildObjectMapWithProgress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ### Deprecated APIs
 
