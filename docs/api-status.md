@@ -43,7 +43,15 @@ Snapshot.Set | v0.10.0 |  |
 
 ## Package: rbd/admin
 
-No Preview/Deprecated APIs found. All APIs are considered stable.
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+RBDAdmin.TrashPurgeSchedule | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TrashPurgeScheduleAdmin.Add | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TrashPurgeScheduleAdmin.List | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TrashPurgeScheduleAdmin.Remove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+TrashPurgeScheduleAdmin.Status | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rgw/admin
 
