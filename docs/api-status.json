@@ -2184,6 +2184,38 @@
         "name": "TaskAdmin.Cancel",
         "comment": "Cancel a pending or running asynchronous task.\n\nSimilar To:\n rbd task cancel <task_id>\n"
       }
+    ],
+    "preview_api": [
+      {
+        "name": "RBDAdmin.TrashPurgeSchedule",
+        "comment": "TrashPurgeSchedule returns a TrashPurgeScheduleAdmin type for\nmanaging ceph rbd trash purge schedules.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TrashPurgeScheduleAdmin.Add",
+        "comment": "Add a new trash purge schedule to the given pool/namespace based on the\nsupplied level spec.\n\nSimilar To:\n\n\trbd trash purge schedule add <level_spec> <interval> <start_time>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TrashPurgeScheduleAdmin.List",
+        "comment": "List the trash purge schedules based on the supplied level spec.\n\nSimilar To:\n\n\trbd trash purge schedule list <level_spec>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TrashPurgeScheduleAdmin.Remove",
+        "comment": "Remove a trash purge schedule matching the supplied arguments.\n\nSimilar To:\n\n\trbd trash purge schedule remove <level_spec> <interval> <start_time>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "TrashPurgeScheduleAdmin.Status",
+        "comment": "Status returns the status of the trash purge schedule (eg. when it will\nnext take place) matching the supplied level spec.\n\nSimilar To:\n\n\trbd trash purge schedule status <level_spec>\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      }
     ]
   },
   "rgw/admin": {
