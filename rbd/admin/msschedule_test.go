@@ -57,7 +57,7 @@ var ssList2 = `
         "schedule": [
             {
                 "interval": "1d",
-                "start_time": "14:00:00-05:00"
+                "start_time": "2021-03-02 14:00:00"
             }
         ]
     }
@@ -148,7 +148,7 @@ func TestParseMirrorSnapshotScheduleList(t *testing.T) {
 			assert.Equal(t, "4//104f1d296736", s2.LevelSpecID)
 			if assert.Len(t, s2.Schedule, 1) {
 				assert.EqualValues(t, "1d", s2.Schedule[0].Interval)
-				assert.EqualValues(t, "14:00:00-05:00", s2.Schedule[0].StartTime)
+				assert.EqualValues(t, "2021-03-02 14:00:00", s2.Schedule[0].StartTime)
 			}
 		}
 	})
