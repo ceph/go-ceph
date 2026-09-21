@@ -2267,6 +2267,24 @@
         "comment": "UnmarshalJSON supports unmarshalling a BoolString from JSON.\n",
         "added_in_version": "$NEXT_RELEASE",
         "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.CreateNotification",
+        "comment": "CreateNotification creates a notification configuration for a bucket\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#create-notification\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.DeleteNotification",
+        "comment": "DeleteNotification deletes a specific notification or all notifications from a bucket\nIf notificationID is empty, all notifications are deleted\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#delete-notification\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.GetNotifications",
+        "comment": "GetNotifications retrieves notification configurations for a bucket\nIf notificationID is empty, all notifications are returned\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#get-list-notification\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ],
     "stable_api": [
