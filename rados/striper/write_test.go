@@ -159,3 +159,37 @@ func (suite *StriperTestSuite) TestStatMissing() {
 	require.Error(suite.T(), err)
 	require.Equal(suite.T(), -2, err.(radosStriperError).ErrorCode())
 }
+
+func (suite *StriperTestSuite) TestWriteEmpty() {
+	ioctx := suite.defaultContext()
+	defer ioctx.Destroy()
+
+	striper, err := New(ioctx)
+	require.NoError(suite.T(), err)
+	defer striper.Destroy()
+
+	name := "TestWriteEmpty"
+	err = striper.Write(name, []byte("hello"), 0)
+	require.NoError(suite.T(), err)
+
+	// Each call used to panic with an index out of range on the empty slice.
+	for _, data := range [][]byte{nil, {}} {
+		assert.NoError(suite.T(), striper.Write(name, data, 0))
+		assert.NoError(suite.T(), striper.Append(name, data))
+	}
+
+	buf := make([]byte, 32)
+	size, err := striper.Read(name, buf, 0)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "hello", string(buf[:size]))
+
+	// an empty WriteFull truncates the object
+	for _, data := range [][]byte{nil, {}} {
+		err = striper.Write(name, []byte("hello"), 0)
+		require.NoError(suite.T(), err)
+		assert.NoError(suite.T(), striper.WriteFull(name, data))
+		ss, err := striper.Stat(name)
+		require.NoError(suite.T(), err)
+		assert.Equal(suite.T(), uint64(0), ss.Size)
+	}
+}

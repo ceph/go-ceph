@@ -96,3 +96,34 @@ func (suite *StriperTestSuite) TestListXattrs() {
 	require.Equal(suite.T(), "razzle", string(xm["foo.baz"]))
 	require.Equal(suite.T(), "dazzle", string(xm["foo.zap"]))
 }
+
+func (suite *StriperTestSuite) TestXattrEmpty() {
+	ioctx := suite.defaultContext()
+	defer ioctx.Destroy()
+
+	striper, err := New(ioctx)
+	require.NoError(suite.T(), err)
+	defer striper.Destroy()
+
+	name := "TestXattrEmpty"
+	err = striper.Write(name, []byte("foo"), 0)
+	require.NoError(suite.T(), err)
+
+	err = striper.SetXattr(name, "full", []byte("value"))
+	require.NoError(suite.T(), err)
+
+	// Each call used to panic with an index out of range on the empty slice.
+	for _, data := range [][]byte{nil, {}} {
+		err = striper.SetXattr(name, "empty", data)
+		require.NoError(suite.T(), err)
+
+		size, err := striper.GetXattr(name, "empty", data)
+		require.NoError(suite.T(), err)
+		require.Equal(suite.T(), 0, size)
+
+		// a non-empty value does not fit in an empty buffer
+		_, err = striper.GetXattr(name, "full", data)
+		require.Error(suite.T(), err)
+		require.Equal(suite.T(), -34, err.(radosStriperError).ErrorCode())
+	}
+}
