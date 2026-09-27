@@ -9,6 +9,10 @@ import (
 	"github.com/ceph/go-ceph/internal/errutil"
 )
 
+// errRange is returned by librados when a value does not fit in the supplied
+// buffer (ERANGE).
+var errRange = getError(-C.ERANGE)
+
 // radosStriperError represents an error condition returned from the Ceph
 // rados striper APIs.
 type radosStriperError int
