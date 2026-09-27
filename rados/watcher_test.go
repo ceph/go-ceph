@@ -281,3 +281,40 @@ func TestDecodeNotifyResponse(t *testing.T) {
 		assert.Equal(t, tOuts[1].WatcherID, WatcherID(math.MaxUint64))
 	})
 }
+
+// TestWatcherCloseInFlightCallbacks releases callbacks that looked the watcher
+// up before its deletion between the closing of done and the flush, the window
+// in which a real librados callback can reach its select. Were the event and
+// error channels closed before the flush, those sends would panic and crash
+// the test binary.
+func TestWatcherCloseInFlightCallbacks(t *testing.T) {
+	w := &Watcher{
+		events: make(chan NotifyEvent),
+		errors: make(chan error),
+		done:   make(chan struct{}),
+	}
+	const callbacks = 100
+	release := make(chan struct{})
+	var wg sync.WaitGroup
+	for i := 0; i < callbacks; i++ {
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			<-release
+			w.deliverEvent(NotifyEvent{})
+		}()
+		go func() {
+			defer wg.Done()
+			<-release
+			w.deliverError(fmt.Errorf("callback %d", i))
+		}()
+	}
+	w.close(func() {
+		close(release)
+		wg.Wait()
+	})
+	_, ok := <-w.Events()
+	assert.False(t, ok, "events channel still open")
+	_, ok = <-w.Errors()
+	assert.False(t, ok, "errors channel still open")
+}
