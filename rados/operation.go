@@ -5,6 +5,8 @@ import "C"
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 	"unsafe"
 
@@ -33,7 +35,8 @@ const (
 
 // OperationError is an error type that may be returned by an Operate call.
 // It captures the error from the operate call itself and any errors from
-// steps that can return an error.
+// steps that can return an error. Error and Unwrap list the step errors in
+// step order.
 type OperationError struct {
 	kind       opKind
 	OpError    error
@@ -46,9 +49,9 @@ func (e OperationError) Error() string {
 		subErrors = append(subErrors,
 			fmt.Sprintf("op=%s", e.OpError))
 	}
-	for idx, es := range e.StepErrors {
+	for _, idx := range slices.Sorted(maps.Keys(e.StepErrors)) {
 		subErrors = append(subErrors,
-			fmt.Sprintf("Step#%d=%s", idx, es))
+			fmt.Sprintf("Step#%d=%s", idx, e.StepErrors[idx]))
 	}
 	return fmt.Sprintf(
 		"%s operation error: %s",
@@ -61,8 +64,8 @@ func (e OperationError) Unwrap() []error {
 	if e.OpError != nil {
 		subErrors = append(subErrors, e.OpError)
 	}
-	for _, es := range e.StepErrors {
-		subErrors = append(subErrors, es)
+	for _, idx := range slices.Sorted(maps.Keys(e.StepErrors)) {
+		subErrors = append(subErrors, e.StepErrors[idx])
 	}
 	return subErrors
 }

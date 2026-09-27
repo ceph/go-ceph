@@ -3,6 +3,7 @@ package rados
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,6 +61,71 @@ func TestOperationErrorUnwrap(t *testing.T) {
 	assert.ErrorIs(t, oe, se1)
 	assert.ErrorIs(t, oe, se2)
 	assert.NotErrorIs(t, oe, ErrInvalidIOContext)
+}
+
+type stepError struct {
+	step int
+}
+
+func (e stepError) Error() string {
+	return fmt.Sprintf("step %d failed", e.step)
+}
+
+func TestOperationErrorOrder(t *testing.T) {
+	const steps = 16
+	stepErrors := map[int]error{}
+	for i := range steps {
+		stepErrors[i] = stepError{i}
+	}
+
+	t.Run("Error", func(t *testing.T) {
+		oe := OperationError{
+			kind:       writeOp,
+			OpError:    ErrObjectExists,
+			StepErrors: stepErrors,
+		}
+		parts := []string{"op=" + ErrObjectExists.Error()}
+		for i := range steps {
+			parts = append(parts, fmt.Sprintf("Step#%d=step %d failed", i, i))
+		}
+		expected := "write operation error: " + strings.Join(parts, ", ")
+		// map iteration order is randomized; repeat to catch any
+		// dependence on it
+		for range 20 {
+			assert.Equal(t, expected, oe.Error())
+		}
+	})
+
+	t.Run("Unwrap", func(t *testing.T) {
+		oe := OperationError{
+			kind:       readOp,
+			OpError:    ErrObjectExists,
+			StepErrors: stepErrors,
+		}
+		expected := []error{ErrObjectExists}
+		for i := range steps {
+			expected = append(expected, stepError{i})
+		}
+		for range 20 {
+			assert.Equal(t, expected, oe.Unwrap())
+		}
+	})
+
+	t.Run("errorsAs", func(t *testing.T) {
+		oe := OperationError{
+			kind:       readOp,
+			StepErrors: map[int]error{},
+		}
+		for i := steps - 1; i > 0; i-- {
+			oe.StepErrors[i] = stepError{i}
+		}
+		for range 20 {
+			var se stepError
+			if assert.True(t, errors.As(oe, &se)) {
+				assert.Equal(t, 1, se.step)
+			}
+		}
+	})
 }
 
 type fooStep struct {
