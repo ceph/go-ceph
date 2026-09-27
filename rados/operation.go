@@ -108,6 +108,8 @@ func (o *operation) free() {
 
 // update the operation and the steps it contains. The top-level result
 // of the rados call is passed in as ret and used to construct errors.
+// Only a negative ret is an error: reads can return positive values, and
+// writes can with RETURNVEC or an empty transaction.
 // The update call of each step is used to update the contents of each
 // step and gather any errors from those steps.
 func (o *operation) update(kind opKind, ret C.int) error {
@@ -117,12 +119,12 @@ func (o *operation) update(kind opKind, ret C.int) error {
 			stepErrors[i] = err
 		}
 	}
-	if ret == 0 && len(stepErrors) == 0 {
+	if ret >= 0 && len(stepErrors) == 0 {
 		return nil
 	}
 	return OperationError{
 		kind:       kind,
-		OpError:    getError(ret),
+		OpError:    getErrorIfNegative(ret),
 		StepErrors: stepErrors,
 	}
 }

@@ -73,7 +73,7 @@ func (es *ReadOpExecStep) freeBuffer() {
 func (es *ReadOpExecStep) update() error {
 	es.outBuffPtr = es.cOut.out_buf
 	es.outBuffLen = es.cOut.out_len
-	err := getError(es.cOut.prval)
+	err := getErrorIfNegative(es.cOut.prval)
 	es.canReadOutput = err == nil
 	return err
 }
