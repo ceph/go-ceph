@@ -115,11 +115,28 @@ func TestOperationType(t *testing.T) {
 		o.steps = append(o.steps, &fooStep{})
 		o.steps = append(o.steps, &fooStep{})
 
-		err := o.update(readOp, 5)
+		err := o.update(readOp, -5)
 		if assert.Error(t, err) {
 			oe := err.(OperationError)
 			assert.Error(t, oe.OpError)
 			assert.Len(t, oe.StepErrors, 0)
+		}
+	})
+
+	t.Run("positiveRet", func(t *testing.T) {
+		o := &operation{}
+		o.steps = append(o.steps, &fooStep{})
+		assert.NoError(t, o.update(readOp, 5))
+
+		o = &operation{}
+		o.steps = append(o.steps, &fooStep{})
+		o.steps = append(o.steps, &fooStep{failMe: fmt.Errorf("yow")})
+		err := o.update(writeOp, 5)
+		if assert.Error(t, err) {
+			oe := err.(OperationError)
+			assert.NoError(t, oe.OpError)
+			assert.Len(t, oe.StepErrors, 1)
+			assert.Contains(t, oe.StepErrors, 1)
 		}
 	})
 
