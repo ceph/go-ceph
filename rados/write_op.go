@@ -57,7 +57,7 @@ func (w WriteOp) operate2(
 
 	ret := C.rados_write_op_operate2(
 		w.op, ioctx.ioctx, cOid, cMtime, C.int(flags))
-	return w.update(writeOp, ret)
+	return w.update(writeOp, successIfPositive(ret))
 }
 
 // Operate will perform the operation(s).
