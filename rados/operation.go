@@ -127,6 +127,17 @@ func (o *operation) update(kind opKind, ret C.int) error {
 	}
 }
 
+// successIfPositive maps the return value of an operate call to the value
+// its OpError is built from. Like C++ librados callers, only a negative
+// return is an error: the OSD passes a class method's positive return
+// through to the caller, for a write only with OperationReturnVec.
+func successIfPositive(ret C.int) C.int {
+	if ret > 0 {
+		return 0
+	}
+	return ret
+}
+
 func opStepFinalizer(s opStep) {
 	if s != nil {
 		log.Warnf("unreachable opStep object found. Cleaning up.")

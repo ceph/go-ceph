@@ -44,7 +44,7 @@ func (r *ReadOp) Operate(ioctx *IOContext, oid string, flags OperationFlags) err
 	defer C.free(unsafe.Pointer(cOid))
 
 	ret := C.rados_read_op_operate(r.op, ioctx.ioctx, cOid, C.int(flags))
-	return r.update(readOp, ret)
+	return r.update(readOp, successIfPositive(ret))
 }
 
 func (r *ReadOp) operateCompat(ioctx *IOContext, oid string) error {
