@@ -12,18 +12,20 @@ import (
 
 // writeOpExecStep - exec step in write operation.
 type writeOpExecStep struct {
-	withoutFree
-
 	inBuffPtr *C.char
 	inBuffLen C.size_t
-	prval     C.int
+
+	// cPrval is C-allocated because librados writes it when the operation
+	// completes.
+	cPrval *C.int
 }
 
 // newWriteOpExecStep - init new *writeOpExecStep.
 func newWriteOpExecStep(in []byte) *writeOpExecStep {
 	es := &writeOpExecStep{
-		prval: 0,
+		cPrval: (*C.int)(C.malloc(C.sizeof_int)),
 	}
+	*es.cPrval = 0
 	if len(in) > 0 {
 		es.inBuffPtr = (*C.char)(unsafe.Pointer(&in[0]))
 		es.inBuffLen = C.size_t(len(in))
@@ -32,9 +34,14 @@ func newWriteOpExecStep(in []byte) *writeOpExecStep {
 	return es
 }
 
+func (es *writeOpExecStep) free() {
+	C.free(unsafe.Pointer(es.cPrval))
+	es.cPrval = nil
+}
+
 // update - update state operation.
 func (es *writeOpExecStep) update() error {
-	return getError(es.prval)
+	return getError(*es.cPrval)
 }
 
 // Exec executes an OSD class method on an object.
@@ -63,6 +70,6 @@ func (w *WriteOp) Exec(clsName, method string, in []byte) {
 		cMethod,
 		es.inBuffPtr,
 		es.inBuffLen,
-		&es.prval,
+		es.cPrval,
 	)
 }
