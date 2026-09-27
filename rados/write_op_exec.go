@@ -40,7 +40,7 @@ func (es *writeOpExecStep) free() {
 
 // update - update state operation.
 func (es *writeOpExecStep) update() error {
-	return getError(*es.cPrval)
+	return getErrorIfNegative(*es.cPrval)
 }
 
 // Exec executes an OSD class method on an object.
