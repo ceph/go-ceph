@@ -20,7 +20,11 @@ func (s *Striper) Write(soid string, data []byte, offset uint64) error {
 	csoid := C.CString(soid)
 	defer C.free(unsafe.Pointer(csoid))
 
-	bufptr := (*C.char)(unsafe.Pointer(&data[0]))
+	var bufptr *C.char
+	if len(data) > 0 {
+		bufptr = (*C.char)(unsafe.Pointer(&data[0]))
+	}
+
 	ret := C.rados_striper_write(
 		s.striper,
 		csoid,
@@ -43,7 +47,11 @@ func (s *Striper) WriteFull(soid string, data []byte) error {
 	csoid := C.CString(soid)
 	defer C.free(unsafe.Pointer(csoid))
 
-	bufptr := (*C.char)(unsafe.Pointer(&data[0]))
+	var bufptr *C.char
+	if len(data) > 0 {
+		bufptr = (*C.char)(unsafe.Pointer(&data[0]))
+	}
+
 	ret := C.rados_striper_write_full(
 		s.striper,
 		csoid,
@@ -64,7 +72,11 @@ func (s *Striper) Append(soid string, data []byte) error {
 	csoid := C.CString(soid)
 	defer C.free(unsafe.Pointer(csoid))
 
-	bufptr := (*C.char)(unsafe.Pointer(&data[0]))
+	var bufptr *C.char
+	if len(data) > 0 {
+		bufptr = (*C.char)(unsafe.Pointer(&data[0]))
+	}
+
 	ret := C.rados_striper_append(
 		s.striper,
 		csoid,

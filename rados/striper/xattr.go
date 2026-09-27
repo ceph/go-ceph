@@ -28,11 +28,16 @@ func (s *Striper) GetXattr(soid string, name string, data []byte) (int, error) {
 	defer C.free(unsafe.Pointer(csoid))
 	defer C.free(unsafe.Pointer(cName))
 
+	var bufptr *C.char
+	if len(data) > 0 {
+		bufptr = (*C.char)(unsafe.Pointer(&data[0]))
+	}
+
 	ret := C.rados_striper_getxattr(
 		s.striper,
 		csoid,
 		cName,
-		(*C.char)(unsafe.Pointer(&data[0])),
+		bufptr,
 		(C.size_t)(len(data)))
 
 	if ret >= 0 {
@@ -57,11 +62,16 @@ func (s *Striper) SetXattr(soid string, name string, data []byte) error {
 	defer C.free(unsafe.Pointer(csoid))
 	defer C.free(unsafe.Pointer(cName))
 
+	var bufptr *C.char
+	if len(data) > 0 {
+		bufptr = (*C.char)(unsafe.Pointer(&data[0]))
+	}
+
 	ret := C.rados_striper_setxattr(
 		s.striper,
 		csoid,
 		cName,
-		(*C.char)(unsafe.Pointer(&data[0])),
+		bufptr,
 		(C.size_t)(len(data)))
 
 	return getError(ret)
