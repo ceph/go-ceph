@@ -115,6 +115,7 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 		&w.handle,
 		C.uintptr_t(w.cbIndex))
 	if ret != 0 {
+		watchCallbacks.Remove(w.cbIndex)
 		return nil, getError(ret)
 	}
 	return w, nil
