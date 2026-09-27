@@ -34,7 +34,7 @@ func newWriteOpExecStep(in []byte) *writeOpExecStep {
 
 // update - update state operation.
 func (es *writeOpExecStep) update() error {
-	return getError(es.prval)
+	return getErrorIfNegative(es.prval)
 }
 
 // Exec executes an OSD class method on an object.
