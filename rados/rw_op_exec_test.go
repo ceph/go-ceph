@@ -1,6 +1,8 @@
 package rados
 
 import (
+	"testing"
+
 	"github.com/gofrs/uuid/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,7 +24,6 @@ func (suite *RadosTestSuite) TestReadWriteOpExec() {
 	assert.NoError(suite.T(), err)
 
 	rdOp := CreateReadOp()
-	defer rdOp.Release()
 
 	es := rdOp.Exec("hello", "replay", nil)
 	result, err := es.Bytes()
@@ -35,4 +36,22 @@ func (suite *RadosTestSuite) TestReadWriteOpExec() {
 	result, err = es.Bytes()
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), []byte("Hello, "+data+"!"), result)
+
+	rdOp.Release()
+	result, err = es.Bytes()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), []byte("Hello, "+data+"!"), result)
+}
+
+func TestExecStepRelease(t *testing.T) {
+	rdOp := CreateReadOp()
+	es := rdOp.Exec("hello", "replay", []byte("in"))
+	result, err := es.Bytes()
+	assert.ErrorIs(t, err, ErrOperationIncomplete)
+	assert.Nil(t, result)
+	rdOp.Release()
+
+	wrOp := CreateWriteOp()
+	wrOp.Exec("hello", "record_hello", []byte("in"))
+	wrOp.Release()
 }
