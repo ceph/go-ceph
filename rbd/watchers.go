@@ -121,7 +121,8 @@ func (image *Image) UpdateWatch(cb WatchCallback, data interface{}) (*Watch, err
 	return w, nil
 }
 
-// Unwatch un-registers the image watch.
+// Unwatch un-registers the image watch. Repeated calls return an error. Unwatch
+// is nonreentrant: calling it from a watch callback can deadlock.
 //
 // Implements:
 //
@@ -135,6 +136,9 @@ func (w *Watch) Unwatch() error {
 	}
 	ret := C.rbd_update_unwatch(w.image.image, w.handle)
 	watchCallbacks.Remove(w.cbIndex)
+	// librbd frees the handle even when unregistering fails, so it must never
+	// be passed to rbd_update_unwatch again.
+	w.image = nil
 	return getError(ret)
 }
 

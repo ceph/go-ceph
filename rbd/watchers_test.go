@@ -184,6 +184,20 @@ func TestWatch(t *testing.T) {
 		assert.Equal(t, 5, cc)
 	})
 
+	t.Run("doubleUnwatch", func(t *testing.T) {
+		image, err := OpenImage(ioctx, name, NoSnapshot)
+		require.NoError(t, err)
+		defer func() {
+			assert.NoError(t, image.Close())
+		}()
+
+		w, err := image.UpdateWatch(func(_ interface{}) {
+		}, nil)
+		require.NoError(t, err)
+		assert.NoError(t, w.Unwatch())
+		assert.Equal(t, ErrImageNotOpen, w.Unwatch())
+	})
+
 	t.Run("badWatch", func(t *testing.T) {
 		w := &Watch{}
 		err := w.Unwatch()
