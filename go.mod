@@ -1,6 +1,6 @@
 module github.com/ceph/go-ceph
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.45.1
@@ -11,7 +11,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.5.1
 	github.com/pierrec/xxHash v0.1.5
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 )
 
 require (
