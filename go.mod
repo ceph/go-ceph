@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.4
+	github.com/aws/aws-sdk-go-v2/service/sns v1.47.2
 	github.com/aws/smithy-go v1.28.2
 	github.com/gofrs/uuid/v5 v5.5.1
 	github.com/pierrec/xxHash v0.1.5
