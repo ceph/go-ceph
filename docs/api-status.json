@@ -2237,6 +2237,54 @@
         "comment": "SetAccountQuota sets the account-level or default-bucket quota for an RGW\naccount. The resulting quota can be read back with GetAccount, which populates\nAccount.Quota and Account.BucketQuota.\nThe underlying admin op requires Ceph v20.2.2 or later, or main; it is not\navailable in Squid, nor in Tentacle before v20.2.2.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-account-quota\n",
         "added_in_version": "v0.41.0",
         "expected_stable_version": "v0.43.0"
+      },
+      {
+        "name": "API.CreateTopic",
+        "comment": "CreateTopic creates a new SNS-compatible topic\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#create-topic\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.GetTopicAttributes",
+        "comment": "GetTopicAttributes returns information about a specific topic\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.DeleteTopic",
+        "comment": "DeleteTopic deletes a topic\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.ListTopics",
+        "comment": "ListTopics lists all topics for the tenant\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "BoolString.UnmarshalJSON",
+        "comment": "UnmarshalJSON supports unmarshalling a BoolString from JSON.\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.CreateNotification",
+        "comment": "CreateNotification creates a notification configuration for a bucket\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#create-notification\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.DeleteNotification",
+        "comment": "DeleteNotification deletes a specific notification or all notifications from a bucket\nIf notificationID is empty, all notifications are deleted\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#delete-notification\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+      },
+      {
+        "name": "API.GetNotifications",
+        "comment": "GetNotifications retrieves notification configurations for a bucket\nIf notificationID is empty, all notifications are returned\nhttps://docs.ceph.com/en/latest/radosgw/s3/bucketops/#get-list-notification\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ],
     "stable_api": [
