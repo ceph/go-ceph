@@ -70,7 +70,10 @@ func (gos *GetOmapStep) update() error {
 		gos.canIterate = false
 		return gos.err
 	}
-	err := getError(*gos.rval)
+	// A positive prval is not an error: the OSD also leaves the positive
+	// result of an earlier action, such as a class method, in the prval of
+	// the actions that follow it.
+	err := getErrorIfNegative(*gos.rval)
 	gos.canIterate = (err == nil)
 	return err
 }

@@ -57,7 +57,10 @@ func (es *ReadOpExecStep) freeBuffer() {
 
 // update - update state operation.
 func (es *ReadOpExecStep) update() error {
-	err := getError(es.prval)
+	// A positive prval is not an error: the OSD also leaves the positive
+	// result of an earlier action, such as a class method, in the prval of
+	// the actions that follow it.
+	err := getErrorIfNegative(es.prval)
 	es.canReadOutput = err == nil
 	return err
 }
