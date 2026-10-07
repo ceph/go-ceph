@@ -192,3 +192,23 @@ func (suite *RadosTestSuite) TestChecksumWithOpts() {
 		}
 	})
 }
+
+func (suite *RadosTestSuite) TestChecksumEmptyBuffers() {
+	suite.SetupConnection()
+	ta := assert.New(suite.T())
+
+	oid := suite.GenObjectName()
+	ta.NoError(suite.ioctx.Write(oid, []byte("data"), 0))
+
+	// Each case used to panic with an index out of range on the empty slice.
+	for _, dst := range [][]byte{nil, {}} {
+		err := suite.ioctx.Checksum(oid, ChecksumTypeCRC32C, dst, nil)
+		ta.ErrorIs(err, errRange)
+	}
+
+	// an explicitly empty init value is passed through and rejected by the OSD
+	dst := make([]byte, 4+4)
+	err := suite.ioctx.Checksum(oid, ChecksumTypeCRC32C, dst,
+		&ChecksumOptions{InitValue: []byte{}})
+	ta.Error(err)
+}
