@@ -2111,6 +2111,12 @@
         "comment": "FlattenWithProgress removes snapshot references from the image, reporting\nprogress via the supplied callback. The flatten operation will be aborted\nif the callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_flatten_with_progress(rbd_image_t image,\n\t                              librbd_progress_fn_t cb,\n\t                              void *cbdata);\n",
         "added_in_version": "v0.40.0",
         "expected_stable_version": "v0.42.0"
+      },
+      {
+        "name": "Image.GetBlockNamePrefix",
+        "comment": "GetBlockNamePrefix returns the prefix of the names of the RADOS objects\nthat hold the image's data. Unlike the Block_name_prefix field of the\nImageInfo returned by Stat, the value is not truncated.\n\nImplements:\n\n\tint rbd_get_block_name_prefix(rbd_image_t image, char *prefix,\n\t                              size_t prefix_len);\n",
+        "added_in_version": "$NEXT_RELEASE",
+        "expected_stable_version": "$NEXT_RELEASE_STABLE"
       }
     ]
   },
