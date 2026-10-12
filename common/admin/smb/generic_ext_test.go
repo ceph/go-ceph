@@ -1,4 +1,4 @@
-//go:build !(pacific || quincy || reef || squid) && ceph_preview
+//go:build !(pacific || quincy || reef || squid)
 
 package smb
 
