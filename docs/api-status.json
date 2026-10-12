@@ -1281,14 +1281,14 @@
       {
         "name": "IOContext.GetOmapValuesOrdered",
         "comment": "GetOmapValuesOrdered fetches a set of keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetOmapValues, which\nreturns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS. This makes it suitable for pagination: the Key of the last\nelement can be passed as `startAfter` in a subsequent call.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`maxReturn`: retrieve no more than `maxReturn` key/value pairs\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       },
       {
         "name": "IOContext.GetAllOmapValuesOrdered",
         "comment": "GetAllOmapValuesOrdered fetches all the keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetAllOmapValues,\nwhich returns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`iteratorSize`: internal number of keys to fetch during a read operation\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       }
     ]
   },
@@ -2188,32 +2188,32 @@
       {
         "name": "RBDAdmin.TrashPurgeSchedule",
         "comment": "TrashPurgeSchedule returns a TrashPurgeScheduleAdmin type for\nmanaging ceph rbd trash purge schedules.\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       },
       {
         "name": "TrashPurgeScheduleAdmin.Add",
         "comment": "Add a new trash purge schedule to the given pool/namespace based on the\nsupplied level spec.\n\nSimilar To:\n\n\trbd trash purge schedule add <level_spec> <interval> <start_time>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       },
       {
         "name": "TrashPurgeScheduleAdmin.List",
         "comment": "List the trash purge schedules based on the supplied level spec.\n\nSimilar To:\n\n\trbd trash purge schedule list <level_spec>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       },
       {
         "name": "TrashPurgeScheduleAdmin.Remove",
         "comment": "Remove a trash purge schedule matching the supplied arguments.\n\nSimilar To:\n\n\trbd trash purge schedule remove <level_spec> <interval> <start_time>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       },
       {
         "name": "TrashPurgeScheduleAdmin.Status",
         "comment": "Status returns the status of the trash purge schedule (eg. when it will\nnext take place) matching the supplied level spec.\n\nSimilar To:\n\n\trbd trash purge schedule status <level_spec>\n",
-        "added_in_version": "$NEXT_RELEASE",
-        "expected_stable_version": "$NEXT_RELEASE_STABLE"
+        "added_in_version": "v0.42.0",
+        "expected_stable_version": "v0.44.0"
       }
     ]
   },
