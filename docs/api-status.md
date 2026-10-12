@@ -12,7 +12,6 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-FSAdmin.SubVolumeGroupInfo | v0.40.0 | v0.42.0 | 
 FSAdmin.PinSubVolumeInGroup | v0.41.0 | v0.43.0 | 
 
 ## Package: rados
@@ -21,17 +20,10 @@ FSAdmin.PinSubVolumeInGroup | v0.41.0 | v0.43.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-IOContext.Checksum | v0.40.0 | v0.42.0 | 
 IOContext.GetOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 IOContext.GetAllOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: rbd
-
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-Image.FlattenWithProgress | v0.40.0 | v0.42.0 | 
 
 ### Deprecated APIs
 
@@ -59,8 +51,6 @@ TrashPurgeScheduleAdmin.Status | $NEXT_RELEASE | $NEXT_RELEASE_STABLE |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-API.SetIndividualBucketRateLimit | v0.40.0 | v0.42.0 | 
-API.GetIndividualBucketRateLimit | v0.40.0 | v0.42.0 | 
 API.SetAccountQuota | v0.41.0 | v0.43.0 | 
 
 ## Package: common/admin/manager
@@ -73,11 +63,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/nfs
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-Admin.ApplyExportInfo | v0.40.0 | v0.42.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: rados/striper
 
@@ -85,12 +71,7 @@ No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/smb
 
-### Preview APIs
-
-Name | Added in Version | Expected Stable Version | 
----- | ---------------- | ----------------------- | 
-ApplyOptions.SetGeneric | v0.40.0 | v0.42.0 | 
-ApplyOptions.Generic | v0.40.0 | v0.42.0 | 
+No Preview/Deprecated APIs found. All APIs are considered stable.
 
 ## Package: common/admin/osd
 

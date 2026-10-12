@@ -700,16 +700,16 @@
         "comment": "SubVolumeSnapshotPath returns the path for a snapshot from the source subvolume.\n\nSimilar To:\n\n\tceph fs subvolume snapshot getpath <volume> --group-name=<group> <source> <name>\n",
         "added_in_version": "v0.34.0",
         "became_stable_version": "v0.36.0"
-      }
-    ],
-    "deprecated_api": [],
-    "preview_api": [
+      },
       {
         "name": "FSAdmin.SubVolumeGroupInfo",
         "comment": "SubVolumeGroupInfo returns information about the specified subvolume group.\n\nSimilar To:\n\n\tceph fs subvolumegroup info <volume> <group_name>\n",
         "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
-      },
+        "became_stable_version": "v0.42.0"
+      }
+    ],
+    "deprecated_api": [],
+    "preview_api": [
       {
         "name": "FSAdmin.PinSubVolumeInGroup",
         "comment": "PinSubVolumeInGroup pins a subvolume in a volume and optional subvolume group\nto ranks according to policies. A valid pin setting value depends on the type\nof pin as described in the docs from\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#cephfs-pinning and\nhttps://docs.ceph.com/en/latest/cephfs/multimds/#setting-subtree-partitioning-policies\n\nSimilar To:\n\n\tceph fs subvolume pin <vol_name> <sub_name> <pin_type> <pin_setting> [--group_name=<group>]\n",
@@ -1269,15 +1269,15 @@
         "comment": "GetAddrs returns the addresses of the RADOS session,\nsuitable for blocklisting.\n\nImplements:\n\n\tint rados_getaddrs(rados_t cluster, char **addrs)\n",
         "added_in_version": "v0.31.0",
         "became_stable_version": "v0.33.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "IOContext.Checksum",
         "comment": "Checksum calculates the checksum of the given object data, using one of the supported checksum algorithms.\n\nImplements:\n\n\tint rados_checksum(rados_ioctx_t io,\n\t                   const char *oid,\n\t                   rados_checksum_type_t type,\n\t                   const char *init_value,\n\t                   size_t init_value_len,\n\t                   size_t len,\n\t                   uint64_t off,\n\t                   size_t chunk_size,\n\t                   char *pchecksum,\n\t                   size_t checksum_len);\n",
         "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
-      },
+        "became_stable_version": "v0.42.0"
+      }
+    ],
+    "preview_api": [
       {
         "name": "IOContext.GetOmapValuesOrdered",
         "comment": "GetOmapValuesOrdered fetches a set of keys and their values from an omap and\nreturns them as an ordered slice of OmapKeyValue. Unlike GetOmapValues, which\nreturns an unordered map, the returned slice preserves the key ordering\nprovided by RADOS. This makes it suitable for pagination: the Key of the last\nelement can be passed as `startAfter` in a subsequent call.\n\n`startAfter`: retrieve only the keys after this specified one\n`filterPrefix`: retrieve only the keys beginning with this prefix\n`maxReturn`: retrieve no more than `maxReturn` key/value pairs\n",
@@ -2103,16 +2103,15 @@
         "comment": "RemoveSnapByID removes an existing snapshot. This can be used to manually\nremove a snapshot from the trash.\n\nImplements:\n\n\tint rbd_snap_remove_by_id(rbd_image_t image, uint64_t snap_id);\n",
         "added_in_version": "v0.37.0",
         "became_stable_version": "v0.39.0"
-      }
-    ],
-    "preview_api": [
+      },
       {
         "name": "Image.FlattenWithProgress",
         "comment": "FlattenWithProgress removes snapshot references from the image, reporting\nprogress via the supplied callback. The flatten operation will be aborted\nif the callback returns a non-zero value.\n\nImplements:\n\n\tint rbd_flatten_with_progress(rbd_image_t image,\n\t                              librbd_progress_fn_t cb,\n\t                              void *cbdata);\n",
         "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
+        "became_stable_version": "v0.42.0"
       }
-    ]
+    ],
+    "preview_api": []
   },
   "rbd/admin": {
     "stable_api": [
@@ -2220,18 +2219,6 @@
   },
   "rgw/admin": {
     "preview_api": [
-      {
-        "name": "API.SetIndividualBucketRateLimit",
-        "comment": "SetIndividualBucketRateLimit sets rate-limits to a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-rate-limit-for-an-individual-bucket\n",
-        "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
-      },
-      {
-        "name": "API.GetIndividualBucketRateLimit",
-        "comment": "GetIndividualBucketRateLimit returns rate-limits of a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-rate-limit\n",
-        "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
-      },
       {
         "name": "API.SetAccountQuota",
         "comment": "SetAccountQuota sets the account-level or default-bucket quota for an RGW\naccount. The resulting quota can be read back with GetAccount, which populates\nAccount.Quota and Account.BucketQuota.\nThe underlying admin op requires Ceph v20.2.2 or later, or main; it is not\navailable in Squid, nor in Tentacle before v20.2.2.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-account-quota\n",
@@ -2418,6 +2405,18 @@
         "comment": "ModifyAccount will modify the RGW account\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#modify-account\n",
         "added_in_version": "v0.38.0",
         "became_stable_version": "v0.40.0"
+      },
+      {
+        "name": "API.SetIndividualBucketRateLimit",
+        "comment": "SetIndividualBucketRateLimit sets rate-limits to a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#set-rate-limit-for-an-individual-bucket\n",
+        "added_in_version": "v0.40.0",
+        "became_stable_version": "v0.42.0"
+      },
+      {
+        "name": "API.GetIndividualBucketRateLimit",
+        "comment": "GetIndividualBucketRateLimit returns rate-limits of a specific bucket.\nhttps://docs.ceph.com/en/latest/radosgw/adminops/#get-bucket-rate-limit\n",
+        "added_in_version": "v0.40.0",
+        "became_stable_version": "v0.42.0"
       }
     ]
   },
@@ -2461,14 +2460,7 @@
     ]
   },
   "common/admin/nfs": {
-    "preview_api": [
-      {
-        "name": "Admin.ApplyExportInfo",
-        "comment": "ApplyExportInfo will create or update an existing NFS export.\n\nSimilar To:\n\n\tceph nfs export apply\n",
-        "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
-      }
-    ],
+    "preview_api": [],
     "stable_api": [
       {
         "name": "NewFromConn",
@@ -2499,6 +2491,12 @@
         "comment": "ExportInfo will return a structure describing the export specified by it's\npseudo-path.\n\nSimilar To:\n ceph nfs export info\n",
         "added_in_version": "v0.16.0",
         "became_stable_version": "v0.18.0"
+      },
+      {
+        "name": "Admin.ApplyExportInfo",
+        "comment": "ApplyExportInfo will create or update an existing NFS export.\n\nSimilar To:\n\n\tceph nfs export apply\n",
+        "added_in_version": "v0.40.0",
+        "became_stable_version": "v0.42.0"
       }
     ]
   },
@@ -2617,18 +2615,6 @@
         "ignore": true,
         "added_in_version": "v0.37.0",
         "expected_stable_version": ""
-      },
-      {
-        "name": "ApplyOptions.SetGeneric",
-        "comment": "SetGeneric enables or disables returning GenericResource objects within\nthe results of the Apply function. If true all Resource objects embedded\nin Apply results will be GenericResource instances.\n",
-        "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
-      },
-      {
-        "name": "ApplyOptions.Generic",
-        "comment": "Generic returns true if the apply options are set to return\nGenericResource instances in Apply results.\n",
-        "added_in_version": "v0.40.0",
-        "expected_stable_version": "v0.42.0"
       }
     ],
     "stable_api": [
@@ -3189,6 +3175,18 @@
         "comment": "Generic returns true if the show options are set to return\nGenericResource instances from the Show function.\n",
         "added_in_version": "v0.39.0",
         "became_stable_version": "v0.41.0"
+      },
+      {
+        "name": "ApplyOptions.SetGeneric",
+        "comment": "SetGeneric enables or disables returning GenericResource objects within\nthe results of the Apply function. If true all Resource objects embedded\nin Apply results will be GenericResource instances.\n",
+        "added_in_version": "v0.40.0",
+        "became_stable_version": "v0.42.0"
+      },
+      {
+        "name": "ApplyOptions.Generic",
+        "comment": "Generic returns true if the apply options are set to return\nGenericResource instances in Apply results.\n",
+        "added_in_version": "v0.40.0",
+        "became_stable_version": "v0.42.0"
       }
     ]
   },
