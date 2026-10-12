@@ -20,8 +20,8 @@ FSAdmin.PinSubVolumeInGroup | v0.41.0 | v0.43.0 |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-IOContext.GetOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-IOContext.GetAllOmapValuesOrdered | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+IOContext.GetOmapValuesOrdered | v0.42.0 | v0.44.0 | 
+IOContext.GetAllOmapValuesOrdered | v0.42.0 | v0.44.0 | 
 
 ## Package: rbd
 
@@ -39,11 +39,11 @@ Snapshot.Set | v0.10.0 |  |
 
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
-RBDAdmin.TrashPurgeSchedule | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TrashPurgeScheduleAdmin.Add | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TrashPurgeScheduleAdmin.List | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TrashPurgeScheduleAdmin.Remove | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
-TrashPurgeScheduleAdmin.Status | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+RBDAdmin.TrashPurgeSchedule | v0.42.0 | v0.44.0 | 
+TrashPurgeScheduleAdmin.Add | v0.42.0 | v0.44.0 | 
+TrashPurgeScheduleAdmin.List | v0.42.0 | v0.44.0 | 
+TrashPurgeScheduleAdmin.Remove | v0.42.0 | v0.44.0 | 
+TrashPurgeScheduleAdmin.Status | v0.42.0 | v0.44.0 | 
 
 ## Package: rgw/admin
 
