@@ -78,7 +78,7 @@ jobs:
 
   # Run the test suite in a container per-ceph-codename
   test-suite:
-    name: test-suite (${{ matrix.ceph_version }}${{ matrix.go_version != needs.go-versions.outputs.latest && format(', go{0}', matrix.go_version) || '' }})
+    name: test-suite (${{ matrix.ceph_version }}${{ matrix.go_version != needs.go-versions.outputs.latest && format(', go{0}', matrix.go_version) || '' }}${{ matrix.no_preview == 1 && ', no-preview' || '' }})
     needs: go-versions
     runs-on: ubuntu-latest
     strategy:
@@ -96,17 +96,22 @@ jobs:
         - "main"
         go_version:
         - ${{ needs.go-versions.outputs.latest }}
+        no_preview:
+        - ""
         include:
         - ceph_version: "tentacle"
           go_version: ${{ needs.go-versions.outputs.prev }}
         - ceph_version: "tentacle"
           go_version: ${{ needs.go-versions.outputs.unstable }}
+        - ceph_version: "tentacle"
+          go_version: ${{ needs.go-versions.outputs.latest }}
+          no_preview: 1
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - name: Set cores to get stored as "core"
       run:  sudo bash -c 'echo "core" > /proc/sys/kernel/core_pattern'
     - name: Run tests
-      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results"
+      run: make test-containers-test "CEPH_VERSION=${{ matrix.ceph_version }}" "GO_VERSION=${{ matrix.go_version }}" "RESULTS_DIR=$PWD/_results"  NO_PREVIEW="${{ matrix.no_preview }}"
     # As an example, one can enable tmate debugging of manually-triggered
     # workflows if the input option was provided
     # - name: Setup tmate session
@@ -119,7 +124,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
-        name: "go-ceph-results-${{ matrix.ceph_version }}-${{ matrix.go_version }}"
+        name: "go-ceph-results-${{ matrix.ceph_version }}-${{ matrix.go_version }}${{ matrix.no_preview == 1 && '-no-preview' || ''}}"
         path: |
           _results/
         retention-days: 30
