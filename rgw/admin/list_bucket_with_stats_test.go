@@ -18,6 +18,10 @@ func (suite *RadosGWTestSuite) TestListBucketsWithStat() {
 
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
+	defer func() {
+		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
+		assert.NoError(suite.T(), err)
+	}()
 
 	suite.T().Run("list buckets with stat", func(_ *testing.T) {
 		buckets, err := co.ListBucketsWithStat(context.Background())
