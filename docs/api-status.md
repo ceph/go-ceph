@@ -25,6 +25,13 @@ IOContext.GetAllOmapValuesOrdered | v0.42.0 | v0.44.0 |
 
 ## Package: rbd
 
+### Preview APIs
+
+Name | Added in Version | Expected Stable Version | 
+---- | ---------------- | ----------------------- | 
+Image.GetFlags | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+Image.RebuildObjectMapWithProgress | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+
 ### Deprecated APIs
 
 Name | Deprecated in Version | Expected Removal Version | 
