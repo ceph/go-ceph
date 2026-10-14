@@ -20,6 +20,10 @@ func (suite *RadosGWTestSuite) TestBucketQuota() {
 
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
+	defer func() {
+		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
+		assert.NoError(suite.T(), err)
+	}()
 
 	suite.T().Run("set bucket quota but no user is specified", func(_ *testing.T) {
 		err := co.SetIndividualBucketQuota(context.Background(), QuotaSpec{})

@@ -20,6 +20,10 @@ func (suite *RadosGWTestSuite) TestCheckBucketIndex() {
 
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
+	defer func() {
+		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
+		assert.NoError(suite.T(), err)
+	}()
 
 	suite.T().Run("check bucket index", func(_ *testing.T) {
 		_, err := co.CheckBucketIndex(context.Background(), CheckBucketIndexRequest{Bucket: suite.bucketTestName, CheckObjects: true, Fix: true})
