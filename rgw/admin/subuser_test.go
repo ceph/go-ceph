@@ -70,3 +70,52 @@ func returnMockClientCreateSubuser() *mockClient {
 		},
 	}
 }
+
+func TestSubuserTenantMockAPI(t *testing.T) {
+	// Subuser calls take no tenant of their own, so the folded uid is the only
+	// way to name a tenanted user's subusers. The fold/validation matrix is
+	// covered by TestUserWithTenantUID.
+	const foldedUID = "uid=tenantA%24user1"
+	tenantUser := User{ID: "user1", Tenant: "tenantA"}
+
+	t.Run("create folds the tenant into the uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.CreateSubuser(context.TODO(), tenantUser, SubuserSpec{Name: "sub1"})
+		assert.NoError(t, err)
+		assert.Contains(t, query, foldedUID)
+	})
+	t.Run("modify folds the tenant into the uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.ModifySubuser(context.TODO(), tenantUser, SubuserSpec{Name: "sub1"})
+		assert.NoError(t, err)
+		assert.Contains(t, query, foldedUID)
+	})
+	t.Run("remove folds the tenant into the uid", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.RemoveSubuser(context.TODO(), tenantUser, SubuserSpec{Name: "sub1"})
+		assert.NoError(t, err)
+		assert.Contains(t, query, foldedUID)
+	})
+	t.Run("conflicting tenant is rejected before any request", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.CreateSubuser(context.TODO(), User{ID: "tenantB$user1", Tenant: "tenantA"}, SubuserSpec{Name: "sub1"})
+		assert.ErrorIs(t, err, errTenantMismatch)
+		assert.Empty(t, query)
+	})
+	t.Run("separator in tenant is rejected before any request", func(t *testing.T) {
+		var query string
+		api, err := New("127.0.0.1", "accessKey", "secretKey", returnMockClientCaptureQuery(&query, []byte("")))
+		assert.NoError(t, err)
+		err = api.ModifySubuser(context.TODO(), User{ID: "user1", Tenant: "a$b"}, SubuserSpec{Name: "sub1"})
+		assert.ErrorIs(t, err, errTenantSeparator)
+		assert.Empty(t, query)
+	})
+}

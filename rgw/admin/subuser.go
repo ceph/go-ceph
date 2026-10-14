@@ -48,9 +48,13 @@ func (api *API) CreateSubuser(ctx context.Context, user User, subuser SubuserSpe
 	if !subuser.validateSubuserAccess() {
 		return makeInvalidSubuserAccessLevelError(subuser)
 	}
+	user, err := user.withTenantUID()
+	if err != nil {
+		return err
+	}
 	v := valueToURLParams(user, []string{"uid"})
 	addToURLParams(&v, subuser, []string{"subuser", "access", "access-key", "secret-key", "generate-secret", "gen-access-key", "key-type"})
-	_, err := api.call(ctx, http.MethodPut, "/user", v)
+	_, err = api.call(ctx, http.MethodPut, "/user", v)
 	if err != nil {
 		return err
 	}
@@ -67,9 +71,13 @@ func (api *API) RemoveSubuser(ctx context.Context, user User, subuser SubuserSpe
 		return errMissingSubuserID
 	}
 
+	user, err := user.withTenantUID()
+	if err != nil {
+		return err
+	}
 	v := valueToURLParams(user, []string{"uid"})
 	addToURLParams(&v, subuser, []string{"subuser", "purge-keys"})
-	_, err := api.call(ctx, http.MethodDelete, "/user", v)
+	_, err = api.call(ctx, http.MethodDelete, "/user", v)
 	if err != nil {
 		return err
 	}
@@ -89,9 +97,13 @@ func (api *API) ModifySubuser(ctx context.Context, user User, subuser SubuserSpe
 		return makeInvalidSubuserAccessLevelError(subuser)
 	}
 
+	user, err := user.withTenantUID()
+	if err != nil {
+		return err
+	}
 	v := valueToURLParams(user, []string{"uid"})
 	addToURLParams(&v, subuser, []string{"subuser", "access", "secret", "generate-secret", "key-type"})
-	_, err := api.call(ctx, http.MethodPost, "/user", v)
+	_, err = api.call(ctx, http.MethodPost, "/user", v)
 	if err != nil {
 		return err
 	}
