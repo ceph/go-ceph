@@ -19,6 +19,10 @@ func (suite *RadosGWTestSuite) TestUserBucket() {
 
 	err = s3.createBucket(suite.bucketTestName)
 	assert.NoError(suite.T(), err)
+	defer func() {
+		err := co.RemoveBucket(context.Background(), Bucket{Bucket: suite.bucketTestName})
+		assert.NoError(suite.T(), err)
+	}()
 
 	suite.T().Run("list empty user's buckets", func(_ *testing.T) {
 		_, err := co.ListUsersBuckets(context.Background(), "")
