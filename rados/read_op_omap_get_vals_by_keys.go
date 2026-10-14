@@ -45,7 +45,10 @@ func (s *ReadOpOmapGetValsByKeysStep) free() {
 }
 
 func (s *ReadOpOmapGetValsByKeysStep) update() error {
-	err := getError(*s.prval)
+	// A positive prval is not an error: the OSD also leaves the positive
+	// result of an earlier action, such as a class method, in the prval of
+	// the actions that follow it.
+	err := getErrorIfNegative(*s.prval)
 	s.canIterate = (err == nil)
 
 	return err
