@@ -12,6 +12,10 @@ import (
 )
 
 func (suite *RadosGWTestSuite) TestAccount() {
+	if util.CurrentCephVersion() < util.CephTentacle {
+		suite.T().Skip("account get/delete REST APIs have broken capability checks on Squid")
+	}
+
 	suite.SetupConnection()
 	co, err := New(suite.endpoint, suite.accessKey, suite.secretKey, newDebugHTTPClient(http.DefaultClient))
 	assert.NoError(suite.T(), err)
@@ -34,9 +38,6 @@ func (suite *RadosGWTestSuite) TestAccount() {
 	})
 
 	suite.T().Run("successfully get account", func(t *testing.T) {
-		if util.CurrentCephVersion() <= util.CephTentacle {
-			t.Skipf("GetAccount is not yet supported on %s", util.CurrentCephVersionString())
-		}
 		account, err := co.GetAccount(context.Background(), "RGW12345678901234567")
 		assert.NoError(t, err)
 		assert.Equal(t, "RGW12345678901234567", account.ID)
@@ -61,9 +62,6 @@ func (suite *RadosGWTestSuite) TestAccount() {
 	})
 
 	suite.T().Run("successfully delete account", func(t *testing.T) {
-		if util.CurrentCephVersion() <= util.CephTentacle {
-			t.Skipf("DeleteAccount is not yet supported on %s", util.CurrentCephVersionString())
-		}
 		err := co.DeleteAccount(context.Background(), "RGW12345678901234567")
 		assert.NoError(t, err)
 	})
