@@ -2266,11 +2266,11 @@
         "name": "errorReason.Error"
       },
       {
-        "name": "statusError.Is",
+        "name": "StatusError.Is",
         "comment": "Is determines whether the error is known to be reported\n"
       },
       {
-        "name": "statusError.Error",
+        "name": "StatusError.Error",
         "comment": "Error returns non-empty string if there was an error.\n"
       },
       {
