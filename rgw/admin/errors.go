@@ -111,16 +111,20 @@ type statusError struct {
 	Code      string `json:"Code,omitempty"`
 	RequestID string `json:"RequestId,omitempty"`
 	HostID    string `json:"HostId,omitempty"`
+	// statusCode is the HTTP status code of the response, not part of the body.
+	statusCode int
 }
 
-func handleStatusError(decodedResponse []byte) error {
-	statusError := statusError{}
-	err := json.Unmarshal(decodedResponse, &statusError)
+func handleStatusError(decodedResponse []byte, statusCode int) error {
+	statusErr := statusError{statusCode: statusCode}
+	err := json.Unmarshal(decodedResponse, &statusErr)
 	if err != nil {
-		return fmt.Errorf("%s. %s. %w", unmarshalError, string(decodedResponse), err)
+		// Keep the HTTP status alongside the decode failure so callers can still
+		// inspect it (see StatusError, errors.As).
+		return errors.Join(statusErr, fmt.Errorf("%s. %s. %w", unmarshalError, string(decodedResponse), err))
 	}
 
-	return statusError
+	return statusErr
 }
 
 func (e errorReason) Error() string { return string(e) }
