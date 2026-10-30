@@ -60,6 +60,8 @@ TrashPurgeScheduleAdmin.Status | v0.42.0 | v0.44.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 API.SetAccountQuota | v0.41.0 | v0.43.0 | 
+StatusError.Error | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+StatusError.Is | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/manager
 

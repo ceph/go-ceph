@@ -107,14 +107,16 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 	// Decode HTTP response
 	decodedResponse, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		// Keep the HTTP status alongside the read failure so callers can still
+		// inspect it (see StatusError, errors.As).
+		return nil, errors.Join(statusError{statusCode: resp.StatusCode}, err)
 	}
 
 	resp.Body = io.NopCloser(bytes.NewBuffer(decodedResponse))
 
 	// Handle error in response
 	if resp.StatusCode >= 300 {
-		return nil, handleStatusError(decodedResponse)
+		return nil, handleStatusError(decodedResponse, resp.StatusCode)
 	}
 
 	return decodedResponse, nil
