@@ -12,7 +12,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.5.1
 	github.com/pierrec/xxHash v0.1.5
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/sys v0.48.0
+	golang.org/x/sys v0.49.0
 )
 
 require (
