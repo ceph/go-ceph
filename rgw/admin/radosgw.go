@@ -3,12 +3,13 @@ package admin
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
-
-	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -19,6 +20,7 @@ const (
 	authRegion        = "default"
 	service           = "s3"
 	connectionTimeout = time.Second * 3
+	unsignedPayload   = "UNSIGNED-PAYLOAD"
 )
 
 var (
@@ -70,15 +72,10 @@ func New(endpoint, accessKey, secretKey string, httpClient HTTPClient) (*API, er
 	}, nil
 }
 
-// call makes request to the RGW Admin Ops API
-func (api *API) call(ctx context.Context, httpMethod, path string, args url.Values) (body []byte, err error) {
-	// Build request
-	request, err := http.NewRequestWithContext(ctx, httpMethod, buildQueryPath(api.Endpoint, path, args.Encode()), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build S3 authentication
+// doRequest signs and sends an HTTP request, then reads and returns the
+// response body. The payloadHash is included in the S3 v4 signature;
+// use "UNSIGNED-PAYLOAD" when the body hash is not required by the server.
+func (api *API) doRequest(ctx context.Context, req *http.Request, payloadHash string) ([]byte, error) {
 	credCache := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(api.AccessKey, api.SecretKey, ""))
 	creds, err := credCache.Retrieve(ctx)
 	if err != nil {
@@ -86,36 +83,98 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 	}
 
 	signer := v4.NewSigner()
-	// This was present in https://github.com/IrekFasikhov/go-rgwadmin/ but it seems that the lib works without it
-	// Let's keep it here just in case something shows up
-	// signer.DisableRequestBodyOverwrite = true
-
-	// Sign in S3
-	const emptyPayloadHash = "UNSIGNED-PAYLOAD"
-	err = signer.SignHTTP(ctx, creds, request, emptyPayloadHash, service, authRegion, time.Now())
+	err = signer.SignHTTP(ctx, creds, req, payloadHash, service, authRegion, time.Now())
 	if err != nil {
 		return nil, err
 	}
 
-	// Send HTTP request
-	resp, err := api.HTTPClient.Do(request)
+	resp, err := api.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// Decode HTTP response
-	decodedResponse, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	resp.Body = io.NopCloser(bytes.NewBuffer(decodedResponse))
+	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 
-	// Handle error in response
 	if resp.StatusCode >= 300 {
-		return nil, handleStatusError(decodedResponse)
+		return nil, handleStatusError(body)
 	}
 
-	return decodedResponse, nil
+	return body, nil
+}
+
+// call makes request to the RGW Admin Ops API
+func (api *API) call(ctx context.Context, httpMethod, path string, args url.Values) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, httpMethod, buildQueryPath(api.Endpoint, path, args.Encode()), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return api.doRequest(ctx, req, unsignedPayload)
+}
+
+// sha256Hex returns the hex-encoded SHA-256 digest of data.
+func sha256Hex(data []byte) string {
+	h := sha256.Sum256(data)
+	return hex.EncodeToString(h[:])
+}
+
+// callSNS makes a POST request to the SNS-compatible topic API endpoint.
+// The SNS endpoint is at the S3 root, and is dispatched by the "Action" parameter.
+// All parameters (Action, Name, TopicArn, Attributes) are sent in the POST form
+// body because RGW's parse_post_action() only recognizes the
+// Attributes.entry.N.{key|value} format from the request body.
+func (api *API) callSNS(ctx context.Context, action string, params url.Values) ([]byte, error) {
+	if params == nil {
+		params = url.Values{}
+	}
+	params.Set("Action", action)
+
+	body := []byte(params.Encode())
+	payloadHash := sha256Hex(body)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, api.Endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	return api.doRequest(ctx, req, payloadHash)
+}
+
+// callNotification makes a request to the S3 bucket notification API.
+// These APIs live at the S3 path (/{bucket}?notification), not under /admin.
+func (api *API) callNotification(ctx context.Context, httpMethod, bucket, notificationID string, requestBody []byte) ([]byte, error) {
+	u, err := url.Parse(api.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = bucket
+	if notificationID != "" {
+		u.RawQuery = url.Values{"notification": {notificationID}}.Encode()
+	} else {
+		u.RawQuery = "notification"
+	}
+
+	var bodyReader io.Reader
+	if requestBody != nil {
+		bodyReader = bytes.NewReader(requestBody)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, httpMethod, u.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
+
+	if requestBody != nil {
+		req.Header.Set("Content-Type", "application/xml")
+	}
+
+	return api.doRequest(ctx, req, unsignedPayload)
 }
