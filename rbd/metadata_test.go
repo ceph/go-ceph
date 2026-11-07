@@ -68,6 +68,15 @@ func TestImageMetadata(t *testing.T) {
 	assert.Equal(t, "", value)
 	assert.Error(t, err)
 
+	// a single entry with an empty value must not be mistaken for no entries
+	err = image.SetMetadata(metadataKey, "")
+	assert.NoError(t, err)
+	mm, err = image.ListMetadata()
+	assert.NoError(t, err)
+	assert.Equal(t, map[string]string{metadataKey: ""}, mm)
+	err = image.RemoveMetadata(metadataKey)
+	assert.NoError(t, err)
+
 	// Set some additional metadata values
 	m1 := map[string]string{
 		metadataKey:  metadataValue,
