@@ -114,7 +114,7 @@ func (api *API) call(ctx context.Context, httpMethod, path string, args url.Valu
 
 	// Handle error in response
 	if resp.StatusCode >= 300 {
-		return nil, handleStatusError(decodedResponse)
+		return nil, handleStatusError(decodedResponse, resp.StatusCode)
 	}
 
 	return decodedResponse, nil

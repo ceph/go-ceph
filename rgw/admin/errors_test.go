@@ -2,6 +2,7 @@ package admin
 
 import (
 	"errors"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,11 +14,18 @@ var (
 )
 
 func TestHandleStatusError(t *testing.T) {
-	err := handleStatusError(fakeGetUserError)
+	err := handleStatusError(fakeGetUserError, http.StatusNotFound)
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, ErrNoSuchUser), err)
 
-	err = handleStatusError(fakeGetSubUserError)
+	err = handleStatusError(fakeGetSubUserError, http.StatusNotFound)
 	assert.Error(t, err)
 	assert.True(t, errors.Is(err, ErrNoSuchSubUser), err)
+
+	// The HTTP status code is exposed via StatusError so callers can detect
+	// e.g. a transient 5xx without matching on the Code string.
+	var se StatusError
+	assert.True(t, errors.As(err, &se), err)
+	assert.Equal(t, http.StatusNotFound, se.StatusCode)
+	assert.Equal(t, "NoSuchSubUser", se.Code)
 }

@@ -106,27 +106,33 @@ var (
 // errorReason is the reason of the error
 type errorReason string
 
-// statusError is the API response when an error occurs
-type statusError struct {
+// StatusError is the error returned by the admin API when a request fails. It
+// carries the error Code reported in the response body along with the HTTP
+// status code of the response, so callers can tell e.g. a transient 5xx apart
+// from a 4xx without matching on the Code string. Match it with errors.As.
+type StatusError struct {
 	Code      string `json:"Code,omitempty"`
 	RequestID string `json:"RequestId,omitempty"`
 	HostID    string `json:"HostId,omitempty"`
+	// StatusCode is the HTTP status code of the response. It is not part of the
+	// response body and is populated from the HTTP response.
+	StatusCode int `json:"-"`
 }
 
-func handleStatusError(decodedResponse []byte) error {
-	statusError := statusError{}
-	err := json.Unmarshal(decodedResponse, &statusError)
+func handleStatusError(decodedResponse []byte, statusCode int) error {
+	statusErr := StatusError{StatusCode: statusCode}
+	err := json.Unmarshal(decodedResponse, &statusErr)
 	if err != nil {
 		return fmt.Errorf("%s. %s. %w", unmarshalError, string(decodedResponse), err)
 	}
 
-	return statusError
+	return statusErr
 }
 
 func (e errorReason) Error() string { return string(e) }
 
 // Is determines whether the error is known to be reported
-func (e statusError) Is(target error) bool { return target == errorReason(e.Code) }
+func (e StatusError) Is(target error) bool { return target == errorReason(e.Code) }
 
 // Error returns non-empty string if there was an error.
-func (e statusError) Error() string { return fmt.Sprintf("%s %s %s", e.Code, e.RequestID, e.HostID) }
+func (e StatusError) Error() string { return fmt.Sprintf("%s %s %s", e.Code, e.RequestID, e.HostID) }
