@@ -35,11 +35,11 @@ var tbl = []struct {
 		res1: []string{},
 		res2: []string{},
 	},
-	// almost nuttin
+	// a lone terminator stands for a single empty string
 	{
 		val:  []byte("\x00"),
 		res1: []string{},
-		res2: []string{},
+		res2: []string{""},
 	},
 	// how multiple adjacent nulls are handled
 	{
