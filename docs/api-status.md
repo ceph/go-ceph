@@ -60,6 +60,14 @@ TrashPurgeScheduleAdmin.Status | v0.42.0 | v0.44.0 |
 Name | Added in Version | Expected Stable Version | 
 ---- | ---------------- | ----------------------- | 
 API.SetAccountQuota | v0.41.0 | v0.43.0 | 
+API.CreateTopic | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.GetTopicAttributes | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.DeleteTopic | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.ListTopics | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+BoolString.UnmarshalJSON | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.CreateNotification | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.DeleteNotification | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
+API.GetNotifications | $NEXT_RELEASE | $NEXT_RELEASE_STABLE | 
 
 ## Package: common/admin/manager
 
