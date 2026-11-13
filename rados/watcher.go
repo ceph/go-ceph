@@ -170,7 +170,8 @@ func (w *Watcher) Check() (time.Duration, error) {
 	return time.Millisecond * time.Duration(ret), nil
 }
 
-// Delete the watcher. This closes both the event and error channel.
+// Delete the watcher. This closes both the event and error channel, also when
+// the unwatch fails.
 //
 // Implements:
 //
@@ -186,13 +187,35 @@ func (w *Watcher) Delete() error {
 		return nil
 	}
 	ret := C.rados_unwatch2(w.ioctx.ioctx, C.uint64_t(w.id))
-	if ret != 0 {
-		return getError(ret)
-	}
-	close(w.done) // unblock blocked callbacks
+	w.close(func() { C.rados_watch_flush(w.ioctx.conn.cluster) })
+	return getError(ret)
+}
+
+// close closes the channels of a Watcher that has already been removed from
+// watchers. A callback that looked the Watcher up before its removal may still
+// be about to deliver to it, and a send on a closed channel would panic on a
+// librados thread. Closing done first makes such a callback drop its delivery,
+// and flush, which must wait for every in-flight callback, keeps the event and
+// error channels open until none is left.
+func (w *Watcher) close(flush func()) {
+	close(w.done)
+	flush()
 	close(w.events)
 	close(w.errors)
-	return nil
+}
+
+func (w *Watcher) deliverEvent(ev NotifyEvent) {
+	select {
+	case <-w.done: // drop the delivery once deleted
+	case w.events <- ev:
+	}
+}
+
+func (w *Watcher) deliverError(err error) {
+	select {
+	case <-w.done: // drop the delivery once deleted
+	case w.errors <- err:
+	}
 }
 
 // Notify sends a notification with the provided data to all Watchers of the
@@ -352,10 +375,7 @@ func watchNotifyCb(_ unsafe.Pointer, notifyID C.uint64_t, id C.uint64_t,
 		log.Warnf("received notification for unknown watcher ID: %#v", ev)
 		return
 	}
-	select {
-	case <-w.done: // unblock when deleted
-	case w.events <- ev:
-	}
+	w.deliverEvent(ev)
 }
 
 //export watchErrorCb
@@ -368,8 +388,5 @@ func watchErrorCb(_ unsafe.Pointer, id C.uint64_t, err C.int) {
 		log.Warnf("received error for unknown watcher ID: id=%d err=%#v", id, err)
 		return
 	}
-	select {
-	case <-w.done: // unblock when deleted
-	case w.errors <- getError(err):
-	}
+	w.deliverError(getError(err))
 }
